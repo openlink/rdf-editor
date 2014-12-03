@@ -5,23 +5,7 @@
     <meta name="author" content="">
     <title>
     </title>
-    <link href="https://netdna.bootstrapcdn.com/bootstrap/3.0.0/css/bootstrap.min.css" rel="stylesheet">
-  <style class="custom-css">
-#jumbo {
-  background-color: #333;
-  color: #eee;
-}
-#jumbo p {
-  font-size: 16px;
-}
-#try-header {
-  margin: 30px 0px;
-}
-#try-more {
-  margin: 30px 0px;
-  font-style: italic;
-}
-</style>
+    <link href="http://getbootstrap.com/dist/css/bootstrap.min.css" rel="stylesheet">
 </head>
 
   <body>
@@ -59,6 +43,23 @@
         </div>
       </div>
       <hr>
+
+      <div class="input-group">
+        <span class="input-group-addon">Filter</span>
+        <input type="text" class="form-control" placeholder="Full-text filter..."/>
+        <div class="input-group-btn">
+        <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-expanded="false">All Resource Types <span class="caret"></span></button>
+        <ul class="dropdown-menu dropdown-menu-right" role="menu">
+          <li><a href="#">All Resource Types</a></li>
+          <li><a href="#">Person (foaf)</a></li>
+          <li><a href="#">Organization (foaf)</a></li>
+          <li><a href="#">Rule (Acl)</a></li>
+        </ul>
+      </div>
+      </div>
+
+      <br />
+
       <li class="list-group-item">
         Hans Mustermann (Person)
         <a href="#" class="btn btn-danger pull-right btn-xs">Delete<br></a>
