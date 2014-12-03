@@ -5,24 +5,8 @@
     <meta name="author" content="">
     <title>
     </title>
-    <link href="https://netdna.bootstrapcdn.com/bootstrap/3.0.0/css/bootstrap.min.css" rel="stylesheet">
-  <style class="custom-css">
-#jumbo {
-  background-color: #333;
-  color: #eee;
-}
-#jumbo p {
-  font-size: 16px;
-}
-#try-header {
-  margin: 30px 0px;
-}
-#try-more {
-  margin: 30px 0px;
-  font-style: italic;
-}
-</style>
-</head>
+    <link href="http://getbootstrap.com/dist/css/bootstrap.min.css" rel="stylesheet">
+  </head>
 
   <body>
     <nav class="navbar navbar-default" role="navigation">
@@ -61,21 +45,49 @@
         <div class="form-group">
           <label class="col-sm-4 control-label" for="name">Name</label>
           <div class="col-sm-8">
-            <input class="form-control" type="text" name="name" />
+            <input class="form-control" type="text" name="name" value="Hans Mustermann" />
           </div>
         </div>
 
         <div class="form-group">
           <label class="col-sm-4 control-label" for="email">Email Address</label>
           <div class="col-sm-8">
-            <input class="form-control" type="email" name="email" />
+            <input class="form-control" type="email" name="email" value="hans@mustermann.de" />
           </div>
         </div>
 
         <div class="form-group">
           <label class="col-sm-4 control-label" for="nick">Nickname</label>
           <div class="col-sm-8">
-            <input class="form-control" type="text" name="nick" />
+            <div class="input-group">
+              <input class="form-control" type="text" name="nick" value="hansi" />
+              <span class="input-group-btn">
+                <button class="btn btn-default" type="button">Remove</button>
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <div class="col-sm-8 col-sm-offset-4">
+            <div class="input-group">
+              <input class="form-control" type="text" name="nick" value="hanswurst" />
+              <span class="input-group-btn">
+                <button class="btn btn-default" type="button">Remove</button>
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <div class="col-sm-8 col-sm-offset-4">
+            <div class="input-group">
+              <input class="form-control" type="text" name="nick" value="hans" />
+              <span class="input-group-btn">
+                <button class="btn btn-default" type="button">Remove</button>
+                <button class="btn btn-default" type="button">Add</button>
+              </span>
+            </div>
           </div>
         </div>
 
