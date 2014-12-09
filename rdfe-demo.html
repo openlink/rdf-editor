@@ -27,6 +27,7 @@
     <meta name="author" content="">
     <title>RDF Editor I/O demo</title>
     <link href="css/bootstrap.min.css" rel="stylesheet">
+    <link href="css/bootstrap-fixes.css" rel="stylesheet">
     <style type="text/css">
       body {
         padding-top: 70px;
@@ -132,7 +133,7 @@
           <p id="userLoginInfo" class="navbar-text navbar-right">
           </p>
           <ul class="nav navbar-nav navbar-right">
-            <li><a id="loginoutLink" class="navbar-link" href="">Login</a></li>
+            <li><a id="loginoutLink" href="">Login</a></li>
           </ul>
         </div>
       </div>
@@ -241,7 +242,7 @@
         var $uli = $('#userLoginInfo'),
             $lil = $('#loginoutLink');
         if (success) {
-          $uli.html('Logged in as <a href="' + data.uri + '">' + (data.name ? data.name : (data.nick ? data.nick : data.uri)) + "</a>");
+          $uli.html('Logged in as <a class="navbar-link" href="' + data.uri + '">' + (data.name ? data.name : (data.nick ? data.nick : data.uri)) + "</a>");
           $lil.attr('href', '/val/logout.vsp?returnto=' + encodeURIComponent(window.location.href)).text('Logout');
         }
         else {
