@@ -59,6 +59,10 @@
       // SPARQL LDP
       var ldp_rdfe = new RDFE.ldp();
 
+      function escapeHTML(str) {
+      return (str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;') );
+      }
+      
       // rdf_store bits
 
       function io_sparql_retrieve() {
@@ -73,9 +77,9 @@
 		for(var i = 0; i < g.length; i++) {
 		  $("#sparqlcontents").append(' \
 		  <tr class="triple"> \
-		    <td class="triple subject">' + g.toArray()[i].subject.toString().replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;') + '</td> \
-		    <td class="triple predicate">' + g.toArray()[i].predicate.toString().replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;') + '</td> \
-		    <td class="triple object">' + g.toArray()[i].object.toString().replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;') + '</td> \
+		    <td class="triple editable subject">' + escapeHTML(g.toArray()[i].subject.toString()) + '</td> \
+		    <td class="triple editable predicate">' + escapeHTML(g.toArray()[i].predicate.toString())+ '</td> \
+		    <td class="triple editable object">' + escapeHTML(g.toArray()[i].object.toString())  + '</td> \
 		  </tr>\n');
 		}
 	      }
@@ -144,6 +148,8 @@
             fileReaderContent('ldp_f', function(){ldp_rdfe.delete($('#ldp_p').val() + $('#ldp_n').val());});
           }
         );
+	$('.editable').editable();
+
       });
     </script>
     
