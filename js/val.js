@@ -32,7 +32,7 @@ var VAL = function(config) {
    * and in the case of an error contains the error message.
    *
    * The profile object contains at least the personal "uri" and optionally
-   * the "name" and an "image" url.
+   * the "nick" nickname, the "name" and an "image" url.
    */
   VAL.prototype.profile = function(cb) {
     if(!this.sid) {
@@ -48,7 +48,7 @@ var VAL = function(config) {
       s.load('text/turtle', data, function(success, result) {
         if(success) {
           s.execute(
-            "select ?uri ?name ?img where { [] foaf:topic ?uri . ?uri a foaf:Agent . optional { ?uri foaf:name ?name . } . optional { ?uri foaf:img ?img . } . }",
+            "select ?uri ?name ?img ?nick where { [] foaf:topic ?uri . ?uri a foaf:Agent . optional { ?uri foaf:name ?name . } . optional { ?uri foaf:nick ?nick . } . optional { ?uri foaf:img ?img . } . }",
             function(success, result) {
               if (success && result.length > 0) {
                 var p = {
@@ -58,6 +58,8 @@ var VAL = function(config) {
                   p.name = result[0].name.value;
                 if(result[0].img)
                   p.image = result[0].img.value;
+                if(result[0].nick)
+                  p.nick = result[0].nick.value;
 
                 cb(true, p);
               }
