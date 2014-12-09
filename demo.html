@@ -27,19 +27,16 @@
     <meta name="author" content="">
     <title>RDF Editor I/O demo</title>
     <link href="css/bootstrap.min.css" rel="stylesheet">
+    <link href="css/bootstrap-editable.css" rel="stylesheet"/>
     <style type="text/css">
       body {
         padding-top: 70px;
       }
-      #sparqlcontents {border: solid 1px silver; background-color: #e5e5e5;  border-collapse: collapse }
-      .triple    { border: solid 1px silver; padding: 0.5em; background-color: #e5e5e5; font-size: x-small; display: table-row}
-      .subject   { border: solid 1px silver; background-color: #eee; float: left; display: table-cell}
-      .predicate { border: solid 1px silver; background-color: #eee; float: left; display: table-cell}
-      .object    { border: solid 1px silver; background-color: #eee; float: left; display: table-cell}
     </style>
 
     <script src="js/jquery-1.11.1.min.js"></script>
     <script src="js/bootstrap.min.js"></script>
+    <script src="js/bootstrap-editable.min.js"></script>
     <script src="js/jquery-deparam.min.js"></script>
     <script src="js/jquery.cookie.js"></script>
     <script src="js/rdfe.js"></script>
@@ -62,7 +59,7 @@
       function escapeHTML(str) {
       return (str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;') );
       }
-      
+
       // rdf_store bits
 
       function io_sparql_retrieve() {
@@ -77,12 +74,12 @@
 		for(var i = 0; i < g.length; i++) {
 		  $("#sparqlcontents").append(' \
 		  <tr class="triple"> \
-		    <td data-title="Subject" data-type="text" class="triple editable subject">' + escapeHTML(g.toArray()[i].subject.toString()) + '</td> \
-		    <td data-title="Predicate" data-type="text" class="triple editable predicate">' + escapeHTML(g.toArray()[i].predicate.toString())+ '</td> \
-		    <td data-title="Object" data-type="text" class="triple editable object">' + escapeHTML(g.toArray()[i].object.toString())  + '</td> \
+		    <td data-title="Subject"><a href="#" data-type="text" class="triple editable editable-click subject">' + escapeHTML(g.toArray()[i].subject.toString()) + '</a></td> \
+		    <td data-title="Predicate"><a href="#" data-type="text" class="triple editable editable-click predicate">' + escapeHTML(g.toArray()[i].predicate.toString())+ '</a></td> \
+		    <td data-title="Object"><a href="#" data-type="text" class="triple editable editable-click object">' + escapeHTML(g.toArray()[i].object.toString())  + '</a></td> \
 		  </tr>\n');
 		}
-	      $('.editable').editable();
+	      $('.editable').editable({ mode: "inline" });
 	      }
 	  } )
 	}
@@ -154,10 +151,7 @@
 
       });
     </script>
-    
-    <link href="css/bootstrap-editable.css" rel="stylesheet"/>
-    <script src="js/bootstrap-editable.min.js"></script>
-    
+
   </head>
   <body>
     <nav class="navbar navbar-default navbar-fixed-top" role="navigation">
@@ -182,7 +176,7 @@
       </div>
     </nav>
 
-    <div class="container">
+    <div class="container-fluid">
       <form name="rdfe" class="form-horizontal">
         <div class="panel panel-default">
           <div class="panel-heading">
@@ -206,7 +200,9 @@
 
             <div class="form-group">
 	      <label for="io_g" class="col-sm-2 control-label">Contents:</label>
-	      <table class="form-control" id="sparqlcontents">
+	      <table class="table table-bordered table-striped">
+	      <tbody id="sparqlcontents">
+	      </tbody>
 	      </table>
             </div>
 
