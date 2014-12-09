@@ -60,7 +60,7 @@
       var ldp_rdfe = new RDFE.ldp();
 
       // rdf_store bits
-      
+
       function io_sparql_retrieve() {
 	var store=rdfstore.create();
 	var host= $("#io_spq").val();
@@ -68,7 +68,7 @@
 	var queryurl=host + '?default-graph-uri=' + graph + '&query=construct+%7B+%3Fs+%3Fp+%3Fo+%7D++WHERE+%7B%3Fs+%3Fp+%3Fo%7D&should-sponge=&format=text%2Fturtle&timeout=30000000';
 	$("#sparqlcontents").html("");
 	store.load('remote', queryurl, IO_SPARQL_GRAPH, function(a,n) {
-	  store.graph(IO_SPARQL_GRAPH, function(success, g) { 
+	  store.graph(IO_SPARQL_GRAPH, function(success, g) {
 	      if(success) {
 		for(var i = 0; i < g.length; i++) {
 		  $("#sparqlcontents").append(' \
@@ -83,7 +83,7 @@
 	}
 	);
       }
-      
+
       // Get File Content
       var reader;
       var readerResult;
@@ -288,7 +288,7 @@
         var $uli = $('#userLoginInfo'),
             $lil = $('#loginoutLink');
         if (success) {
-          $uli.html('Logged in as <a href="' + data.uri + '">' + data.name ? data.name : data.uri + "</a>");
+          $uli.html('Logged in as <a href="' + data.uri + '">' + (data.name ? data.name : (data.nick ? data.nick : data.uri)) + "</a>");
           $lil.attr('href', '/val/logout.vsp?returnto=' + encodeURIComponent(window.location.href)).text('Logout');
         }
         else {
