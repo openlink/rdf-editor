@@ -77,11 +77,12 @@
 		for(var i = 0; i < g.length; i++) {
 		  $("#sparqlcontents").append(' \
 		  <tr class="triple"> \
-		    <td class="triple editable subject">' + escapeHTML(g.toArray()[i].subject.toString()) + '</td> \
-		    <td class="triple editable predicate">' + escapeHTML(g.toArray()[i].predicate.toString())+ '</td> \
-		    <td class="triple editable object">' + escapeHTML(g.toArray()[i].object.toString())  + '</td> \
+		    <td data-title="Subject" data-type="text" class="triple editable subject">' + escapeHTML(g.toArray()[i].subject.toString()) + '</td> \
+		    <td data-title="Predicate" data-type="text" class="triple editable predicate">' + escapeHTML(g.toArray()[i].predicate.toString())+ '</td> \
+		    <td data-title="Object" data-type="text" class="triple editable object">' + escapeHTML(g.toArray()[i].object.toString())  + '</td> \
 		  </tr>\n');
 		}
+	      $('.editable').editable();
 	      }
 	  } )
 	}
