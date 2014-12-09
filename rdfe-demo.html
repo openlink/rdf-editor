@@ -1,0 +1,206 @@
+<!--
+ -
+ -  This file is part of the OpenLink Software Virtuoso Open-Source (VOS)
+ -  project.
+ -
+ -  Copyright (C) 1998-2014 OpenLink Software
+ -
+ -  This project is free software; you can redistribute it and/or modify it
+ -  under the terms of the GNU General Public License as published by the
+ -  Free Software Foundation; only version 2 of the License, dated June 1991.
+ -
+ -  This program is distributed in the hope that it will be useful, but
+ -  WITHOUT ANY WARRANTY; without even the implied warranty of
+ -  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ -  General Public License for more details.
+ -
+ -  You should have received a copy of the GNU General Public License along
+ -  with this program; if not, write to the Free Software Foundation, Inc.,
+ -  51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA
+ -
+-->
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="">
+    <meta name="author" content="">
+    <title>RDF Editor I/O demo</title>
+    <link href="css/bootstrap.min.css" rel="stylesheet">
+    <script src="js/jquery-1.11.1.min.js"></script>
+    <script src="js/bootstrap.min.js"></script>
+    <script src="js/rdfe.js"></script>
+    <script>
+      // SPARQL I/O
+      var IO_SPARQL_HOST = 'http://trueg.selfhost.eu:8899/sparql';
+      var IO_SPARQL_GRAPH = 'http://example.org/graph';
+      var io_rdfe = new RDFE.io({"host": IO_SPARQL_HOST, "graph": IO_SPARQL_GRAPH});
+
+      // SPARQL GSP
+      var GSP_SPARQL_HOST = 'http://trueg.selfhost.eu:8899/sparql-graph-crud';
+      var GSP_SPARQL_GRAPH = 'http://example.org/gsp';
+      var gsp_rdfe = new RDFE.gsp({"host": GSP_SPARQL_HOST, "graph": GSP_SPARQL_GRAPH});
+
+      // SPARQL LDP
+      var ldp_rdfe = new RDFE.ldp();
+
+
+      // Get File Content
+      var reader;
+      var readerResult;
+      var fileReaderText = function(callback) {
+        readerResult = reader.result;
+        callback();
+      }
+
+      function fileReaderContent(obj, callback)
+      {
+        if (window.File && window.FileReader && window.FileList) {
+          var fld = document.forms['rdfe'].elements[obj];
+          if (!fld.files[0]) {
+            alert('Please select a file!');
+          } else {
+            reader = new FileReader();
+            reader.onload = function (){fileReaderText(callback);};
+            reader.readAsText(fld.files[0]);
+          }
+        } else {
+          alert('The File APIs are not fully supported by your browser.');
+        }
+      }
+
+      $(document).ready(function() {
+        // SPARQL I/O
+        $("#io_insert").on("click", function(e) {
+            io_rdfe.insert($('#io_s').val(), $('#io_p').val(), $('#io_o').val());
+          }
+        );
+        $("#io_delete").on("click", function(e) {
+            io_rdfe.delete($('#io_s').val(), $('#io_p').val(), $('#io_o').val());
+          }
+        );
+
+        // SPARQL GSP
+        $("#gsp_insert").on("click", function(e) {
+            fileReaderContent('gsp_f', function(){gsp_rdfe.insert(readerResult);});
+          }
+        );
+        $("#gsp_update").on("click", function(e) {
+            fileReaderContent('gsp_f', function(){gsp_rdfe.update(readerResult);});
+          }
+        );
+        $("#gsp_delete").on("click", function(e) {
+            fileReaderContent('gsp_f', function(){gsp_rdfe.delete();});
+          }
+        );
+
+        // SPARQL LDP
+        $("#ldp_insert").on("click", function(e) {
+            fileReaderContent('ldp_f', function(){ldp_rdfe.insert($('#ldp_p').val() + $('#ldp_n').val(), readerResult);});
+          }
+        );
+        $("#ldp_delete").on("click", function(e) {
+            fileReaderContent('ldp_f', function(){ldp_rdfe.delete($('#ldp_p').val() + $('#ldp_n').val());});
+          }
+        );
+      });
+    </script>
+  </head>
+  <body>
+    <div class="container">
+      <form name="rdfe" class="form-horizontal">
+        <div class="panel panel-default">
+          <div class="panel-heading">
+            <h3 class="panel-title">I/O API - SPARQL IUD example</h3>
+          </div>
+          <div class="panel-body">
+            <div class="form-group">
+              <label for="io_g" class="col-sm-2 control-label">Graph</label>
+              <div class="col-sm-10">
+                <input type="text" id="io_g" name="io_g" class="form-control" />
+              </div>
+            </div>
+            <div class="form-group">
+              <label for="io_s" class="col-sm-2 control-label">Subject</label>
+              <div class="col-sm-10">
+                <input type="text" id="io_s" name="io_s" class="form-control" />
+              </div>
+            </div>
+            <div class="form-group">
+              <label for="io_p" class="col-sm-2 control-label">Predicate</label>
+              <div class="col-sm-10">
+                <input type="text" id="io_p" name="io_p" class="form-control" />
+              </div>
+            </div>
+            <div class="form-group">
+              <label for="io_o" class="col-sm-2 control-label">Object</label>
+              <div class="col-sm-10">
+                <input type="text" id="io_o" name="io_o" class="form-control" />
+              </div>
+            </div>
+          </div>
+          <div class="panel-footer">
+            <button id="io_insert" type="button" class="btn btn-default">Insert</button>
+            <button id="io_delete" type="button" class="btn btn-default">Delete</button>
+          </div>
+        </div>
+
+        <div class="panel panel-default">
+          <div class="panel-heading">
+            <h3 class="panel-title">SPARQL Graph Store HTTP Protocol</h3>
+          </div>
+          <div class="panel-body">
+            <div class="form-group">
+              <label for="gsp_g" class="col-sm-2 control-label">Graph</label>
+              <div class="col-sm-10">
+                <input type="text" id="gsp_g" name="gsp_g" class="form-control" />
+              </div>
+            </div>
+            <div class="form-group">
+              <label for="gsp_f" class="col-sm-2 control-label">TTL Content</label>
+              <div class="col-sm-10">
+                <input type="file" id="gsp_f" name="gsp_f" />
+              </div>
+            </div>
+          </div>
+          <div class="panel-footer">
+            <button id="gsp_insert" type="button" class="btn btn-default">Insert</button>
+            <button id="gsp_update" type="button" class="btn btn-default">Update</button>
+            <button id="gsp_delete" type="button" class="btn btn-default">Delete</button>
+          </div>
+        </div>
+
+        <div class="panel panel-default">
+          <div class="panel-heading">
+            <h3 class="panel-title">SPARQL LDP Protocol</h3>
+          </div>
+          <div class="panel-body">
+            <div class="form-group">
+              <label for="ldp_p" class="col-sm-2 control-label">Path</label>
+              <div class="col-sm-10">
+                <input type="text" id="ldp_p" name="ldp_p" class="form-control" />
+              </div>
+            </div>
+            <div class="form-group">
+              <label for="ldp_f" class="col-sm-2 control-label">TTL Content</label>
+              <div class="col-sm-10">
+                <input type="file" id="ldp_f" name="ldp_f" />
+              </div>
+            </div>
+            <div class="form-group">
+              <label for="ldp_n" class="col-sm-2 control-label">Name</label>
+              <div class="col-sm-10">
+                <input type="text" id="ldp_n" name="ldp_n" class="form-control" />
+              </div>
+            </div>
+          </div>
+          <div class="panel-footer">
+            <button id="ldp_insert" type="button" class="btn btn-default">Insert</button>
+            <!-- button id="ldp_update" type="button" class="btn btn-default">Update</button -->
+            <button id="ldp_delete" type="button" class="btn btn-default">Delete</button>
+          </div>
+        </div>
+      </form>
+    </div>
+  </body>
+</html>
