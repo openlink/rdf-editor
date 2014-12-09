@@ -27,19 +27,24 @@
     <meta name="author" content="">
     <title>RDF Editor I/O demo</title>
     <link href="css/bootstrap.min.css" rel="stylesheet">
-    
     <style type="text/css">
+      body {
+        padding-top: 70px;
+      }
       #sparqlcontents {border: solid 1px silver; background-color: #e5e5e5;  border-collapse: collapse }
       .triple    { border: solid 1px silver; padding: 0.5em; background-color: #e5e5e5; font-size: x-small; display: table-row}
       .subject   { border: solid 1px silver; background-color: #eee; float: left; display: table-cell}
       .predicate { border: solid 1px silver; background-color: #eee; float: left; display: table-cell}
       .object    { border: solid 1px silver; background-color: #eee; float: left; display: table-cell}
     </style>
-    
+
     <script src="js/jquery-1.11.1.min.js"></script>
     <script src="js/bootstrap.min.js"></script>
+    <script src="js/jquery-deparam.min.js"></script>
+    <script src="js/jquery.cookie.js"></script>
     <script src="js/rdfe.js"></script>
-    <script src="js/rdf_store.js"></script>
+    <script src="js/rdf_store_min.js"></script>
+    <script src="js/val.js"></script>
     <script>
       // SPARQL I/O
       var IO_SPARQL_HOST = 'http://vbv7.pigsty:8889/sparql';
@@ -55,7 +60,7 @@
       var ldp_rdfe = new RDFE.ldp();
 
       // rdf_store bits
-      
+
       function io_sparql_retrieve() {
 	var store=rdfstore.create();
 	var host= $("#io_spq").val();
@@ -63,7 +68,7 @@
 	var queryurl=host + '?default-graph-uri=' + graph + '&query=construct+%7B+%3Fs+%3Fp+%3Fo+%7D++WHERE+%7B%3Fs+%3Fp+%3Fo%7D&should-sponge=&format=text%2Fturtle&timeout=30000000';
 	$("#sparqlcontents").html("");
 	store.load('remote', queryurl, IO_SPARQL_GRAPH, function(a,n) {
-	  store.graph(IO_SPARQL_GRAPH, function(success, g) { 
+	  store.graph(IO_SPARQL_GRAPH, function(success, g) {
 	      if(success) {
 		for(var i = 0; i < g.length; i++) {
 		  $("#sparqlcontents").append(' \
@@ -78,8 +83,8 @@
 	}
 	);
       }
-      
-      
+
+
       // Get File Content
       var reader;
       var readerResult;
@@ -144,6 +149,28 @@
     </script>
   </head>
   <body>
+    <nav class="navbar navbar-default navbar-fixed-top" role="navigation">
+      <div class="container-fluid">
+        <div class="navbar-header">
+          <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#rdfe-navbar-collapse">
+            <span class="sr-only">Toggle navigation</span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </button>
+          <a class="navbar-brand" style="padding: 5px 15px" href=""><img src="img/oplogo_std_100x40.png" alt="OpenLink Software RDF Editor" /></a></li>
+        </div>
+
+        <div class="collapse navbar-collapse" id="rdfe-navbar-collapse">
+          <p id="userLoginInfo" class="navbar-text navbar-right">
+          </p>
+          <ul class="nav navbar-nav navbar-right">
+            <li><a id="loginoutLink" class="navbar-link" href="">Login</a></li>
+          </ul>
+        </div>
+      </div>
+    </nav>
+
     <div class="container">
       <form name="rdfe" class="form-horizontal">
         <div class="panel panel-default">
@@ -160,18 +187,18 @@
               <div class="col-sm-10">
                 <input type="text" id="io_g" name="io_g" class="form-control" />
               </div>
-              
+
 	      <div class="col-sm-10">
                 <input type="button" id="io_submit" name="io_submit" class="col-sm-2" value="Retrieve" onclick="io_sparql_retrieve()" />
               </div>
             </div>
-            
+
             <div class="form-group">
 	      <label for="io_g" class="col-sm-2 control-label">Contents:</label>
 	      <table class="col-sm-10" id="sparqlcontents">
 	      </table>
             </div>
-            
+
             <div class="form-group">
               <label for="io_s" class="col-sm-2 control-label">Subject</label>
               <div class="col-sm-10">
@@ -254,5 +281,22 @@
         </div>
       </form>
     </div>
+
+    <script>
+      var val = new VAL();
+
+      val.profile(function (success, data) {
+        var $uli = $('#userLoginInfo'),
+            $lil = $('#loginoutLink');
+        if (success) {
+          $uli.html('Logged in as <a href="' + data.uri + '">' + data.name ? data.name : data.uri + "</a>");
+          $lil.attr('href', '/val/logout.vsp?returnto=' + encodeURIComponent(window.location.href)).text('Logout');
+        }
+        else {
+          $uli.text("Not logged in");
+          $lil.attr('href', val.config.loginLink + '?returnto=' + encodeURIComponent(window.location.href)).text('Login');
+        }
+      });
+    </script>
   </body>
 </html>
