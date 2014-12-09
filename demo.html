@@ -60,7 +60,7 @@
       var ldp_rdfe = new RDFE.ldp();
 
       // rdf_store bits
-
+      
       function io_sparql_retrieve() {
 	var store=rdfstore.create();
 	var host= $("#io_spq").val();
@@ -68,14 +68,14 @@
 	var queryurl=host + '?default-graph-uri=' + graph + '&query=construct+%7B+%3Fs+%3Fp+%3Fo+%7D++WHERE+%7B%3Fs+%3Fp+%3Fo%7D&should-sponge=&format=text%2Fturtle&timeout=30000000';
 	$("#sparqlcontents").html("");
 	store.load('remote', queryurl, IO_SPARQL_GRAPH, function(a,n) {
-	  store.graph(IO_SPARQL_GRAPH, function(success, g) {
+	  store.graph(IO_SPARQL_GRAPH, function(success, g) { 
 	      if(success) {
 		for(var i = 0; i < g.length; i++) {
 		  $("#sparqlcontents").append(' \
 		  <tr class="triple"> \
-		    <td class="triple subject">' + g.toArray()[i].subject.toString()+ '</td> \
-		    <td class="triple predicate">' + g.toArray()[i].predicate.toString()+ '</td> \
-		    <td class="triple object">' + g.toArray()[i].object.toString()+ '</td> \
+		    <td class="triple subject">' + g.toArray()[i].subject.toString().replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;') + '</td> \
+		    <td class="triple predicate">' + g.toArray()[i].predicate.toString().replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;') + '</td> \
+		    <td class="triple object">' + g.toArray()[i].object.toString().replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;') + '</td> \
 		  </tr>\n');
 		}
 	      }
@@ -83,8 +83,7 @@
 	}
 	);
       }
-
-
+      
       // Get File Content
       var reader;
       var readerResult;
