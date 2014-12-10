@@ -18,12 +18,19 @@ function io_draw_graph_contents() {
     store.graph(IO_SPARQL_GRAPH, function(success, g) {
       if(success) {
 	for(var i = 0; i < g.length; i++) {
+	  var s=store.namedNodeToString(g.toArray()[i].subject);
+	  var p=store.namedNodeToString(g.toArray()[i].predicate);
+	  var o=store.namedNodeToString(g.toArray()[i].object);
 	  $("#sparqlcontents").append(' \
-	  <tr class="triple" data-statement="' + i + '"> \
-	  <td data-title="Subject"><a href="#" data-type="text" class="triple editable editable-click subject">' + escapeHTML(store.namedNodeToString(g.toArray()[i].subject)) + '</a></td> \
-	  <td data-title="Predicate"><a href="#" data-type="text" class="triple editable editable-click predicate">' + escapeHTML(store.namedNodeToString(g.toArray()[i].predicate))+ '</a></td> \
-	  <td data-title="Object"><a href="#" data-type="text" class="triple editable editable-click object">' + escapeHTML(store.namedNodeToString(g.toArray()[i].object))  + '</a></td> \
-	  <td><a href="#" class="btn btn-danger btn-xs triple-action triple-action-delete">Delete<br></a></td>\
+	  <tr class="triple" \
+	  data-statement-s-old="' + atob(s) + '" \
+	  data-statement-p-old="' + atob(p) + '" \
+	  data-statement-o-old="' + atob(o) + '" \
+	  data-statement-index="' + i + '"> \
+	  <td data-title="Subject"><a href="#" data-type="text" class="triple editable editable-click s">' + escapeHTML(s) + '</a></td> \
+	  <td data-title="Predicate"><a href="#" data-type="text" class="triple editable editable-click p">' + escapeHTML(p)+ '</a></td> \
+	  <td data-title="Object"><a href="#" data-type="text" class="triple editable editable-click o">' + escapeHTML(o) + '</a></td> \
+	  <td><a href="#" class="btn btn-danger btn-xs triple-action triple-action-delete">Delete<br></a></td> \
 	  </tr>\n');
 	}
 	$('.editable').editable({ mode: "inline" });
