@@ -14,6 +14,7 @@ function escapeHTML(str) {
 // rdf_store bits
 
 function io_index_to_triple_old(i) {
+  
 }
 
 function io_index_to_triple(i) {
@@ -35,9 +36,9 @@ function io_draw_graph_contents() {
 	  var o=store.namedNodeToString(g.toArray()[i].object);
 	  $("#sparqlcontents").append(' \
 	  <tr class="triple" \
-	  data-statement-s-old="' + atob(s) + '" \
-	  data-statement-p-old="' + atob(p) + '" \
-	  data-statement-o-old="' + atob(o) + '" \
+	  data-statement-s-old="' + escape(s) + '" \
+	  data-statement-p-old="' + escape(p) + '" \
+	  data-statement-o-old="' + escape(o) + '" \
 	  data-statement-index="' + i + '"> \
 	  <td data-title="Subject"><a href="#" data-type="text" class="triple editable editable-click s">' + escapeHTML(s) + '</a></td> \
 	  <td data-title="Predicate"><a href="#" data-type="text" class="triple editable editable-click p">' + escapeHTML(p)+ '</a></td> \
