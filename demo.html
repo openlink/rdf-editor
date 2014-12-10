@@ -33,6 +33,10 @@
       body {
         padding-top: 70px;
       }
+      tr.triple td {
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
     </style>
 
     <script src="js/jquery-1.11.1.min.js"></script>
@@ -91,6 +95,7 @@
 		    <td data-title="Subject"><a href="#" data-type="text" class="triple editable editable-click subject">' + escapeHTML(store.namedNodeToString(g.toArray()[i].subject)) + '</a></td> \
 		    <td data-title="Predicate"><a href="#" data-type="text" class="triple editable editable-click predicate">' + escapeHTML(store.namedNodeToString(g.toArray()[i].predicate))+ '</a></td> \
 		    <td data-title="Object"><a href="#" data-type="text" class="triple editable editable-click object">' + escapeHTML(store.namedNodeToString(g.toArray()[i].object))  + '</a></td> \
+		    <td><a href="#" class="btn btn-danger btn-xs triple-action triple-action-delete">Delete<br></a></td>\
 		  </tr>\n');
 		}
 	      $('.editable').editable({ mode: "inline" });
@@ -195,61 +200,86 @@
     </nav>
 
     <div class="container-fluid">
-      <form name="rdfe" class="form-horizontal">
-        <div class="panel panel-default">
-          <div class="panel-heading">
-            <h3 class="panel-title">Control</h3>
-          </div>
-          <div class="panel-body">
-            <div class="form-group">
-	      <label for="io_g" class="col-sm-2 control-label">Graph</label>
-              <div class="col-sm-10">
-                <div class="input-group">
-                  <input type="text" id="io_g" name="io_g" class="form-control" />
-                  <span class="input-group-btn">
-                    <input type="button" id="io_submit" name="io_submit" class="btn btn-primary" value="Retrieve" onclick="io_sparql_retrieve()" />
-                  </span>
+
+      <div class="row">
+        <div class="col-md-9">
+          <form name="rdfe" class="form-horizontal">
+            <div class="panel panel-default">
+              <div class="panel-heading">
+                <h3 class="panel-title">RDF Editor</h3>
+              </div>
+              <div class="panel-body">
+                <div class="form-group">
+                  <label for="io_g" class="col-sm-2 control-label">Named Graph</label>
+                  <div class="col-sm-10">
+                    <div class="input-group">
+                      <input type="text" id="io_g" name="io_g" class="form-control" />
+                      <span class="input-group-btn">
+                        <input type="button" id="io_submit" name="io_submit" class="btn btn-primary" value="Retrieve" onclick="io_sparql_retrieve()" />
+                      </span>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="form-group">
+                  <label for="io_s" class="col-sm-2 control-label">Subject</label>
+                  <div class="col-sm-10">
+                    <input type="text" id="io_s" name="io_s" class="form-control" />
+                  </div>
+                </div>
+                <div class="form-group">
+                  <label for="io_p" class="col-sm-2 control-label">Predicate</label>
+                  <div class="col-sm-10">
+                    <input type="text" id="io_p" name="io_p" class="form-control" />
+                  </div>
+                </div>
+                <div class="form-group">
+                  <label for="io_o" class="col-sm-2 control-label">Object</label>
+                  <div class="col-sm-10">
+                    <input type="text" id="io_o" name="io_o" class="form-control" />
+                  </div>
                 </div>
               </div>
+              <div class="panel-footer">
+                <button id="io_insert" type="button" class="btn btn-default">Insert</button>
+                <button id="io_delete" type="button" class="btn btn-default">Delete</button>
+              </div>
             </div>
+          </form>
+        </div>
 
-            <div class="form-group">
-              <label for="io_s" class="col-sm-2 control-label">Subject</label>
-              <div class="col-sm-10">
-                <input type="text" id="io_s" name="io_s" class="form-control" />
-              </div>
+
+        <div class="col-md-3">
+          <div class="panel panel-default">
+            <div class="panel-heading">
+              <h3 class="panel-title">Editing Aids</h3>
             </div>
-            <div class="form-group">
-              <label for="io_p" class="col-sm-2 control-label">Predicate</label>
-              <div class="col-sm-10">
-                <input type="text" id="io_p" name="io_p" class="form-control" />
-              </div>
+            <div class="panel-body">
+              FIXME: this is where the loaded ontologies go
             </div>
-            <div class="form-group">
-              <label for="io_o" class="col-sm-2 control-label">Object</label>
-              <div class="col-sm-10">
-                <input type="text" id="io_o" name="io_o" class="form-control" />
-              </div>
-            </div>
-          </div>
-          <div class="panel-footer">
-            <button id="io_insert" type="button" class="btn btn-default">Insert</button>
-            <button id="io_delete" type="button" class="btn btn-default">Delete</button>
           </div>
         </div>
+      </div>
 
         <div class="panel panel-default">
           <div class="panel-heading">
             <h3 class="panel-title">Contents</h3>
           </div>
           <div class="panel-body">
-            <table class="table table-bordered table-striped">
+            <table id="contentsTable" class="table table-bordered table-striped" style="table-layout: fixed;" data-sort-name="subject" data-sort-order="desc">
+              <thead>
+                <tr>
+                  <th data-field="subject" data-sortable="true">Subject</th>
+                  <th data-field="property" data-sortable="true">Predicate</th>
+                  <th data-field="object" data-sortable="true">Object</th>
+                  <th></th>
+                </tr>
+              </thead>
               <tbody id="sparqlcontents">
               </tbody>
             </table>
           </div>
         </div>
-      </form>
     </div>
 
     <div id="configDialog" class="modal fade">
