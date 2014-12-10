@@ -6,3 +6,7 @@
     padding-left: 15px;
   }
 }
+.form-horizontal .form-group {
+  margin-right: 0px;
+  margin-left: 0px;
+}
