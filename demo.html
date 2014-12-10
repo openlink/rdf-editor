@@ -168,8 +168,12 @@
         </div>
 
         <div class="collapse navbar-collapse" id="rdfe-navbar-collapse">
-          <p id="userLoginInfo" class="navbar-text navbar-right">
-          </p>
+          <ul class="nav navbar-nav navbar-right">
+            <li><a href="#configDialog" data-toggle="modal">Configure</a></li>
+          </ul>
+
+          <p id="userLoginInfo" class="navbar-text navbar-right"></p>
+
           <ul class="nav navbar-nav navbar-right">
             <li><a id="loginoutLink" class="navbar-link" href="">Login</a></li>
           </ul>
@@ -181,30 +185,19 @@
       <form name="rdfe" class="form-horizontal">
         <div class="panel panel-default">
           <div class="panel-heading">
-            <h3 class="panel-title">I/O API - SPARQL IUD example</h3>
+            <h3 class="panel-title">Control</h3>
           </div>
           <div class="panel-body">
             <div class="form-group">
-              <label for="io_g" class="col-sm-2 control-label">SPARQL endpoint</label>
-              <div class="col-sm-10">
-                <input type="text" id="io_spq" name="io_spq" class="form-control" />
-              </div>
 	      <label for="io_g" class="col-sm-2 control-label">Graph</label>
               <div class="col-sm-10">
-                <input type="text" id="io_g" name="io_g" class="form-control" />
+                <div class="input-group">
+                  <input type="text" id="io_g" name="io_g" class="form-control" />
+                  <span class="input-group-btn">
+                    <input type="button" id="io_submit" name="io_submit" class="btn btn-primary" value="Retrieve" onclick="io_sparql_retrieve()" />
+                  </span>
+                </div>
               </div>
-
-	      <div class="col-sm-10">
-                <input type="button" id="io_submit" name="io_submit" class="col-sm-2" value="Retrieve" onclick="io_sparql_retrieve()" />
-              </div>
-            </div>
-
-            <div class="form-group">
-	      <label for="io_g" class="col-sm-2 control-label">Contents:</label>
-	      <table class="table table-bordered table-striped">
-	      <tbody id="sparqlcontents">
-	      </tbody>
-	      </table>
             </div>
 
             <div class="form-group">
@@ -234,61 +227,41 @@
 
         <div class="panel panel-default">
           <div class="panel-heading">
-            <h3 class="panel-title">SPARQL Graph Store HTTP Protocol</h3>
+            <h3 class="panel-title">Contents</h3>
           </div>
           <div class="panel-body">
-            <div class="form-group">
-              <label for="gsp_g" class="col-sm-2 control-label">Graph</label>
-              <div class="col-sm-10">
-                <input type="text" id="gsp_g" name="gsp_g" class="form-control" />
-              </div>
-            </div>
-            <div class="form-group">
-              <label for="gsp_f" class="col-sm-2 control-label">TTL Content</label>
-              <div class="col-sm-10">
-                <input type="file" id="gsp_f" name="gsp_f" />
-              </div>
-            </div>
-          </div>
-          <div class="panel-footer">
-            <button id="gsp_insert" type="button" class="btn btn-default">Insert</button>
-            <button id="gsp_update" type="button" class="btn btn-default">Update</button>
-            <button id="gsp_delete" type="button" class="btn btn-default">Delete</button>
-          </div>
-        </div>
-
-        <div class="panel panel-default">
-          <div class="panel-heading">
-            <h3 class="panel-title">SPARQL LDP Protocol</h3>
-          </div>
-          <div class="panel-body">
-            <div class="form-group">
-              <label for="ldp_p" class="col-sm-2 control-label">Path</label>
-              <div class="col-sm-10">
-                <input type="text" id="ldp_p" name="ldp_p" class="form-control" />
-              </div>
-            </div>
-            <div class="form-group">
-              <label for="ldp_f" class="col-sm-2 control-label">TTL Content</label>
-              <div class="col-sm-10">
-                <input type="file" id="ldp_f" name="ldp_f" />
-              </div>
-            </div>
-            <div class="form-group">
-              <label for="ldp_n" class="col-sm-2 control-label">Name</label>
-              <div class="col-sm-10">
-                <input type="text" id="ldp_n" name="ldp_n" class="form-control" />
-              </div>
-            </div>
-          </div>
-          <div class="panel-footer">
-            <button id="ldp_insert" type="button" class="btn btn-default">Insert</button>
-            <!-- button id="ldp_update" type="button" class="btn btn-default">Update</button -->
-            <button id="ldp_delete" type="button" class="btn btn-default">Delete</button>
+            <table class="table table-bordered table-striped">
+              <tbody id="sparqlcontents">
+              </tbody>
+            </table>
           </div>
         </div>
       </form>
     </div>
+
+    <div id="configDialog" class="modal fade">
+      <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+          <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+            <h4 class="modal-title">RDF Editor Configuration</h4>
+          </div>
+          <div class="modal-body">
+            <form class="form-horizontal">
+              <div class="form-group">
+                <label for="io_g" class="col-sm-2 control-label">SPARQL endpoint</label>
+                <div class="col-sm-10">
+                  <input type="text" id="io_spq" name="io_spq" class="form-control" />
+                </div>
+              </div>
+            </form>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-primary" data-dismiss="modal">Close</button>
+          </div>
+        </div><!-- /.modal-content -->
+      </div><!-- /.modal-dialog -->
+    </div><!-- /.modal -->
 
     <script>
       var val = new VAL();
