@@ -87,7 +87,7 @@
 	      if(success) {
 		for(var i = 0; i < g.length; i++) {
 		  $("#sparqlcontents").append(' \
-		  <tr class="triple"> \
+		  <tr class="triple" data-statement="' + i + '"> \
 		    <td data-title="Subject"><a href="#" data-type="text" class="triple editable editable-click subject">' + escapeHTML(store.namedNodeToString(g.toArray()[i].subject)) + '</a></td> \
 		    <td data-title="Predicate"><a href="#" data-type="text" class="triple editable editable-click predicate">' + escapeHTML(store.namedNodeToString(g.toArray()[i].predicate))+ '</a></td> \
 		    <td data-title="Object"><a href="#" data-type="text" class="triple editable editable-click object">' + escapeHTML(store.namedNodeToString(g.toArray()[i].object))  + '</a></td> \
