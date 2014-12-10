@@ -36,6 +36,7 @@ RDFE.IO_DELETE = 'DELETE DATA {GRAPH <{0}> { <{1}> <{2}> {3} . }}';
 // GSP statements
 RDFE.GSP_RETRIEVE = 'SELECT * WHERE {GRAPH <{0}> { ?s ?p ?o. }}';
 
+// FIXME: can use jQuery's extend() or similar
 RDFE.params = function(params, options) {
     if (!options && !params) return {};
 
@@ -61,12 +62,9 @@ RDFE.fileParent = function(path) {
 
 RDFE.io = function(options) {
     var self = this;
-    this.options = {
+    this.options = $.extend({
         "async": true
-    }
-    for (var p in options) {
-        this.options[p] = options[p];
-    }
+    }, config);
 
     this.retrieve = function(params) {
         params = RDFE.params(params, this.options);
@@ -103,14 +101,11 @@ RDFE.io = function(options) {
 
 RDFE.gsp = function(options) {
     var self = this;
-    this.options = {
+    this.options = $.extend({
         "async": true,
         "contentType": 'application/octet-stream',
         "processData": false,
-    }
-    for (var p in options) {
-        this.options[p] = options[p];
-    }
+    }, config);
 
     this.retrieve = function(params) {
         params = RDFE.params(params, this.options);
@@ -166,13 +161,10 @@ RDFE.gsp = function(options) {
 RDFE.LDP_INSERT = 'INSERT DATA {GRAPH <{0}> { <{1}> <{2}> {3} . }}';
 RDFE.ldp = function(options) {
     var self = this;
-    this.options = {
+    this.options = $.extend({
         "async": true,
         "dataType": 'text'
-    }
-    for (var p in options) {
-        this.options[p] = options[p];
-    }
+    }, config);
 
     this.retrieve = function(path, params) {
         params = RDFE.params(params, this.options);
