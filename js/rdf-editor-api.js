@@ -14,17 +14,18 @@ function escapeHTML(str) {
 // rdf_store bits
 
 function io_make_triple(s, p, o) {
-  ss=store.rdf.createNamedNode(store.rdf.resolve(s));
-  pp=store.rdf.createNamedNode(store.rdf.resolve(p));
+  ss=store.rdf.createNamedNode(s);
+  pp=store.rdf.createNamedNode(p);
   
   if(o[0]=="<") {
-    oo=store.rdf.createNamedNode(store.rdf.resolve(o));
+    oo=store.rdf.createNamedNode(o);
   } else {
     oo=store.rdf.createLiteral(o);
   }
                                   
   return(store.rdf.createTriple(ss, pp, oo));
 }
+
 
 function io_index_to_triple_old(i) {
 //   Return old values of a triple by index i, prior to having been edited
