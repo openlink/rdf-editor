@@ -29,8 +29,28 @@ String.prototype.format = function () {
 RDFE = {};
 
 // SPARQL I/O statements
+RDFE.IO_RETRIEVE = 'SELECT * WHERE {GRAPH <{0}> { ?s ?p ?o. }}';
 RDFE.IO_INSERT = 'INSERT DATA {GRAPH <{0}> { <{1}> <{2}> {3} . }}';
 RDFE.IO_DELETE = 'DELETE DATA {GRAPH <{0}> { <{1}> <{2}> {3} . }}';
+
+// GSP statements
+RDFE.GSP_RETRIEVE = 'SELECT * WHERE {GRAPH <{0}> { ?s ?p ?o. }}';
+
+RDFE.params = function (params, options)
+{
+  if (!options && !params) return {};
+
+  if (!options) return params;
+
+  if (!params) return options;
+
+	for (var p in options) {
+	  if (!params[p])
+	    params[p] = options[p];
+  }
+
+  return params;
+}
 
 RDFE.fileName = function (path)
 {
@@ -44,58 +64,94 @@ RDFE.fileParent = function (path)
 
 RDFE.io = function (options) {
 	var self = this;
+	this.options = {
+		"async": true
+	}
+	for (var p in options) { this.options[p] = options[p]; }
 
-	this.options = options;
-
-	this.insert = function (s, p, o) {
-	  this.call(RDFE.IO_INSERT, s, p, o);
+	this.retrieve = function (params) {
+	  params = RDFE.params(params, this.options);
+	  this.exec(RDFE.IO_RETRIEVE.format(params.graph), params);
   }
 
-	this.delete = function (s, p, o) {
-	  this.call(RDFE.IO_DELETE, s, p, o);
+	this.insert = function (s, p, o, params) {
+	  params = RDFE.params(params, this.options);
+	  this.exec(RDFE.IO_INSERT.format(params.graph, s, p, o), params);
+  }
+
+	this.delete = function (s, p, o, params) {
+	  params = RDFE.params(params, this.options);
+	  this.exec(RDFE.IO_DELETE.format(params.graph, s, p, o), params);
 	}
 
-	this.call = function (q, s, p, o) {
-    $(document).ajaxError(function(){alert('IO Sparql Request Failed');});
-    $(document).ajaxSuccess(function(){alert('IO Sparql Request Success');});
+	this.exec = function (q, params) {
+    $(document).ajaxError(params.ajaxError);
+    $(document).ajaxSuccess(params.ajaxSuccess);
 
-	  var query = q.format(this.options.graph, s, p, o);
     $.ajax({
-      url:  this.options.host,
+      url:  params.host,
+      success: params.success,
       type: 'GET',
-      data: {"query": query}
+      async: params.async,
+      data: {"query": q, "format": params.format},
+      dataType: 'text'
     });
   }
 }
 
 RDFE.gsp = function (options) {
 	var self = this;
+	this.options = {
+		"async": true,
+    "contentType": 'application/octet-stream',
+    "processData": false,
+	}
+	for (var p in options) { this.options[p] = options[p]; }
 
-	this.options = options;
+	this.retrieve = function (params) {
+	  params = RDFE.params(params, this.options);
+    $(document).ajaxError(params.ajaxError);
+    $(document).ajaxSuccess(params.ajaxSuccess);
 
-	this.insert = function (content) {
-	  this.call('PUT', content);
+    $.ajax({
+      url:  params.host,
+      success: params.success,
+      type: 'GET',
+      async: params.async,
+      data: {"query": RDFE.GSP_RETRIEVE.format(params.graph), "format": params.format},
+      dataType: 'text'
+    });
   }
 
-	this.update = function (content) {
-	  this.call('POST', content);
+	this.insert = function (content, params) {
+	  params = RDFE.params(params, this.options);
+	  this.exec('PUT', content, params);
+  }
+
+	this.update = function (content, params) {
+	  params = RDFE.params(params, this.options);
+	  this.exec('POST', content, params);
 	}
 
-	this.delete = function (content) {
-	  this.call('DELETE');
+	this.delete = function (content, params) {
+	  params = RDFE.params(params, this.options);
+	  this.exec('DELETE', null, params);
 	}
 
-	this.call = function (method, content) {
-    $(document).ajaxError(function(){alert('GSP Sparql Request Failed');});
-    $(document).ajaxSuccess(function(){alert('GSP Sparql Request Success');});
+	this.exec = function (method, content, params) {
+    $(document).ajaxError(params.ajaxError);
+    $(document).ajaxSuccess(params.ajaxSuccess);
 
-	  var host = this.options.host + '?graph=' + encodeURIComponent(this.options.graph);
+	  var host = params.host + '?graph=' + encodeURIComponent(params.graph);
     $.ajax({
       url:  host,
+      success: params.success,
       type: method,
-      contentType: 'application/octet-stream',
-      processData: false,
-      data: content
+      async: params.async,
+      contentType: params.contentType,
+      processData: params.processData,
+      data: content,
+      dataType: 'text'
     });
   }
 }
@@ -103,39 +159,50 @@ RDFE.gsp = function (options) {
 RDFE.LDP_INSERT = 'INSERT DATA {GRAPH <{0}> { <{1}> <{2}> {3} . }}';
 RDFE.ldp = function (options) {
 	var self = this;
+	this.options = {
+		"async": true,
+    "dataType": 'text'
+	}
+	for (var p in options) { this.options[p] = options[p]; }
 
-	this.options = options;
-
-	this.insert = function (path, content) {
-    var headers = {"Content-Type": 'text/turtle', "Slug": RDFE.fileName(path)};
-	  this.call('POST', RDFE.fileParent(path), headers, content);
+	this.retrieve = function (path, params) {
+	  params = RDFE.params(params, this.options);
+	  var headers = {"Accept": 'text/turtle, */*;q=0.1'};
+    this.exec('GET', path, headers, null, params);
   }
 
-	this.update = function (path, s, p, o) {
+	this.insert = function (path, content, params) {
+	  params = RDFE.params(params, this.options);
+    var headers = {"Content-Type": 'text/turtle', "Slug": RDFE.fileName(path)};
+	  this.exec('POST', RDFE.fileParent(path), headers, content, params);
+  }
+
+	this.update = function (path, s, p, o, params) {
+	  params = RDFE.params(params, this.options);
 	  var content = q.format(RDFE.LDP_INSERT, s, p, o);
     var headers = {"Content-Type": 'application/sparql-update'};
-	  this.call('PATCH', path, headers, content);
+	  this.exec('PATCH', path, headers, content, params);
 	}
 
-	this.delete = function (path) {
-	  if (name) {
-	    alert('LDP Sparql Request Failed');
-	    return;
-	  }
-	  this.call('DELETE', path);
+	this.delete = function (path, params) {
+	  params = RDFE.params(params, this.options);
+    this.exec('DELETE', path, null, null, params);
 	}
 
-	this.call = function (method, path, headers, content) {
-    $(document).ajaxError(function(){alert('LDP Sparql Request Failed');});
-    $(document).ajaxSuccess(function(){alert('LDP Sparql Request Success');});
+	this.exec = function (method, path, headers, content, params) {
+    $(document).ajaxError(params.ajaxError);
+    $(document).ajaxSuccess(params.ajaxSuccess);
 
     $.ajax({
       url: path,
+      success: params.success,
       type: method,
+      async: params.async,
       headers: headers,
       contentType: 'application/octet-stream',
       processData: false,
-      data: content
+      data: content,
+      dataType: params.dataType
     });
   }
 }
