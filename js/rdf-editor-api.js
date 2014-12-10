@@ -1,3 +1,8 @@
+// draw_graph_contents() { }
+// insert() { }
+// delete() { }
+// update() { delete(); insert() ; draw_graph_contents() }
+
 
 // useful functions
 
@@ -7,6 +12,13 @@ function escapeHTML(str) {
 
 
 // rdf_store bits
+
+function io_index_to_triple_old(i) {
+}
+
+function io_index_to_triple(i) {
+}
+
 
 function io_draw_graph_contents() {
   var store=rdfstore.create();
