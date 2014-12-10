@@ -52,7 +52,7 @@ RDFE.io = function(options) {
     var self = this;
     this.options = $.extend({
         "async": true
-    }, config);
+    }, options);
 
     this.retrieve = function(params) {
         params = RDFE.params(params, this.options);
@@ -93,7 +93,7 @@ RDFE.gsp = function(options) {
         "async": true,
         "contentType": 'application/octet-stream',
         "processData": false,
-    }, config);
+    }, options);
 
     this.retrieve = function(params) {
         params = RDFE.params(params, this.options);
@@ -152,7 +152,7 @@ RDFE.ldp = function(options) {
     this.options = $.extend({
         "async": true,
         "dataType": 'text'
-    }, config);
+    }, options);
 
     this.retrieve = function(path, params) {
         params = RDFE.params(params, this.options);
