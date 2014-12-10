@@ -13,14 +13,22 @@ function escapeHTML(str) {
 
 // rdf_store bits
 
+function io_strip_URL_quoting(str) {
+  return(str.replace(RegExp('^<(.*)>$'), '$1'));
+}
+
+function io_strip_litstr_quoting(str) {
+  return(str.replace(RegExp('^"(.*)"$'), '$1'));
+}
+
 function io_make_triple(s, p, o) {
-  ss=store.rdf.createNamedNode(s);
-  pp=store.rdf.createNamedNode(p);
+  ss=store.rdf.createNamedNode(io_strip_URL_quoting(s));
+  pp=store.rdf.createNamedNode(io_strip_URL_quoting(p));
   
   if(o[0]=="<") {
-    oo=store.rdf.createNamedNode(o);
+    oo=store.rdf.createNamedNode(io_strip_URL_quoting(o));
   } else {
-    oo=store.rdf.createLiteral(o);
+    oo=store.rdf.createLiteral(io_strip_litstr_quoting(o));
   }
                                   
   return(store.rdf.createTriple(ss, pp, oo));
