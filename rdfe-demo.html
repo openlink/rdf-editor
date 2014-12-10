@@ -53,12 +53,13 @@
       };
 
       // SPARQL I/O
-      var IO_SPARQL_HOST = 'http://trueg.selfhost.eu:8899/sparql';
-      var IO_SPARQL_GRAPH = 'http://example.org/graph';
+      var url = document.location.protocol + '//' + document.location.host;
+      var IO_SPARQL_HOST = url + '/sparql';
+      var IO_SPARQL_GRAPH = 'http://example.org/io';
       var io_rdfe = new RDFE.io({"host": IO_SPARQL_HOST, "graph": IO_SPARQL_GRAPH, "ajaxError": myAjaxError, "ajaxSuccess": myAjaxSuccess});
 
       // SPARQL GSP
-      var GSP_SPARQL_HOST = 'http://trueg.selfhost.eu:8899/sparql-graph-crud';
+      var GSP_SPARQL_HOST = url + '/sparql-graph-crud';
       var GSP_SPARQL_GRAPH = 'http://example.org/gsp';
       var gsp_rdfe = new RDFE.gsp({"host": GSP_SPARQL_HOST, "graph": GSP_SPARQL_GRAPH, "ajaxError": myAjaxError, "ajaxSuccess": myAjaxSuccess});
 
@@ -88,8 +89,14 @@
         }
       }
 
+      var TEST_SPARQL_GRAPH = 'http://data.daimler.com/oranges';
+      var rdfeStore = rdfstore.create();
+      var q = IO_SPARQL_HOST + '?default-graph-uri=' + encodeURIComponent(TEST_SPARQL_GRAPH) + '&query=construct+%7B+%3Fs+%3Fp+%3Fo+%7D++WHERE+%7B%3Fs+%3Fp+%3Fo%7D&should-sponge=&format=text%2Fturtle&timeout=30000000';
+      rdfeStore.load('remote', q, TEST_SPARQL_GRAPH);
+
       $(document).ready(function() {
         // SPARQL I/O
+        $('#io_g').val(IO_SPARQL_GRAPH);
         $("#io_retrieve").on("click", function(e) {
             io_rdfe.retrieve({"format": 'application/rdf+xml', "success": mySuccess});
           }
@@ -102,8 +109,13 @@
             io_rdfe.delete($('#io_s').val(), $('#io_p').val(), $('#io_o').val());
           }
         );
+        $("#io_insertStore").on("click", function(e) {
+            io_rdfe.insertFromStore(rdfeStore, TEST_SPARQL_GRAPH);
+          }
+        );
 
         // SPARQL GSP
+        $('#gsp_g').val(GSP_SPARQL_GRAPH);
         $("#gsp_retrieve").on("click", function(e) {
             gsp_rdfe.retrieve({"host": IO_SPARQL_HOST, "format": 'application/rdf+xml', "success": mySuccess});
           }
@@ -120,6 +132,10 @@
             gsp_rdfe.delete();
           }
         );
+        $("#gsp_insertStore").on("click", function(e) {
+            gsp_rdfe.insertFromStore(rdfeStore, TEST_SPARQL_GRAPH);
+          }
+        );
 
         // SPARQL LDP
         $("#ldp_retrieve").on("click", function(e) {
@@ -132,6 +148,10 @@
         );
         $("#ldp_delete").on("click", function(e) {
             ldp_rdfe.delete($('#ldp_p').val() + $('#ldp_n').val());
+          }
+        );
+        $("#ldp_insertStore").on("click", function(e) {
+            ldp_rdfe.insertFromStore($('#ldp_p').val() + $('#ldp_n').val(), rdfeStore, TEST_SPARQL_GRAPH);
           }
         );
       });
@@ -200,6 +220,9 @@
               <button id="io_insert" type="button" class="btn btn-default">Insert</button>
               <button id="io_delete" type="button" class="btn btn-default btn-danger">Delete</button>
             </div>
+            <div class="btn-group" role="group" aria-label="...">
+              <button id="io_insertStore" type="button" class="btn btn-default">Insert (From Store)</button>
+            </div>
           </div>
         </div>
 
@@ -229,6 +252,9 @@
               <button id="gsp_insert" type="button" class="btn btn-default">Insert</button>
               <button id="gsp_update" type="button" class="btn btn-default">Update</button>
               <button id="gsp_delete" type="button" class="btn btn-default btn-danger">Delete</button>
+            </div>
+            <div class="btn-group" role="group" aria-label="...">
+              <button id="gsp_insertStore" type="button" class="btn btn-default">Insert (From Store)</button>
             </div>
           </div>
         </div>
@@ -265,6 +291,9 @@
               <button id="ldp_insert" type="button" class="btn btn-default">Insert</button>
               <!-- button id="ldp_update" type="button" class="btn btn-default">Update</button -->
               <button id="ldp_delete" type="button" class="btn btn-default btn-danger">Delete</button>
+            </div>
+            <div class="btn-group" role="group" aria-label="...">
+              <button id="ldp_insertStore" type="button" class="btn btn-default">Insert (From Store)</button>
             </div>
           </div>
         </div>

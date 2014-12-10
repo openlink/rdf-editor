@@ -50,26 +50,38 @@ RDFE.fileParent = function(path) {
 
 RDFE.io = function(options) {
     var self = this;
-    this.options = $.extend({
+    self.options = $.extend({
         "async": true
     }, options);
 
-    this.retrieve = function(params) {
-        params = RDFE.params(params, this.options);
-        this.exec(RDFE.IO_RETRIEVE.format(params.graph), params);
+    self.retrieve = function(params) {
+        params = RDFE.params(params, self.options);
+        self.exec(RDFE.IO_RETRIEVE.format(params.graph), params);
     }
 
-    this.insert = function(s, p, o, params) {
-        params = RDFE.params(params, this.options);
-        this.exec(RDFE.IO_INSERT.format(params.graph, s, p, o), params);
+    self.insert = function(s, p, o, params) {
+        params = RDFE.params(params, self.options);
+        self.exec(RDFE.IO_INSERT.format(params.graph, s, p, o), params);
     }
 
-    this.delete = function(s, p, o, params) {
-        params = RDFE.params(params, this.options);
-        this.exec(RDFE.IO_DELETE.format(params.graph, s, p, o), params);
+    self.insertFromStore = function(store, graph, params) {
+        params = RDFE.params(params, self.options);
+        store.graph(graph, function(success, g) {
+            if (!success)
+              return;
+
+            for (var i = 0; i < g.length; i++) {
+              self.insert(g.toArray()[i].subject, g.toArray()[i].predicate, g.toArray()[i].object, params);
+            }
+        });
     }
 
-    this.exec = function(q, params) {
+    self.delete = function(s, p, o, params) {
+        params = RDFE.params(params, self.options);
+        self.exec(RDFE.IO_DELETE.format(params.graph, s, p, o), params);
+    }
+
+    self.exec = function(q, params) {
         $(document).ajaxError(params.ajaxError);
         $(document).ajaxSuccess(params.ajaxSuccess);
 
@@ -89,14 +101,14 @@ RDFE.io = function(options) {
 
 RDFE.gsp = function(options) {
     var self = this;
-    this.options = $.extend({
+    self.options = $.extend({
         "async": true,
         "contentType": 'application/octet-stream',
         "processData": false,
     }, options);
 
-    this.retrieve = function(params) {
-        params = RDFE.params(params, this.options);
+    self.retrieve = function(params) {
+        params = RDFE.params(params, self.options);
         $(document).ajaxError(params.ajaxError);
         $(document).ajaxSuccess(params.ajaxSuccess);
 
@@ -113,22 +125,33 @@ RDFE.gsp = function(options) {
         });
     }
 
-    this.insert = function(content, params) {
-        params = RDFE.params(params, this.options);
-        this.exec('PUT', content, params);
+    self.insert = function(content, params) {
+        params = RDFE.params(params, self.options);
+        self.exec('PUT', content, params);
     }
 
-    this.update = function(content, params) {
-        params = RDFE.params(params, this.options);
-        this.exec('POST', content, params);
+    self.insertFromStore = function(store, graph, params) {
+        params = RDFE.params(params, self.options);
+        store.graph(graph, function(success, g) {
+            if (!success)
+              return;
+
+            var content = g.toNT();
+            self.insert(content, params);
+        });
     }
 
-    this.delete = function(content, params) {
-        params = RDFE.params(params, this.options);
-        this.exec('DELETE', null, params);
+    self.update = function(content, params) {
+        params = RDFE.params(params, self.options);
+        self.exec('POST', content, params);
     }
 
-    this.exec = function(method, content, params) {
+    self.delete = function(content, params) {
+        params = RDFE.params(params, self.options);
+        self.exec('DELETE', null, params);
+    }
+
+    self.exec = function(method, content, params) {
         $(document).ajaxError(params.ajaxError);
         $(document).ajaxSuccess(params.ajaxSuccess);
 
@@ -149,43 +172,54 @@ RDFE.gsp = function(options) {
 RDFE.LDP_INSERT = 'INSERT DATA {GRAPH <{0}> { <{1}> <{2}> {3} . }}';
 RDFE.ldp = function(options) {
     var self = this;
-    this.options = $.extend({
+    self.options = $.extend({
         "async": true,
         "dataType": 'text'
     }, options);
 
-    this.retrieve = function(path, params) {
-        params = RDFE.params(params, this.options);
+    self.retrieve = function(path, params) {
+        params = RDFE.params(params, self.options);
         var headers = {
             "Accept": 'text/turtle, */*;q=0.1'
         };
-        this.exec('GET', path, headers, null, params);
+        self.exec('GET', path, headers, null, params);
     }
 
-    this.insert = function(path, content, params) {
-        params = RDFE.params(params, this.options);
+    self.insert = function(path, content, params) {
+        params = RDFE.params(params, self.options);
         var headers = {
             "Content-Type": 'text/turtle',
             "Slug": RDFE.fileName(path)
         };
-        this.exec('POST', RDFE.fileParent(path), headers, content, params);
+        self.exec('POST', RDFE.fileParent(path), headers, content, params);
     }
 
-    this.update = function(path, s, p, o, params) {
-        params = RDFE.params(params, this.options);
+    self.insertFromStore = function(path, store, graph, params) {
+        params = RDFE.params(params, self.options);
+        store.graph(graph, function(success, g) {
+            if (!success)
+                return;
+
+            var content = g.toNT();
+            self.insert(path, content, params);
+        });
+    }
+
+    self.update = function(path, s, p, o, params) {
+        params = RDFE.params(params, self.options);
         var content = q.format(RDFE.LDP_INSERT, s, p, o);
         var headers = {
             "Content-Type": 'application/sparql-update'
         };
-        this.exec('PATCH', path, headers, content, params);
+        self.exec('PATCH', path, headers, content, params);
     }
 
-    this.delete = function(path, params) {
-        params = RDFE.params(params, this.options);
-        this.exec('DELETE', path, null, null, params);
+    self.delete = function(path, params) {
+        params = RDFE.params(params, self.options);
+        self.exec('DELETE', path, null, null, params);
     }
 
-    this.exec = function(method, path, headers, content, params) {
+    self.exec = function(method, path, headers, content, params) {
         $(document).ajaxError(params.ajaxError);
         $(document).ajaxSuccess(params.ajaxSuccess);
 
