@@ -36,20 +36,8 @@ RDFE.IO_DELETE = 'DELETE DATA {GRAPH <{0}> { <{1}> <{2}> {3} . }}';
 // GSP statements
 RDFE.GSP_RETRIEVE = 'SELECT * WHERE {GRAPH <{0}> { ?s ?p ?o. }}';
 
-// FIXME: can use jQuery's extend() or similar
 RDFE.params = function(params, options) {
-    if (!options && !params) return {};
-
-    if (!options) return params;
-
-    if (!params) return options;
-
-    for (var p in options) {
-        if (!params[p])
-            params[p] = options[p];
-    }
-
-    return params;
+    return $.extend({}, options, params);
 }
 
 RDFE.fileName = function(path) {
