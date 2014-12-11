@@ -49,19 +49,6 @@
     <script src="js/val.js"></script>
     <script src="js/rdf-editor-api.js"></script>
     <script>
-      rdfstore.Store.prototype.namedNodeToString = function(node) {
-        var x = node.toString();
-        for (prefix in this.rdf.prefixes) {
-          if(this.rdf.prefixes[prefix].length > 0) {
-            x = x.replace(this.rdf.prefixes[prefix], prefix + ':');
-          }
-        }
-        if(x != node.toString())
-          return x;
-        else
-          return node.toNT();
-      }
-
       // SPARQL I/O
       var IO_SPARQL_HOST = 'http://trueg.selfhost.eu:8899/sparql';
       var IO_SPARQL_GRAPH = 'http://data.daimler.com/oranges';

@@ -24,13 +24,13 @@ function io_strip_litstr_quoting(str) {
 function io_make_triple(s, p, o) {
   ss=store.rdf.createNamedNode(io_strip_URL_quoting(s));
   pp=store.rdf.createNamedNode(io_strip_URL_quoting(p));
-  
+
   if(o[0]=="<") {
     oo=store.rdf.createNamedNode(io_strip_URL_quoting(o));
   } else {
     oo=store.rdf.createLiteral(io_strip_litstr_quoting(o));
   }
-                                  
+
   return(store.rdf.createTriple(ss, pp, oo));
 }
 
@@ -63,18 +63,18 @@ function io_draw_graph_contents() {
     store.graph(IO_SPARQL_GRAPH, function(success, g) {
       if(success) {
 	for(var i = 0; i < g.length; i++) {
-	  var s=store.namedNodeToString(g.toArray()[i].subject);
-	  var p=store.namedNodeToString(g.toArray()[i].predicate);
-	  var o=store.namedNodeToString(g.toArray()[i].object);
+	  var s=g.toArray()[i].subject;
+	  var p=g.toArray()[i].predicate;
+	  var o=g.toArray()[i].object;
 	  $("#sparqlcontents").append(' \
 	  <tr class="triple" \
-	  data-statement-s-old="' + escape(s) + '" \
-	  data-statement-p-old="' + escape(p) + '" \
-	  data-statement-o-old="' + escape(o) + '" \
+	  data-statement-s-old="' + escape(s.toNT()) + '" \
+	  data-statement-p-old="' + escape(p.toNT()) + '" \
+	  data-statement-o-old="' + escape(o.toNT()) + '" \
 	  data-statement-index="' + i + '"> \
-	  <td data-title="Subject"><a href="#" data-type="text" class="triple editable editable-click s">' + escapeHTML(s) + '</a></td> \
-	  <td data-title="Predicate"><a href="#" data-type="text" class="triple editable editable-click p">' + escapeHTML(p)+ '</a></td> \
-	  <td data-title="Object"><a href="#" data-type="text" class="triple editable editable-click o">' + escapeHTML(o) + '</a></td> \
+	  <td data-title="Subject"><a href="#" data-type="text" class="triple editable editable-click s">' + escapeHTML(s.toString()) + '</a></td> \
+	  <td data-title="Predicate"><a href="#" data-type="text" class="triple editable editable-click p">' + escapeHTML(p.toString())+ '</a></td> \
+	  <td data-title="Object"><a href="#" data-type="text" class="triple editable editable-click o">' + escapeHTML(o.toString()) + '</a></td> \
 	  <td><a href="#" class="btn btn-danger btn-xs triple-action triple-action-delete">Delete<br></a></td> \
 	  </tr>\n');
 	}
