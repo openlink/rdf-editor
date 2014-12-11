@@ -87,14 +87,14 @@ function io_index_to_triple(i) {
   return(io_make_triple(s,p,o));
 }
 
-function io_draw_graph_contents() {
+function io_draw_graph_contents(sourceUri, sparqlEndpoint) {
 //   Retrieve a graph via SPARQL construct query and render HTML table
-  var host= $("#io_spq").val();
+  var host=sparqlEndpoint;
   var graph=encodeURIComponent($("#io_g").val());
   var queryurl=host + '?default-graph-uri=' + graph + '&query=construct+%7B+%3Fs+%3Fp+%3Fo+%7D++WHERE+%7B%3Fs+%3Fp+%3Fo%7D&should-sponge=&format=text%2Fturtle&timeout=30000000';
   $("#sparqlcontents").html("");
-  store.load('remote', queryurl, IO_SPARQL_GRAPH, function(a,n) {
-    store.graph(IO_SPARQL_GRAPH, function(success, g) {
+  store.load('remote', queryurl, sourceUri, function(a,n) {
+    store.graph(sourceUri, function(success, g) {
       if(success) {
 	for(var i = 0; i < g.length; i++) {
 	  var s=g.toArray()[i].subject;
