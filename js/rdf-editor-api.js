@@ -1,3 +1,37 @@
+if (typeof String.prototype.startsWith != 'function') {
+  // see below for better implementation!
+  String.prototype.startsWith = function (str){
+    return this.indexOf(str) == 0;
+  };
+}
+
+/* Extensions for rdfstore.js */
+/**
+ * Try to abbreviate a URI using the prefixes defined in the rdfstore.
+ * @param uri An rdfstore URI node
+ * @return The abbreviated CURI string or a @p null if no prefix could be found to match the URI.
+ */
+rdfstore.Store.prototype.uriToCuri = function(uri) {
+  var x = node.toString();
+  for (prefix in this.rdf.prefixes) {
+    var ns = this.rdf.prefixes[prefix];
+    if(ns.length > 0 && x.startsWith(ns)) {
+      return x.replace(ns, prefix + ':');
+    }
+  }
+  return null;
+};
+
+/**
+ * Try to convert an abbreviated CURI into a URI using the prefixes defined in the rdfstore.
+ * @param curi The abbreviated URI (Example: @p rdf:type)
+ * @return The full URI if the prefix could be found, @p null otherwise.
+ */
+rdfstore.Store.prototype.curiToUri = function(curi) {
+  return this.rdf.resolve(curi);
+};
+
+
 // draw_graph_contents() { }
 // insert() { }
 // delete() { }
