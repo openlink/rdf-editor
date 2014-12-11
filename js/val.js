@@ -3,27 +3,13 @@ var VAL = function(config) {
     {
       "host": "http://localhost:8899",
       "valApi": "/val/api",
-      "loginLink": "/val/authenticate.vsp",
-      "sidCookieName": "sid",
-      "sidParamName": "sid"
+      "loginLink": "/val/authenticate.vsp"
     },
     config
   );
 };
 
 (function($) {
-
-  VAL.prototype.checkSession = function() {
-    this.sid = $.deparam(window.location.search.substring(1))[this.config.sidParamName];
-    if(!this.sid)
-      this.sid = $.cookie(this.config.sidCookieName);
-
-    return this.sid;
-  }
-
-  VAL.prototype.get = function(path) {
-    return $.get (this.config.host + path + "?" + this.config.sidParamName + "=" + encodeURIComponent(this.sid));
-  }
 
   /**
    * Get the user profile. The only parameter is a callback function which
@@ -35,14 +21,7 @@ var VAL = function(config) {
    * the "nick" nickname, the "name" and an "image" url.
    */
   VAL.prototype.profile = function(cb) {
-    if(!this.sid) {
-      if(!this.checkSession()) {
-        cb(false, "No existing session found.");
-        return;
-      }
-    }
-
-    this.get(this.config.valApi + "/profile").done(function(data) {
+    $.get(this.config.valApi + "/profile").done(function(data) {
       var s = new rdfstore.Store();
       s.registerDefaultProfileNamespaces();
       s.load('text/turtle', data, function(success, result) {
