@@ -1,7 +1,7 @@
 var VAL = function(config) {
   this.config = jQuery.extend(
     {
-      "host": "http://localhost:8899",
+      "host": window.location.protocol + '//' + window.location.host,
       "valApi": "/val/api",
       "loginLink": "/val/authenticate.vsp"
     },
@@ -21,7 +21,7 @@ var VAL = function(config) {
    * the "nick" nickname, the "name" and an "image" url.
    */
   VAL.prototype.profile = function(cb) {
-    $.get(this.config.valApi + "/profile").done(function(data) {
+    $.get(this.config.host + this.config.valApi + "/profile").done(function(data) {
       var s = new rdfstore.Store();
       s.registerDefaultProfileNamespaces();
       s.load('text/turtle', data, function(success, result) {
