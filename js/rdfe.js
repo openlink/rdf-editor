@@ -30,8 +30,10 @@ RDFE = {};
 
 // SPARQL I/O statements
 RDFE.IO_RETRIEVE = 'SELECT * WHERE {GRAPH <{0}> { ?s ?p ?o. }}';
-RDFE.IO_INSERT = 'INSERT DATA {GRAPH <{0}> { <{1}> <{2}> {3} . }}';
+RDFE.IO_INSERT = 'INSERT DATA {GRAPH <{0}> { {1}}}';
+RDFE.IO_INSERT_SINGLE = '<{0}> <{1}> {2}';
 RDFE.IO_DELETE = 'DELETE DATA {GRAPH <{0}> { <{1}> <{2}> {3} . }}';
+RDFE.IO_CLEAR = 'CLEAR GRAPH <{0}>';
 
 // GSP statements
 RDFE.GSP_RETRIEVE = 'SELECT * WHERE {GRAPH <{0}> { ?s ?p ?o. }}';
@@ -61,7 +63,7 @@ RDFE.io = function(options) {
 
     self.insert = function(s, p, o, params) {
         params = RDFE.params(params, self.options);
-        self.exec(RDFE.IO_INSERT.format(params.graph, s, p, o), params);
+        self.exec(RDFE.IO_INSERT.format(params.graph, RDFE.IO_INSERT_SINGLE.format(s, p, o)), params);
     }
 
     self.insertFromStore = function(store, graph, params) {
@@ -70,15 +72,34 @@ RDFE.io = function(options) {
             if (!success)
               return;
 
+            // clear graph before
+            self.clear(params, true);
+
+            var delimiter = '';
+            var triples = '';
             for (var i = 0; i < g.length; i++) {
-              self.insert(g.toArray()[i].subject, g.toArray()[i].predicate, g.toArray()[i].object, params);
+              triples += delimiter + RDFE.IO_INSERT_SINGLE.format(g.toArray()[i].subject, g.toArray()[i].predicate, g.toArray()[i].object);
+              delimiter = ' . ';
             }
+            if (triples)
+              self.exec(RDFE.IO_INSERT.format(params.graph, triples), params);
         });
     }
 
     self.delete = function(s, p, o, params) {
         params = RDFE.params(params, self.options);
         self.exec(RDFE.IO_DELETE.format(params.graph, s, p, o), params);
+    }
+
+    self.clear = function(params, silent) {
+        params = RDFE.params(params, self.options);
+        if (silent) {
+            params["async"] = false;
+            params["ajaxError"] = null;
+            params["ajaxSuccess"] = null;
+            params["success"] = null;
+        }
+        self.exec(RDFE.IO_CLEAR.format(params.graph), params);
     }
 
     self.exec = function(q, params) {
@@ -136,6 +157,9 @@ RDFE.gsp = function(options) {
             if (!success)
               return;
 
+            // clear graph before
+            self.clear(params, true);
+
             var content = g.toNT();
             self.insert(content, params);
         });
@@ -146,10 +170,18 @@ RDFE.gsp = function(options) {
         self.exec('POST', content, params);
     }
 
-    self.delete = function(content, params) {
+    self.delete = function(params, silent) {
         params = RDFE.params(params, self.options);
+        if (silent) {
+            params["async"] = false;
+            params["ajaxError"] = null;
+            params["ajaxSuccess"] = null;
+            params["success"] = null;
+        }
         self.exec('DELETE', null, params);
     }
+
+    self.clear = self.delete;
 
     self.exec = function(method, content, params) {
         $(document).ajaxError(params.ajaxError);
@@ -218,6 +250,8 @@ RDFE.ldp = function(options) {
         params = RDFE.params(params, self.options);
         self.exec('DELETE', path, null, null, params);
     }
+
+    self.clear = self.delete;
 
     self.exec = function(method, path, headers, content, params) {
         $(document).ajaxError(params.ajaxError);
