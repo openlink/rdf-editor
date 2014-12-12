@@ -31,6 +31,26 @@ rdfstore.Store.prototype.curiToUri = function(curi) {
   return this.rdf.resolve(curi);
 };
 
+rdfstore.Store.prototype.parseLiteral = function(literalString) {
+    var parts = literalString.lastIndexOf("@");
+    if(parts!=-1 && literalString[parts-1]==='"' && literalString.substring(parts, literalString.length).match(/^@[a-zA-Z\-]+$/g)!=null) {
+        var value = literalString.substring(1,parts-1);
+        var lang = literalString.substring(parts+1, literalString.length);
+        return {token: "literal", value:value, lang:lang};
+    }
+
+    var parts = literalString.lastIndexOf("^^");
+    if(parts!=-1 && literalString[parts-1]==='"' && literalString[parts+2] === '<' && literalString[literalString.length-1] === '>') {
+        var value = literalString.substring(1,parts-1);
+        var type = literalString.substring(parts+3, literalString.length-1);
+
+        return {token: "literal", value:value, type:type};
+    }
+
+    var value = literalString.substring(1,literalString.length-1);
+    return {token:"literal", value:value};
+};
+
 
 // draw_graph_contents() { }
 // insert() { }
@@ -59,10 +79,13 @@ function io_make_triple(s, p, o) {
   ss=store.rdf.createNamedNode(io_strip_URL_quoting(s));
   pp=store.rdf.createNamedNode(io_strip_URL_quoting(p));
 
-  if(o[0]=="<") {
-    oo=store.rdf.createNamedNode(io_strip_URL_quoting(o));
+  // let's be dumb about this for now
+  o = io_strip_URL_quoting (o);
+  if(o.startsWith("http") || o.startsWith("urn")) {
+    oo=store.rdf.createNamedNode(o);
   } else {
-    oo=store.rdf.createLiteral(io_strip_litstr_quoting(o));
+    var l = store.parseLiteral(o);
+    oo = store.rdf.createLiteral(l.value, l.lang, l.type);
   }
 
   return(store.rdf.createTriple(ss, pp, oo));
@@ -125,7 +148,7 @@ function io_draw_graph_contents(sourceUri, sparqlEndpoint) {
 			var o = updated_field == 'o' ? params.newValue : $(this).closest('tr').find('a.o').text();
 
 			console.log(s, p, o);
-			
+
 			var old_graph = store.rdf.createGraph();
 			var old_var = io_index_to_triple_old(ind);
 			console.log("OLD VARS: "+ old_var);
@@ -144,8 +167,8 @@ function io_draw_graph_contents(sourceUri, sparqlEndpoint) {
 			new_graph.add(new_var);
 			store.insert(new_graph, graphURI, function(success){
 				if(success) {
-					console.log("Inserted");		
-					
+					console.log("Inserted");
+
 					store.graph(graphURI, function(success, g) {
 						console.log("Loading...");
 						$("#sparqlcontents").html("");
@@ -154,7 +177,7 @@ function io_draw_graph_contents(sourceUri, sparqlEndpoint) {
 						  var p=g.toArray()[i].predicate;
 						  var o=g.toArray()[i].object;
 						  console.log(s.toString(), p.toString(), o.toString());
-						  
+
 						  $("#sparqlcontents").append(' \
 						  <tr class="triple" \
 						  data-statement-s-old="' + escape(s.toNT()) + '" \
@@ -170,10 +193,10 @@ function io_draw_graph_contents(sourceUri, sparqlEndpoint) {
 					});
 				}
 			});
-			
-			//store.функци€_сохран€юща€_значени€( $(this).text() ) 
+
+			//store.функци€_сохран€юща€_значени€( $(this).text() )
 		});
-			
+
 		$('.triple-action-delete').on("click", function(e) {
 			var ind = $(this).closest('tr').attr("data-statement-index");
 			var graphURI = $("#io_g").val();
