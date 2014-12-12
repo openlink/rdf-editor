@@ -84,6 +84,7 @@ function io_index_to_triple(i) {
   var s=el.children("td[data-title='Subject']").text();
   var p=el.children("td[data-title='Predicate']").text();
   var o=el.children("td[data-title='Object']").text();
+
   return(io_make_triple(s,p,o));
 }
 
@@ -96,25 +97,124 @@ function io_draw_graph_contents(sourceUri, sparqlEndpoint) {
   store.load('remote', queryurl, sourceUri, function(a,n) {
     store.graph(sourceUri, function(success, g) {
       if(success) {
-	for(var i = 0; i < g.length; i++) {
-	  var s=g.toArray()[i].subject;
-	  var p=g.toArray()[i].predicate;
-	  var o=g.toArray()[i].object;
-	  $("#sparqlcontents").append(' \
-	  <tr class="triple" \
-	  data-statement-s-old="' + escape(s.toNT()) + '" \
-	  data-statement-p-old="' + escape(p.toNT()) + '" \
-	  data-statement-o-old="' + escape(o.toNT()) + '" \
-	  data-statement-index="' + i + '"> \
-	  <td data-title="Subject"><a href="#" data-type="text" class="triple editable editable-click s">' + escapeHTML(s.toString()) + '</a></td> \
-	  <td data-title="Predicate"><a href="#" data-type="text" class="triple editable editable-click p">' + escapeHTML(p.toString())+ '</a></td> \
-	  <td data-title="Object"><a href="#" data-type="text" class="triple editable editable-click o">' + escapeHTML(o.toString()) + '</a></td> \
-	  <td><a href="#" class="btn btn-danger btn-xs triple-action triple-action-delete">Delete<br></a></td> \
-	  </tr>\n');
-	}
-	$('.editable').editable({ mode: "inline" });
-      }
-    } )
+		for(var i = 0; i < g.length; i++) {
+		  var s=g.toArray()[i].subject;
+		  var p=g.toArray()[i].predicate;
+		  var o=g.toArray()[i].object;
+		  $("#sparqlcontents").append(' \
+		  <tr class="triple" \
+		  data-statement-s-old="' + escape(s.toNT()) + '" \
+		  data-statement-p-old="' + escape(p.toNT()) + '" \
+		  data-statement-o-old="' + escape(o.toNT()) + '" \
+		  data-statement-index="' + i + '"> \
+		  <td data-title="Subject"><a href="#" data-type="text" class="triple editable editable-click s">' + escapeHTML(s.toString()) + '</a></td> \
+		  <td data-title="Predicate"><a href="#" data-type="text" class="triple editable editable-click p">' + escapeHTML(p.toString())+ '</a></td> \
+		  <td data-title="Object"><a href="#" data-type="text" class="triple editable editable-click o">' + escapeHTML(o.toString()) + '</a></td> \
+		  <td><a href="#" class="btn btn-danger btn-xs triple-action triple-action-delete">Delete<br></a></td> \
+		  </tr>\n');
+		}
+		$('.editable').editable({ mode: "inline" }).on('save', function(e, params) {
+			var graphURI = $("#io_g").val();
+			console.log("GRAPH: ", graphURI);
+			var updated_field = $(this).hasClass("o") ? 'o' : $(this).hasClass("s") ? 's' : $(this).hasClass("p") ? 'p' : '';
+			console.log("updated:"+updated_field);
+			var ind = $(this).closest('tr').attr("data-statement-index");
+			console.log(ind);
+			var s = updated_field == 's' ? params.newValue : $(this).closest('tr').find('a.s').text();
+			var p = updated_field == 'p' ? params.newValue : $(this).closest('tr').find('a.p').text();
+			var o = updated_field == 'o' ? params.newValue : $(this).closest('tr').find('a.o').text();
+
+			console.log(s, p, o);
+			
+			var old_graph = store.rdf.createGraph();
+			var old_var = io_index_to_triple_old(ind);
+			console.log("OLD VARS: "+ old_var);
+			old_graph.add(old_var);
+			console.log("OLD GRAPH: "+ old_graph);
+			store.delete(old_graph, graphURI, function(success){
+				if(success) {
+					console.log("DELETED!!!")
+				}
+			});
+
+			var new_graph = store.rdf.createGraph();
+			console.log("NEW GRAPH: "+ new_graph);
+			var new_var = io_make_triple(s, p, o);
+			console.log("NEW VAR: "+ new_var);
+			new_graph.add(new_var);
+			store.insert(new_graph, graphURI, function(success){
+				if(success) {
+					console.log("Inserted");		
+					
+					store.graph(graphURI, function(success, g) {
+						console.log("Loading...");
+						$("#sparqlcontents").html("");
+						for(var i = 0; i < g.length; i++) {
+						  var s=g.toArray()[i].subject;
+						  var p=g.toArray()[i].predicate;
+						  var o=g.toArray()[i].object;
+						  console.log(s.toString(), p.toString(), o.toString());
+						  
+						  $("#sparqlcontents").append(' \
+						  <tr class="triple" \
+						  data-statement-s-old="' + escape(s.toNT()) + '" \
+						  data-statement-p-old="' + escape(p.toNT()) + '" \
+						  data-statement-o-old="' + escape(o.toNT()) + '" \
+						  data-statement-index="' + i + '"> \
+						  <td data-title="Subject"><a href="#" data-type="text" class="triple editable editable-click s">' + escapeHTML(s.toString()) + '</a></td> \
+						  <td data-title="Predicate"><a href="#" data-type="text" class="triple editable editable-click p">' + escapeHTML(p.toString())+ '</a></td> \
+						  <td data-title="Object"><a href="#" data-type="text" class="triple editable editable-click o">' + escapeHTML(o.toString()) + '</a></td> \
+						  <td><a href="#" class="btn btn-danger btn-xs triple-action triple-action-delete">Delete<br></a></td> \
+						  </tr>\n');
+						}
+					});
+				}
+			});
+			
+			//store.функци€_сохран€юща€_значени€( $(this).text() ) 
+		});
+			
+		$('.triple-action-delete').on("click", function(e) {
+			var ind = $(this).closest('tr').attr("data-statement-index");
+			var graphURI = $("#io_g").val();
+			var old_graph = store.rdf.createGraph();
+			var old_var = io_index_to_triple_old(ind);
+			console.log("OLD VARS: "+ old_var);
+			old_graph.add(old_var);
+			console.log("OLD GRAPH: "+ old_graph);
+			store.delete(old_graph, graphURI, function(success){
+				if(success) {
+					console.log("DELETED!!!");
+					store.graph(graphURI, function(success, g) {
+						console.log("Loading...");
+						$("#sparqlcontents").html("");
+						for(var i = 0; i < g.length; i++) {
+						  var s=g.toArray()[i].subject;
+						  var p=g.toArray()[i].predicate;
+						  var o=g.toArray()[i].object;
+						  console.log(s.toString(), p.toString(), o.toString());
+						  
+						  $("#sparqlcontents").append(' \
+						  <tr class="triple" \
+						  data-statement-s-old="' + escape(s.toNT()) + '" \
+						  data-statement-p-old="' + escape(p.toNT()) + '" \
+						  data-statement-o-old="' + escape(o.toNT()) + '" \
+						  data-statement-index="' + i + '"> \
+						  <td data-title="Subject"><a href="#" data-type="text" class="triple editable editable-click s">' + escapeHTML(s.toString()) + '</a></td> \
+						  <td data-title="Predicate"><a href="#" data-type="text" class="triple editable editable-click p">' + escapeHTML(p.toString())+ '</a></td> \
+						  <td data-title="Object"><a href="#" data-type="text" class="triple editable editable-click o">' + escapeHTML(o.toString()) + '</a></td> \
+						  <td><a href="#" class="btn btn-danger btn-xs triple-action triple-action-delete">Delete<br></a></td> \
+						  </tr>\n');
+						}
+					});
+				}
+			});
+			
+
+		});
+		
+		  }
+		} )
   }
   );
 }
