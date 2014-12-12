@@ -3,7 +3,8 @@ var VAL = function(config) {
     {
       "host": window.location.protocol + '//' + window.location.host,
       "valApi": "/val/api",
-      "loginLink": "/val/authenticate.vsp"
+      "loginLink": "/val/authenticate.vsp",
+      "logoutLink": "/val/logout.vsp"
     },
     config
   );

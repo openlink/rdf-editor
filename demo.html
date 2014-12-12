@@ -272,11 +272,11 @@
             $lil = $('#loginoutLink');
         if (success) {
           $uli.html('Logged in as <a class="navbar-link" href="' + data.uri + '">' + (data.name ? data.name : (data.nick ? data.nick : data.uri)) + "</a>");
-          $lil.attr('href', '/val/logout.vsp?returnto=' + encodeURIComponent(window.location.href)).text('Logout');
+          $lil.attr('href', val.config.host + val.config.logoutLink + '?returnto=' + encodeURIComponent(window.location.href)).text('Logout');
         }
         else {
           $uli.text("Not logged in");
-          $lil.attr('href', val.config.loginLink + '?returnto=' + encodeURIComponent(window.location.href)).text('Login');
+          $lil.attr('href', val.config.host + val.config.loginLink + '?returnto=' + encodeURIComponent(window.location.href)).text('Login');
         }
       });
     </script>
