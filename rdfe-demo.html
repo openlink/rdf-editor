@@ -38,7 +38,7 @@
     <script src="js/jquery-deparam.min.js"></script>
     <script src="js/jquery.cookie.js"></script>
     <script src="js/rdfe.js"></script>
-    <script src="js/rdf_store_min.js"></script>
+    <script src="js/rdf_store.js"></script>
     <script src="js/val.js"></script>
     <script>
       var myAjaxError = function() {
@@ -88,17 +88,23 @@
           alert('The File APIs are not fully supported by your browser.');
         }
       }
+      function graphTest(store, graph)
+      {
+        store.graph(graph, function(s, g) {
+          alert('Graph <{0}> has {1} items.'.format(graph, g.length));
+        });
+      }
 
       var TEST_SPARQL_GRAPH = 'http://data.daimler.com/oranges';
       var rdfeStore = rdfstore.create();
       var q = '{0}?default-graph-uri={1}&query=construct+%7B+%3Fs+%3Fp+%3Fo+%7D++WHERE+%7B%3Fs+%3Fp+%3Fo%7D&format=text%2Fturtle'.format(IO_SPARQL_HOST, encodeURIComponent(TEST_SPARQL_GRAPH));
-      rdfeStore.load('remote', q, TEST_SPARQL_GRAPH, function (s){rdfeStore.graph(TEST_SPARQL_GRAPH, function(s, g) {alert(g.length);});});
+      rdfeStore.load('remote', q, TEST_SPARQL_GRAPH, function (s){graphTest(rdfeStore, TEST_SPARQL_GRAPH);});
 
       $(document).ready(function() {
         // SPARQL I/O
         $('#io_g').val(IO_SPARQL_GRAPH);
         $("#io_retrieve").on("click", function(e) {
-            io_rdfe.retrieve({"format": 'application/rdf+xml', "success": mySuccess});
+            io_rdfe.retrieve({"format": 'text/n3', "success": mySuccess});
           }
         );
         $("#io_insert").on("click", function(e) {
@@ -113,11 +119,15 @@
             io_rdfe.insertFromStore(rdfeStore, TEST_SPARQL_GRAPH);
           }
         );
+        $("#io_retrieveStore").on("click", function(e) {
+            io_rdfe.retrieveToStore(rdfeStore, TEST_SPARQL_GRAPH, {"format": 'text/n3', "success": mySuccess});
+          }
+        );
 
         // SPARQL GSP
         $('#gsp_g').val(GSP_SPARQL_GRAPH);
         $("#gsp_retrieve").on("click", function(e) {
-            gsp_rdfe.retrieve({"host": IO_SPARQL_HOST, "format": 'application/rdf+xml', "success": mySuccess});
+            gsp_rdfe.retrieve({"host": IO_SPARQL_HOST, "format": 'text/n3', "success": mySuccess});
           }
         );
         $("#gsp_insert").on("click", function(e) {
@@ -136,6 +146,10 @@
             gsp_rdfe.insertFromStore(rdfeStore, TEST_SPARQL_GRAPH);
           }
         );
+        $("#gsp_retrieveStore").on("click", function(e) {
+            gsp_rdfe.retrieveToStore(rdfeStore, TEST_SPARQL_GRAPH, {"host": IO_SPARQL_HOST, "format": 'text/n3', "success": mySuccess});
+          }
+        );
 
         // SPARQL LDP
         $("#ldp_retrieve").on("click", function(e) {
@@ -152,6 +166,10 @@
         );
         $("#ldp_insertStore").on("click", function(e) {
             ldp_rdfe.insertFromStore($('#ldp_p').val() + $('#ldp_n').val(), rdfeStore, TEST_SPARQL_GRAPH);
+          }
+        );
+        $("#ldp_retrieveStore").on("click", function(e) {
+            ldp_rdfe.retrieveToStore($('#ldp_p').val() + $('#ldp_n').val(), rdfeStore, TEST_SPARQL_GRAPH, {"success": mySuccess});
           }
         );
       });
@@ -222,6 +240,7 @@
             </div>
             <div class="btn-group" role="group" aria-label="...">
               <button id="io_insertStore" type="button" class="btn btn-default">Insert (From Store)</button>
+              <button id="io_retrieveStore" type="button" class="btn btn-default">Retrieve (To Store)</button>
             </div>
           </div>
         </div>
@@ -255,6 +274,7 @@
             </div>
             <div class="btn-group" role="group" aria-label="...">
               <button id="gsp_insertStore" type="button" class="btn btn-default">Insert (From Store)</button>
+              <button id="gsp_retrieveStore" type="button" class="btn btn-default">Retrieve (To Store)</button>
             </div>
           </div>
         </div>
@@ -294,6 +314,7 @@
             </div>
             <div class="btn-group" role="group" aria-label="...">
               <button id="ldp_insertStore" type="button" class="btn btn-default">Insert (From Store)</button>
+              <button id="ldp_retrieveStore" type="button" class="btn btn-default">Retrieve (To Store)</button>
             </div>
           </div>
         </div>
