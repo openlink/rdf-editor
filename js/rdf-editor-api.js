@@ -75,6 +75,20 @@ function io_strip_litstr_quoting(str) {
   return(str.replace(RegExp('^"(.*)"$'), '$1'));
 }
 
+/**
+ * Parse a string into a node object.
+ */
+function parseNTNode(s) {
+  if(s[0] == '<')
+    return store.rdf.createNamedNode(io_strip_URL_quoting(s));
+  else if(s.startsWith('_:'))
+    return store.rdf.createNamedNode(s); // FIXME: blank nodes are so much trouble. We need to find a way to handle them properly
+  else {
+    var l = store.parseLiteral(s);
+    return store.rdf.createLiteral(l.value, l.lang, l.type);
+  }
+}
+
 function io_make_triple(s, p, o) {
   ss=store.rdf.createNamedNode(io_strip_URL_quoting(s));
   pp=store.rdf.createNamedNode(io_strip_URL_quoting(p));
@@ -98,7 +112,7 @@ function io_index_to_triple_old(i) {
   var s=unescape(el.attr("data-statement-s-old"));
   var p=unescape(el.attr("data-statement-p-old"));
   var o=unescape(el.attr("data-statement-o-old"));
-  return(io_make_triple(s,p,o));
+  return store.rdf.createTriple(parseNTNode(s), parseNTNode(p), parseNTNode(o));
 }
 
 function io_index_to_triple(i) {
