@@ -29,14 +29,14 @@ String.prototype.format = function() {
 RDFE = {};
 
 // SPARQL I/O statements
-RDFE.IO_RETRIEVE = 'SELECT * WHERE {GRAPH <{0}> { ?s ?p ?o. }}';
+RDFE.IO_RETRIEVE = 'CONSTRUCT {?s ?p ?o} WHERE {GRAPH <{0}> {?s ?p ?o}}';
 RDFE.IO_INSERT = 'INSERT DATA {GRAPH <{0}> { {1}}}';
 RDFE.IO_INSERT_SINGLE = '<{0}> <{1}> {2}';
 RDFE.IO_DELETE = 'DELETE DATA {GRAPH <{0}> { <{1}> <{2}> {3} . }}';
 RDFE.IO_CLEAR = 'CLEAR GRAPH <{0}>';
 
 // GSP statements
-RDFE.GSP_RETRIEVE = 'SELECT * WHERE {GRAPH <{0}> { ?s ?p ?o. }}';
+RDFE.GSP_RETRIEVE = 'CONSTRUCT {?s ?p ?o} WHERE {GRAPH <{0}> {?s ?p ?o}}';
 
 RDFE.params = function(params, options) {
     return $.extend({}, options, params);
@@ -50,15 +50,42 @@ RDFE.fileParent = function(path) {
     return path.substring(0, path.lastIndexOf('/'));
 }
 
+RDFE.dummy = function() {}
+
+RDFE.graphClear = function(store, graph) {
+  graphTest(store, graph);
+  store.clear(graph, RDFE.dummy);
+  graphTest(store, graph);
+}
+
 RDFE.io = function(options) {
     var self = this;
     self.options = $.extend({
         "async": true
     }, options);
 
-    self.retrieve = function(params) {
+    self.retrieve = function(params, silent) {
         params = RDFE.params(params, self.options);
+        if (silent) {
+            params["async"] = false;
+            params["ajaxError"] = null;
+            params["ajaxSuccess"] = null;
+        }
         self.exec(RDFE.IO_RETRIEVE.format(params.graph), params);
+    }
+
+    self.retrieveToStore = function(store, graph, params) {
+        params = RDFE.params(params, self.options);
+        var __success = function(data, textStatus) {
+          store.load('text/turtle', data, graph, function (s, r){if (!s) alert(r); graphTest(store, graph);});
+
+          if (params["__success"])
+            params["__success"](data);
+        }
+        params["__success"] = params["success"];
+        params["success"] = __success;
+        RDFE.graphClear(store, graph);
+        self.retrieve(params, true);
     }
 
     self.insert = function(s, p, o, params) {
@@ -128,8 +155,13 @@ RDFE.gsp = function(options) {
         "processData": false,
     }, options);
 
-    self.retrieve = function(params) {
+    self.retrieve = function(params, silent) {
         params = RDFE.params(params, self.options);
+        if (silent) {
+            params["async"] = false;
+            params["ajaxError"] = null;
+            params["ajaxSuccess"] = null;
+        }
         $(document).ajaxError(params.ajaxError);
         $(document).ajaxSuccess(params.ajaxSuccess);
 
@@ -144,6 +176,20 @@ RDFE.gsp = function(options) {
             },
             dataType: 'text'
         });
+    }
+
+    self.retrieveToStore = function(store, graph, params) {
+        params = RDFE.params(params, self.options);
+        var __success = function(data, textStatus) {
+          store.load('text/turtle', data, graph, function (s, r){if (!s) alert(r); graphTest(store, graph);});
+
+          if (params["__success"])
+            params["__success"](data);
+        }
+        params["__success"] = params["success"];
+        params["success"] = __success;
+        RDFE.graphClear(store, graph);
+        self.retrieve(params, true);
     }
 
     self.insert = function(content, params) {
@@ -209,12 +255,31 @@ RDFE.ldp = function(options) {
         "dataType": 'text'
     }, options);
 
-    self.retrieve = function(path, params) {
+    self.retrieve = function(path, params, silent) {
         params = RDFE.params(params, self.options);
+        if (silent) {
+            params["async"] = false;
+            params["ajaxError"] = null;
+            params["ajaxSuccess"] = null;
+        }
         var headers = {
             "Accept": 'text/turtle, */*;q=0.1'
         };
         self.exec('GET', path, headers, null, params);
+    }
+
+    self.retrieveToStore = function(path, store, graph, params) {
+        params = RDFE.params(params, self.options);
+        var __success = function(data, textStatus) {
+          store.load('text/turtle', data, graph, function (s, r){if (!s) alert(r); graphTest(store, graph);});
+
+          if (params["__success"])
+            params["__success"](data);
+        }
+        params["__success"] = params["success"];
+        params["success"] = __success;
+        RDFE.graphClear(store, graph);
+        self.retrieve(path, params, true);
     }
 
     self.insert = function(path, content, params) {
