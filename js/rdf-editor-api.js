@@ -185,7 +185,7 @@ function createTripleActions(tripleRow, graphUri) {
 function createEditorUi(store, graphUri, container) {
     store.graph(graphUri, function(success, g) {
         if(success) {
-          container.empty();
+            container.empty();
             for(var i = 0; i < g.length; i++) {
                 createTripleActions(createTripleRow(g.toArray()[i], container), graphUri);
             }
@@ -226,22 +226,10 @@ function createNewStatementEditor(store, graphUri, container) {
 }
 
 function io_draw_graph_contents(sourceUri, sparqlEndpoint) {
-//   Retrieve a graph via SPARQL construct query and render HTML table
-    var host=sparqlEndpoint;
-    var graph=encodeURIComponent($("#io_g").val());
-    var queryurl=host + '?default-graph-uri=' + graph + '&query=construct+%7B+%3Fs+%3Fp+%3Fo+%7D++WHERE+%7B%3Fs+%3Fp+%3Fo%7D&should-sponge=&format=text%2Fturtle&timeout=30000000';
-    $("#sparqlcontents").html("");
-
-    store.clear(sourceUri, function(success) {
-      if (success) {
-        console.log('Successfully cleared store before loading contents.');
-      }
-      else {
-        console.log('Failed to clear store before loading contents.');
-      }
-    });
-
-    store.load('remote', queryurl, sourceUri, function(a,n) {
+    // FIXME: Error handling!!!
+    var successFct = function(data) {
         createEditorUi(store, sourceUri, $("#sparqlcontents"));
-    });
+    };
+    // FIXME: this instance of RDFE is defined in demo.html. That is not great.
+    io_rdfe.retrieveToStore(store, sourceUri, {'success': successFct });
 }
