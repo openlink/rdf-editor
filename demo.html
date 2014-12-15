@@ -38,98 +38,6 @@
         text-overflow: ellipsis;
       }
     </style>
-
-    <script src="js/jquery-1.11.1.min.js"></script>
-    <script src="js/bootstrap.min.js"></script>
-    <script src="js/bootstrap-editable.min.js"></script>
-    <script src="js/jquery-deparam.min.js"></script>
-    <script src="js/jquery.cookie.js"></script>
-    <script src="js/rdfe.js"></script>
-    <script src="js/rdf_store.js"></script>
-    <script src="js/val.js"></script>
-    <script src="js/rdf-editor-api.js"></script>
-    <script>
-      // SPARQL I/O
-      var IO_SPARQL_HOST = 'http://192.168.0.3:9301/sparql';
-      var IO_SPARQL_GRAPH = 'http://www.cnn.com';
-      var io_rdfe = new RDFE.io({"host": IO_SPARQL_HOST, "graph": IO_SPARQL_GRAPH});
-
-      // SPARQL GSP
-      var GSP_SPARQL_HOST = 'http://vbv7.pigsty:8889/sparql-graph-crud';
-      var GSP_SPARQL_GRAPH = 'http://example.org/gsp';
-      var gsp_rdfe = new RDFE.gsp({"host": GSP_SPARQL_HOST, "graph": GSP_SPARQL_GRAPH});
-
-      // SPARQL LDP
-      var ldp_rdfe = new RDFE.ldp();
-
-      var store=rdfstore.create();
-
-      // Get File Content
-      var reader;
-      var readerResult;
-      var fileReaderText = function(callback) {
-        readerResult = reader.result;
-        callback();
-      }
-
-      function fileReaderContent(obj, callback)
-      {
-        if (window.File && window.FileReader && window.FileList) {
-          var fld = document.forms['rdfe'].elements[obj];
-          if (!fld.files[0]) {
-            alert('Please select a file!');
-          } else {
-            reader = new FileReader();
-            reader.onload = function (){fileReaderText(callback);};
-            reader.readAsText(fld.files[0]);
-          }
-        } else {
-          alert('The File APIs are not fully supported by your browser.');
-        }
-      }
-
-      $(document).ready(function() {
-	$("#io_g").val(IO_SPARQL_GRAPH);
-	$("#io_spq").val(IO_SPARQL_HOST);
-        // SPARQL I/O
-        $("#io_insert").on("click", function(e) {
-            io_rdfe.insert($('#io_s').val(), $('#io_p').val(), $('#io_o').val());
-          }
-        );
-        $("#io_delete").on("click", function(e) {
-            io_rdfe.delete($('#io_s').val(), $('#io_p').val(), $('#io_o').val());
-          }
-        );
-
-        // SPARQL GSP
-        $("#gsp_insert").on("click", function(e) {
-            fileReaderContent('gsp_f', function(){gsp_rdfe.insert(readerResult);});
-          }
-        );
-        $("#gsp_update").on("click", function(e) {
-            fileReaderContent('gsp_f', function(){gsp_rdfe.update(readerResult);});
-          }
-        );
-        $("#gsp_delete").on("click", function(e) {
-            fileReaderContent('gsp_f', function(){gsp_rdfe.delete();});
-          }
-        );
-
-        // SPARQL LDP
-        $("#ldp_insert").on("click", function(e) {
-            fileReaderContent('ldp_f', function(){ldp_rdfe.insert($('#ldp_p').val() + $('#ldp_n').val(), readerResult);});
-          }
-        );
-        $("#ldp_delete").on("click", function(e) {
-            fileReaderContent('ldp_f', function(){ldp_rdfe.delete($('#ldp_p').val() + $('#ldp_n').val());});
-          }
-        );
-        $.fn.editable.defaults.mode = 'popup';
-		$('.editable').editable();
-
-      });
-    </script>
-
   </head>
   <body>
     <nav class="navbar navbar-default navbar-fixed-top" role="navigation">
@@ -264,6 +172,16 @@
       </div><!-- /.modal-dialog -->
     </div><!-- /.modal -->
 
+
+    <script src="js/jquery-1.11.1.min.js"></script>
+    <script src="js/bootstrap.min.js"></script>
+    <script src="js/bootstrap-editable.min.js"></script>
+    <script src="js/jquery-deparam.min.js"></script>
+    <script src="js/jquery.cookie.js"></script>
+    <script src="js/rdfe.js"></script>
+    <script src="js/rdf_store.js"></script>
+    <script src="js/val.js"></script>
+    <script src="js/rdf-editor-api.js"></script>
     <script>
       var val = new VAL();
 
@@ -279,6 +197,13 @@
           $lil.attr('href', val.config.host + val.config.loginLink + '?returnto=' + encodeURIComponent(window.location.href)).text('Login');
         }
       });
+
+      // SPARQL I/O
+      var IO_SPARQL_HOST = 'http://trueg.selfhost.eu:8899/sparql';
+      var IO_SPARQL_GRAPH = 'urn:foo';
+      var io_rdfe = new RDFE.io({"host": IO_SPARQL_HOST, "graph": IO_SPARQL_GRAPH});
+
+      var store=rdfstore.create();
     </script>
   </body>
 </html>
