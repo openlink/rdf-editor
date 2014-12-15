@@ -81,7 +81,7 @@ RDFE.io = function(options) {
             if (params["__success"])
               params["__success"](data);
           });
-        }
+        };
         params["__success"] = params["success"];
         params["success"] = __success;
         RDFE.graphClear(store, graph);
@@ -183,11 +183,15 @@ RDFE.gsp = function(options) {
     self.retrieveToStore = function(store, graph, params) {
         params = RDFE.params(params, self.options);
         var __success = function(data, textStatus) {
-          store.load('text/turtle', data, graph, function (s, r){if (!s) alert(r); });
+          store.load('text/turtle', data, graph, function (s, r){
+            // FIXME: erro handling!!!
+            if (!s)
+              alert(r);
 
-          if (params["__success"])
-            params["__success"](data);
-        }
+            if (params["__success"])
+              params["__success"](data);
+          });
+        };
         params["__success"] = params["success"];
         params["success"] = __success;
         RDFE.graphClear(store, graph);
@@ -273,11 +277,15 @@ RDFE.ldp = function(options) {
     self.retrieveToStore = function(path, store, graph, params) {
         params = RDFE.params(params, self.options);
         var __success = function(data, textStatus) {
-          store.load('text/turtle', data, graph, function (s, r){if (!s) alert(r); });
+          store.load('text/turtle', data, graph, function (s, r){
+            // FIXME: erro handling!!!
+            if (!s)
+              alert(r);
 
-          if (params["__success"])
-            params["__success"](data);
-        }
+            if (params["__success"])
+              params["__success"](data);
+          });
+        };
         params["__success"] = params["success"];
         params["success"] = __success;
         RDFE.graphClear(store, graph);
