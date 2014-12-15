@@ -170,6 +170,7 @@
     <script src="js/rdf_store.js"></script>
     <script src="js/val.js"></script>
     <script src="js/rdf-editor-api.js"></script>
+    <script src="js/jstorage.js"></script>
     <script>
       var val = new VAL();
 
@@ -187,8 +188,8 @@
       });
 
       // SPARQL I/O
-      var IO_SPARQL_HOST = 'http://trueg.selfhost.eu:8899/sparql';
-      var IO_SPARQL_GRAPH = 'urn:foo';
+      var IO_SPARQL_HOST = $.jStorage.get("editor-sparql-endpoint", 'http://trueg.selfhost.eu:8899/sparql');
+      var IO_SPARQL_GRAPH = $.jStorage.get("editor-graph", 'urn:foo');
       var io_rdfe = new RDFE.io({"host": IO_SPARQL_HOST, "graph": IO_SPARQL_GRAPH});
 
       var store=rdfstore.create();
@@ -200,6 +201,20 @@
         $('button#add').click(function(e) {
           createNewStatementEditor(store, $('#io_g').val(), $('#sparqlcontents'));
         });
+        
+	$("#io_g").change(
+	  function() {
+	    $.jStorage.set("editor-graph", $("#io_g").val());
+	  }
+	) ;
+        
+	$("#io_spq").change(
+	  function() {
+	    $.jStorage.set("editor-sparql-endpoint", $("#io_spq").val());
+	  }
+	) ;
+	
+        
       });
     </script>
   </body>
