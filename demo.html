@@ -81,7 +81,7 @@
                     <div class="input-group">
                       <input type="text" id="io_g" name="io_g" class="form-control" />
                       <span class="input-group-btn">
-                        <input type="button" id="io_submit" name="io_submit" class="btn btn-primary" value="Retrieve" onclick="io_draw_graph_contents($('#io_g').val(),  $('#io_spq').val())" />
+                        <input type="button" id="io_submit" name="io_submit" class="btn btn-primary" value="Retrieve" onclick="ioRetrieve()" />
                       </span>
                     </div>
                   </div>
@@ -187,34 +187,48 @@
         }
       });
 
+
       // SPARQL I/O
       var IO_SPARQL_HOST = $.jStorage.get("editor-sparql-endpoint", 'http://trueg.selfhost.eu:8899/sparql');
       var IO_SPARQL_GRAPH = $.jStorage.get("editor-graph", 'urn:foo');
-      var io_rdfe = new RDFE.io({"host": IO_SPARQL_HOST, "graph": IO_SPARQL_GRAPH});
 
-      var store=rdfstore.create();
+      // The main document which contains the loaded data
+      var mainDoc = new RDFE.Document();
+      var editor = new RDFE.Editor();
+
+      function ioRetrieve() {
+        var io_rdfe = new RDFE.io({
+          "host": $('#io_spq').val(),
+          "graph": $('#io_g').val()
+        });
+
+        mainDoc.load($('#io_g').val(), io_rdfe, function() {
+            editor.createEditorUi(mainDoc, $("#sparqlcontents"));
+        }, function() {
+            // FIXME: error handling!!!
+            console.log('Failed to load document');
+        });
+      }
 
       $(document).ready(function() {
         $("#io_g").val(IO_SPARQL_GRAPH);
         $("#io_spq").val(IO_SPARQL_HOST);
 
         $('button#add').click(function(e) {
-          createNewStatementEditor(store, $('#io_g').val(), $('#sparqlcontents'));
+            editor.createNewStatementEditor($('#sparqlcontents'));
         });
-        
+
 	$("#io_g").change(
 	  function() {
 	    $.jStorage.set("editor-graph", $("#io_g").val());
 	  }
 	) ;
-        
+
 	$("#io_spq").change(
 	  function() {
 	    $.jStorage.set("editor-sparql-endpoint", $("#io_spq").val());
 	  }
 	) ;
-	
-        
       });
     </script>
   </body>
