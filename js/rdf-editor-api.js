@@ -48,76 +48,105 @@ rdfstore.Store.prototype.parseLiteral = function(literalString) {
     return {token:"literal", value:value};
 };
 
+if(!RDFE)
+  RDFE = {};
+
+RDFE.Document = function(params) {
+  var self = this;
+
+  self.store = rdfstore.create();
+};
+
+RDFE.Document.prototype.load = function(url, io, success, fail) {
+    var self = this;
+    var successFct = function(data) {
+        self.url = url;
+        self.io = io;
+
+        if (success)
+            success();
+    };
+    io.retrieveToStore(this.store, url, {'success': successFct });
+};
+
+
+
+RDFE.Editor = function(params) {
+  var self = this;
+
+
+};
+
 // draw_graph_contents() { }
 // insert() { }
 // delete() { }
 // update() { delete(); insert() ; draw_graph_contents() }
 
 // useful functions
-function escapeHTML(str) {
+RDFE.Editor.escapeHTML = function(str) {
     return (str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;') );
-}
+};
 
 // rdf_store bits
-function io_strip_URL_quoting(str) {
+RDFE.Editor.io_strip_URL_quoting = function(str) {
     return(str.replace(RegExp('^<(.*)>$'), '$1'));
-}
+};
 
-function io_strip_litstr_quoting(str) {
+RDFE.Editor.io_strip_litstr_quoting = function(str) {
     return(str.replace(RegExp('^"(.*)"$'), '$1'));
-}
+};
 
 /**
  * Parse a string into a node object.
  */
-function parseNTNode(s) {
+RDFE.Editor.prototype.parseNTNode = function(s) {
     if(s[0] == '<')
-        return store.rdf.createNamedNode(io_strip_URL_quoting(s));
+        return this.doc.store.rdf.createNamedNode(RDFE.Editor.io_strip_URL_quoting(s));
     else if(s.startsWith('_:'))
-        return store.rdf.createNamedNode(s); // FIXME: blank nodes are so much trouble. We need to find a way to handle them properly
+        return this.doc.store.rdf.createNamedNode(s); // FIXME: blank nodes are so much trouble. We need to find a way to handle them properly
     else {
-        var l = store.parseLiteral(s);
-        return store.rdf.createLiteral(l.value, l.lang, l.type);
+        var l = this.doc.store.parseLiteral(s);
+        return this.doc.store.rdf.createLiteral(l.value, l.lang, l.type);
     }
-}
+};
 
-function makeTriple(s, p, o) {
-    ss=store.rdf.createNamedNode(io_strip_URL_quoting(s));
-    pp=store.rdf.createNamedNode(io_strip_URL_quoting(p));
+RDFE.Editor.prototype.makeTriple = function(s, p, o) {
+    ss=this.doc.store.rdf.createNamedNode(RDFE.Editor.io_strip_URL_quoting(s));
+    pp=this.doc.store.rdf.createNamedNode(RDFE.Editor.io_strip_URL_quoting(p));
     // let's be dumb about this for now
-    o = io_strip_URL_quoting (o);
+    o = RDFE.Editor.io_strip_URL_quoting (o);
     if(o.startsWith("http") || o.startsWith("urn")) {
-        oo=store.rdf.createNamedNode(o);
+        oo=this.doc.store.rdf.createNamedNode(o);
     }
     else {
-        var l = store.parseLiteral(o);
-        oo = store.rdf.createLiteral(l.value, l.lang, l.type);
+        var l = this.doc.store.parseLiteral(o);
+        oo = this.doc.store.rdf.createLiteral(l.value, l.lang, l.type);
     }
-    return(store.rdf.createTriple(ss, pp, oo));
-}
+    return(this.doc.store.rdf.createTriple(ss, pp, oo));
+};
 
 
-function getOldTriple(el) {
+RDFE.Editor.prototype.getOldTriple = function(el) {
     var s=unescape(el.attr("data-statement-s-old"));
     var p=unescape(el.attr("data-statement-p-old"));
     var o=unescape(el.attr("data-statement-o-old"));
-    return store.rdf.createTriple(parseNTNode(s), parseNTNode(p), parseNTNode(o));
-}
+    return this.doc.store.rdf.createTriple(this.parseNTNode(s), this.parseNTNode(p), this.parseNTNode(o));
+};
 
-function getNewTriple(el) {
+RDFE.Editor.prototype.getNewTriple = function(el) {
     var s=el.find("td[data-title='Subject'] a").text();
     var p=el.find("td[data-title='Predicate'] a").text();
     var o=el.find("td[data-title='Object'] a").text();
-    return(makeTriple(s,p,o));
-}
+    return(this.makeTriple(s,p,o));
+};
 
-function saveTripleToElem(tripleTr, triple) {
+RDFE.Editor.prototype.saveTripleToElem = function(tripleTr, triple) {
     tripleTr.attr ('data-statement-s-old', escape(triple.subject.toNT()));
     tripleTr.attr ('data-statement-p-old', escape(triple.predicate.toNT()));
     tripleTr.attr ('data-statement-o-old', escape(triple.object.toNT()));
-}
+};
 
-function createTripleRow(t, container) {
+RDFE.Editor.prototype.createTripleRow = function(t, container) {
     var s=t.subject;
     var p=t.predicate;
     var o=t.object;
@@ -126,15 +155,17 @@ function createTripleRow(t, container) {
         data-statement-s-old="' + escape(s.toNT()) + '" \
         data-statement-p-old="' + escape(p.toNT()) + '" \
         data-statement-o-old="' + escape(o.toNT()) + '"> \
-        <td data-title="Subject"><a href="#" data-type="text" class="triple editable editable-click s">' + escapeHTML(s.toString()) + '</a></td> \
-        <td data-title="Predicate"><a href="#" data-type="text" class="triple editable editable-click p">' + escapeHTML(p.toString())+ '</a></td> \
-        <td data-title="Object"><a href="#" data-type="text" class="triple editable editable-click o">' + escapeHTML(o.toString()) + '</a></td> \
+        <td data-title="Subject"><a href="#" data-type="text" class="triple editable editable-click s">' + RDFE.Editor.escapeHTML(s.toString()) + '</a></td> \
+        <td data-title="Predicate"><a href="#" data-type="text" class="triple editable editable-click p">' + RDFE.Editor.escapeHTML(p.toString())+ '</a></td> \
+        <td data-title="Object"><a href="#" data-type="text" class="triple editable editable-click o">' + RDFE.Editor.escapeHTML(o.toString()) + '</a></td> \
         <td><a href="#" class="btn btn-danger btn-xs triple-action triple-action-delete">Delete<br></a></td> \
         </tr>\n');
     return container.find('tr.triple').last();
-}
+};
 
-function createTripleActions(tripleRow, graphUri) {
+RDFE.Editor.prototype.createTripleActions = function(tripleRow, graphUri) {
+    var self = this;
+
     tripleRow.find('.editable').editable({ mode: "inline" }).on('save', function(e, params) {
         var $this = $(this);
         var $tripleTr = $this.closest('tr');
@@ -144,16 +175,16 @@ function createTripleActions(tripleRow, graphUri) {
         var p = updated_field == 'p' ? params.newValue : $tripleTr.find('a.p').text();
         var o = updated_field == 'o' ? params.newValue : $tripleTr.find('a.o').text();
 
-        store.delete(store.rdf.createGraph([getOldTriple($tripleTr)]), graphUri, function(success) {
+        self.doc.store.delete(self.doc.store.rdf.createGraph([self.getOldTriple($tripleTr)]), graphUri, function(success) {
             if(success) {
                 console.log("Successfully deleted old triple")
 
-                var newTriple = makeTriple(s, p, o);
+                var newTriple = self.makeTriple(s, p, o);
 
-                store.insert(store.rdf.createGraph([newTriple]), graphUri, function(success){
+                self.doc.store.insert(self.doc.store.rdf.createGraph([newTriple]), graphUri, function(success){
                     if(success) {
                         // we simply update the old triple values in the tr tag
-                        saveTripleToElem($tripleTr, newTriple);
+                        self.saveTripleToElem($tripleTr, newTriple);
                     }
                     else {
                         console.log('Failed to add new triple to store.');
@@ -171,7 +202,7 @@ function createTripleActions(tripleRow, graphUri) {
     tripleRow.find('.triple-action-delete').on("click", function(e) {
         var $this = $(this);
         var $tripleTr = $this.closest('tr');
-        store.delete(store.rdf.createGraph([getOldTriple($tripleTr)]), graphUri, function(success){
+        self.doc.store.delete(self.doc.store.rdf.createGraph([self.getOldTriple($tripleTr)]), graphUri, function(success){
             if(success) {
                 $tripleTr.remove();
             }
@@ -180,20 +211,28 @@ function createTripleActions(tripleRow, graphUri) {
             }
         });
     });
-}
+};
 
-function createEditorUi(store, graphUri, container) {
-    store.graph(graphUri, function(success, g) {
+RDFE.Editor.prototype.createEditorUi = function(doc, container) {
+    var self = this;
+    this.doc = doc;
+
+    doc.store.graph(doc.url, function(success, g) {
         if(success) {
             container.empty();
             for(var i = 0; i < g.length; i++) {
-                createTripleActions(createTripleRow(g.toArray()[i], container), graphUri);
+                self.createTripleActions(self.createTripleRow(g.toArray()[i], container), doc.url);
             }
        }
     });
-}
+};
 
-function createNewStatementEditor(store, graphUri, container) {
+RDFE.Editor.prototype.createNewStatementEditor = function(container) {
+  var self = this;
+
+  if(!this.doc)
+    return false;
+
   container.prepend(' \
       <tr class="triple triple-new"> \
       <td data-title="Subject"><a href="#" data-type="text" class="triple editable editable-click s">' + '' + '</a></td> \
@@ -211,11 +250,11 @@ function createNewStatementEditor(store, graphUri, container) {
   });
 
   $newTripleTr.find('a.triple-action-new-save').click(function(e) {
-      var t = getNewTriple($newTripleTr);
-      store.insert(store.rdf.createGraph([t]), graphUri, function(success){
+      var t = self.getNewTriple($newTripleTr);
+      self.doc.store.insert(self.doc.store.rdf.createGraph([t]), self.doc.url, function(success){
           if(success) {
               $newTripleTr.remove();
-              createTripleActions(createTripleRow(t, container), graphUri);
+              self.createTripleActions(self.createTripleRow(t, container), self.doc.url);
           }
           else {
               console.log('Failed to add new triple to store.');
@@ -223,13 +262,4 @@ function createNewStatementEditor(store, graphUri, container) {
           }
       });
   });
-}
-
-function io_draw_graph_contents(sourceUri, sparqlEndpoint) {
-    // FIXME: Error handling!!!
-    var successFct = function(data) {
-        createEditorUi(store, sourceUri, $("#sparqlcontents"));
-    };
-    // FIXME: this instance of RDFE is defined in demo.html. That is not great.
-    io_rdfe.retrieveToStore(store, sourceUri, {'success': successFct });
-}
+};
