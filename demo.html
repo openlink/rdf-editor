@@ -107,7 +107,7 @@
       <div class="btn-toolbar" role="toolbar">
         <div class="btn-group" role="group">
           <button type="button" class="btn btn-default"><span class="glyphicon glyphicon-open" aria-hidden="true"></span> Open</button>
-          <button type="button" class="btn btn-default"><span class="glyphicon glyphicon-save" aria-hidden="true"></span> Save</button>
+          <button id="save" type="button" class="btn btn-default"><span class="glyphicon glyphicon-save" aria-hidden="true"></span> Save</button>
           <button type="button" class="btn btn-default"><span class="glyphicon glyphicon-save" aria-hidden="true"></span> Save As...</button>
         </div>
         <div class="btn-group" role="group">
@@ -215,6 +215,10 @@
       $(document).ready(function() {
         $("#io_g").val(IO_SPARQL_GRAPH);
         $("#io_spq").val(IO_SPARQL_HOST);
+
+        $('button#save').click(function(e) {
+            mainDoc.save();
+        });
 
         $('button#add').click(function(e) {
             editor.createNewStatementEditor($('#sparqlcontents'));
