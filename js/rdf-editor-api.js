@@ -81,7 +81,7 @@ function parseNTNode(s) {
     }
 }
 
-function io_make_triple(s, p, o) {
+function makeTriple(s, p, o) {
     ss=store.rdf.createNamedNode(io_strip_URL_quoting(s));
     pp=store.rdf.createNamedNode(io_strip_URL_quoting(p));
     // let's be dumb about this for now
@@ -97,22 +97,18 @@ function io_make_triple(s, p, o) {
 }
 
 
-function io_index_to_triple_old(i) {
-    //   Return old values of a triple by index i, prior to having been edited
-    var el=$("#sparqlcontents").children("tr[data-statement-index="+i+"]");
+function getOldTriple(el) {
     var s=unescape(el.attr("data-statement-s-old"));
     var p=unescape(el.attr("data-statement-p-old"));
     var o=unescape(el.attr("data-statement-o-old"));
     return store.rdf.createTriple(parseNTNode(s), parseNTNode(p), parseNTNode(o));
 }
 
-function io_index_to_triple(i) {
-    //   Return new values of a triple by index i, after having been edited
-    var el=$("#sparqlcontents").children("tr[data-statement-index="+i+"]");
-    var s=el.children("td[data-title='Subject']").text();
-    var p=el.children("td[data-title='Predicate']").text();
-    var o=el.children("td[data-title='Object']").text();
-    return(io_make_triple(s,p,o));
+function getNewTriple(el) {
+    var s=el.find("td[data-title='Subject'] a").text();
+    var p=el.find("td[data-title='Predicate'] a").text();
+    var o=el.find("td[data-title='Object'] a").text();
+    return(makeTriple(s,p,o));
 }
 
 function saveTripleToElem(tripleTr, triple) {
@@ -133,8 +129,7 @@ function createEditorUi(store, graphUri, container) {
                     <tr class="triple" \
                     data-statement-s-old="' + escape(s.toNT()) + '" \
                     data-statement-p-old="' + escape(p.toNT()) + '" \
-                    data-statement-o-old="' + escape(o.toNT()) + '" \
-                    data-statement-index="' + i + '"> \
+                    data-statement-o-old="' + escape(o.toNT()) + '"> \
                     <td data-title="Subject"><a href="#" data-type="text" class="triple editable editable-click s">' + escapeHTML(s.toString()) + '</a></td> \
                     <td data-title="Predicate"><a href="#" data-type="text" class="triple editable editable-click p">' + escapeHTML(p.toString())+ '</a></td> \
                     <td data-title="Object"><a href="#" data-type="text" class="triple editable editable-click o">' + escapeHTML(o.toString()) + '</a></td> \
@@ -147,16 +142,15 @@ function createEditorUi(store, graphUri, container) {
                 var $tripleTr = $this.closest('tr');
 
                 var updated_field = $this.hasClass("o") ? 'o' : $this.hasClass("s") ? 's' : $this.hasClass("p") ? 'p' : '';
-                var ind = $tripleTr.attr("data-statement-index");
                 var s = updated_field == 's' ? params.newValue : $tripleTr.find('a.s').text();
                 var p = updated_field == 'p' ? params.newValue : $tripleTr.find('a.p').text();
                 var o = updated_field == 'o' ? params.newValue : $tripleTr.find('a.o').text();
 
-                store.delete(store.rdf.createGraph([io_index_to_triple_old(ind)]), graphUri, function(success) {
+                store.delete(store.rdf.createGraph([getOldTriple($tripleTr)]), graphUri, function(success) {
                     if(success) {
                         console.log("Successfully deleted old triple")
 
-                        var newTriple = io_make_triple(s, p, o);
+                        var newTriple = makeTriple(s, p, o);
 
                         store.insert(store.rdf.createGraph([newTriple]), graphUri, function(success){
                             if(success) {
@@ -179,8 +173,7 @@ function createEditorUi(store, graphUri, container) {
             $('.triple-action-delete').on("click", function(e) {
                 var $this = $(this);
                 var $tripleTr = $this.closest('tr');
-                var ind = $tripleTr.attr("data-statement-index");
-                store.delete(store.rdf.createGraph([io_index_to_triple_old(ind)]), graphUri, function(success){
+                store.delete(store.rdf.createGraph([getOldTriple($tripleTr)]), graphUri, function(success){
                     if(success) {
                         $tripleTr.remove();
                     }
