@@ -41,10 +41,16 @@ RDFE.Document.prototype.save = function(url, io, success, fail) {
         myIo = self.io;
     }
 
-    var __success = function() {
-      if(mySuccess)
-        mySuccess();
-    };
-    // FIXME: add error handling
-    myIo.insertFromStore(self.store, self.url, {"success": __success});
+    if(!myUrl) {
+      if (myFail)
+        myFail("No document loaded");
+    }
+    else {
+      var __success = function() {
+        if(mySuccess)
+          mySuccess();
+      };
+      // FIXME: add error handling
+      myIo.insertFromStore(self.store, self.url, {"success": __success});
+    }
 };
