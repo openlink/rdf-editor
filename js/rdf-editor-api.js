@@ -117,73 +117,112 @@ function saveTripleToElem(tripleTr, triple) {
     tripleTr.attr ('data-statement-o-old', escape(triple.object.toNT()));
 }
 
+function createTripleRow(t, container) {
+    var s=t.subject;
+    var p=t.predicate;
+    var o=t.object;
+    container.append(' \
+        <tr class="triple" \
+        data-statement-s-old="' + escape(s.toNT()) + '" \
+        data-statement-p-old="' + escape(p.toNT()) + '" \
+        data-statement-o-old="' + escape(o.toNT()) + '"> \
+        <td data-title="Subject"><a href="#" data-type="text" class="triple editable editable-click s">' + escapeHTML(s.toString()) + '</a></td> \
+        <td data-title="Predicate"><a href="#" data-type="text" class="triple editable editable-click p">' + escapeHTML(p.toString())+ '</a></td> \
+        <td data-title="Object"><a href="#" data-type="text" class="triple editable editable-click o">' + escapeHTML(o.toString()) + '</a></td> \
+        <td><a href="#" class="btn btn-danger btn-xs triple-action triple-action-delete">Delete<br></a></td> \
+        </tr>\n');
+    return container.find('tr.triple').last();
+}
+
+function createTripleActions(tripleRow, graphUri) {
+    tripleRow.find('.editable').editable({ mode: "inline" }).on('save', function(e, params) {
+        var $this = $(this);
+        var $tripleTr = $this.closest('tr');
+
+        var updated_field = $this.hasClass("o") ? 'o' : $this.hasClass("s") ? 's' : $this.hasClass("p") ? 'p' : '';
+        var s = updated_field == 's' ? params.newValue : $tripleTr.find('a.s').text();
+        var p = updated_field == 'p' ? params.newValue : $tripleTr.find('a.p').text();
+        var o = updated_field == 'o' ? params.newValue : $tripleTr.find('a.o').text();
+
+        store.delete(store.rdf.createGraph([getOldTriple($tripleTr)]), graphUri, function(success) {
+            if(success) {
+                console.log("Successfully deleted old triple")
+
+                var newTriple = makeTriple(s, p, o);
+
+                store.insert(store.rdf.createGraph([newTriple]), graphUri, function(success){
+                    if(success) {
+                        // we simply update the old triple values in the tr tag
+                        saveTripleToElem($tripleTr, newTriple);
+                    }
+                    else {
+                        console.log('Failed to add new triple to store.');
+                        // FIXME: Error handling!!!
+                    }
+                });
+            }
+            else {
+              console.log('Failed to add delete old triple from store.');
+                // FIXME: Error handling!!!
+            }
+        });
+    });
+
+    tripleRow.find('.triple-action-delete').on("click", function(e) {
+        var $this = $(this);
+        var $tripleTr = $this.closest('tr');
+        store.delete(store.rdf.createGraph([getOldTriple($tripleTr)]), graphUri, function(success){
+            if(success) {
+                $tripleTr.remove();
+            }
+            else {
+                // FIXME: Error handling!!!
+            }
+        });
+    });
+}
+
 function createEditorUi(store, graphUri, container) {
     store.graph(graphUri, function(success, g) {
         if(success) {
           container.empty();
             for(var i = 0; i < g.length; i++) {
-                var s=g.toArray()[i].subject;
-                var p=g.toArray()[i].predicate;
-                var o=g.toArray()[i].object;
-                container.append(' \
-                    <tr class="triple" \
-                    data-statement-s-old="' + escape(s.toNT()) + '" \
-                    data-statement-p-old="' + escape(p.toNT()) + '" \
-                    data-statement-o-old="' + escape(o.toNT()) + '"> \
-                    <td data-title="Subject"><a href="#" data-type="text" class="triple editable editable-click s">' + escapeHTML(s.toString()) + '</a></td> \
-                    <td data-title="Predicate"><a href="#" data-type="text" class="triple editable editable-click p">' + escapeHTML(p.toString())+ '</a></td> \
-                    <td data-title="Object"><a href="#" data-type="text" class="triple editable editable-click o">' + escapeHTML(o.toString()) + '</a></td> \
-                    <td><a href="#" class="btn btn-danger btn-xs triple-action triple-action-delete">Delete<br></a></td> \
-                    </tr>\n');
+                createTripleActions(createTripleRow(g.toArray()[i], container), graphUri);
             }
-
-            $('.editable').editable({ mode: "inline" }).on('save', function(e, params) {
-                var $this = $(this);
-                var $tripleTr = $this.closest('tr');
-
-                var updated_field = $this.hasClass("o") ? 'o' : $this.hasClass("s") ? 's' : $this.hasClass("p") ? 'p' : '';
-                var s = updated_field == 's' ? params.newValue : $tripleTr.find('a.s').text();
-                var p = updated_field == 'p' ? params.newValue : $tripleTr.find('a.p').text();
-                var o = updated_field == 'o' ? params.newValue : $tripleTr.find('a.o').text();
-
-                store.delete(store.rdf.createGraph([getOldTriple($tripleTr)]), graphUri, function(success) {
-                    if(success) {
-                        console.log("Successfully deleted old triple")
-
-                        var newTriple = makeTriple(s, p, o);
-
-                        store.insert(store.rdf.createGraph([newTriple]), graphUri, function(success){
-                            if(success) {
-                                // we simply update the old triple values in the tr tag
-                                saveTripleToElem($tripleTr, newTriple);
-                            }
-                            else {
-                                console.log('Failed to add new triple to store.');
-                                // FIXME: Error handling!!!
-                            }
-                        });
-                    }
-                    else {
-                      console.log('Failed to add delete old triple from store.');
-                        // FIXME: Error handling!!!
-                    }
-                });
-            });
-
-            $('.triple-action-delete').on("click", function(e) {
-                var $this = $(this);
-                var $tripleTr = $this.closest('tr');
-                store.delete(store.rdf.createGraph([getOldTriple($tripleTr)]), graphUri, function(success){
-                    if(success) {
-                        $tripleTr.remove();
-                    }
-                    else {
-                        // FIXME: Error handling!!!
-                    }
-                });
-            });
-        }
+       }
     });
+}
+
+function createNewStatementEditor(store, graphUri, container) {
+  container.prepend(' \
+      <tr class="triple triple-new"> \
+      <td data-title="Subject"><a href="#" data-type="text" class="triple editable editable-click s">' + '' + '</a></td> \
+      <td data-title="Predicate"><a href="#" data-type="text" class="triple editable editable-click p">' + '' + '</a></td> \
+      <td data-title="Object"><a href="#" data-type="text" class="triple editable editable-click o">' + '' + '</a></td> \
+      <td><a href="#" class="btn btn-primary btn-xs triple-action triple-action-new-cancel">Cancel<br></a> \
+        <a href="#" class="btn btn-default btn-xs triple-action triple-action-new-save">Save<br></a></td> \
+      </tr>\n');
+  var $newTripleTr = container.find('tr.triple-new');
+
+  $newTripleTr.find('.editable').editable({ mode: "inline" });
+
+  $newTripleTr.find('a.triple-action-new-cancel').click(function(e) {
+      $newTripleTr.remove();
+  });
+
+  $newTripleTr.find('a.triple-action-new-save').click(function(e) {
+      var t = getNewTriple($newTripleTr);
+      store.insert(store.rdf.createGraph([t]), graphUri, function(success){
+          if(success) {
+              $newTripleTr.remove();
+              createTripleActions(createTripleRow(t, container), graphUri);
+          }
+          else {
+              console.log('Failed to add new triple to store.');
+              // FIXME: Error handling!!!
+          }
+      });
+  });
 }
 
 function io_draw_graph_contents(sourceUri, sparqlEndpoint) {

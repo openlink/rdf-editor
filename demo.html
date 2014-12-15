@@ -111,7 +111,7 @@
           <button type="button" class="btn btn-default"><span class="glyphicon glyphicon-save" aria-hidden="true"></span> Save As...</button>
         </div>
         <div class="btn-group" role="group">
-          <button type="button" class="btn btn-default" title="Add new statement"><span class="glyphicon glyphicon-plus" aria-hidden="true"></span> Add</button>
+          <button id="add" type="button" class="btn btn-default" title="Add new statement"><span class="glyphicon glyphicon-plus" aria-hidden="true"></span> Add</button>
         </div>
       </div>
 
@@ -196,6 +196,10 @@
       $(document).ready(function() {
         $("#io_g").val(IO_SPARQL_GRAPH);
         $("#io_spq").val(IO_SPARQL_HOST);
+
+        $('button#add').click(function(e) {
+          createNewStatementEditor(store, $('#io_g').val(), $('#sparqlcontents'));
+        });
       });
     </script>
   </body>
