@@ -77,10 +77,12 @@ RDFE.io = function(options) {
     self.retrieveToStore = function(store, graph, params) {
         params = RDFE.params(params, self.options);
         var __success = function(data, textStatus) {
-          store.load('text/turtle', data, graph, function (s, r){if (!s) alert(r); graphTest(store, graph);});
+          store.load('text/turtle', data, graph, function (s, r){
+            if (!s) alert(r);
 
-          if (params["__success"])
-            params["__success"](data);
+            if (params["__success"])
+              params["__success"](data);
+          });
         }
         params["__success"] = params["success"];
         params["success"] = __success;
