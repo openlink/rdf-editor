@@ -45,13 +45,13 @@
     <script src="js/jquery-deparam.min.js"></script>
     <script src="js/jquery.cookie.js"></script>
     <script src="js/rdfe.js"></script>
-    <script src="js/rdf_store_min.js"></script>
+    <script src="js/rdf_store.js"></script>
     <script src="js/val.js"></script>
     <script src="js/rdf-editor-api.js"></script>
     <script>
       // SPARQL I/O
-      var IO_SPARQL_HOST = 'http://trueg.selfhost.eu:8899/sparql';
-      var IO_SPARQL_GRAPH = 'http://data.daimler.com/oranges';
+      var IO_SPARQL_HOST = 'http://192.168.0.3:9301/sparql';
+      var IO_SPARQL_GRAPH = 'http://www.cnn.com';
       var io_rdfe = new RDFE.io({"host": IO_SPARQL_HOST, "graph": IO_SPARQL_GRAPH});
 
       // SPARQL GSP
@@ -125,7 +125,7 @@
           }
         );
         $.fn.editable.defaults.mode = 'popup';
-	$('.editable').editable();
+		$('.editable').editable();
 
       });
     </script>
