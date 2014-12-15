@@ -53,9 +53,7 @@ RDFE.fileParent = function(path) {
 RDFE.dummy = function() {}
 
 RDFE.graphClear = function(store, graph) {
-  graphTest(store, graph);
   store.clear(graph, RDFE.dummy);
-  graphTest(store, graph);
 }
 
 RDFE.io = function(options) {
@@ -98,6 +96,7 @@ RDFE.io = function(options) {
     self.insertFromStore = function(store, graph, params) {
         params = RDFE.params(params, self.options);
         store.graph(graph, function(success, g) {
+            // FIXME: this is the worst error handling in the world!
             if (!success)
               return;
 
@@ -131,6 +130,7 @@ RDFE.io = function(options) {
         self.exec(RDFE.IO_CLEAR.format(params.graph), params);
     }
 
+    // FIXME: Error handling!!!
     self.exec = function(q, params) {
         $(document).ajaxError(params.ajaxError);
         $(document).ajaxSuccess(params.ajaxSuccess);
@@ -183,7 +183,7 @@ RDFE.gsp = function(options) {
     self.retrieveToStore = function(store, graph, params) {
         params = RDFE.params(params, self.options);
         var __success = function(data, textStatus) {
-          store.load('text/turtle', data, graph, function (s, r){if (!s) alert(r); graphTest(store, graph);});
+          store.load('text/turtle', data, graph, function (s, r){if (!s) alert(r); });
 
           if (params["__success"])
             params["__success"](data);
@@ -273,7 +273,7 @@ RDFE.ldp = function(options) {
     self.retrieveToStore = function(path, store, graph, params) {
         params = RDFE.params(params, self.options);
         var __success = function(data, textStatus) {
-          store.load('text/turtle', data, graph, function (s, r){if (!s) alert(r); graphTest(store, graph);});
+          store.load('text/turtle', data, graph, function (s, r){if (!s) alert(r); });
 
           if (params["__success"])
             params["__success"](data);
