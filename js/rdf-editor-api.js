@@ -88,7 +88,7 @@ function io_make_triple(s, p, o) {
     o = io_strip_URL_quoting (o);
     if(o.startsWith("http") || o.startsWith("urn")) {
         oo=store.rdf.createNamedNode(o);
-    } 
+    }
     else {
         var l = store.parseLiteral(o);
         oo = store.rdf.createLiteral(l.value, l.lang, l.type);
@@ -115,87 +115,103 @@ function io_index_to_triple(i) {
     return(io_make_triple(s,p,o));
 }
 
+function saveTripleToElem(tripleTr, triple) {
+    tripleTr.attr ('data-statement-s-old', escape(triple.subject.toNT()));
+    tripleTr.attr ('data-statement-p-old', escape(triple.predicate.toNT()));
+    tripleTr.attr ('data-statement-o-old', escape(triple.object.toNT()));
+}
+
+function createEditorUi(store, graphUri, container) {
+    store.graph(graphUri, function(success, g) {
+        if(success) {
+          container.empty();
+            for(var i = 0; i < g.length; i++) {
+                var s=g.toArray()[i].subject;
+                var p=g.toArray()[i].predicate;
+                var o=g.toArray()[i].object;
+                container.append(' \
+                    <tr class="triple" \
+                    data-statement-s-old="' + escape(s.toNT()) + '" \
+                    data-statement-p-old="' + escape(p.toNT()) + '" \
+                    data-statement-o-old="' + escape(o.toNT()) + '" \
+                    data-statement-index="' + i + '"> \
+                    <td data-title="Subject"><a href="#" data-type="text" class="triple editable editable-click s">' + escapeHTML(s.toString()) + '</a></td> \
+                    <td data-title="Predicate"><a href="#" data-type="text" class="triple editable editable-click p">' + escapeHTML(p.toString())+ '</a></td> \
+                    <td data-title="Object"><a href="#" data-type="text" class="triple editable editable-click o">' + escapeHTML(o.toString()) + '</a></td> \
+                    <td><a href="#" class="btn btn-danger btn-xs triple-action triple-action-delete">Delete<br></a></td> \
+                    </tr>\n');
+            }
+
+            $('.editable').editable({ mode: "inline" }).on('save', function(e, params) {
+                var $this = $(this);
+                var $tripleTr = $this.closest('tr');
+
+                var updated_field = $this.hasClass("o") ? 'o' : $this.hasClass("s") ? 's' : $this.hasClass("p") ? 'p' : '';
+                var ind = $tripleTr.attr("data-statement-index");
+                var s = updated_field == 's' ? params.newValue : $tripleTr.find('a.s').text();
+                var p = updated_field == 'p' ? params.newValue : $tripleTr.find('a.p').text();
+                var o = updated_field == 'o' ? params.newValue : $tripleTr.find('a.o').text();
+
+                store.delete(store.rdf.createGraph([io_index_to_triple_old(ind)]), graphUri, function(success) {
+                    if(success) {
+                        console.log("Successfully deleted old triple")
+
+                        var newTriple = io_make_triple(s, p, o);
+
+                        store.insert(store.rdf.createGraph([newTriple]), graphUri, function(success){
+                            if(success) {
+                                // we simply update the old triple values in the tr tag
+                                saveTripleToElem($tripleTr, newTriple);
+                            }
+                            else {
+                                console.log('Failed to add new triple to store.');
+                                // FIXME: Error handling!!!
+                            }
+                        });
+                    }
+                    else {
+                      console.log('Failed to add delete old triple from store.');
+                        // FIXME: Error handling!!!
+                    }
+                });
+            });
+
+            $('.triple-action-delete').on("click", function(e) {
+                var ind = $(this).closest('tr').attr("data-statement-index");
+                var row_to_rem = $(this).closest('tr');
+                var old_graph = store.rdf.createGraph();
+                var old_var = io_index_to_triple_old(ind);
+                old_graph.add(old_var);
+                store.delete(old_graph, graphUri, function(success){
+                    if(success) {
+                        row_to_rem.remove();
+                    }
+                    else {
+                        // FIXME: Error handling!!!
+                    }
+                });
+            });
+        }
+    });
+}
+
 function io_draw_graph_contents(sourceUri, sparqlEndpoint) {
 //   Retrieve a graph via SPARQL construct query and render HTML table
     var host=sparqlEndpoint;
     var graph=encodeURIComponent($("#io_g").val());
     var queryurl=host + '?default-graph-uri=' + graph + '&query=construct+%7B+%3Fs+%3Fp+%3Fo+%7D++WHERE+%7B%3Fs+%3Fp+%3Fo%7D&should-sponge=&format=text%2Fturtle&timeout=30000000';
     $("#sparqlcontents").html("");
+
+    store.clear(sourceUri, function(success) {
+      if (success) {
+        console.log('Successfully cleared store before loading contents.');
+      }
+      else {
+        console.log('Failed to clear store before loading contents.');
+      }
+    });
+
     store.load('remote', queryurl, sourceUri, function(a,n) {
-        store.graph(sourceUri, function(success, g) {
-            if(success) {
-                for(var i = 0; i < g.length; i++) {
-                    var s=g.toArray()[i].subject;
-                    var p=g.toArray()[i].predicate;
-                    var o=g.toArray()[i].object;
-                    $("#sparqlcontents").append(' \
-                        <tr class="triple" \
-                        data-statement-s-old="' + escape(s.toNT()) + '" \
-                        data-statement-p-old="' + escape(p.toNT()) + '" \
-                        data-statement-o-old="' + escape(o.toNT()) + '" \
-                        data-statement-index="' + i + '"> \
-                        <td data-title="Subject"><a href="#" data-type="text" class="triple editable editable-click s">' + escapeHTML(s.toString()) + '</a></td> \
-                        <td data-title="Predicate"><a href="#" data-type="text" class="triple editable editable-click p">' + escapeHTML(p.toString())+ '</a></td> \
-                        <td data-title="Object"><a href="#" data-type="text" class="triple editable editable-click o">' + escapeHTML(o.toString()) + '</a></td> \
-                        <td><a href="#" class="btn btn-danger btn-xs triple-action triple-action-delete">Delete<br></a></td> \
-                        </tr>\n');
-                }
-                $('.editable').editable({ mode: "inline" }).on('save', function(e, params) {
-                    var graphURI = $("#io_g").val();
-                    var updated_field = $(this).hasClass("o") ? 'o' : $(this).hasClass("s") ? 's' : $(this).hasClass("p") ? 'p' : '';
-                    var ind = $(this).closest('tr').attr("data-statement-index");
-                    var s = updated_field == 's' ? params.newValue : $(this).closest('tr').find('a.s').text();
-                    var p = updated_field == 'p' ? params.newValue : $(this).closest('tr').find('a.p').text();
-                    var o = updated_field == 'o' ? params.newValue : $(this).closest('tr').find('a.o').text();
-                    var old_graph = store.rdf.createGraph();
-                    var old_var = io_index_to_triple_old(ind);
-                    old_graph.add(old_var);
-                    store.delete(old_graph, graphURI, function(success){
-                        if(success) {
-                            console.log("DELETED!!!")
-                        }
-                    });
-                    var new_graph = store.rdf.createGraph();
-                    var new_var = io_make_triple(s, p, o);
-                    new_graph.add(new_var);
-                    store.insert(new_graph, graphURI, function(success){
-                        if(success) {
-                            store.graph(graphURI, function(success, g) {
-                                $("#sparqlcontents").html("");
-                                for(var i = 0; i < g.length; i++) {
-                                    var s=g.toArray()[i].subject;
-                                    var p=g.toArray()[i].predicate;
-                                    var o=g.toArray()[i].object;
-                                    $("#sparqlcontents").append(' \
-                                        <tr class="triple" \
-                                        data-statement-s-old="' + escape(s.toNT()) + '" \
-                                        data-statement-p-old="' + escape(p.toNT()) + '" \
-                                        data-statement-o-old="' + escape(o.toNT()) + '" \
-                                        data-statement-index="' + i + '"> \
-                                        <td data-title="Subject"><a href="#" data-type="text" class="triple editable editable-click s">' + escapeHTML(s.toString()) + '</a></td> \
-                                        <td data-title="Predicate"><a href="#" data-type="text" class="triple editable editable-click p">' + escapeHTML(p.toString())+ '</a></td> \
-                                        <td data-title="Object"><a href="#" data-type="text" class="triple editable editable-click o">' + escapeHTML(o.toString()) + '</a></td> \
-                                        <td><a href="#" class="btn btn-danger btn-xs triple-action triple-action-delete">Delete<br></a></td> \
-                                        </tr>\n');
-                                }
-                            });
-                        }
-                    });
-                });
-                $('.triple-action-delete').on("click", function(e) {
-                    var ind = $(this).closest('tr').attr("data-statement-index");
-                    var row_to_rem = $(this).closest('tr');
-                    var graphURI = $("#io_g").val();
-                    var old_graph = store.rdf.createGraph();
-                    var old_var = io_index_to_triple_old(ind);
-                    old_graph.add(old_var);
-                    store.delete(old_graph, graphURI, function(success){
-                        if(success) {
-                            row_to_rem.remove();
-                        }
-                    });
-                });
-            }
-		})
+        createEditorUi(store, sourceUri, $("#sparqlcontents"));
     });
 }
