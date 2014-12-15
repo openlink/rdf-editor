@@ -177,14 +177,12 @@ function createEditorUi(store, graphUri, container) {
             });
 
             $('.triple-action-delete').on("click", function(e) {
-                var ind = $(this).closest('tr').attr("data-statement-index");
-                var row_to_rem = $(this).closest('tr');
-                var old_graph = store.rdf.createGraph();
-                var old_var = io_index_to_triple_old(ind);
-                old_graph.add(old_var);
-                store.delete(old_graph, graphUri, function(success){
+                var $this = $(this);
+                var $tripleTr = $this.closest('tr');
+                var ind = $tripleTr.attr("data-statement-index");
+                store.delete(store.rdf.createGraph([io_index_to_triple_old(ind)]), graphUri, function(success){
                     if(success) {
-                        row_to_rem.remove();
+                        $tripleTr.remove();
                     }
                     else {
                         // FIXME: Error handling!!!
