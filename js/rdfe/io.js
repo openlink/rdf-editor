@@ -56,52 +56,60 @@ RDFE.graphClear = function(store, graph) {
   store.clear(graph, RDFE.dummy);
 }
 
+/*
+ *
+ * SPARQL IOD
+ *
+ */
 RDFE.io = function(options) {
     var self = this;
     self.options = $.extend({
         "async": true
     }, options);
 
-    self.retrieve = function(params, silent) {
+    self.retrieve = function(graph, params, silent) {
         params = RDFE.params(params, self.options);
         if (silent) {
             params["async"] = false;
             params["ajaxError"] = null;
             params["ajaxSuccess"] = null;
         }
-        self.exec(RDFE.IO_RETRIEVE.format(params.graph), params);
+        self.exec(RDFE.IO_RETRIEVE.format(graph), params);
     }
 
-    self.retrieveToStore = function(store, graph, params) {
+    self.retrieveToStore = function(graph, store, storeGraph, params) {
         params = RDFE.params(params, self.options);
         var __success = function(data, textStatus) {
-          store.load('text/turtle', data, graph, function (s, r){
-            if (!s) alert(r);
+          RDFE.graphClear(store, storeGraph);
+          store.load('text/turtle', data, storeGraph, function (s, r) {
+              // FIXME: error handling!!!
+              if (!s)
+                alert(r);
 
-            if (params["__success"])
-              params["__success"](data);
+              if (params["__success"])
+                params["__success"](data);
           });
-        };
+        }
         params["__success"] = params["success"];
         params["success"] = __success;
-        RDFE.graphClear(store, graph);
-        self.retrieve(params, true);
+        self.retrieve(graph, params, true);
     }
 
-    self.insert = function(s, p, o, params) {
+    self.insert = function(graph, s, p, o, params) {
         params = RDFE.params(params, self.options);
-        self.exec(RDFE.IO_INSERT.format(params.graph, RDFE.IO_INSERT_SINGLE.format(s, p, o)), params);
+        self.exec(RDFE.IO_INSERT.format(graph, RDFE.IO_INSERT_SINGLE.format(s, p, o)), params);
     }
 
-    self.insertFromStore = function(store, graph, params) {
+    self.insertFromStore = function(graph, store, storeGraph, params) {
         params = RDFE.params(params, self.options);
-        store.graph(graph, function(success, g) {
-            // FIXME: this is the worst error handling in the world!
+        store.graph(storeGraph, function(success, g) {
+            // FIXME: error handling!!!
             if (!success)
               return;
 
             // clear graph before
-            self.clear(params, true);
+            // FIXME: this is async. Do the insert in its success callback and also handle errors.
+            self.clear(graph, params, true);
 
             var delimiter = '';
             var triples = '';
@@ -110,16 +118,16 @@ RDFE.io = function(options) {
               delimiter = ' . ';
             }
             if (triples)
-              self.exec(RDFE.IO_INSERT.format(params.graph, triples), params);
+              self.exec(RDFE.IO_INSERT.format(graph, triples), params);
         });
     }
 
-    self.delete = function(s, p, o, params) {
+    self.delete = function(graph, s, p, o, params) {
         params = RDFE.params(params, self.options);
-        self.exec(RDFE.IO_DELETE.format(params.graph, s, p, o), params);
+        self.exec(RDFE.IO_DELETE.format(graph, s, p, o), params);
     }
 
-    self.clear = function(params, silent) {
+    self.clear = function(graph, params, silent) {
         params = RDFE.params(params, self.options);
         if (silent) {
             params["async"] = false;
@@ -127,10 +135,9 @@ RDFE.io = function(options) {
             params["ajaxSuccess"] = null;
             params["success"] = null;
         }
-        self.exec(RDFE.IO_CLEAR.format(params.graph), params);
+        self.exec(RDFE.IO_CLEAR.format(graph), params);
     }
 
-    // FIXME: Error handling!!!
     self.exec = function(q, params) {
         $(document).ajaxError(params.ajaxError);
         $(document).ajaxSuccess(params.ajaxSuccess);
@@ -149,6 +156,11 @@ RDFE.io = function(options) {
     }
 }
 
+/*
+ *
+ * SPARQL Graph Store Protocol (GSP)
+ *
+ */
 RDFE.gsp = function(options) {
     var self = this;
     self.options = $.extend({
@@ -157,7 +169,7 @@ RDFE.gsp = function(options) {
         "processData": false,
     }, options);
 
-    self.retrieve = function(params, silent) {
+    self.retrieve = function(graph, params, silent) {
         params = RDFE.params(params, self.options);
         if (silent) {
             params["async"] = false;
@@ -173,56 +185,50 @@ RDFE.gsp = function(options) {
             type: 'GET',
             async: params.async,
             data: {
-                "query": RDFE.GSP_RETRIEVE.format(params.graph),
+                "query": RDFE.GSP_RETRIEVE.format(graph),
                 "format": params.format
             },
             dataType: 'text'
         });
     }
 
-    self.retrieveToStore = function(store, graph, params) {
+    self.retrieveToStore = function(graph, store, storeGraph, params) {
         params = RDFE.params(params, self.options);
         var __success = function(data, textStatus) {
-          store.load('text/turtle', data, graph, function (s, r){
-            // FIXME: erro handling!!!
-            if (!s)
-              alert(r);
+          RDFE.graphClear(store, storeGraph);
+          store.load('text/turtle', data, storeGraph, function (s, r){if (!s) alert(r); graphTest(store, storeGraph);});
 
-            if (params["__success"])
-              params["__success"](data);
-          });
-        };
+          if (params["__success"])
+            params["__success"](data);
+        }
         params["__success"] = params["success"];
         params["success"] = __success;
-        RDFE.graphClear(store, graph);
-        self.retrieve(params, true);
+        self.retrieve(graph, params, true);
     }
 
-    self.insert = function(content, params) {
+    self.insert = function(graph, content, params) {
         params = RDFE.params(params, self.options);
-        self.exec('PUT', content, params);
+        self.exec('PUT', graph, content, params);
     }
 
-    self.insertFromStore = function(store, graph, params) {
+    self.insertFromStore = function(graph, store, storeGraph, params) {
         params = RDFE.params(params, self.options);
-        store.graph(graph, function(success, g) {
+        store.graph(storeGraph, function(success, g) {
             if (!success)
               return;
 
             // clear graph before
-            self.clear(params, true);
-
-            var content = g.toNT();
-            self.insert(content, params);
+            self.clear(graph, params, true);
+            self.insert(graph, g.toNT(), params);
         });
     }
 
-    self.update = function(content, params) {
+    self.update = function(graph, content, params) {
         params = RDFE.params(params, self.options);
-        self.exec('POST', content, params);
+        self.exec('POST', graph, content, params);
     }
 
-    self.delete = function(params, silent) {
+    self.delete = function(graph, params, silent) {
         params = RDFE.params(params, self.options);
         if (silent) {
             params["async"] = false;
@@ -230,16 +236,16 @@ RDFE.gsp = function(options) {
             params["ajaxSuccess"] = null;
             params["success"] = null;
         }
-        self.exec('DELETE', null, params);
+        self.exec('DELETE', graph, null, params);
     }
 
     self.clear = self.delete;
 
-    self.exec = function(method, content, params) {
+    self.exec = function(method, graph, content, params) {
         $(document).ajaxError(params.ajaxError);
         $(document).ajaxSuccess(params.ajaxSuccess);
 
-        var host = params.host + '?graph=' + encodeURIComponent(params.graph);
+        var host = params.host + '?graph=' + encodeURIComponent(graph);
         $.ajax({
             url: host,
             success: params.success,
@@ -253,6 +259,11 @@ RDFE.gsp = function(options) {
     }
 }
 
+/*
+ *
+ * SPARQL LDP
+ *
+ */
 RDFE.LDP_INSERT = 'INSERT DATA {GRAPH <{0}> { <{1}> <{2}> {3} . }}';
 RDFE.ldp = function(options) {
     var self = this;
@@ -274,21 +285,17 @@ RDFE.ldp = function(options) {
         self.exec('GET', path, headers, null, params);
     }
 
-    self.retrieveToStore = function(path, store, graph, params) {
+    self.retrieveToStore = function(path, store, storeGraph, params) {
         params = RDFE.params(params, self.options);
         var __success = function(data, textStatus) {
-          store.load('text/turtle', data, graph, function (s, r){
-            // FIXME: erro handling!!!
-            if (!s)
-              alert(r);
+          RDFE.graphClear(store, storeGraph);
+          store.load('text/turtle', data, storeGraph, function (s, r){if (!s) alert(r); graphTest(store, storeGraph);});
 
-            if (params["__success"])
-              params["__success"](data);
-          });
-        };
+          if (params["__success"])
+            params["__success"](data);
+        }
         params["__success"] = params["success"];
         params["success"] = __success;
-        RDFE.graphClear(store, graph);
         self.retrieve(path, params, true);
     }
 
@@ -301,9 +308,9 @@ RDFE.ldp = function(options) {
         self.exec('POST', RDFE.fileParent(path), headers, content, params);
     }
 
-    self.insertFromStore = function(path, store, graph, params) {
+    self.insertFromStore = function(path, store, storeGraph, params) {
         params = RDFE.params(params, self.options);
-        store.graph(graph, function(success, g) {
+        store.graph(storeGraph, function(success, g) {
             if (!success)
                 return;
 

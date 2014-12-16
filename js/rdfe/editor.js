@@ -7,6 +7,9 @@ if (typeof String.prototype.startsWith != 'function') {
 
 RDFE.Editor = function(params) {
   var self = this;
+
+  // empty default doc
+  this.doc = new RDFE.Document();
 };
 
 // draw_graph_contents() { }
@@ -149,13 +152,24 @@ RDFE.Editor.prototype.createEditorUi = function(doc, container) {
     var self = this;
     this.doc = doc;
 
-    doc.store.graph(doc.url, function(success, g) {
+    doc.store.execute("select ?s ?p ?o where { graph <" + self.doc.graph + "> { ?s ?p ?o } } order by ?s ?p", function(success, r) {
         if(success) {
             container.empty();
-            for(var i = 0; i < g.length; i++) {
-                self.createTripleActions(self.createTripleRow(g.toArray()[i], container), doc.url);
+            for(var i = 0; i < r.length; i++) {
+                self.createTripleActions(
+                  self.createTripleRow(
+                    self.doc.store.rdf.createTriple(
+                      self.doc.store.termToNode(r[i].s),
+                      self.doc.store.termToNode(r[i].p),
+                      self.doc.store.termToNode(r[i].o)),
+                    container),
+                  doc.graph);
             }
-       }
+        }
+        else {
+            // FIXME: error handling.
+          console.log('Failed to query triples in doc.');
+        }
     });
 };
 
@@ -183,10 +197,10 @@ RDFE.Editor.prototype.createNewStatementEditor = function(container) {
 
   $newTripleTr.find('a.triple-action-new-save').click(function(e) {
       var t = self.getNewTriple($newTripleTr);
-      self.doc.store.insert(self.doc.store.rdf.createGraph([t]), self.doc.url, function(success){
+      self.doc.store.insert(self.doc.store.rdf.createGraph([t]), self.doc.graph, function(success){
           if(success) {
               $newTripleTr.remove();
-              self.createTripleActions(self.createTripleRow(t, container), self.doc.url);
+              self.createTripleActions(self.createTripleRow(t, container), self.doc.graph);
           }
           else {
               console.log('Failed to add new triple to store.');
