@@ -64,13 +64,11 @@ RDFE.graphClear = function(store, graph) {
 RDFE.io = function(options) {
     var self = this;
     self.options = $.extend({
-        "async": true
     }, options);
 
     self.retrieve = function(graph, params, silent) {
         params = RDFE.params(params, self.options);
         if (silent) {
-            params["async"] = false;
             params["ajaxError"] = null;
             params["ajaxSuccess"] = null;
         }
@@ -130,7 +128,6 @@ RDFE.io = function(options) {
     self.clear = function(graph, params, silent) {
         params = RDFE.params(params, self.options);
         if (silent) {
-            params["async"] = false;
             params["ajaxError"] = null;
             params["ajaxSuccess"] = null;
             params["success"] = null;
@@ -146,7 +143,6 @@ RDFE.io = function(options) {
             url: params.host,
             success: params.success,
             type: 'GET',
-            async: params.async,
             data: {
                 "query": q,
                 "format": params.format
@@ -164,7 +160,6 @@ RDFE.io = function(options) {
 RDFE.gsp = function(options) {
     var self = this;
     self.options = $.extend({
-        "async": true,
         "contentType": 'application/octet-stream',
         "processData": false,
     }, options);
@@ -172,7 +167,6 @@ RDFE.gsp = function(options) {
     self.retrieve = function(graph, params, silent) {
         params = RDFE.params(params, self.options);
         if (silent) {
-            params["async"] = false;
             params["ajaxError"] = null;
             params["ajaxSuccess"] = null;
         }
@@ -183,7 +177,6 @@ RDFE.gsp = function(options) {
             url: params.host,
             success: params.success,
             type: 'GET',
-            async: params.async,
             data: {
                 "query": RDFE.GSP_RETRIEVE.format(graph),
                 "format": params.format
@@ -231,7 +224,6 @@ RDFE.gsp = function(options) {
     self.delete = function(graph, params, silent) {
         params = RDFE.params(params, self.options);
         if (silent) {
-            params["async"] = false;
             params["ajaxError"] = null;
             params["ajaxSuccess"] = null;
             params["success"] = null;
@@ -250,7 +242,6 @@ RDFE.gsp = function(options) {
             url: host,
             success: params.success,
             type: method,
-            async: params.async,
             contentType: params.contentType,
             processData: params.processData,
             data: content,
@@ -268,14 +259,12 @@ RDFE.LDP_INSERT = 'INSERT DATA {GRAPH <{0}> { <{1}> <{2}> {3} . }}';
 RDFE.ldp = function(options) {
     var self = this;
     self.options = $.extend({
-        "async": true,
         "dataType": 'text'
     }, options);
 
     self.retrieve = function(path, params, silent) {
         params = RDFE.params(params, self.options);
         if (silent) {
-            params["async"] = false;
             params["ajaxError"] = null;
             params["ajaxSuccess"] = null;
         }
@@ -343,7 +332,6 @@ RDFE.ldp = function(options) {
             url: path,
             success: params.success,
             type: method,
-            async: params.async,
             headers: headers,
             contentType: 'application/octet-stream',
             processData: false,
