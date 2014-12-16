@@ -118,6 +118,9 @@ RDFE.io = function(options) {
                     params["success"] = params['__success'];
                     self.exec(RDFE.IO_INSERT.format(graph, triples), params);
                 }
+                else if (params['success']) {
+                    params['success']();
+                }
             }
             params["__success"] = params["success"];
             params["success"] = __success;
