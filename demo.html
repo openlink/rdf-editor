@@ -264,7 +264,7 @@
 
       // SPARQL I/O
       var IO_SPARQL_HOST = $.jStorage.get("editor-sparql-endpoint", 'http://trueg.selfhost.eu:8899/sparql');
-      var IO_SPARQL_GRAPH = $.jStorage.get("editor-graph", 'urn:foo');
+      var IO_SPARQL_GRAPH = $.jStorage.get("editor-document-url", 'urn:foo');
 
       // The main document which contains the loaded data
       var mainDoc = new RDFE.Document();
@@ -285,6 +285,7 @@
                 editor.createEntityList(mainDoc, $("#entitiesContents"));
             $('#busyspinner').spin(false);
             $('#docUrl').text(url);
+            $.jStorage.set("editor-document-url", url);
         }, function() {
             // FIXME: error handling!!!
             console.log('Failed to load document');
@@ -355,7 +356,7 @@
       }
 
       $(document).ready(function() {
-        $("#io_g").val(IO_SPARQL_GRAPH);
+        $("#openDocLocation").val(IO_SPARQL_GRAPH);
         $("#io_spq").val(IO_SPARQL_HOST);
 
         $('button#open').click(function(e) {
@@ -380,6 +381,7 @@
             function() {
               $('#saveAsDialog').modal('hide');
               $('#docUrl').text(url);
+              $.jStorage.set("editor-document-url", url);
               $.growl({
                 message: "Successfully saved document to <code>" + url + "</code>",
                 icon: "glyphicon glyphicon-ok"
@@ -399,13 +401,6 @@
         $('button#add').click(function(e) {
             editor.createNewStatementEditor($('#sparqlcontents'));
         });
-
-
-	$("#io_g").change(
-	  function() {
-	    $.jStorage.set("editor-graph", $("#io_g").val());
-	  }
-	) ;
 
 	$("#io_spq").change(
 	  function() {
