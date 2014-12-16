@@ -7,6 +7,9 @@ if (typeof String.prototype.startsWith != 'function') {
 
 RDFE.Editor = function(params) {
   var self = this;
+
+  // empty default doc
+  this.doc = new RDFE.Document();
 };
 
 // draw_graph_contents() { }

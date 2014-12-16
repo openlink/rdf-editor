@@ -48,6 +48,8 @@ RDFE.Document.prototype.save = function(url, io, success, fail) {
     }
     else {
       var __success = function() {
+        self.url = myUrl;
+
         if(mySuccess)
           mySuccess();
       };
