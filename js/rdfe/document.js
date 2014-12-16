@@ -59,7 +59,6 @@ RDFE.Document.prototype.save = function(url, io, success, fail) {
 };
 
 RDFE.Document.prototype.deleteEntity = function(uri, success, fail) {
-  console.log('Document entity delete: ' + uri);
   var self = this;
 
   if(!uri) {
