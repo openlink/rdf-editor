@@ -81,10 +81,14 @@ RDFE.io = function(options) {
         params = RDFE.params(params, self.options);
         var __success = function(data, textStatus) {
           RDFE.graphClear(store, storeGraph);
-          store.load('text/turtle', data, storeGraph, function (s, r){if (!s) alert(r); graphTest(store, storeGraph);});
+          store.load('text/turtle', data, storeGraph, function (s, r) {
+              // FIXME: error handling!!!
+              if (!s)
+                alert(r);
 
-            if (params["__success"])
-              params["__success"](data);
+              if (params["__success"])
+                params["__success"](data);
+          });
         }
         params["__success"] = params["success"];
         params["success"] = __success;
@@ -99,6 +103,7 @@ RDFE.io = function(options) {
     self.insertFromStore = function(graph, store, storeGraph, params) {
         params = RDFE.params(params, self.options);
         store.graph(storeGraph, function(success, g) {
+            // FIXME: error handling!!!
             if (!success)
               return;
 
