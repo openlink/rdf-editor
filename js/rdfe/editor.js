@@ -152,7 +152,7 @@ RDFE.Editor.prototype.createEditorUi = function(doc, container) {
     var self = this;
     this.doc = doc;
 
-    doc.store.graph(doc.url, function(success, g) {
+    doc.store.graph(doc.graph, function(success, g) {
         if(success) {
             container.empty();
             for(var i = 0; i < g.length; i++) {
