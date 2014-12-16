@@ -335,6 +335,7 @@
           var url = $('#saveAsDialog input[name="saveAsLocation"]').val();
           mainDoc.save(url,
             function() {
+              $('#saveAsDialog').modal('hide');
               $.growl({
                 message: "Successfully saved document to <code>" + url + "</code>",
                 icon: "glyphicon glyphicon-ok"
