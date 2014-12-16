@@ -107,8 +107,8 @@
       <div class="btn-toolbar" role="toolbar">
         <div class="btn-group" role="group">
           <button type="button" class="btn btn-default"><span class="glyphicon glyphicon-open" aria-hidden="true"></span> Open</button>
-          <button type="button" class="btn btn-default"><span class="glyphicon glyphicon-save" aria-hidden="true"></span> Save</button>
-          <button type="button" class="btn btn-default"><span class="glyphicon glyphicon-save" aria-hidden="true"></span> Save As...</button>
+          <button id="save" type="button" class="btn btn-default"><span class="glyphicon glyphicon-save" aria-hidden="true"></span> Save</button>
+          <button id="saveAs" type="button" class="btn btn-default"><span class="glyphicon glyphicon-save" aria-hidden="true"></span> Save As...</button>
         </div>
         <div class="btn-group" role="group">
           <button id="add" type="button" class="btn btn-default" title="Add new statement"><span class="glyphicon glyphicon-plus" aria-hidden="true"></span> Add</button>
@@ -161,6 +161,32 @@
     </div><!-- /.modal -->
 
 
+    <div id="saveAsDialog" class="modal fade">
+      <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+          <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+            <h4 class="modal-title">Save Document</h4>
+          </div>
+          <div class="modal-body">
+            <form class="form-horizontal">
+              <div class="form-group">
+                <label for="saveAsLocation" class="col-sm-2 control-label">Location</label>
+                <div class="col-sm-10">
+                  <input type="text" id="io_spq" name="saveAsLocation" class="form-control" />
+                </div>
+              </div>
+            </form>
+          </div>
+          <div class="modal-footer">
+            <button id="saveAsBtn" type="button" class="btn btn-primary">Save</button>
+            <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+          </div>
+        </div><!-- /.modal-content -->
+      </div><!-- /.modal-dialog -->
+    </div><!-- /.modal -->
+
+
     <script src="js/jquery-1.11.1.min.js"></script>
     <script src="js/bootstrap.min.js"></script>
     <script src="js/bootstrap-editable.min.js"></script>
@@ -173,6 +199,7 @@
     <script src="js/rdfe/document.js"></script>
     <script src="js/rdfe/editor.js"></script>
     <script src="js/jstorage.js"></script>
+    <script src="js/bootstrap-growl.min.js"></script>
     <script>
       var val = new VAL();
 
@@ -212,13 +239,74 @@
         });
       }
 
+      // set defaults
+      $.growl(false, {
+        placement: {
+          from: "top",
+          align: "center"
+        },
+        template: '<div data-growl="container" class="alert" role="alert"> \
+          <button type="button" class="close" data-growl="dismiss"> \
+            <span aria-hidden="true">×</span> \
+            <span class="sr-only">Close</span> \
+          </button> \
+          <span data-growl="icon"></span> \
+          <span data-growl="title"></span> \
+          &nbsp;<span data-growl="message"></span>&nbsp; \
+        </div>'
+      });
+
       $(document).ready(function() {
         $("#io_g").val(IO_SPARQL_GRAPH);
         $("#io_spq").val(IO_SPARQL_HOST);
 
+
+        $('button#save').click(function(e) {
+            mainDoc.save(function() {
+              $.growl({
+                message: "Successfully saved document to <code>" + mainDoc.url + "</code>",
+                icon: "glyphicon glyphicon-ok"
+              }, {
+                type: 'success'
+              });
+            }, function(msg) {
+              $.growl({
+                message: msg,
+                icon: "glyphicon glyphicon-fire"
+              }, {
+                type: 'danger'
+              });
+            });
+        });
+
+        $('button#saveAs').click(function(e) {
+            $('#saveAsDialog').find('input[name="saveAsLocation"]').val($("#io_g").val());
+            $('#saveAsDialog').modal();
+        });
+        $('#saveAsDialog #saveAsBtn').click(function() {
+          var url = $('#saveAsDialog input[name="saveAsLocation"]').val();
+          mainDoc.save(url,
+            function() {
+              $.growl({
+                message: "Successfully saved document to <code>" + url + "</code>",
+                icon: "glyphicon glyphicon-ok"
+              }, {
+                type: 'success'
+              });
+            }, function(msg) {
+              $.growl({
+                message: msg,
+                icon: "glyphicon glyphicon-fire"
+              }, {
+                type: 'danger'
+              });
+            });
+        });
+
         $('button#add').click(function(e) {
             editor.createNewStatementEditor($('#sparqlcontents'));
         });
+
 
 	$("#io_g").change(
 	  function() {

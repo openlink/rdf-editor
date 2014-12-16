@@ -37,9 +37,9 @@
     <script src="js/bootstrap.min.js"></script>
     <script src="js/jquery-deparam.min.js"></script>
     <script src="js/jquery.cookie.js"></script>
-    <script src="js/rdfe.js"></script>
     <script src="js/rdf_store.js"></script>
     <script src="js/val.js"></script>
+    <script src="js/rdfe/io.js"></script>
     <script>
       var myAjaxError = function() {
         console.log('Sparql Request Failed');
@@ -56,12 +56,12 @@
       var url = document.location.protocol + '//' + document.location.host;
       var IO_SPARQL_HOST = url + '/sparql';
       var IO_SPARQL_GRAPH = 'http://example.org/io';
-      var io_rdfe = new RDFE.io({"host": IO_SPARQL_HOST, "graph": IO_SPARQL_GRAPH, "ajaxError": myAjaxError, "ajaxSuccess": myAjaxSuccess});
+      var io_rdfe = new RDFE.io({"host": IO_SPARQL_HOST, "ajaxError": myAjaxError, "ajaxSuccess": myAjaxSuccess});
 
       // SPARQL GSP
       var GSP_SPARQL_HOST = url + '/sparql-graph-crud';
       var GSP_SPARQL_GRAPH = 'http://example.org/gsp';
-      var gsp_rdfe = new RDFE.gsp({"host": GSP_SPARQL_HOST, "graph": GSP_SPARQL_GRAPH, "ajaxError": myAjaxError, "ajaxSuccess": myAjaxSuccess});
+      var gsp_rdfe = new RDFE.gsp({"host": GSP_SPARQL_HOST, "ajaxError": myAjaxError, "ajaxSuccess": myAjaxSuccess});
 
       // SPARQL LDP
       var ldp_rdfe = new RDFE.ldp({"ajaxError": myAjaxError, "ajaxSuccess": myAjaxSuccess});
@@ -104,72 +104,73 @@
         // SPARQL I/O
         $('#io_g').val(IO_SPARQL_GRAPH);
         $("#io_retrieve").on("click", function(e) {
-            io_rdfe.retrieve({"format": 'text/n3', "success": mySuccess});
+            io_rdfe.retrieve($('#io_g').val(), {"format": 'text/n3', "success": mySuccess});
           }
         );
         $("#io_insert").on("click", function(e) {
-            io_rdfe.insert($('#io_s').val(), $('#io_p').val(), $('#io_o').val());
+            io_rdfe.insert($('#io_g').val(), $('#io_s').val(), $('#io_p').val(), $('#io_o').val());
           }
         );
         $("#io_delete").on("click", function(e) {
-            io_rdfe.delete($('#io_s').val(), $('#io_p').val(), $('#io_o').val());
+            io_rdfe.delete($('#io_g').val(), $('#io_s').val(), $('#io_p').val(), $('#io_o').val());
           }
         );
         $("#io_insertStore").on("click", function(e) {
-            io_rdfe.insertFromStore(rdfeStore, TEST_SPARQL_GRAPH);
+            io_rdfe.insertFromStore($('#io_g').val(), rdfeStore, TEST_SPARQL_GRAPH);
           }
         );
         $("#io_retrieveStore").on("click", function(e) {
-            io_rdfe.retrieveToStore(rdfeStore, TEST_SPARQL_GRAPH, {"format": 'text/n3', "success": mySuccess});
+            io_rdfe.retrieveToStore($('#io_g').val(), rdfeStore, TEST_SPARQL_GRAPH, {"format": 'text/n3', "success": mySuccess});
           }
         );
 
         // SPARQL GSP
         $('#gsp_g').val(GSP_SPARQL_GRAPH);
         $("#gsp_retrieve").on("click", function(e) {
-            gsp_rdfe.retrieve({"host": IO_SPARQL_HOST, "format": 'text/n3', "success": mySuccess});
+            gsp_rdfe.retrieve($('#gsp_g').val(), {"host": IO_SPARQL_HOST, "format": 'text/n3', "success": mySuccess});
           }
         );
         $("#gsp_insert").on("click", function(e) {
-            fileReaderContent('gsp_f', function(){gsp_rdfe.insert(readerResult);});
+            fileReaderContent('gsp_f', function(){gsp_rdfe.insert($('#gsp_g').val(), readerResult);});
           }
         );
         $("#gsp_update").on("click", function(e) {
-            fileReaderContent('gsp_f', function(){gsp_rdfe.update(readerResult);});
+            fileReaderContent('gsp_f', function(){gsp_rdfe.update($('#gsp_g').val(), readerResult);});
           }
         );
         $("#gsp_delete").on("click", function(e) {
-            gsp_rdfe.delete();
+            gsp_rdfe.delete($('#gsp_g').val());
           }
         );
         $("#gsp_insertStore").on("click", function(e) {
-            gsp_rdfe.insertFromStore(rdfeStore, TEST_SPARQL_GRAPH);
+            gsp_rdfe.insertFromStore($('#gsp_g').val(), rdfeStore, TEST_SPARQL_GRAPH);
           }
         );
         $("#gsp_retrieveStore").on("click", function(e) {
-            gsp_rdfe.retrieveToStore(rdfeStore, TEST_SPARQL_GRAPH, {"host": IO_SPARQL_HOST, "format": 'text/n3', "success": mySuccess});
+            gsp_rdfe.retrieveToStore($('#gsp_g').val(), rdfeStore, TEST_SPARQL_GRAPH, {"host": IO_SPARQL_HOST, "format": 'text/n3', "success": mySuccess});
           }
         );
 
         // SPARQL LDP
+        $('#ldp_p').val(url + '/DAV/home/demo/Public/LDP/1.ttl');
         $("#ldp_retrieve").on("click", function(e) {
-            ldp_rdfe.retrieve($('#ldp_p').val() + $('#ldp_n').val(), {"success": mySuccess});
+            ldp_rdfe.retrieve($('#ldp_p').val(), {"success": mySuccess});
           }
         );
         $("#ldp_insert").on("click", function(e) {
-            fileReaderContent('ldp_f', function(){ldp_rdfe.insert($('#ldp_p').val() + $('#ldp_n').val(), readerResult);});
+            fileReaderContent('ldp_f', function(){ldp_rdfe.insert($('#ldp_p').val(), readerResult);});
           }
         );
         $("#ldp_delete").on("click", function(e) {
-            ldp_rdfe.delete($('#ldp_p').val() + $('#ldp_n').val());
+            ldp_rdfe.delete($('#ldp_p').val());
           }
         );
         $("#ldp_insertStore").on("click", function(e) {
-            ldp_rdfe.insertFromStore($('#ldp_p').val() + $('#ldp_n').val(), rdfeStore, TEST_SPARQL_GRAPH);
+            ldp_rdfe.insertFromStore($('#ldp_p').val(), rdfeStore, TEST_SPARQL_GRAPH);
           }
         );
         $("#ldp_retrieveStore").on("click", function(e) {
-            ldp_rdfe.retrieveToStore($('#ldp_p').val() + $('#ldp_n').val(), rdfeStore, TEST_SPARQL_GRAPH, {"success": mySuccess});
+            ldp_rdfe.retrieveToStore($('#ldp_p').val(), rdfeStore, TEST_SPARQL_GRAPH, {"success": mySuccess});
           }
         );
       });
@@ -294,12 +295,6 @@
               <label for="ldp_f" class="col-sm-2 control-label">TTL Content</label>
               <div class="col-sm-10">
                 <input type="file" id="ldp_f" name="ldp_f" />
-              </div>
-            </div>
-            <div class="form-group">
-              <label for="ldp_n" class="col-sm-2 control-label">Name</label>
-              <div class="col-sm-10">
-                <input type="text" id="ldp_n" name="ldp_n" class="form-control" />
               </div>
             </div>
           </div>
