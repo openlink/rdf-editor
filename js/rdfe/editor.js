@@ -227,16 +227,13 @@ RDFE.Editor.prototype.createEntityList = function(doc, container) {
                   <a href="#" class="btn btn-primary btn-xs triple-action entity-action-edit pull-right">Edit<br></a></li>');
             }
             container.find('.entity-action-delete').click(function(e) {
-                console.log('Entity Delete button clicked');
                 // delete all triples referencing that resource from the store
                 var $li = $(this).closest('li');
                 var uri = $li.attr('data-entity-uri');
                 self.doc.deleteEntity(uri, function() {
-                    console.log('Entity Delete succeeded');
                     $li.remove();
                     $(self).trigger('rdf-editor-success', { "type": 'entity-delete-done', "uri": uri, "message": "Successfully deleted entity " + uri + "." });
                 }, function(msg) {
-                    console.log('Entity Delete failed');
                     $(self).trigger('rdf-editor-error', { "type": 'entity-delete-failed', "message": msg });
                 });
             });
