@@ -108,6 +108,7 @@ RDFE.io = function(options) {
               return;
 
             // clear graph before
+            // FIXME: this is async. Do the insert in its success callback and also handle errors.
             self.clear(graph, params, true);
 
             var delimiter = '';
