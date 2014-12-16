@@ -37,6 +37,7 @@
         overflow: hidden;
         text-overflow: ellipsis;
       }
+      #busyspinner {margin: 1em; }
     </style>
   </head>
   <body>
@@ -112,6 +113,10 @@
         </div>
         <div class="btn-group" role="group">
           <button id="add" type="button" class="btn btn-default" title="Add new statement"><span class="glyphicon glyphicon-plus" aria-hidden="true"></span> Add</button>
+        </div>
+        <div class="btn-group" role="group">
+          <div id="busyspinner">
+          </div>
         </div>
       </div>
 
@@ -200,6 +205,8 @@
     <script src="js/rdfe/editor.js"></script>
     <script src="js/jstorage.js"></script>
     <script src="js/bootstrap-growl.min.js"></script>
+    <script src="js/spin.js"></script>
+    <script src="js/jquery.spin.js"></script>
     <script>
       var val = new VAL();
 
@@ -230,12 +237,16 @@
           "host": $('#io_spq').val(),
           "graph": $('#io_g').val()
         });
+        
+        $('#busyspinner').spin( {top: "100%", left:"100%", length: 10, radius: 7, lines:10, width:2, shadow: true } );
 
         mainDoc.load($('#io_g').val(), io_rdfe, function() {
             editor.createEditorUi(mainDoc, $("#sparqlcontents"));
+            $('#busyspinner').spin(false);
         }, function() {
             // FIXME: error handling!!!
             console.log('Failed to load document');
+            $('#busyspinner').spin(false);
         });
       }
 
@@ -259,7 +270,6 @@
       $(document).ready(function() {
         $("#io_g").val(IO_SPARQL_GRAPH);
         $("#io_spq").val(IO_SPARQL_HOST);
-
 
         $('button#save').click(function(e) {
             mainDoc.save(function() {
