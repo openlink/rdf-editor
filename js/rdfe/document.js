@@ -5,6 +5,7 @@ RDFE.Document = function(params) {
   var self = this;
 
   self.store = rdfstore.create();
+  self.graph = 'urn:graph:default';
 };
 
 RDFE.Document.prototype.load = function(url, io, success, fail) {
@@ -51,6 +52,6 @@ RDFE.Document.prototype.save = function(url, io, success, fail) {
           mySuccess();
       };
       // FIXME: add error handling
-      myIo.insertFromStore(self.store, self.url, {"success": __success});
+      myIo.insertFromStore(self.store, self.graph, {"success": __success});
     }
 };
