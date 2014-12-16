@@ -115,11 +115,11 @@
           <button id="add" type="button" class="btn btn-default" title="Add new statement"><span class="glyphicon glyphicon-plus" aria-hidden="true"></span> Add</button>
         </div>
         <div class="btn-group" role="group" data-toggle="buttons">
-          <label class="btn btn-default active" title="Show All Triples in the Document">
-            <input type="radio" name="view" id="view-triples" autocomplete="off" checked><span class="glyphicon glyphicon-th" aria-hidden="true"></span> Triples
+          <label class="btn btn-default active" title="Show the Entities in the Document">
+            <input type="radio" name="view" id="view-entities" autocomplete="off" checked><span class="glyphicon glyphicon-list" aria-hidden="true"></span> Entities
           </label>
-          <label class="btn btn-default" title="Show the Entities in the Document">
-            <input type="radio" name="view" id="view-entities" autocomplete="off"><span class="glyphicon glyphicon-list" aria-hidden="true"></span> Entities
+          <label class="btn btn-default" title="Show All Triples in the Document">
+            <input type="radio" name="view" id="view-triples" autocomplete="off"><span class="glyphicon glyphicon-th" aria-hidden="true"></span> Triples
           </label>
         </div>
         <div class="btn-group" role="group">
@@ -130,7 +130,16 @@
 
       <br/>
 
-      <div id="panel-view-triples" class="panel panel-default main-view-panel">
+      <div id="panel-view-entities" class="panel panel-default main-view-panel">
+        <div class="panel-heading">
+          <h3 class="panel-title">Entities</h3>
+        </div>
+        <ul id="entitiesContents" class="list-group">
+        </ul>
+      </div>
+
+
+      <div id="panel-view-triples" class="panel panel-default main-view-panel" style="display:none;">
         <div class="panel-heading">
           <h3 class="panel-title">Triples</h3>
         </div>
@@ -147,16 +156,7 @@
           </tbody>
         </table>
       </div>
-
-      <div id="panel-view-entities" class="panel panel-default main-view-panel" style="display:none;">
-        <div class="panel-heading">
-          <h3 class="panel-title">Entities</h3>
-        </div>
-        <ul id="entitiesContents" class="list-group">
-        </ul>
-      </div>
     </div>
-
 
 
     <div id="configDialog" class="modal fade">
