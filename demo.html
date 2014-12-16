@@ -73,18 +73,13 @@
           <form name="rdfe" class="form-horizontal">
             <div class="panel panel-default">
               <div class="panel-heading">
-                <h3 class="panel-title">RDF Editor</h3>
+                <h3 class="panel-title">Document</h3>
               </div>
               <div class="panel-body">
                 <div class="form-group">
                   <label for="io_g" class="col-sm-2 control-label">Document URL</label>
                   <div class="col-sm-10">
-                    <div class="input-group">
-                      <input type="text" id="io_g" name="io_g" class="form-control" />
-                      <span class="input-group-btn">
-                        <input type="button" id="io_submit" name="io_submit" class="btn btn-primary" value="Retrieve" onclick="ioRetrieve()" />
-                      </span>
-                    </div>
+                    <p id="docUrl" class="form-control-static">no document loaded</p>
                   </div>
                 </div>
               </div>
@@ -107,7 +102,7 @@
 
       <div class="btn-toolbar" role="toolbar">
         <div class="btn-group" role="group">
-          <button type="button" class="btn btn-default"><span class="glyphicon glyphicon-open" aria-hidden="true"></span> Open</button>
+          <button id="open" type="button" class="btn btn-default"><span class="glyphicon glyphicon-open" aria-hidden="true"></span> Open</button>
           <button id="save" type="button" class="btn btn-default"><span class="glyphicon glyphicon-save" aria-hidden="true"></span> Save</button>
           <button id="saveAs" type="button" class="btn btn-default"><span class="glyphicon glyphicon-save" aria-hidden="true"></span> Save As...</button>
         </div>
@@ -169,7 +164,7 @@
           <div class="modal-body">
             <form class="form-horizontal">
               <div class="form-group">
-                <label for="io_g" class="col-sm-2 control-label">SPARQL endpoint</label>
+                <label for="io_spq" class="col-sm-2 control-label">SPARQL endpoint</label>
                 <div class="col-sm-10">
                   <input type="text" id="io_spq" name="io_spq" class="form-control" />
                 </div>
@@ -203,6 +198,31 @@
           </div>
           <div class="modal-footer">
             <button id="saveAsBtn" type="button" class="btn btn-primary">Save</button>
+            <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+          </div>
+        </div><!-- /.modal-content -->
+      </div><!-- /.modal-dialog -->
+    </div><!-- /.modal -->
+
+    <div id="openDocDialog" class="modal fade">
+      <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+          <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+            <h4 class="modal-title">Open Document</h4>
+          </div>
+          <div class="modal-body">
+            <form class="form-horizontal">
+              <div class="form-group">
+                <label for="openDocLocation" class="col-sm-2 control-label">Location</label>
+                <div class="col-sm-10">
+                  <input type="text" id="openDocLocation" name="openDocLocation" class="form-control" />
+                </div>
+              </div>
+            </form>
+          </div>
+          <div class="modal-footer">
+            <button id="openDocBtn" type="button" class="btn btn-primary">Open</button>
             <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
           </div>
         </div><!-- /.modal-content -->
@@ -250,20 +270,21 @@
       var mainDoc = new RDFE.Document();
       var editor = new RDFE.Editor();
 
-      function ioRetrieve() {
+      function ioRetrieve(url) {
         var io_rdfe = new RDFE.io({
           "host": $('#io_spq').val(),
-          "graph": $('#io_g').val()
+          "graph": url
         });
 
         $('#busyspinner').spin( {top: "100%", left:"100%", length: 10, radius: 7, lines:10, width:2, shadow: true } );
 
-        mainDoc.load($('#io_g').val(), io_rdfe, function() {
+        mainDoc.load(url, io_rdfe, function() {
             if($('#panel-view-triples').is(":visible"))
                 editor.createEditorUi(mainDoc, $("#sparqlcontents"));
             else
                 editor.createEntityList(mainDoc, $("#entitiesContents"));
             $('#busyspinner').spin(false);
+            $('#docUrl').text(url);
         }, function() {
             // FIXME: error handling!!!
             console.log('Failed to load document');
@@ -305,37 +326,60 @@
         </div>'
       });
 
+      function save() {
+        if (mainDoc.url) {
+          mainDoc.save(function() {
+            $.growl({
+              message: "Successfully saved document to <code>" + mainDoc.url + "</code>",
+              icon: "glyphicon glyphicon-ok"
+            }, {
+              type: 'success'
+            });
+          }, function(msg) {
+            $.growl({
+              message: msg,
+              icon: "glyphicon glyphicon-fire"
+            }, {
+              type: 'danger'
+            });
+          });
+        }
+        else {
+          saveAs();
+        }
+      }
+
+      function saveAs() {
+        $('#saveAsDialog').find('input[name="saveAsLocation"]').val(mainDoc.url);
+        $('#saveAsDialog').modal();
+      }
+
       $(document).ready(function() {
         $("#io_g").val(IO_SPARQL_GRAPH);
         $("#io_spq").val(IO_SPARQL_HOST);
 
+        $('button#open').click(function(e) {
+          $('#openDocDialog').modal();
+        });
+        $('#openDocDialog #openDocBtn').click(function() {
+          var url = $('#openDocDialog input[name="openDocLocation"]').val();
+          ioRetrieve(url);
+          $('#openDocDialog').modal('hide');
+        });
+
         $('button#save').click(function(e) {
-            mainDoc.save(function() {
-              $.growl({
-                message: "Successfully saved document to <code>" + mainDoc.url + "</code>",
-                icon: "glyphicon glyphicon-ok"
-              }, {
-                type: 'success'
-              });
-            }, function(msg) {
-              $.growl({
-                message: msg,
-                icon: "glyphicon glyphicon-fire"
-              }, {
-                type: 'danger'
-              });
-            });
+            save();
         });
 
         $('button#saveAs').click(function(e) {
-            $('#saveAsDialog').find('input[name="saveAsLocation"]').val($("#io_g").val());
-            $('#saveAsDialog').modal();
+            saveAs();
         });
         $('#saveAsDialog #saveAsBtn').click(function() {
           var url = $('#saveAsDialog input[name="saveAsLocation"]').val();
           mainDoc.save(url,
             function() {
               $('#saveAsDialog').modal('hide');
+              $('#docUrl').text(url);
               $.growl({
                 message: "Successfully saved document to <code>" + url + "</code>",
                 icon: "glyphicon glyphicon-ok"
