@@ -63,8 +63,7 @@ RDFE.graphClear = function(store, graph) {
  */
 RDFE.io = function(options) {
     var self = this;
-    self.options = $.extend({
-    }, options);
+    self.options = $.extend({}, options);
 
     self.retrieve = function(graph, params, silent) {
         params = RDFE.params(params, self.options);
@@ -79,13 +78,15 @@ RDFE.io = function(options) {
         params = RDFE.params(params, self.options);
         var __success = function(data, textStatus) {
           RDFE.graphClear(store, storeGraph);
-          store.load('text/turtle', data, storeGraph, function (s, r) {
-              // FIXME: error handling!!!
-              if (!s)
-                alert(r);
+          store.load('text/turtle', data, storeGraph, function (success, result) {
+              if (!success) {
+                  alert(result);
+                  return;
+              }
 
+              // exec success function
               if (params["__success"])
-                params["__success"](data);
+                  params["__success"](data);
           });
         }
         params["__success"] = params["success"];
@@ -100,23 +101,27 @@ RDFE.io = function(options) {
 
     self.insertFromStore = function(graph, store, storeGraph, params) {
         params = RDFE.params(params, self.options);
-        store.graph(storeGraph, function(success, g) {
-            // FIXME: error handling!!!
-            if (!success)
-              return;
-
-            // clear graph before
-            // FIXME: this is async. Do the insert in its success callback and also handle errors.
-            self.clear(graph, params, true);
-
-            var delimiter = '';
-            var triples = '';
-            for (var i = 0; i < g.length; i++) {
-              triples += delimiter + RDFE.IO_INSERT_SINGLE.format(g.toArray()[i].subject, g.toArray()[i].predicate, g.toArray()[i].object);
-              delimiter = ' . ';
+        store.graph(storeGraph, function(success, result) {
+            if (!success) {
+                alert(result);
+                return;
             }
-            if (triples)
-              self.exec(RDFE.IO_INSERT.format(graph, triples), params);
+
+            var __success = function(data, textStatus) {
+                var delimiter = '';
+                var triples = '';
+                for (var i = 0; i < result.length; i++) {
+                    triples += delimiter + RDFE.IO_INSERT_SINGLE.format(result.toArray()[i].subject, result.toArray()[i].predicate, result.toArray()[i].object.toNT());
+                    delimiter = ' . ';
+                }
+                if (triples) {
+                    params["success"] = __success;
+                    self.exec(RDFE.IO_INSERT.format(graph, triples), params);
+                }
+            }
+            params["__success"] = params["success"];
+            params["success"] = __success;
+            self.clear(graph, params);
         });
     }
 
@@ -130,7 +135,6 @@ RDFE.io = function(options) {
         if (silent) {
             params["ajaxError"] = null;
             params["ajaxSuccess"] = null;
-            params["success"] = null;
         }
         self.exec(RDFE.IO_CLEAR.format(graph), params);
     }
@@ -188,11 +192,15 @@ RDFE.gsp = function(options) {
     self.retrieveToStore = function(graph, store, storeGraph, params) {
         params = RDFE.params(params, self.options);
         var __success = function(data, textStatus) {
-          RDFE.graphClear(store, storeGraph);
-          store.load('text/turtle', data, storeGraph, function (s, r){if (!s) alert(r); graphTest(store, storeGraph);});
-
-          if (params["__success"])
-            params["__success"](data);
+            RDFE.graphClear(store, storeGraph);
+            store.load('text/turtle', data, storeGraph, function (success, result){
+              if (!success) {
+                  alert(result);
+                  return;
+              }
+              if (params["__success"])
+                  params["__success"](data);
+            });
         }
         params["__success"] = params["success"];
         params["success"] = __success;
@@ -206,13 +214,20 @@ RDFE.gsp = function(options) {
 
     self.insertFromStore = function(graph, store, storeGraph, params) {
         params = RDFE.params(params, self.options);
-        store.graph(storeGraph, function(success, g) {
-            if (!success)
-              return;
+        store.graph(storeGraph, function(success, result) {
+            if (!success) {
+                alert(result);
+                return;
+            }
 
             // clear graph before
+            var __success = function(data, textStatus) {
+                params["success"] = params["__success"];
+                self.insert(graph, result.toNT(), params);
+            }
+            params["__success"] = params["success"];
+            params["success"] = __success;
             self.clear(graph, params, true);
-            self.insert(graph, g.toNT(), params);
         });
     }
 
@@ -226,7 +241,6 @@ RDFE.gsp = function(options) {
         if (silent) {
             params["ajaxError"] = null;
             params["ajaxSuccess"] = null;
-            params["success"] = null;
         }
         self.exec('DELETE', graph, null, params);
     }
@@ -277,11 +291,16 @@ RDFE.ldp = function(options) {
     self.retrieveToStore = function(path, store, storeGraph, params) {
         params = RDFE.params(params, self.options);
         var __success = function(data, textStatus) {
-          RDFE.graphClear(store, storeGraph);
-          store.load('text/turtle', data, storeGraph, function (s, r){if (!s) alert(r); graphTest(store, storeGraph);});
+            RDFE.graphClear(store, storeGraph);
+            store.load('text/turtle', data, storeGraph, function(success, result) {
+                if (!success) {
+                    alert(result);
+                    return;
+                }
+            });
 
-          if (params["__success"])
-            params["__success"](data);
+            if (params["__success"])
+                params["__success"](data);
         }
         params["__success"] = params["success"];
         params["success"] = __success;
@@ -299,11 +318,13 @@ RDFE.ldp = function(options) {
 
     self.insertFromStore = function(path, store, storeGraph, params) {
         params = RDFE.params(params, self.options);
-        store.graph(storeGraph, function(success, g) {
-            if (!success)
+        store.graph(storeGraph, function(success, result) {
+            if (!success) {
+                alert(result);
                 return;
+            }
 
-            var content = g.toNT();
+            var content = result.toNT();
             self.insert(path, content, params);
         });
     }
