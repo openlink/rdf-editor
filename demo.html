@@ -114,6 +114,14 @@
         <div class="btn-group" role="group">
           <button id="add" type="button" class="btn btn-default" title="Add new statement"><span class="glyphicon glyphicon-plus" aria-hidden="true"></span> Add</button>
         </div>
+        <div class="btn-group" role="group" data-toggle="buttons">
+          <label class="btn btn-default active" title="Show All Triples in the Document">
+            <input type="radio" name="view" id="view-triples" autocomplete="off" checked><span class="glyphicon glyphicon-th" aria-hidden="true"></span> Triples
+          </label>
+          <label class="btn btn-default" title="Show the Entities in the Document">
+            <input type="radio" name="view" id="view-entities" autocomplete="off"><span class="glyphicon glyphicon-list" aria-hidden="true"></span> Entities
+          </label>
+        </div>
         <div class="btn-group" role="group">
           <div id="busyspinner">
           </div>
@@ -122,9 +130,9 @@
 
       <br/>
 
-      <div class="panel panel-default">
+      <div id="panel-view-triples" class="panel panel-default main-view-panel">
         <div class="panel-heading">
-          <h3 class="panel-title">Contents</h3>
+          <h3 class="panel-title">Triples</h3>
         </div>
         <table class="table table-bordered table-striped" style="table-layout: fixed;">
           <thead>
@@ -139,7 +147,17 @@
           </tbody>
         </table>
       </div>
+
+      <div id="panel-view-entities" class="panel panel-default main-view-panel" style="display:none;">
+        <div class="panel-heading">
+          <h3 class="panel-title">Entities</h3>
+        </div>
+        <ul id="entitiesContents" class="list-group">
+        </ul>
+      </div>
     </div>
+
+
 
     <div id="configDialog" class="modal fade">
       <div class="modal-dialog modal-lg">
@@ -237,11 +255,14 @@
           "host": $('#io_spq').val(),
           "graph": $('#io_g').val()
         });
-        
+
         $('#busyspinner').spin( {top: "100%", left:"100%", length: 10, radius: 7, lines:10, width:2, shadow: true } );
 
         mainDoc.load($('#io_g').val(), io_rdfe, function() {
-            editor.createEditorUi(mainDoc, $("#sparqlcontents"));
+            if($('#panel-view-triples').is(":visible"))
+                editor.createEditorUi(mainDoc, $("#sparqlcontents"));
+            else
+                editor.createEntityList(mainDoc, $("#entitiesContents"));
             $('#busyspinner').spin(false);
         }, function() {
             // FIXME: error handling!!!
@@ -249,6 +270,22 @@
             $('#busyspinner').spin(false);
         });
       }
+
+      // subscribe to editor events
+      $(editor).on('rdf-editor-success', function(e, d) {
+        $.growl({
+          message: d.message
+        }, {
+          type: "success"
+        });
+      });
+      $(editor).on('rdf-editor-error', function(e, d) {
+        $.growl({
+          message: d.message
+        }, {
+          type: "danger"
+        });
+      });
 
       // set defaults
       $.growl(false, {
@@ -329,6 +366,27 @@
 	    $.jStorage.set("editor-sparql-endpoint", $("#io_spq").val());
 	  }
 	) ;
+
+        // reload the contents when the panel shows
+        $(document).on('show-view-triples', function() {
+            console.log('show-view-triples event');
+            editor.createEditorUi(mainDoc, $("#sparqlcontents"));
+        });
+        $(document).on('show-view-entities', function() {
+            console.log('show-view-entities event');
+            editor.createEntityList(mainDoc, $("#entitiesContents"));
+        });
+
+        function togglePanel(id) {
+          console.log('togglePanel ' + id);
+          $('.main-view-panel').hide();
+          $('#panel-' + id).show();
+          $(document).trigger('show-' + id);
+        }
+
+        $('input[name="view"]').change(function(e) {
+            togglePanel(e.target.id);
+        });
       });
     </script>
   </body>
