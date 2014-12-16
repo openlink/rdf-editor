@@ -107,7 +107,7 @@
           <button id="saveAs" type="button" class="btn btn-default"><span class="glyphicon glyphicon-save" aria-hidden="true"></span> Save As...</button>
         </div>
         <div class="btn-group" role="group">
-          <button id="add" type="button" class="btn btn-default" title="Add new statement"><span class="glyphicon glyphicon-plus" aria-hidden="true"></span> Add</button>
+          <button id="add" type="button" class="btn btn-default"><span class="glyphicon glyphicon-plus" aria-hidden="true"></span> Add</button>
         </div>
         <div class="btn-group" role="group" data-toggle="buttons">
           <label class="btn btn-default active" title="Show the Entities in the Document">
@@ -399,7 +399,10 @@
         });
 
         $('button#add').click(function(e) {
-            editor.createNewStatementEditor($('#sparqlcontents'));
+            if($('#panel-view-triples').is(":visible"))
+              editor.createNewStatementEditor($('#sparqlcontents'));
+            else
+              alert('FIXME: need to show new resource dialog with type selection.');
         });
 
 	$("#io_spq").change(
