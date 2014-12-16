@@ -115,7 +115,7 @@ RDFE.io = function(options) {
                     delimiter = ' . ';
                 }
                 if (triples) {
-                    params["success"] = __success;
+                    params["success"] = params['__success'];
                     self.exec(RDFE.IO_INSERT.format(graph, triples), params);
                 }
             }
