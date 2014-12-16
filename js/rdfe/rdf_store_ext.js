@@ -40,3 +40,13 @@ rdfstore.Store.prototype.parseLiteral = function(literalString) {
     var value = literalString.substring(1,literalString.length-1);
     return {token:"literal", value:value};
 };
+
+
+rdfstore.Store.prototype.termToNode = function(term) {
+  if (term.token == "literal")
+    return this.rdf.createLiteral(term.value, term.lang, term.type);
+  else if(term.token == "uri")
+    return this.rdf.createNamedNode(term.value);
+  else
+    return this.rdf.createNamedNode(term.value); // FIXME: blank nodes are so much trouble. We need to find a way to handle them properly
+};
