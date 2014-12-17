@@ -86,27 +86,25 @@ RDFE.Editor.prototype.createTripleRow = function(t, container) {
     var s=t.subject;
     var p=t.predicate;
     var o=t.object;
-        
+
     var oVal = RDFE.Editor.escapeHTML(o.toString());
     var oDataType = 'text';
     var datatype = '';
     var interfaceName = '';
-    if (o.datatype == 'http://www.w3.org/2001/XMLSchema#dateTime')
-    {
+    if (o.datatype == 'http://www.w3.org/2001/XMLSchema#dateTime') {
         oVal = (new Date(o.nominalValue)).toISOString();
         oDataType = 'datetime';
     }
-    else
-    {
+    else {
         oVal = RDFE.Editor.escapeHTML(o.nominalValue);
     }
     if (o.datatype)
         datatype = ' dtype="'+ o.datatype +'" ';
-        
+
     if (o.interfaceName)
         interfaceName = ' interfaceName="'+ o.interfaceName +'" ';
-    
- 
+
+
     container.append(' \
         <tr class="triple" \
         data-statement-s-old="' + escape(s.toNT()) + '" \
@@ -124,9 +122,9 @@ RDFE.Editor.prototype.createTripleActions = function(tripleRow, graphUri) {
     var self = this;
 
     var editable_opts = { mode: "inline" };
-    
+
     var editable_dt_opts = {
-        format: 'yyyy-mm-ddThh:ii:ssZ',    
+        format: 'yyyy-mm-ddThh:ii:ssZ',
         viewformat: 'yyyy-mm-ddThh:ii:ssZ',
         datetimepicker: {
             weekStart: 1
@@ -138,21 +136,19 @@ RDFE.Editor.prototype.createTripleActions = function(tripleRow, graphUri) {
     tripleRow.find('.editable').on('save', function(e, params) {
         var $this = $(this);
         var $tripleTr = $this.closest('tr');
-        
+
         var newOVal = params.newValue;
-        if ($this.attr('data-type') == 'datetime')
-        {
+        if ($this.attr('data-type') == 'datetime') {
             var d = new Date(params.newValue);
             newOVal = d.toISOString();
         }
-        if ($this.attr('interfaceName') == 'Literal')
+        if ($this.attr('interfaceName') == 'Literal') {
             newOVal = '"'+ newOVal + '"';
-        {
             if ($this.attr('dtype'))
                 newOVal = newOVal + '^^<' + $this.attr('dtype') + '>';
         }
-        
-            
+
+
         var updated_field = $this.hasClass("o") ? 'o' : $this.hasClass("s") ? 's' : $this.hasClass("p") ? 'p' : '';
         var s = updated_field == 's' ? params.newValue : $tripleTr.find('a.s').text();
         var p = updated_field == 'p' ? params.newValue : $tripleTr.find('a.p').text();
