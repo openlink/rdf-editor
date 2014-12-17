@@ -79,12 +79,34 @@ RDFE.Editor.prototype.saveTripleToElem = function(tripleTr, triple) {
     tripleTr.attr ('data-statement-s-old', escape(triple.subject.toNT()));
     tripleTr.attr ('data-statement-p-old', escape(triple.predicate.toNT()));
     tripleTr.attr ('data-statement-o-old', escape(triple.object.toNT()));
+    //tripleTr.attr ('data-statement-o-old', escape(triple.object.toString()));
 };
 
 RDFE.Editor.prototype.createTripleRow = function(t, container) {
     var s=t.subject;
     var p=t.predicate;
     var o=t.object;
+        
+    var oVal = RDFE.Editor.escapeHTML(o.toString());
+    var oDataType = 'text';
+    var datatype = '';
+    var interfaceName = '';
+    if (o.datatype == 'http://www.w3.org/2001/XMLSchema#dateTime')
+    {
+        oVal = (new Date(o.nominalValue)).toISOString();
+        oDataType = 'datetime';
+    }
+    else
+    {
+        oVal = RDFE.Editor.escapeHTML(o.nominalValue);
+    }
+    if (o.datatype)
+        datatype = ' dtype="'+ o.datatype +'" ';
+        
+    if (o.interfaceName)
+        interfaceName = ' interfaceName="'+ o.interfaceName +'" ';
+    
+ 
     container.append(' \
         <tr class="triple" \
         data-statement-s-old="' + escape(s.toNT()) + '" \
@@ -92,7 +114,7 @@ RDFE.Editor.prototype.createTripleRow = function(t, container) {
         data-statement-o-old="' + escape(o.toNT()) + '"> \
         <td data-title="Subject"><a href="#" data-type="text" class="triple editable editable-click s">' + RDFE.Editor.escapeHTML(s.toString()) + '</a></td> \
         <td data-title="Predicate"><a href="#" data-type="text" class="triple editable editable-click p">' + RDFE.Editor.escapeHTML(p.toString())+ '</a></td> \
-        <td data-title="Object"><a href="#" data-type="text" class="triple editable editable-click o">' + RDFE.Editor.escapeHTML(o.toString()) + '</a></td> \
+        <td data-title="Object"><a href="#" data-type="'+ oDataType +'"'+ datatype + interfaceName + ' class="triple editable editable-click '+ oDataType +' o">' + oVal + '</a></td> \
         <td><a href="#" class="btn btn-danger btn-xs triple-action triple-action-delete">Delete<br></a></td> \
         </tr>\n');
     return container.find('tr.triple').last();
@@ -101,24 +123,49 @@ RDFE.Editor.prototype.createTripleRow = function(t, container) {
 RDFE.Editor.prototype.createTripleActions = function(tripleRow, graphUri) {
     var self = this;
 
-    tripleRow.find('.editable').editable({ mode: "inline" }).on('save', function(e, params) {
+    var editable_opts = { mode: "inline" };
+    
+    var editable_dt_opts = {
+        format: 'yyyy-mm-ddThh:ii:ssZ',    
+        viewformat: 'yyyy-mm-ddThh:ii:ssZ',
+        datetimepicker: {
+            weekStart: 1
+        }
+    };
+
+    tripleRow.find('.editable:not(.datetime)').editable(editable_opts);
+    tripleRow.find('.editable.datetime').editable(editable_dt_opts);
+    tripleRow.find('.editable').on('save', function(e, params) {
         var $this = $(this);
         var $tripleTr = $this.closest('tr');
-
+        
+        var newOVal = params.newValue;
+        if ($this.attr('data-type') == 'datetime')
+        {
+            var d = new Date(params.newValue);
+            newOVal = d.toISOString();
+        }
+        if ($this.attr('interfaceName') == 'Literal')
+            newOVal = '"'+ newOVal + '"';
+        {
+            if ($this.attr('dtype'))
+                newOVal = newOVal + '^^<' + $this.attr('dtype') + '>';
+        }
+        
+            
         var updated_field = $this.hasClass("o") ? 'o' : $this.hasClass("s") ? 's' : $this.hasClass("p") ? 'p' : '';
         var s = updated_field == 's' ? params.newValue : $tripleTr.find('a.s').text();
         var p = updated_field == 'p' ? params.newValue : $tripleTr.find('a.p').text();
-        var o = updated_field == 'o' ? params.newValue : $tripleTr.find('a.o').text();
+        var o = updated_field == 'o' ? newOVal : $tripleTr.find('a.o').text();
 
         self.doc.store.delete(self.doc.store.rdf.createGraph([self.getOldTriple($tripleTr)]), graphUri, function(success) {
             if(success) {
                 console.log("Successfully deleted old triple")
-
                 var newTriple = self.makeTriple(s, p, o);
-
                 self.doc.store.insert(self.doc.store.rdf.createGraph([newTriple]), graphUri, function(success){
                     if(success) {
                         // we simply update the old triple values in the tr tag
+                        console.log( "TRIPLE:\n"+newTriple );
                         self.saveTripleToElem($tripleTr, newTriple);
                     }
                     else {
