@@ -250,12 +250,14 @@ RDFE.Editor.prototype.createEntityList = function(doc, container) {
     var self = this;
     this.doc = doc;
 
-    doc.store.execute("select distinct ?s ?t where { graph <" + self.doc.graph + "> { ?s a ?t . } } order by ?s ?t", function(success, r) {
+    doc.store.execute("select distinct ?s ?sl ?spl where { graph <" + self.doc.graph + "> { ?s a ?t . } . optional { graph <" + self.doc.graph + "> { ?s rdfs:label ?sl } } . optional { graph <" + self.doc.graph + "> { ?s skos:prefLabel ?spl } } } order by ?s ?t", function(success, r) {
         if(success) {
             container.empty();
             for(var i = 0; i < r.length; i++) {
                 var label = r[i].s.value;
-                if(r[i].sl)
+                if(r[i].spl)
+                    label = r[i].spl.value;
+                else if(r[i].sl)
                     label = r[i].sl.value;
                 container.append(
                   '<li class="list-group-item" data-entity-uri="' + r[i].s.value + '"><a href="'+ r[i].s.value + '" class="entity-link">' + label + '</a> \
