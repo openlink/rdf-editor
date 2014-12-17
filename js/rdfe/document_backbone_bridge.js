@@ -69,15 +69,14 @@ RDFE.Document.Model = Backbone.Model.extend({
             self.doc.store.termToNode({ value: val[i], "token": token, type: self.schema[prop]["node-type"] }) // FIXME: eventually we get the token and type and lang from the editor
           ));
         }
-
-        self.doc.store.insert(triples, self.doc.graph, function(s, r) {
-          if(s && success)
-            success();
-          if(!s && fail)
-            fail(r);
-        });
       }
-      //success();
+
+      self.doc.store.insert(triples, self.doc.graph, function(s, r) {
+        if(s && success)
+          success();
+        if(!s && fail)
+          fail(r);
+      });
     }, fail);
   }
 });
