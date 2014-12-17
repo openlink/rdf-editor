@@ -108,19 +108,27 @@ RDFE.io = function(options) {
             }
 
             var __success = function(data, textStatus) {
-                var delimiter = '';
-                var triples = '';
-                for (var i = 0; i < result.length; i++) {
-                    triples += delimiter + RDFE.IO_INSERT_SINGLE.format(result.toArray()[i].subject, result.toArray()[i].predicate, result.toArray()[i].object.toNT());
-                    delimiter = ' . ';
-                }
-                if (triples) {
+                var chunkSize = 100;
+                var chunk = function(start) {
+                  if(start >= result.length) {
                     params["success"] = params['__success'];
-                    self.exec(RDFE.IO_INSERT.format(graph, triples), $.extend({ method: 'POST' }, params));
-                }
-                else if (params['success']) {
+                    params['__success'] = null;
                     params['success']();
-                }
+                  }
+                  else {
+                    var triples = '';
+                    var delimiter = '\n';
+                    for(var j = start; j < start+chunkSize && j < result.length; j += 1) {
+                      triples += delimiter + RDFE.IO_INSERT_SINGLE.format(result.toArray()[j].subject, result.toArray()[j].predicate, result.toArray()[j].object.toNT());
+                      delimiter = ' .\n';
+                    }
+                    params["success"] = function() {
+                      chunk(start+chunkSize);
+                    };
+                    self.exec(RDFE.IO_INSERT.format(graph, triples), $.extend({ method: 'POST' }, params));
+                  }
+                };
+                chunk(0);
             }
             params["__success"] = params["success"];
             params["success"] = __success;
