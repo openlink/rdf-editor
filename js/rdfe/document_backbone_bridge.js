@@ -28,7 +28,7 @@ RDFE.Document.Model = Backbone.Model.extend({
       else {
         for(var i = 0; i < r.length; i+=1) {
           self.schema[r[i].p.value] = {
-            type: "Text", //FIXME: convert the code from Aziz into a function which can be reused here, ideally we should use the property's range
+            type: "List", //FIXME: convert the code from Aziz into a function which can be reused here, ideally we should use the property's range
             title: r[i].p.value.split(/[/#]/).pop(),
             itemType: "Text",
             "node-token": r[i].o.token, // FIXME: eventually these need to come from the ontology instead
