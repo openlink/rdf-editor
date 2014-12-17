@@ -85,3 +85,20 @@ RDFE.Document.prototype.deleteEntity = function(uri, success, fail) {
     }
   });
 };
+
+RDFE.Document.prototype.getEntityLabel = function(url, success) {
+  var self = this;
+  self.store.execute('select ?pl from <' + self.graph + '> where { <' + url + '> skos:prefLabel ?pl . }', function(s, r) {
+    if(!s || r.length == 0) {
+      self.store.execute('select ?l from <' + self.graph + '> where { <' + url + '> rdfs:label ?l . }', function(s, r) {
+        if(!s || r.length == 0)
+          success(url.split(/[/#]/).pop());
+        else
+          success(r[0].l.value);
+      });
+    }
+    else {
+      success(r[0].pl.value);
+    }
+  });
+};
