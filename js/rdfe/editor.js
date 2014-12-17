@@ -253,6 +253,11 @@ RDFE.Editor.prototype.createEntityList = function(doc, container) {
     doc.store.execute("select distinct ?s ?sl ?spl where { graph <" + self.doc.graph + "> { ?s a ?t . } . optional { graph <" + self.doc.graph + "> { ?s rdfs:label ?sl } } . optional { graph <" + self.doc.graph + "> { ?s skos:prefLabel ?spl } } } order by ?s ?t", function(success, r) {
         if(success) {
             container.empty();
+
+            var $list = $(document.createElement('ul')).addClass('list-group');
+            container.append($list);
+
+            // create entries
             for(var i = 0; i < r.length; i++) {
                 var label = r[i].s.value;
                 if(r[i].spl)
@@ -261,11 +266,13 @@ RDFE.Editor.prototype.createEntityList = function(doc, container) {
                     label = r[i].sl.value;
                 else
                     label = label.split(/[/#]/).pop();
-                container.append(
+                $list.append(
                   '<li class="list-group-item" data-entity-uri="' + r[i].s.value + '"><a href="'+ r[i].s.value + '" class="entity-link">' + label + '</a> \
                   <a href="#" class="btn btn-danger btn-xs triple-action entity-action-delete pull-right">Delete<br></a> \
                   <a href="#" class="btn btn-primary btn-xs triple-action entity-action-edit pull-right">Edit<br></a></li>');
             }
+
+            // add delete actions
             container.find('.entity-action-delete').click(function(e) {
                 // delete all triples referencing that resource from the store
                 var $li = $(this).closest('li');
@@ -277,10 +284,74 @@ RDFE.Editor.prototype.createEntityList = function(doc, container) {
                     $(self).trigger('rdf-editor-error', { "type": 'entity-delete-failed', "message": msg });
                 });
             });
+
+            // create edit actions (two ways to trigger: click the entity or its edit button)
+            var editFct = function(uri) {
+                // open the editor and once its done re-create the entity list
+                self.showEditor(container, uri, function() {
+                    self.createEntityList(doc, container);
+                });
+            };
+
+            container.find('.entity-action-edit').click(function(e) {
+                var uri = $(this).closest('li').attr('data-entity-uri');
+                editFct(uri);
+            });
         }
         else {
             // FIXME: error handling.
           console.log('Failed to query entities in doc.');
         }
     });
+};
+
+RDFE.Editor.prototype.createEntityListActions = function(container) {
+  // TODO: maybe we could embed the action buttons into the panel header like done in http://stackoverflow.com/a/23831762/3596238
+  // TODO: create filter dropdown which allows to select the type of resource to filter by
+  // TODO: create search field to search the list of entities
+};
+
+RDFE.Editor.prototype.showEditor = function(container, url, closeCb) {
+  var self = this;
+  var model = new RDFE.Document.Model();
+  model.setEntity(this.doc, url);
+  model.docToModel(function() {
+    var form = new Backbone.Form({
+      "model": model
+    });
+    form.render();
+
+    container.empty();
+
+    // add a header to the form using the entity's label
+    container.append('<h4>Editing ' + url.split(/[/#]/).pop() + '</h4><hr/>');
+    self.doc.getEntityLabel(url, function(label) {
+      container.find('h4').text('Editing ' + label);
+    });
+
+    // add the newly created form to the container
+    container.append(form.el);
+
+    // create buttons for the form
+    var cancelBtn = $(document.createElement('button'));
+    var saveBtn = $(document.createElement('button'));
+    cancelBtn.addClass('btn').addClass('btn-default').addClass('pull-right').text('Cancel');
+    saveBtn.addClass('btn').addClass('btn-primary').addClass('pull-right').text('Save');
+    cancelBtn.click(function() {
+      closeCb();
+    });
+    saveBtn.click(function() {
+      form.commit();
+      model.modelToDoc(function() {
+        closeCb();
+      }, function(msg) {
+        $(self).trigger('rdf-editor-error', { "type": 'editor-form-save-failed', "message": msg });
+      });
+    });
+
+    // add the buttons to the container
+    container.find('h4').append(saveBtn).append(cancelBtn);
+  }, function(msg) {
+    $(self).trigger('rdf-editor-error', { "type": 'editor-form-creation-failed', "message": msg });
+  });
 };
