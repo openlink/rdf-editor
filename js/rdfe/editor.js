@@ -324,9 +324,9 @@ RDFE.Editor.prototype.showEditor = function(container, url, closeCb) {
     container.empty();
 
     // add a header to the form using the entity's label
-    container.append('<h4>Editing ' + url.split(/[/#]/).pop() + '</h4><hr/>');
+    container.append('<h4>Editing <span class="entity-label">' + url.split(/[/#]/).pop() + '<span></h4><hr/>');
     self.doc.getEntityLabel(url, function(label) {
-      container.find('h4').text('Editing ' + label);
+      container.find('h4 span').text(label);
     });
 
     // add the newly created form to the container
@@ -336,7 +336,7 @@ RDFE.Editor.prototype.showEditor = function(container, url, closeCb) {
     var cancelBtn = $(document.createElement('button'));
     var saveBtn = $(document.createElement('button'));
     cancelBtn.addClass('btn').addClass('btn-default').addClass('pull-right').text('Cancel');
-    saveBtn.addClass('btn').addClass('btn-primary').addClass('pull-right').text('Save');
+    saveBtn.addClass('btn').addClass('btn-primary').addClass('pull-right').text('OK');
     cancelBtn.click(function() {
       closeCb();
     });
