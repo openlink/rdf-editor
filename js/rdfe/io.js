@@ -116,7 +116,7 @@ RDFE.io = function(options) {
                 }
                 if (triples) {
                     params["success"] = params['__success'];
-                    self.exec(RDFE.IO_INSERT.format(graph, triples), params);
+                    self.exec(RDFE.IO_INSERT.format(graph, triples), $.extend({ method: 'POST' }, params));
                 }
                 else if (params['success']) {
                     params['success']();
@@ -149,7 +149,7 @@ RDFE.io = function(options) {
         $.ajax({
             url: params.host,
             success: params.success,
-            type: 'GET',
+            type: params.method || 'GET',
             data: {
                 "query": q,
                 "format": params.format
