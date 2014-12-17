@@ -5,6 +5,7 @@ RDFE.Document = function(params) {
   var self = this;
 
   self.store = rdfstore.create();
+  self.store.registerDefaultNamespace('skos', 'http://www.w3.org/2004/02/skos/core#');
   self.graph = 'urn:graph:default';
 };
 
