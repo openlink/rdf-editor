@@ -195,18 +195,11 @@ RDFE.Editor.prototype.createEditorUi = function(doc, container) {
     var self = this;
     this.doc = doc;
 
-    doc.store.execute("select ?s ?p ?o where { graph <" + self.doc.graph + "> { ?s ?p ?o } } order by ?s ?p", function(success, r) {
+    doc.store.graph(doc.graph, function(success, g) {
         if(success) {
             container.empty();
-            for(var i = 0; i < r.length; i++) {
-                self.createTripleActions(
-                  self.createTripleRow(
-                    self.doc.store.rdf.createTriple(
-                      self.doc.store.termToNode(r[i].s),
-                      self.doc.store.termToNode(r[i].p),
-                      self.doc.store.termToNode(r[i].o)),
-                    container),
-                  doc.graph);
+            for(var i = 0; i < g.length; i++) {
+                self.createTripleActions(self.createTripleRow(g.toArray()[i], container), doc.graph);
             }
         }
         else {
