@@ -54,6 +54,33 @@ RDFE.Document.prototype.save = function(url, io, success, fail) {
           mySuccess();
       };
       // FIXME: add error handling
-      myIo.insertFromStore(self.url, self.store, self.graph, {"success": __success});
+      myIo.insertFromStore(myUrl, self.store, self.graph, {"success": __success});
     }
+};
+
+RDFE.Document.prototype.deleteEntity = function(uri, success, fail) {
+  var self = this;
+
+  if(!uri) {
+    if(fail)
+      fail('Need Entity URI for deletion.');
+    return;
+  }
+
+  self.store.execute('with <' + self.graph + '> delete { <' + uri + '> ?p ?o } where { <' + uri + '> ?p ?o }', function(s, r) {
+    if(s) {
+      self.store.execute('with <' + self.graph + '> delete { ?s ?p <' + uri + '> } where { ?s ?p <' + uri + '> }', function(s, r) {
+        if (s) {
+          if (success)
+            success();
+        }
+        else if(fail) {
+          fail(r);
+        }
+      });
+    }
+    else if (fail) {
+      fail(r);
+    }
+  });
 };

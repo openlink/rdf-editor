@@ -1,0 +1,14 @@
+{
+  "bookmarks": [
+    {
+      "label": "Test Data",
+      "uri": "urn:foo",
+      "type": "sparql"
+    },
+    {
+      "label": "Daimler VDF Data",
+      "uri": "urn:daimler:vdf:import",
+      "type": "sparql"
+    }
+  ]
+}

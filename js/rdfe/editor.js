@@ -93,7 +93,7 @@ RDFE.Editor.prototype.createTripleRow = function(t, container) {
         <td data-title="Subject"><a href="#" data-type="text" class="triple editable editable-click s">' + RDFE.Editor.escapeHTML(s.toString()) + '</a></td> \
         <td data-title="Predicate"><a href="#" data-type="text" class="triple editable editable-click p">' + RDFE.Editor.escapeHTML(p.toString())+ '</a></td> \
         <td data-title="Object"><a href="#" data-type="text" class="triple editable editable-click o">' + RDFE.Editor.escapeHTML(o.toString()) + '</a></td> \
-        <td><a href="#" class="btn btn-danger btn-xs triple-action triple-action-delete">Delete<br></a></td> \
+        <td><a href="#" class="btn btn-danger btn-xs triple-action triple-action-delete">Delete</a></td> \
         </tr>\n');
     return container.find('tr.triple').last();
 };
@@ -208,4 +208,39 @@ RDFE.Editor.prototype.createNewStatementEditor = function(container) {
           }
       });
   });
+};
+
+RDFE.Editor.prototype.createEntityList = function(doc, container) {
+    var self = this;
+    this.doc = doc;
+
+    doc.store.execute("select distinct ?s ?t where { graph <" + self.doc.graph + "> { ?s a ?t . } } order by ?s ?t", function(success, r) {
+        if(success) {
+            container.empty();
+            for(var i = 0; i < r.length; i++) {
+                var label = r[i].s.value;
+                if(r[i].sl)
+                    label = r[i].sl.value;
+                container.append(
+                  '<li class="list-group-item" data-entity-uri="' + r[i].s.value + '"><a href="'+ r[i].s.value + '" class="entity-link">' + label + '</a> \
+                  <a href="#" class="btn btn-danger btn-xs triple-action entity-action-delete pull-right">Delete<br></a> \
+                  <a href="#" class="btn btn-primary btn-xs triple-action entity-action-edit pull-right">Edit<br></a></li>');
+            }
+            container.find('.entity-action-delete').click(function(e) {
+                // delete all triples referencing that resource from the store
+                var $li = $(this).closest('li');
+                var uri = $li.attr('data-entity-uri');
+                self.doc.deleteEntity(uri, function() {
+                    $li.remove();
+                    $(self).trigger('rdf-editor-success', { "type": 'entity-delete-done', "uri": uri, "message": "Successfully deleted entity " + uri + "." });
+                }, function(msg) {
+                    $(self).trigger('rdf-editor-error', { "type": 'entity-delete-failed', "message": msg });
+                });
+            });
+        }
+        else {
+            // FIXME: error handling.
+          console.log('Failed to query entities in doc.');
+        }
+    });
 };
