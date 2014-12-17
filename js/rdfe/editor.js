@@ -259,6 +259,8 @@ RDFE.Editor.prototype.createEntityList = function(doc, container) {
                     label = r[i].spl.value;
                 else if(r[i].sl)
                     label = r[i].sl.value;
+                else
+                    label = label.split(/[/#]/).pop();
                 container.append(
                   '<li class="list-group-item" data-entity-uri="' + r[i].s.value + '"><a href="'+ r[i].s.value + '" class="entity-link">' + label + '</a> \
                   <a href="#" class="btn btn-danger btn-xs triple-action entity-action-delete pull-right">Delete<br></a> \
