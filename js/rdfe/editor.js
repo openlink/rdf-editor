@@ -86,11 +86,12 @@ RDFE.Editor.prototype.createTripleRow = function(t, container) {
     var s=t.subject;
     var p=t.predicate;
     var o=t.object;
-
     var oVal = RDFE.Editor.escapeHTML(o.toString());
     var oDataType = 'text';
     var datatype = '';
     var interfaceName = '';
+    var existingPredicates=$(".triple .p").each( function(idx) { $(this).text().toString() } )
+
     if (o.datatype == 'http://www.w3.org/2001/XMLSchema#dateTime') {
         oVal = (new Date(o.nominalValue)).toISOString();
         oDataType = 'datetime';
@@ -104,17 +105,31 @@ RDFE.Editor.prototype.createTripleRow = function(t, container) {
     if (o.interfaceName)
         interfaceName = ' interfaceName="'+ o.interfaceName +'" ';
 
-
     container.append(' \
         <tr class="triple" \
         data-statement-s-old="' + escape(s.toNT()) + '" \
         data-statement-p-old="' + escape(p.toNT()) + '" \
         data-statement-o-old="' + escape(o.toNT()) + '"> \
         <td data-title="Subject"><a href="#" data-type="text" class="triple editable editable-click s">' + RDFE.Editor.escapeHTML(s.toString()) + '</a></td> \
-        <td data-title="Predicate"><a href="#" data-type="text" class="triple editable editable-click p">' + RDFE.Editor.escapeHTML(p.toString())+ '</a></td> \
+        <td data-title="Predicate"><a href="#" name="predicate" data-type="typeaheadjs" data-placement="right" class="triple editable editable-click p">' + RDFE.Editor.escapeHTML(p.toString())+ '</a></td> \
         <td data-title="Object"><a href="#" data-type="'+ oDataType +'"'+ datatype + interfaceName + ' class="triple editable editable-click '+ oDataType +' o">' + oVal + '</a></td> \
         <td><a href="#" class="btn btn-danger btn-xs triple-action triple-action-delete">Delete</a></td> \
         </tr>\n');
+
+    container.find('.triple .p').editable({
+      value: 'http://www.w3.org/1999/02/22-rdf-syntax-ns#',
+      name: 'predicate',
+      typeahead: {
+          name: 'predicate',
+          local: [
+            "http://www.w3.org/2002/07/owl#",
+            "http://www.w3.org/2000/01/rdf-schema#",
+            "http://xmlns.com/foaf/0.1/",
+            "http://rdfs.org/sioc/ns#",
+            "http://purl.org/dc/elements/1.1/",
+          ].concat(existingPredicates) }
+      });
+
     return container.find('tr.triple').last();
 };
 
@@ -147,7 +162,6 @@ RDFE.Editor.prototype.createTripleActions = function(tripleRow, graphUri) {
             if ($this.attr('dtype'))
                 newOVal = newOVal + '^^<' + $this.attr('dtype') + '>';
         }
-
 
         var updated_field = $this.hasClass("o") ? 'o' : $this.hasClass("s") ? 's' : $this.hasClass("p") ? 'p' : '';
         var s = updated_field == 's' ? params.newValue : $tripleTr.find('a.s').text();
