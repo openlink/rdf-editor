@@ -117,7 +117,6 @@ RDFE.Editor.prototype.createTripleRow = function(t, container) {
         </tr>\n');
 
     container.find('.triple .p').editable({
-      value: 'http://www.w3.org/1999/02/22-rdf-syntax-ns#',
       name: 'predicate',
       typeahead: {
           name: 'predicate',
