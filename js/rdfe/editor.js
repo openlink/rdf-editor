@@ -90,7 +90,6 @@ RDFE.Editor.prototype.createTripleRow = function(t, container) {
     var oDataType = 'text';
     var datatype = '';
     var interfaceName = '';
-    var existingPredicates=$(".triple .p").each( function(idx) { $(this).text().toString() } )
 
     if (o.datatype == 'http://www.w3.org/2001/XMLSchema#dateTime') {
         oVal = (new Date(o.nominalValue)).toISOString();
@@ -116,7 +115,25 @@ RDFE.Editor.prototype.createTripleRow = function(t, container) {
         <td><a href="#" class="btn btn-danger btn-xs triple-action triple-action-delete">Delete</a></td> \
         </tr>\n');
 
-    container.find('.triple .p').editable({
+    return container.find('tr.triple').last();
+};
+
+RDFE.Editor.prototype.createTripleActions = function(tripleRow, graphUri) {
+    var self = this;
+
+    var editable_opts = { mode: "inline" };
+    var existingPredicates = [];
+    $(".triple .p").each( function() { existingPredicates.push($(this).text().toString()) } );
+
+    var editable_dt_opts = {
+        format: 'yyyy-mm-ddThh:ii:ssZ',
+        viewformat: 'yyyy-mm-ddThh:ii:ssZ',
+        datetimepicker: {
+            weekStart: 1
+        }
+    };
+
+    tripleRow.find('.p.editable').editable({
       name: 'predicate',
       typeahead: {
           name: 'predicate',
@@ -128,22 +145,6 @@ RDFE.Editor.prototype.createTripleRow = function(t, container) {
             "http://purl.org/dc/elements/1.1/",
           ].concat(existingPredicates) }
       });
-
-    return container.find('tr.triple').last();
-};
-
-RDFE.Editor.prototype.createTripleActions = function(tripleRow, graphUri) {
-    var self = this;
-
-    var editable_opts = { mode: "inline" };
-
-    var editable_dt_opts = {
-        format: 'yyyy-mm-ddThh:ii:ssZ',
-        viewformat: 'yyyy-mm-ddThh:ii:ssZ',
-        datetimepicker: {
-            weekStart: 1
-        }
-    };
 
     tripleRow.find('.editable:not(.datetime)').editable(editable_opts);
     tripleRow.find('.editable.datetime').editable(editable_dt_opts);
