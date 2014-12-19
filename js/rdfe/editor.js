@@ -264,7 +264,7 @@ RDFE.Editor.prototype.createEntityList = function(doc, container) {
     var self = this;
     this.doc = doc;
 
-    doc.store.execute("select distinct ?s ?sl ?spl where { graph <" + self.doc.graph + "> { ?s a ?t . } . optional { graph <" + self.doc.graph + "> { ?s rdfs:label ?sl } } . optional { graph <" + self.doc.graph + "> { ?s skos:prefLabel ?spl } } } order by ?s ?t", function(success, r) {
+    doc.store.execute("select distinct ?s ?sl ?spl where { graph <" + self.doc.graph + "> { ?s ?p ?o . } . optional { graph <" + self.doc.graph + "> { ?s rdfs:label ?sl } } . optional { graph <" + self.doc.graph + "> { ?s skos:prefLabel ?spl } } } order by ?s ?t", function(success, r) {
         if(success) {
             container.empty();
 
