@@ -1,0 +1,158 @@
+<!--
+ -
+ -  This file is part of the OpenLink Software Virtuoso Open-Source (VOS)
+ -  project.
+ -
+ -  Copyright (C) 1998-2014 OpenLink Software
+ -
+ -  This project is free software; you can redistribute it and/or modify it
+ -  under the terms of the GNU General Public License as published by the
+ -  Free Software Foundation; only version 2 of the License, dated June 1991.
+ -
+ -  This program is distributed in the hope that it will be useful, but
+ -  WITHOUT ANY WARRANTY; without even the implied warranty of
+ -  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ -  General Public License for more details.
+ -
+ -  You should have received a copy of the GNU General Public License along
+ -  with this program; if not, write to the Free Software Foundation, Inc.,
+ -  51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA
+ -
+-->
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="">
+    <meta name="author" content="">
+    <title>RDF Editor I/O demo</title>
+    <link href="css/bootstrap.min.css" rel="stylesheet">
+    <link href="css/bootstrap-fixes.css" rel="stylesheet">
+    <link href="css/bootstrap-editable.css" rel="stylesheet"/>
+    <style type="text/css">
+      body {
+        padding-top: 70px;
+      }
+      tr.triple td {
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+    </style>
+
+    <script src="js/jquery-1.11.1.min.js"></script>
+    <script src="js/bootstrap.min.js"></script>
+    <script src="js/bootstrap-editable.min.js"></script>
+    <script src="js/jquery-deparam.min.js"></script>
+    <script src="js/jquery.cookie.js"></script>
+    <script src="js/rdf_store.js"></script>
+    <script src="js/rdfe/rdf_store_ext.js"></script>
+    <script src="js/rdfxml_parser.js"></script>
+    <script src="js/val.js"></script>
+    <script src="js/rdfe/io.js"></script>
+    <script src="js/rdfe/editor.js"></script>
+    <script src="js/rdfe/ontology.js"></script>
+    <script>
+      var ontologyManager = new RDFE.OntologyManager();
+
+      $(document).ready(function() {
+          $('#o').val('http://mitko.dnsalias.net:8005/DAV/home/demo/Public/acl.rdf');
+          $("#o_submit").on("click", function(e) {
+              var URI = $('#o').val();
+              var x = function() {
+                  var ontology = new RDFE.Ontology(ontologyManager, URI);
+              }
+              ontologyManager.ontologyLoad(URI, {"success": x});
+          });
+      });
+
+    </script>
+
+  </head>
+  <body>
+    <nav class="navbar navbar-default navbar-fixed-top" role="navigation">
+      <div class="container-fluid">
+        <div class="navbar-header">
+          <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#rdfe-navbar-collapse">
+            <span class="sr-only">Toggle navigation</span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </button>
+          <a class="navbar-brand" style="padding: 5px 15px" href=""><img src="img/oplogo_std_100x40.png" alt="OpenLink Software RDF Editor" /></a>
+        </div>
+
+        <div class="collapse navbar-collapse" id="rdfe-navbar-collapse">
+          <ul class="nav navbar-nav navbar-right">
+            <li><a href="#configDialog" data-toggle="modal">Configure</a></li>
+          </ul>
+
+          <p id="userLoginInfo" class="navbar-text navbar-right"></p>
+
+          <ul class="nav navbar-nav navbar-right">
+            <li><a id="loginoutLink" class="navbar-link" href="">Login</a></li>
+          </ul>
+        </div>
+      </div>
+    </nav>
+
+    <div class="container">
+      <div class="row">
+        <div class="col-cg-12">
+          <div class="form-group">
+            <h2><label for="o" class="col-sm-2 control-label">Ontology</label></h2>
+            <div class="col-sm-10">
+              <div class="input-group input-group-lg">
+                <input type="text" id="o" name="o" value="http://www.w3.org/ns/auth/acl#" class="form-control" />
+                <span class="input-group-btn">
+                  <input type="button" id="o_submit" name="o_submit" class="btn btn-primary" value="Retrieve" />
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <br />
+    <div class="container">
+      <div class="row" style="background-color: #f0f0f0;">
+        <div class="col-md-4">
+          <h3>Ontology</h3>
+        </div>
+        <div class="col-md-4">
+          <h3>Class</h3>
+        </div>
+        <div class="col-md-4">
+          <h3>Properties</h3>
+        </div>
+      </div>
+      <div class="row">
+        <div class="col-md-4">
+          <h3>1</h3>
+        </div>
+        <div class="col-md-4">
+          <h3>2</h3>
+        </div>
+        <div class="col-md-4">
+          <h3>3</h3>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      var val = new VAL();
+
+      val.profile(function (success, data) {
+        var $uli = $('#userLoginInfo'),
+            $lil = $('#loginoutLink');
+        if (success) {
+          $uli.html('Logged in as <a class="navbar-link" href="' + data.uri + '">' + (data.name ? data.name : (data.nick ? data.nick : data.uri)) + "</a>");
+          $lil.attr('href', '/val/logout.vsp?returnto=' + encodeURIComponent(window.location.href)).text('Logout');
+        }
+        else {
+          $uli.text("Not logged in");
+          $lil.attr('href', val.config.loginLink + '?returnto=' + encodeURIComponent(window.location.href)).text('Login');
+        }
+      });
+    </script>
+  </body>
+</html>
