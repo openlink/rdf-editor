@@ -42,6 +42,7 @@
     <script src="js/jquery-1.11.1.min.js"></script>
     <script src="js/bootstrap.min.js"></script>
     <script src="js/bootstrap-editable.min.js"></script>
+    <script src="js/underscore-min.js"></script>
     <script src="js/jquery-deparam.min.js"></script>
     <script src="js/jquery.cookie.js"></script>
     <script src="js/rdf_store.js"></script>
@@ -52,10 +53,11 @@
     <script src="js/rdfe/editor.js"></script>
     <script src="js/rdfe/ontology.js"></script>
     <script>
+      RDFE.Config('config.json');
       var ontologyManager = new RDFE.OntologyManager();
 
       $(document).ready(function() {
-          $('#o').val('http://mitko.dnsalias.net:8005/DAV/home/demo/Public/acl.rdf');
+          $('#o').val('http://mitko.dnsalias.net:8005/DAV/home/demo/Public/test.ttl');
           $("#o_submit").on("click", function(e) {
               var URI = $('#o').val();
               var x = function() {
