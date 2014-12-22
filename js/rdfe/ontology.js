@@ -32,7 +32,6 @@ RDFE.OM_ONTOLOGY_CLASSES_TEMPLATE =
     '\n PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> ' +
     '\n PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#> ' +
     '\n PREFIX owl: <http://www.w3.org/2002/07/owl#> ' +
-    '\n PREFIX dc: <http://purl.org/dc/elements/1.1/> ' +
     '\n SELECT distinct ?c ' +
     '\n   FROM <{0}> ' +
     '\n  WHERE { ' +
@@ -51,7 +50,6 @@ RDFE.OM_ONTOLOGY_PROPERTIES_TEMPLATE =
     '\n PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> ' +
     '\n PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#> ' +
     '\n PREFIX owl: <http://www.w3.org/2002/07/owl#> ' +
-    '\n PREFIX dc: <http://purl.org/dc/elements/1.1/> ' +
     '\n SELECT distinct ?p' +
     '\n   FROM <{0}>' +
     '\n  WHERE {' +
@@ -68,32 +66,6 @@ RDFE.OM_ONTOLOGY_PROPERTIES_TEMPLATE =
     '\n          } .' +
     '\n        } ' +
     '\n  ORDER BY ?p'
-;
-
-RDFE.OM_ONTOLOGY_PROPERTY_DOMAIN_TEMPLATE =
-    '\n PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> ' +
-    '\n PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#> ' +
-    '\n PREFIX owl: <http://www.w3.org/2002/07/owl#> ' +
-    '\n PREFIX dc: <http://purl.org/dc/elements/1.1/> ' +
-    '\n SELECT distinct ?first' +
-    '\n   FROM <{0}> ' +
-    '\n  WHERE { ' +
-    '\n          {1} owl:unionOf ?first . ' +
-    '\n        } '
-;
-
-RDFE.OM_ONTOLOGY_PROPERTY_DOMAIN_CHAIN_TEMPLATE =
-    '\n PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> ' +
-    '\n PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#> ' +
-    '\n PREFIX owl: <http://www.w3.org/2002/07/owl#> ' +
-    '\n PREFIX dc: <http://purl.org/dc/elements/1.1/> ' +
-    '\n SELECT distinct ?domain ?first ?rest' +
-    '\n   FROM <{0}> ' +
-    '\n  WHERE { ' +
-    '\n          {1} owl:unionOf ?first . ' +
-    '\n          ?first rdf:first ?domain ; ' +
-    '\n                 rdf:rest ?rest . ' +
-    '\n        } '
 ;
 
 RDFE.prefixes = {};
@@ -128,7 +100,7 @@ RDFE.prefixes['xsd'] = 'http://www.w3.org/2001/XMLSchema#';
 /*
  *
  * Debug function - dump graph
- *   - example: RDFE.graphDebug(ontologyManager.store, 'http://mitko.dnsalias.net:8005/DAV/home/demo/Public/test.ttl')
+ *   - example: RDFE.graphDebug(ontologyManager.store, 'test/test.ttl')
  *
  */
 RDFE.graphDebug = function(store, g) {
@@ -269,62 +241,34 @@ var RDFE_COLLECTION_TEMPLATE =
     '\n PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> ' +
     '\n PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#> ' +
     '\n PREFIX owl: <http://www.w3.org/2002/07/owl#> ' +
-    '\n PREFIX dc: <http://purl.org/dc/elements/1.1/> ' +
-    '\n SELECT distinct ?first' +
+    '\n SELECT distinct ?item ' +
     '\n   FROM <{0}> ' +
     '\n  WHERE { ' +
-    '\n          {1} owl:unionOf ?first . ' +
+    '\n          <{1}> {2}/owl:unionOf/rdf:rest*/rdf:first ?item. ' +
     '\n        } '
 ;
 
-var RDFE_COLLECTION_CHAIN_TEMPLATE =
-    '\n PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> ' +
-    '\n PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#> ' +
-    '\n PREFIX owl: <http://www.w3.org/2002/07/owl#> ' +
-    '\n PREFIX dc: <http://purl.org/dc/elements/1.1/> ' +
-    '\n SELECT distinct ?first ?rest' +
-    '\n   FROM <{0}> ' +
-    '\n  WHERE { ' +
-    '\n          {1} rdf:first ?first ; ' +
-    '\n              rdf:rest ?rest . ' +
-    '\n        } '
-;
-
-RDFE.collectionQuery = function(store, graph, head)
+RDFE.collectionQuery = function(store, graph, s, p, o)
 {
-    // check for special node
-    if (!head.match(/^\_\:*/))
+    // check for special blank node
+    if (!o.match(/^\_\:*/))
         return [head];
 
     var items = [];
-    var chain = function (first) {
-        console.log('loop =>', first);
-        var sparql = RDFE_COLLECTION_CHAIN_TEMPLATE.format(graph, first);
-        store.execute(sparql, (
-            function (x, prev) {
-                return function(success, results) {
-                    if (!success) {
-                        alert(results);
-                    } else if (results.length = 1) {
-                        if (prev == RDFE.sparqlValue(results[0]["rest"])) {
-                            console.log('infinite loop =>', prev);
-                        } else {
-                            x.push(RDFE.sparqlValue(results[0]["first"]));
-                            chain(RDFE.sparqlValue(results[0]["rest"]));
-                        }
+    var sparql = RDFE_COLLECTION_TEMPLATE.format(graph, s, p);
+    store.execute(sparql, (
+        function (items) {
+            return function(success, results) {
+                if (!success) {
+                    alert(results);
+                } else {
+                    for (var i = 0; i < results.length; i++) {
+                        items.push(RDFE.sparqlValue(results[i]["item"]));
                     }
-                };
-            }) (items, first)
-        );
-    }
-    var sparql = RDFE_COLLECTION_TEMPLATE.format(graph, head);
-    store.execute(sparql, function(success, results) {
-        if (!success) {
-            alert(results);
-        } else if (results.length) {
-            chain(RDFE.sparqlValue(results[0]["first"]));
-        }
-    });
+                }
+            };
+        }) (items)
+    );
     return items;
 }
 
@@ -333,7 +277,7 @@ RDFE.collectionQuery = function(store, graph, head)
  * Ontology Manager
  *
  */
-RDFE.Config = function(source) {
+RDFE.Config = function(source, callback) {
 
   RDFE.Options = {};
 
@@ -344,8 +288,6 @@ RDFE.Config = function(source) {
   RDFE.Options.OntologyManager.OM_PREFIX_TEMPLATE = RDFE.OM_PREFIX_TEMPLATE;
   RDFE.Options.OntologyManager.OM_ONTOLOGY_CLASSES_TEMPLATE = RDFE.OM_ONTOLOGY_CLASSES_TEMPLATE;
   RDFE.Options.OntologyManager.OM_ONTOLOGY_PROPERTIES_TEMPLATE = RDFE.OM_ONTOLOGY_PROPERTIES_TEMPLATE;
-  RDFE.Options.OntologyManager.OM_ONTOLOGY_PROPERTY_DOMAIN_TEMPLATE = RDFE.OM_ONTOLOGY_PROPERTY_DOMAIN_TEMPLATE;
-  RDFE.Options.OntologyManager.OM_ONTOLOGY_PROPERTY_DOMAIN_CHAIN_TEMPLATE = RDFE.OM_ONTOLOGY_PROPERTY_DOMAIN_CHAIN_TEMPLATE;
   RDFE.Options.OntologyManager.useProxy = false;
 
   RDFE.Options.Templates = {};
@@ -353,15 +295,19 @@ RDFE.Config = function(source) {
   RDFE.Options.Bookmarks = {};
 
   if (source) {
-      $.get(source, null, 'json').done(function(data) {
-          RDFE.Options.OntologyManager = $.extend(RDFE.Options.OntologyManager, data.OntologyManager);
+      $.get(source, null, 'json').done((function(callback) {
+          return function(data) {
+            RDFE.Options.OntologyManager = $.extend(RDFE.Options.OntologyManager, data.OntologyManager);
 
-          // Templates options
-          RDFE.Options.Templates = $.extend(RDFE.Options.Templates, data.Templates);
+            // Templates options
+            RDFE.Options.Templates = $.extend(RDFE.Options.Templates, data.Templates);
 
-          // Bookmarks options
-          RDFE.Options.Bookmarks = $.extend(RDFE.Options.Bookmarks, data.Bookmarks);
-      });
+            // Bookmarks options
+            RDFE.Options.Bookmarks = $.extend(RDFE.Options.Bookmarks, data.Bookmarks);
+
+            if (callback) callback();
+          };})(callback)
+      );
   }
 }
 
@@ -380,14 +326,30 @@ RDFE.OntologyManager = function(store, options) {
   this.options = $.extend(RDFE.Options.OntologyManager, options);
   this.ontologies = [];
 
-  this.config = function(options) {
+  this.init = function(options) {
+      // clean store
+      for (var i = 0; i < self.ontologies.length; i++) {
+          self.graphClear(self.ontologies[i].URI);
+      }
+      this.ontologies = [];
+
+      if (self.options.preloadOntologies) {
+          for (var i = 0; i < self.options.preloadOntologies.length; i++) {
+              var x = (function(ontologyManager, URI) {
+                          return function() {
+                              new RDFE.Ontology(ontologyManager, URI);
+                          };
+                       })(self, self.options.preloadOntologies[i]);
+              self.ontologyLoad (self.options.preloadOntologies[i], {"success": x});
+          }
+      }
   }
 
   this.dummy = function() {}
 
   this.graphClear = function(graph)
   {
-      self.store.clear(graph, self.dummy);
+      self.store.clear(graph, (function (s, g){return function(success, results) {RDFE.graphDebug(s, g);};})(self.store, graph));
   }
 
   this.ontologyLoad = function (URI, options)
@@ -402,7 +364,7 @@ RDFE.OntologyManager = function(store, options) {
                   alert(results);
                   return;
               }
-              if (options.success)
+              if (options && options.success)
                   options.success();
           });
       }
@@ -635,7 +597,7 @@ RDFE.OntologyProperty = function(ontology, ontologyPropertyURI, options) {
               self.range = RDFE.coalesce(self.range, o);
 
           else if (p == RDFE.denormalize('rdfs:domain')) {
-              self.domain = RDFE.collectionQuery(self.ontology.manager.store, self.ontology.URI, o);
+              self.domain = RDFE.collectionQuery(self.ontology.manager.store, self.ontology.URI, ontologyPropertyURI, 'rdfs:domain', o);
               console.log(self.domain);
           }
       }

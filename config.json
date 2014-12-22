@@ -1,7 +1,7 @@
 {
   "OntologyManager": {
     "useProxy": false,
-    "preloadOntologies": ["http://www.w3.org/ns/auth/acl#", "http://xmlns.com/foaf/0.1/"]
+    "preloadOntologies": ["test/test.ttl"]
   },
   "Bookmarks": [
     {
