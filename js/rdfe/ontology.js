@@ -235,6 +235,7 @@ RDFE.nodeQuery = function(store, graph, subject, properties, callback)
 /*
  *
  * Return all objects related to the collection
+ *   - RDFE.collectionQuery(ontologyManager.store, 'test/test2.ttl', 'http://xmlns.com/foaf/0.1/status', 'rdfs:domain', '_:47')
  *
  */
 var RDFE_COLLECTION_TEMPLATE =
@@ -244,7 +245,7 @@ var RDFE_COLLECTION_TEMPLATE =
     '\n SELECT distinct ?item ' +
     '\n   FROM <{0}> ' +
     '\n  WHERE { ' +
-    '\n          <{1}> {2}/owl:unionOf/rdf:rest*/rdf:first ?item. ' +
+    '\n          <{1}> {2}/owl:unionOf/{3}rdf:first ?item. ' +
     '\n        } '
 ;
 
@@ -254,21 +255,30 @@ RDFE.collectionQuery = function(store, graph, s, p, o)
     if (!o.match(/^\_\:*/))
         return [head];
 
+    var size;
     var items = [];
-    var sparql = RDFE_COLLECTION_TEMPLATE.format(graph, s, p);
-    store.execute(sparql, (
-        function (items) {
-            return function(success, results) {
-                if (!success) {
-                    alert(results);
-                } else {
-                    for (var i = 0; i < results.length; i++) {
-                        items.push(RDFE.sparqlValue(results[i]["item"]));
+    var rest = '';
+    while (true) {
+        size = items.length;
+        var sparql = RDFE_COLLECTION_TEMPLATE.format(graph, s, p, rest);
+        store.execute(sparql, (
+            function (items) {
+                return function(success, results) {
+                    if (!success) {
+                        alert(results);
+                    } else {
+                        for (var i = 0; i < results.length; i++) {
+                            items.push(RDFE.sparqlValue(results[i]["item"]));
+                        }
                     }
-                }
-            };
-        }) (items)
-    );
+                };
+            }) (items)
+        );
+        if (size == items.length)
+            break;
+
+        rest += 'rdf:rest/';
+    }
     return items;
 }
 
@@ -349,7 +359,7 @@ RDFE.OntologyManager = function(store, options) {
 
   this.graphClear = function(graph)
   {
-      self.store.clear(graph, (function (s, g){return function(success, results) {RDFE.graphDebug(s, g);};})(self.store, graph));
+      self.store.clear(graph, this.dummy);
   }
 
   this.ontologyLoad = function (URI, options)
@@ -406,7 +416,7 @@ RDFE.OntologyManager = function(store, options) {
 RDFE.Ontology = function(ontologyManager, ontologyURI, options) {
   var self = this;
 
-  console.log('ontology =>', ontologyURI);
+  //console.log('ontology =>', ontologyURI);
   this.options = $.extend({}, options);
   this.URI = ontologyURI;
   this.prefix = 'xxx';
@@ -441,7 +451,7 @@ RDFE.Ontology = function(ontologyManager, ontologyURI, options) {
             alert(results);
             return;
           }
-          console.log('results =>', results.length);
+          //console.log('results =>', results.length);
           for (var i = 0; i < results.length; i++) {
               var p = results.triples[i].predicate.valueOf();
               var o = results.triples[i].object.valueOf();
@@ -460,7 +470,7 @@ RDFE.Ontology = function(ontologyManager, ontologyURI, options) {
               else if (p == RDFE.denormalize('dc:description'))
                   self.comment = RDFE.coalesce(self.comment, o);
 
-              console.log('ontology =>', p, o);
+              //console.log('ontology =>', p, o);
           }
       });
   }
@@ -507,7 +517,7 @@ RDFE.Ontology = function(ontologyManager, ontologyURI, options) {
 RDFE.OntologyClass = function(ontology, ontologyClassURI, options) {
   var self = this;
 
-  console.log('class=>', ontologyClassURI);
+  //console.log('class=>', ontologyClassURI);
   this.options = $.extend({}, options);
   this.URI = ontologyClassURI;
   this.subClassOf = [];
@@ -531,11 +541,11 @@ RDFE.OntologyClass = function(ontology, ontologyClassURI, options) {
         alert(results);
         return;
       }
-      console.log('results =>', results.length);
+      //console.log('results =>', results.length);
       for (var i = 0; i < results.length; i++) {
           var p = results.triples[i].predicate.valueOf();
           var o = results.triples[i].object.valueOf();
-          console.log('class =>', p, o);
+          //console.log('class =>', p, o);
           if      (p == RDFE.denormalize('rdfs:label'))
               self.label = RDFE.coalesce(self.label, o);
 
@@ -563,11 +573,10 @@ RDFE.OntologyProperty = function(ontology, ontologyPropertyURI, options) {
   var self = this;
   var store = ontology.manager.store;
 
-  console.log('property=>', ontologyPropertyURI);
+  //console.log('property=>', ontologyPropertyURI);
   this.options = $.extend({}, options);
   this.URI = ontologyPropertyURI;
   this.ontology = ontology;
-  this.domain = [];
 
   store.node(ontologyPropertyURI, self.ontology.URI, function(success, results) {
       if (!success) {
@@ -577,7 +586,7 @@ RDFE.OntologyProperty = function(ontology, ontologyPropertyURI, options) {
       for (var i = 0; i < results.length; i++) {
           var p = results.triples[i].predicate.valueOf();
           var o = results.triples[i].object.valueOf();
-          console.log('property =>', p, o);
+          //console.log('property =>', p, o);
           if      (p == RDFE.denormalize('rdfs:label'))
               self.label = RDFE.coalesce(self.label, o);
 
@@ -596,9 +605,10 @@ RDFE.OntologyProperty = function(ontology, ontologyPropertyURI, options) {
           else if (p == RDFE.denormalize('rdfs:range'))
               self.range = RDFE.coalesce(self.range, o);
 
-          else if (p == RDFE.denormalize('rdfs:domain')) {
+          else if (!self.domain && (p == RDFE.denormalize('rdfs:domain'))) {
               self.domain = RDFE.collectionQuery(self.ontology.manager.store, self.ontology.URI, ontologyPropertyURI, 'rdfs:domain', o);
-              console.log(self.domain);
+              //console.log('property =>', p, o);
+              //console.log(self.domain);
           }
       }
   });

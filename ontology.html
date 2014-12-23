@@ -53,11 +53,15 @@
     <script src="js/rdfe/editor.js"></script>
     <script src="js/rdfe/ontology.js"></script>
     <script>
-      RDFE.Config('config.json');
-      var ontologyManager = new RDFE.OntologyManager();
+      var ontologyManager;
+      RDFE.Config('config.json', function() {
+              ontologyManager= new RDFE.OntologyManager();
+              ontologyManager.init();
+          }
+      );
 
       $(document).ready(function() {
-          $('#o').val('http://mitko.dnsalias.net:8005/DAV/home/demo/Public/test.ttl');
+          $('#o').val('test/test.ttl');
           $("#o_submit").on("click", function(e) {
               var URI = $('#o').val();
               var x = function() {
