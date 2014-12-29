@@ -61,13 +61,9 @@
       );
 
       $(document).ready(function() {
-          $('#o').val('test/test.ttl');
+          $('#o').val('test/goodrelations.ttl');
           $("#o_submit").on("click", function(e) {
-              var URI = $('#o').val();
-              var x = function() {
-                  var ontology = new RDFE.Ontology(ontologyManager, URI);
-              }
-              ontologyManager.ontologyLoad(URI, {"success": x});
+              ontologyManager.ontologyParse($('#o').val());
           });
       });
 
