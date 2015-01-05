@@ -61,9 +61,14 @@
       );
 
       $(document).ready(function() {
-          $('#o').val('test/goodrelations.ttl');
+          $('#o').val('test/test2.ttl');
+          // $('#o').val('test/goodrelations.ttl');
           $("#o_submit").on("click", function(e) {
               ontologyManager.ontologyParse($('#o').val());
+          });
+          $('#f').val('test/fresnel.ttl');
+          $("#f_submit").on("click", function(e) {
+              ontologyManager.fresnelParse($('#f').val());
           });
       });
 
@@ -104,7 +109,7 @@
             <h2><label for="o" class="col-sm-2 control-label">Ontology</label></h2>
             <div class="col-sm-10">
               <div class="input-group input-group-lg">
-                <input type="text" id="o" name="o" value="http://www.w3.org/ns/auth/acl#" class="form-control" />
+                <input type="text" id="o" name="o" value="" class="form-control" />
                 <span class="input-group-btn">
                   <input type="button" id="o_submit" name="o_submit" class="btn btn-primary" value="Retrieve" />
                 </span>
@@ -113,29 +118,19 @@
           </div>
         </div>
       </div>
-    </div>
-    <br />
-    <div class="container">
-      <div class="row" style="background-color: #f0f0f0;">
-        <div class="col-md-4">
-          <h3>Ontology</h3>
-        </div>
-        <div class="col-md-4">
-          <h3>Class</h3>
-        </div>
-        <div class="col-md-4">
-          <h3>Properties</h3>
-        </div>
-      </div>
       <div class="row">
-        <div class="col-md-4">
-          <h3>1</h3>
-        </div>
-        <div class="col-md-4">
-          <h3>2</h3>
-        </div>
-        <div class="col-md-4">
-          <h3>3</h3>
+        <div class="col-cg-12">
+          <div class="form-group">
+            <h2><label for="f" class="col-sm-2 control-label">Fresnel</label></h2>
+            <div class="col-sm-10">
+              <div class="input-group input-group-lg">
+                <input type="text" id="f" name="f" value="" class="form-control" />
+                <span class="input-group-btn">
+                  <input type="button" id="f_submit" name="f_submit" class="btn btn-primary" value="Retrieve" />
+                </span>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </div>
