@@ -28,6 +28,9 @@ RDFE.OM_LOAD_PROXY_TEMPLATE =
 RDFE.OM_PREFIX_TEMPLATE =
     'http://prefix.cc/{0}.file.json';
 
+/*
+ * Ontology templates
+ */
 RDFE.OM_ONTOLOGY_TEMPLATE =
     '\n PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> ' +
     '\n PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#> ' +
@@ -94,6 +97,48 @@ RDFE.OM_ONTOLOGY_INDIVIDUALS_TEMPLATE =
     '\n  ORDER BY ?i'
 ;
 
+/*
+ * Fresnel templates
+ */
+RDFE.OM_FRESNEL_LENSES_TEMPLATE =
+    '\n PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> ' +
+    '\n PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#> ' +
+    '\n PREFIX owl: <http://www.w3.org/2002/07/owl#> ' +
+    '\n PREFIX fresnel: <http://www.w3.org/2004/09/fresnel#> ' +
+    '\n SELECT distinct ?x ' +
+    '\n   FROM <{0}> ' +
+    '\n  WHERE { ' +
+    '\n          ?x a fresnel:Lens . ' +
+    '\n        } ' +
+    '\n  ORDER BY ?x'
+;
+
+RDFE.OM_FRESNEL_FORMATS_TEMPLATE =
+    '\n PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> ' +
+    '\n PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#> ' +
+    '\n PREFIX owl: <http://www.w3.org/2002/07/owl#> ' +
+    '\n PREFIX fresnel: <http://www.w3.org/2004/09/fresnel#> ' +
+    '\n SELECT distinct ?x ' +
+    '\n   FROM <{0}> ' +
+    '\n  WHERE { ' +
+    '\n          ?x a fresnel:Format . ' +
+    '\n        } ' +
+    '\n  ORDER BY ?x'
+;
+
+RDFE.OM_FRESNEL_GROUPS_TEMPLATE =
+    '\n PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> ' +
+    '\n PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#> ' +
+    '\n PREFIX owl: <http://www.w3.org/2002/07/owl#> ' +
+    '\n PREFIX fresnel: <http://www.w3.org/2004/09/fresnel#> ' +
+    '\n SELECT distinct ?x ' +
+    '\n   FROM <{0}> ' +
+    '\n  WHERE { ' +
+    '\n          ?x a fresnel:Group . ' +
+    '\n        } ' +
+    '\n  ORDER BY ?x'
+;
+
 RDFE.prefixes = {};
 RDFE.prefixes['annotation'] = 'http://www.w3.org/2000/10/annotation-ns#';
 RDFE.prefixes['atom'] = 'http://atomowl.org/ontologies/atomrdf#';
@@ -103,6 +148,7 @@ RDFE.prefixes['dataview'] = 'http://www.w3.org/2003/g/data-view#';
 RDFE.prefixes['dc'] = 'http://purl.org/dc/elements/1.1/';
 RDFE.prefixes['dcterms'] = 'http://purl.org/dc/terms/';
 RDFE.prefixes['foaf'] = 'http://xmlns.com/foaf/0.1/';
+RDFE.prefixes['fresnel'] = 'http://www.w3.org/2004/09/fresnel#';
 RDFE.prefixes['geo'] = 'http://www.w3.org/2003/01/geo/wgs84_pos#';
 RDFE.prefixes['gr'] = 'http://purl.org/goodrelations/v1#';
 RDFE.prefixes['ibis'] = 'http://purl.org/ibis#';
@@ -186,11 +232,25 @@ RDFE.coalesce = function(a, b)
  */
 RDFE.prefix = function(v)
 {
-    var m = Math.max(v.lastIndexOf(':'), v.lastIndexOf('/'), v.lastIndexOf('#'))
-    if ((m != -1) && (m == v.lastIndexOf(':')))
-        return v.substring(0, m);
+  var m = Math.max(v.lastIndexOf(':'), v.lastIndexOf('/'), v.lastIndexOf('#'))
+  if ((m != -1) && (m == v.lastIndexOf(':')))
+      return v.substring(0, m);
 
-    return null;
+  return null;
+}
+
+/*
+ *
+ * Extract a prefix
+ *
+ */
+RDFE.ontology = function(v)
+{
+  var m = Math.max(v.lastIndexOf(':'), v.lastIndexOf('/'), v.lastIndexOf('#'))
+  if (m != -1)
+      return v.substring(0, m+1);
+
+  return null;
 }
 
 /*
@@ -223,6 +283,24 @@ RDFE.denormalize = function(v)
       return RDFE.prefixes[prefix] + v.substring(prefix.length+1);
 
   return v;
+}
+
+RDFE.normalize = function(v)
+{
+  var ontology = RDFE.ontology(v);
+  if (!ontology)
+      return v;
+
+  for (var prefix in RDFE.prefixes) {
+      if (RDFE.prefixes[prefix] == ontology)
+          return prefix + ':' + v.substring(ontology.length);
+  }
+  return v;
+}
+
+RDFE.isBlankNode = function(v)
+{
+  return (v.match(/^\_\:*/))? true: false;
 }
 
 /*
@@ -264,47 +342,49 @@ RDFE.nodeQuery = function(store, graph, subject, properties, callback)
  *   - RDFE.collectionQuery(ontologyManager.store, 'test/test2.ttl', 'http://xmlns.com/foaf/0.1/status', 'rdfs:domain', '_:47')
  *
  */
-var RDFE_COLLECTION_TEMPLATE =
-    '\n PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> ' +
-    '\n PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#> ' +
-    '\n PREFIX owl: <http://www.w3.org/2002/07/owl#> ' +
-    '\n SELECT distinct ?item ' +
-    '\n   FROM <{0}> ' +
-    '\n  WHERE { ' +
-    '\n          <{1}> {2}/owl:unionOf/{3}rdf:first ?item. ' +
-    '\n        } '
-;
-
-RDFE.collectionQuery = function(store, graph, s, p, o)
+RDFE.collectionQuery = function(store, graph, s, p, o, m)
 {
+    var RDFE_COLLECTION_TEMPLATE =
+        '\n PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> ' +
+        '\n PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#> ' +
+        '\n PREFIX owl: <http://www.w3.org/2002/07/owl#> ' +
+        '\n PREFIX fresnel: <http://www.w3.org/2004/09/fresnel#> ' +
+        '\n SELECT distinct ?item ' +
+        '\n   FROM <{0}> ' +
+        '\n  WHERE { ' +
+        '\n          <{1}> {2}{3}/{4}rdf:first ?item. ' +
+        '\n        } '
+    ;
+
     // check for special blank node
-    if (!o.match(/^\_\:*/))
-        return [o];
+    if (!RDFE.isBlankNode(o)) return [o];
 
     var size;
     var items = [];
+    var mode = (m == 'fresnel')? '': '/owl:unionOf';
     var rest = '';
+    var nextItem = function (items) {
+        return function(success, results) {
+            var c;
+            if (success && results.length) {
+                for (var i = 0; i < results.length; i++) {
+                    c = RDFE.sparqlValue(results[i]["item"]);
+                    if (!RDFE.isBlankNode(c))
+                        items.push(c);
+                }
+            }
+        };
+    };
     while (true) {
         size = items.length;
-        var sparql = RDFE_COLLECTION_TEMPLATE.format(graph, s, p, rest);
-        store.execute(sparql, (
-            function (items) {
-                return function(success, results) {
-                    if (!success) {
-                        alert(results);
-                    } else {
-                        for (var i = 0; i < results.length; i++) {
-                            items.push(RDFE.sparqlValue(results[i]["item"]));
-                        }
-                    }
-                };
-            }) (items)
-        );
+        var sparql = RDFE_COLLECTION_TEMPLATE.format(graph, s, p, mode, rest);
+        store.execute(sparql, nextItem(items));
         if (size == items.length)
             break;
 
         rest += 'rdf:rest/';
     }
+    console.log('RDFE.collectionQuery =>', p, items);
     return items;
 }
 
@@ -320,6 +400,7 @@ RDFE.Config = function(source, callback) {
   // RDFE.OontologyManager options
   RDFE.Options.OntologyManager = {};
 
+  // Ontologies
   RDFE.Options.OntologyManager.OM_LOAD_TEMPLATE = RDFE.OM_LOAD_TEMPLATE;
   RDFE.Options.OntologyManager.OM_LOAD_PROXY_TEMPLATE = RDFE.OM_LOAD_PROXY_TEMPLATE;
   RDFE.Options.OntologyManager.OM_PREFIX_TEMPLATE = RDFE.OM_PREFIX_TEMPLATE;
@@ -327,6 +408,11 @@ RDFE.Config = function(source, callback) {
   RDFE.Options.OntologyManager.OM_ONTOLOGY_CLASSES_TEMPLATE = RDFE.OM_ONTOLOGY_CLASSES_TEMPLATE;
   RDFE.Options.OntologyManager.OM_ONTOLOGY_PROPERTIES_TEMPLATE = RDFE.OM_ONTOLOGY_PROPERTIES_TEMPLATE;
   RDFE.Options.OntologyManager.OM_ONTOLOGY_INDIVIDUALS_TEMPLATE = RDFE.OM_ONTOLOGY_INDIVIDUALS_TEMPLATE;
+
+  // Fresnel
+  RDFE.Options.OntologyManager.OM_FRESNEL_LENSES_TEMPLATE = RDFE.OM_FRESNEL_LENSES_TEMPLATE;
+  RDFE.Options.OntologyManager.OM_FRESNEL_FORMATS_TEMPLATE = RDFE.OM_FRESNEL_FORMATS_TEMPLATE;
+  RDFE.Options.OntologyManager.OM_FRESNEL_GROUPS_TEMPLATE = RDFE.OM_FRESNEL_GROUPS_TEMPLATE;
 
   RDFE.Options.OntologyManager.useProxy = false;
 
@@ -381,7 +467,7 @@ RDFE.OntologyManager = function(store, options) {
       self.store.clear(graph, this.dummy);
   }
 
-  this.ontologyLoad = function (URI, options) {
+  this.load = function (URI, options) {
       var host = (self.options.useProxy)? self.options.OM_LOAD_PROXY_TEMPLATE.format(encodeURIComponent(URI)): self.options.OM_LOAD_TEMPLATE.format(URI);
       var acceptType = (options && options.acceptType)? options.acceptType: 'text/n3; q=1, text/turtle; q=0.8, application/rdf+xml; q=0.6';
       var x = function (data, status, xhr){
@@ -422,7 +508,7 @@ RDFE.OntologyManager = function(store, options) {
               }
           });
       }
-      self.ontologyLoad(URI, {"success": x});
+      self.load(URI, {"success": x});
   }
 
   this.ontologiesParse = function (ontologies) {
@@ -448,8 +534,16 @@ RDFE.OntologyManager = function(store, options) {
       }
       return null;
   }
-}
 
+  this.fresnelParse = function(URI) {
+      // console.log(URI);
+      var x = function() {
+          // fresnel
+          new RDFE.Fresnel(self, URI);
+      }
+      self.load(URI, {"success": x});
+  }
+}
 
 /*
  *
@@ -529,7 +623,7 @@ RDFE.Ontology = function(ontologyManager, graph, URI, options) {
       for (var i = 0; i < results.length; i++) {
           var c = results[i]["c"].value;
           // console.log('ontology class =>', c);
-          if (!c.match(/^\_\:*/) && (c != RDFE.denormalize('rdfs:Class')) && (c != RDFE.denormalize('owl:Class')))
+          if (!RDFE.isBlankNode(c) && (c != RDFE.denormalize('rdfs:Class')) && (c != RDFE.denormalize('owl:Class')))
               self.classes.push(new RDFE.OntologyClass(self, c));
       }
   });
@@ -564,7 +658,7 @@ RDFE.Ontology = function(ontologyManager, graph, URI, options) {
         }
         for (var j = 0; j < results.length; j++) {
           var c = results[j]["i"].value;
-          if (!c.match(/^\_\:*/))
+          if (!RDFE.isBlankNode(c))
             self.individuals.push(new RDFE.OntologyIndividual(self, c));
         }
     });
@@ -673,7 +767,7 @@ RDFE.OntologyProperty = function(ontology, ontologyPropertyURI, options) {
               self.range = RDFE.coalesce(self.range, o);
 
           else if (!self.domain && (p == RDFE.denormalize('rdfs:domain')))
-              self.domain = RDFE.collectionQuery(self.ontology.manager.store, self.ontology.URI, ontologyPropertyURI, 'rdfs:domain', o);
+              self.domain = RDFE.collectionQuery(self.ontology.manager.store, self.ontology.graph, ontologyPropertyURI, 'rdfs:domain', o);
       }
   });
 }
@@ -683,15 +777,15 @@ RDFE.OntologyProperty = function(ontology, ontologyPropertyURI, options) {
  * Ontology Individual
  *
  */
-RDFE.OntologyIndividual = function(ontology, individualURI, options) {
+RDFE.OntologyIndividual = function(ontology, URI, options) {
   var self = this;
 
-  // console.log('individual =>', individualURI);
+  // console.log('individual =>', URI);
   this.options = $.extend({}, options);
-  this.URI = individualURI;
+  this.URI = URI;
   this.ontology = ontology;
 
-  self.ontology.manager.store.node(individualURI, self.ontology.graph, function(success, results) {
+  self.ontology.manager.store.node(URI, self.ontology.graph, function(success, results) {
       if (!success) {
           console.error('individual =>', results);
           return;
@@ -700,7 +794,7 @@ RDFE.OntologyIndividual = function(ontology, individualURI, options) {
       for (var i = 0; i < results.length; i++) {
           var p = results.triples[i].predicate.valueOf();
           var o = results.triples[i].object.valueOf();
-          // console.log('individual =>', p, o);
+          // console.log('individual =>', RDFE.normalize(p), o);
           if      (p == RDFE.denormalize('rdfs:label'))
               self.label = RDFE.coalesce(self.label, o);
 
@@ -715,6 +809,203 @@ RDFE.OntologyIndividual = function(ontology, individualURI, options) {
 
           else if (p == RDFE.denormalize('rdf:type'))
               self.class = o;
+      }
+  });
+}
+
+/*
+ *
+ * Fresnel
+ *
+ */
+RDFE.Fresnel = function(ontologyManager, URI, options) {
+  // console.log('fresnel =>', URI);
+  var self = this;
+
+  this.options = $.extend({}, options);
+  this.URI = URI;
+  this.graph = URI;
+  this.manager = ontologyManager;
+  this.lenses = [];
+  this.formats = [];
+  this.groups = [];
+
+  // fresnel lenses
+  var sparql = this.manager.options.OM_FRESNEL_LENSES_TEMPLATE.format(URI);
+  this.manager.store.execute(sparql, function(success, results) {
+      if (!success) {
+          console.error('fresnel groups =>', results);
+          return;
+      }
+      for (var i = 0; i < results.length; i++) {
+          self.lenses.push(new RDFE.FresnelLens(self, results[i]["x"].value));
+      }
+  });
+
+  // fresnel formats
+  var sparql = this.manager.options.OM_FRESNEL_FORMATS_TEMPLATE.format(URI);
+  this.manager.store.execute(sparql, function(success, results) {
+      if (!success) {
+          console.error('fresnel groups =>', results);
+          return;
+      }
+      for (var i = 0; i < results.length; i++) {
+          self.formats.push(new RDFE.FresnelFormat(self, results[i]["x"].value));
+      }
+  });
+
+  // fresnel groups
+  var sparql = this.manager.options.OM_FRESNEL_GROUPS_TEMPLATE.format(URI);
+  this.manager.store.execute(sparql, function(success, results) {
+      if (!success) {
+          console.error('fresnel groups =>', results);
+          return;
+      }
+      for (var i = 0; i < results.length; i++) {
+          self.groups.push(new RDFE.FresnelGroup(self, results[i]["x"].value));
+      }
+  });
+
+  this.findLens = function(domainURI) {
+      for (var i = 0; i < self.lenses.length; i++) {
+          if (self.lenses[i].classLensDomain = domainURI)
+             return self.lenses[i];
+      }
+      return null;
+  }
+
+  this.findFormat = function(propertyURI) {
+      for (var i = 0; i < self.formats.length; i++) {
+          if (self.formats[i].propertyFormatDomain = propertyURI)
+             return self.formats[i];
+      }
+      return null;
+  }
+
+  this.findGroup = function(groupURI) {
+      for (var i = 0; i < self.groups.length; i++) {
+          if (self.groups[i].URI = groupURI)
+             return self.groups[i];
+      }
+      return null;
+  }
+}
+
+/*
+ *
+ * Fresnel Lens
+ *
+ */
+RDFE.FresnelLens = function(fresnel, URI, options) {
+  // console.log('fresnel lens =>', URI);
+  var self = this;
+  this.URI = URI;
+  this.fresnel = fresnel;
+
+  self.fresnel.manager.store.node(URI, self.fresnel.graph, function(success, results) {
+      if (!success) {
+          console.error('fresnel lens =>', results);
+          return;
+      }
+      // console.log('fresnel lens =>', results.length);
+      for (var i = 0; i < results.length; i++) {
+          var p = results.triples[i].predicate.valueOf();
+          var o = results.triples[i].object.valueOf();
+          // console.log('lens =>', RDFE.normalize(p), o);
+          if      (p == RDFE.denormalize('fresnel:classLensDomain'))
+              self.classLensDomain = RDFE.coalesce(self.classLensDomain, o);
+
+          else if (p == RDFE.denormalize('fresnel:instanceFormatDomain'))
+              self.instanceFormatDomain = RDFE.coalesce(self.instanceFormatDomain, o);
+
+          else if (p == RDFE.denormalize('fresnel:group'))
+              self.group = RDFE.coalesce(self.group, o);
+
+          else if (p == RDFE.denormalize('fresnel:purpose'))
+              self.purpose = RDFE.coalesce(self.purpose, o);
+
+          else if (p == RDFE.denormalize('fresnel:showProperties'))
+              self.showProperties = RDFE.collectionQuery(self.fresnel.manager.store, self.fresnel.graph, self.URI, 'fresnel:showProperties', o, 'fresnel');
+
+          else if (p == RDFE.denormalize('fresnel:hideProperties'))
+              self.hideProperties = RDFE.collectionQuery(self.fresnel.manager.store, self.fresnel.graph, self.URI, 'fresnel:hideProperties', o, 'fresnel');
+      }
+  });
+}
+
+/*
+ *
+ * Fresnel Format
+ *
+ */
+RDFE.FresnelFormat = function(fresnel, URI, options) {
+  // console.log('fresnel format =>', URI);
+  var self = this;
+  this.fresnel = fresnel;
+  this.propertyFormatDomain = [];
+
+  self.fresnel.manager.store.node(URI, self.fresnel.graph, function(success, results) {
+      if (!success) {
+          console.error('fresnel format =>', results);
+          return;
+      }
+      // console.log('fresnel format =>', results.length);
+      for (var i = 0; i < results.length; i++) {
+          var p = results.triples[i].predicate.valueOf();
+          var o = results.triples[i].object.valueOf();
+          // console.log('format =>', RDFE.normalize(p), o);
+          if      (p == RDFE.denormalize('fresnel:label'))
+              self.label = RDFE.coalesce(self.label, o);
+
+          else if (p == RDFE.denormalize('fresnel:group'))
+              self.group = RDFE.coalesce(self.group, o);
+
+          else if (p == RDFE.denormalize('fresnel:value'))
+              self.value = RDFE.coalesce(self.value, o);
+
+          else if (p == RDFE.denormalize('fresnel:propertyStyle'))
+              self.propertyStyle = RDFE.coalesce(self.propertyStyle, o);
+
+          else if (p == RDFE.denormalize('fresnel:resourceStyle'))
+              self.resourceStyle = RDFE.coalesce(self.resourceStyle, o);
+
+          else if (p == RDFE.denormalize('fresnel:valueStyle'))
+              self.valueStyle = RDFE.coalesce(self.valueStyle, o);
+
+          else if (p == RDFE.denormalize('fresnel:labelStyle'))
+              self.labelStyle = RDFE.coalesce(self.labelStyle, o);
+
+          else if (p == RDFE.denormalize('fresnel:propertyFormatDomain'))
+              self.propertyFormatDomain.push(o);
+      }
+  });
+}
+
+/*
+ *
+ * Fresnel Group
+ *
+ */
+RDFE.FresnelGroup = function(fresnel, URI, options) {
+  // console.log('fresnel group =>', URI);
+  var self = this;
+  this.fresnel = fresnel;
+
+  self.fresnel.manager.store.node(URI, self.fresnel.graph, function(success, results) {
+      if (!success) {
+          console.error('fresnel group =>', results);
+          return;
+      }
+      // console.log('fresnel group =>', results.length);
+      for (var i = 0; i < results.length; i++) {
+          var p = results.triples[i].predicate.valueOf();
+          var o = results.triples[i].object.valueOf();
+          // console.log('group =>', RDFE.normalize(p), o);
+          if      (p == RDFE.denormalize('fresnel:stylesheetLink'))
+              self.stylesheetLink = RDFE.coalesce(self.stylesheetLink, o);
+
+          else if (p == RDFE.denormalize('fresnel:containerStyle'))
+              self.containerStyle = RDFE.coalesce(self.containerStyle, o);
       }
   });
 }
