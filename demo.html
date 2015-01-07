@@ -406,14 +406,16 @@
 
         $.get('config.json', null, 'json').done(function(data) {
           var bm = data.bookmarks;
-          for(var i = 0; i < bm.length; i+=1) {
-            $bmEl.append('<li><a class="bookmark" href="' + bm[i].uri + '">' + bm[i].label + '</a></li>');
-          }
-          if(bm.length > 0) {
-            var $bmMenu = $('#bookmarks');
-            $bmMenu.closest('div.btn-group').show();
+          if(bm) {
             for(var i = 0; i < bm.length; i+=1) {
-              $bmMenu.append('<li><a class="bookmark" href="' + bm[i].uri + '">' + bm[i].label + '</a></li>');
+              $bmEl.append('<li><a class="bookmark" href="' + bm[i].uri + '">' + bm[i].label + '</a></li>');
+            }
+            if(bm.length > 0) {
+              var $bmMenu = $('#bookmarks');
+              $bmMenu.closest('div.btn-group').show();
+              for(var i = 0; i < bm.length; i+=1) {
+                $bmMenu.append('<li><a class="bookmark" href="' + bm[i].uri + '">' + bm[i].label + '</a></li>');
+              }
             }
           }
 
