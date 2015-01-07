@@ -260,6 +260,17 @@ RDFE.Editor.prototype.createNewStatementEditor = function(container) {
   });
 };
 
+RDFE.Editor.prototype.entityListActionsFormatter = function(value, row, index) {
+    return [
+        '<a class="edit ml10" href="javascript:void(0)" title="Edit">',
+            '<i class="glyphicon glyphicon-edit"></i>',
+        '</a>',
+        '<a class="remove ml10" href="javascript:void(0)" title="Remove">',
+            '<i class="glyphicon glyphicon-remove"></i>',
+        '</a>'
+    ].join('');
+};
+
 RDFE.Editor.prototype.createEntityList = function(doc, container) {
     var self = this;
     this.doc = doc;
@@ -268,38 +279,26 @@ RDFE.Editor.prototype.createEntityList = function(doc, container) {
         if(success) {
             container.empty();
 
-            var $list = $(document.createElement('ul')).addClass('list-group');
+            var $list = $(document.createElement('table')).addClass('table');
             container.append($list);
 
             // create entries
+            var entityData = [];
             for(var i = 0; i < r.length; i++) {
-                var label = r[i].s.value;
+                var uri = r[i].s.value;
+                var label = uri;
                 if(r[i].spl)
                     label = r[i].spl.value;
                 else if(r[i].sl)
                     label = r[i].sl.value;
                 else
                     label = label.split(/[/#]/).pop();
-                $list.append(
-                  '<li class="list-group-item" data-entity-uri="' + r[i].s.value + '"><a href="'+ r[i].s.value + '" class="entity-link">' + label + '</a> \
-                  <a href="#" class="btn btn-danger btn-xs triple-action entity-action-delete pull-right">Delete<br></a> \
-                  <a href="#" class="btn btn-primary btn-xs triple-action entity-action-edit pull-right">Edit<br></a></li>');
+                entityData.push({
+                  'label': label,
+                  'uri': uri
+                });
             }
 
-            // add delete actions
-            container.find('.entity-action-delete').click(function(e) {
-                // delete all triples referencing that resource from the store
-                var $li = $(this).closest('li');
-                var uri = $li.attr('data-entity-uri');
-                self.doc.deleteEntity(uri, function() {
-                    $li.remove();
-                    $(self).trigger('rdf-editor-success', { "type": 'entity-delete-done', "uri": uri, "message": "Successfully deleted entity " + uri + "." });
-                }, function(msg) {
-                    $(self).trigger('rdf-editor-error', { "type": 'entity-delete-failed', "message": msg });
-                });
-            });
-
-            // create edit actions (two ways to trigger: click the entity or its edit button)
             var editFct = function(uri) {
                 // open the editor and once its done re-create the entity list
                 self.showEditor(container, uri, function() {
@@ -307,9 +306,46 @@ RDFE.Editor.prototype.createEntityList = function(doc, container) {
                 });
             };
 
-            container.find('.entity-action-edit').click(function(e) {
-                var uri = $(this).closest('li').attr('data-entity-uri');
-                editFct(uri);
+            $list.bootstrapTable({
+              striped:true,
+              sortName:'label',
+              pagination:true,
+              search:true,
+              showHeader: true,
+              data: entityData,
+              idField: 'uri',
+              columns: [{
+                field: 'label',
+                title: 'Entity Name',
+                aligh: 'left',
+                sortable: true
+              }, {
+                field: 'actions',
+                title: 'Actions',
+                align: 'center',
+                valign: 'middle',
+                clickToSelect: false,
+                formatter: RDFE.Editor.prototype.entityListActionsFormatter,
+                events: {
+                    'click .edit': function (e, value, row, index) {
+                        console.log(value, row, index);
+                        editFct(row.uri);
+                    },
+                    'click .remove': function (e, value, row, index) {
+                        var uri = row.uri;
+                        self.doc.deleteEntity(uri, function() {
+                          $list.bootstrapTable('remove', {
+                            field: 'uri',
+                            values: [uri]
+                          });
+                          $(self).trigger('rdf-editor-success', { "type": 'entity-delete-done', "uri": uri, "message": "Successfully deleted entity " + uri + "." });
+                        }, function(msg) {
+                          $(self).trigger('rdf-editor-error', { "type": 'entity-delete-failed', "message": msg });
+                        });
+                        console.log(value, row, index);
+                    }
+                }
+              }]
             });
         }
         else {
