@@ -3,7 +3,7 @@
     "useProxy": false,
     "preloadOntologies": ["test/test.ttl"]
   },
-  "Bookmarks": [
+  "bookmarks": [
     {
       "label": "Test Foo Data",
       "uri": "urn:foo",
