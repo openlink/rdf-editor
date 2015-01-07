@@ -305,6 +305,17 @@ RDFE.Editor.prototype.createEntityList = function(doc, container) {
                     self.createEntityList(doc, container);
                 });
             };
+            var deleteFct = function(uri) {
+              self.doc.deleteEntity(uri, function() {
+                $list.bootstrapTable('remove', {
+                  field: 'uri',
+                  values: [uri]
+                });
+                $(self).trigger('rdf-editor-success', { "type": 'entity-delete-done', "uri": uri, "message": "Successfully deleted entity " + uri + "." });
+              }, function(msg) {
+                $(self).trigger('rdf-editor-error', { "type": 'entity-delete-failed', "message": msg });
+              });
+            };
 
             $list.bootstrapTable({
               striped:true,
@@ -329,21 +340,10 @@ RDFE.Editor.prototype.createEntityList = function(doc, container) {
                 formatter: RDFE.Editor.prototype.entityListActionsFormatter,
                 events: {
                     'click .edit': function (e, value, row, index) {
-                        console.log(value, row, index);
                         editFct(row.uri);
                     },
                     'click .remove': function (e, value, row, index) {
-                        var uri = row.uri;
-                        self.doc.deleteEntity(uri, function() {
-                          $list.bootstrapTable('remove', {
-                            field: 'uri',
-                            values: [uri]
-                          });
-                          $(self).trigger('rdf-editor-success', { "type": 'entity-delete-done', "uri": uri, "message": "Successfully deleted entity " + uri + "." });
-                        }, function(msg) {
-                          $(self).trigger('rdf-editor-error', { "type": 'entity-delete-failed', "message": msg });
-                        });
-                        console.log(value, row, index);
+                        deleteFct(row.uri);
                     }
                 }
               }]
