@@ -108,7 +108,7 @@ RDFE.io = function(options) {
             }
 
             var __success = function(data, textStatus) {
-                var chunkSize = 100;
+                var chunkSize = params.chunkSize || 400;
                 var chunk = function(start) {
                   if(start >= result.length) {
                     params["success"] = params['__success'];
