@@ -311,6 +311,7 @@ RDFE.Editor.prototype.createEntityList = function(doc, container) {
               sortName:'label',
               pagination:true,
               search:true,
+              searchAlign: 'left',
               showHeader: true,
               data: entityData,
               idField: 'uri',
