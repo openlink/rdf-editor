@@ -147,19 +147,13 @@
 
       <br/>
 
-      <div id="panel-view-entities" class="panel panel-default main-view-panel">
-        <div class="panel-heading">
-          <h3 class="panel-title">Entities</h3>
-        </div>
-        <div id="entitiesContents" class="panel-body">
+      <div id="panel-view-entities" class="main-view-panel" style="display:none">
+        <div id="entitiesContents">
         </div>
       </div>
 
 
-      <div id="panel-view-triples" class="panel panel-default main-view-panel" style="display:none;">
-        <div class="panel-heading">
-          <h3 class="panel-title">Triples</h3>
-        </div>
+      <div id="panel-view-triples" class="main-view-panel" style="display:none;">
         <table class="table table-bordered table-striped" style="table-layout: fixed;">
           <thead>
             <tr>
@@ -331,6 +325,7 @@
                 editor.createEditorUi(mainDoc, $("#sparqlcontents"));
             else
                 editor.createEntityList(mainDoc, $("#entitiesContents"));
+            $('#panel-view-entities').show();
             toggleSpinner(false);
             $('#docUrl').text(url);
             $.jStorage.set("editor-document-url", url);
