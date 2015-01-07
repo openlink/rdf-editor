@@ -304,7 +304,7 @@
 
 
       // SPARQL I/O
-      var IO_SPARQL_HOST = $.jStorage.get("editor-sparql-endpoint", 'http://trueg.selfhost.eu:8899/sparql');
+      var IO_SPARQL_HOST = $.jStorage.get("editor-sparql-endpoint", window.location.protocol + '//' + window.location.host + '/sparql');
       var IO_SPARQL_GRAPH = $.jStorage.get("editor-document-url", 'urn:foo');
 
       // The main document which contains the loaded data
