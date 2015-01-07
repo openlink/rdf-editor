@@ -1,5 +1,9 @@
 {
-  "bookmarks": [
+  "OntologyManager": {
+    "useProxy": false,
+    "preloadOntologies": ["test/test.ttl"]
+  },
+  "Bookmarks": [
     {
       "label": "Test Foo Data",
       "uri": "urn:foo",
@@ -25,5 +29,7 @@
       "uri": "http://ldp.e.corpintra.net/graph/bceuc",
       "type": "sparql"
     }
-  ]
+  ],
+  "Templates": {
+  }
 }
