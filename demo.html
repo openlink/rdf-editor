@@ -154,6 +154,8 @@
 
 
       <div id="panel-view-triples" class="main-view-panel" style="display:none;">
+        <div id="tripleAddContent">
+        </div>
         <div id="sparqlcontents">
         </div>
       </div>
@@ -468,7 +470,7 @@
 
         $('button#add').click(function(e) {
             if($('#panel-view-triples').is(":visible"))
-              editor.createNewStatementEditor($('#sparqlcontents'));
+              editor.createNewStatementEditor($('#tripleAddContent'));
             else
               alert('FIXME: need to show new resource dialog with type selection.');
         });
