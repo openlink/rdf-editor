@@ -205,21 +205,141 @@ RDFE.Editor.prototype.createTripleActions = function(tripleRow, graphUri) {
     });
 };
 
+RDFE.Editor.prototype.nodeFormatter = function(value) {
+    console.log('Formatting: ', value, value.toNT(), value.toString());
+    if(value.interfaceName == "Literal")
+        return value.nominalValue;
+    else
+        return value.toString();
+};
+
 RDFE.Editor.prototype.createEditorUi = function(doc, container) {
     var self = this;
     this.doc = doc;
 
-    doc.store.graph(doc.graph, function(success, g) {
-        if(success) {
-            container.empty();
-            for(var i = 0; i < g.length; i++) {
-                self.createTripleActions(self.createTripleRow(g.toArray()[i], container), doc.graph);
-            }
+    var tripleEditorDataSetter = function(triple, field, newValue) {
+        var newNode = newValue;
+
+        if (field != 'object' ||
+            triple.object.interfaceName == 'NamedNode') {
+            newNode = self.doc.store.rdf.createNamedNode(RDFE.Editor.io_strip_URL_quoting(newValue));
+        }
+        else if (triple.object.datatype == 'http://www.w3.org/2001/XMLSchema#dateTime') {
+            var d = new Date(newValue);
+            newNode = self.doc.store.rdf.createLiteral(d.toISOString(), triple.object.language, triple.object.datatype);
         }
         else {
-            // FIXME: error handling.
-          console.log('Failed to query triples in doc.');
+            newNode = self.doc.store.rdf.createLiteral(newValue, triple.object.language, triple.object.datatype);
         }
+
+        self.doc.store.delete(self.doc.store.rdf.createGraph([triple]), self.doc.graph, function(success) {
+            if(success) {
+                console.log("Successfully deleted old triple")
+                // update data in the bootstrap-table array
+                triple[field] = newNode;
+
+                self.doc.store.insert(self.doc.store.rdf.createGraph([triple]), self.doc.graph, function(success){
+                    if(!success) {
+                        console.log('Failed to add new triple to store.');
+                        // FIXME: Error handling!!!
+                    }
+                });
+            }
+            else {
+              console.log('Failed to add delete old triple from store.');
+                // FIXME: Error handling!!!
+            }
+        });
+    };
+
+    doc.listProperties(function (pl) {
+        console.log('Found existing predicates: ', pl);
+        doc.store.graph(doc.graph, function(success, g) {
+            if(success) {
+                container.empty();
+                var $list = $(document.createElement('table')).addClass('table');
+                container.append($list);
+                $list.bootstrapTable({
+                  striped:true,
+                  sortName:'s',
+                  pagination:true,
+                  search:true,
+                  searchAlign: 'left',
+                  showHeader: true,
+                  editable: true,
+                  data: g.toArray(),
+                  dataSetter: tripleEditorDataSetter,
+                  columns: [{
+                    field: 'subject',
+                    title: 'Subject',
+                    aligh: 'left',
+                    sortable: true,
+                    editable: {
+                      mode: "inline"
+                    },
+                    formatter: RDFE.Editor.prototype.nodeFormatter
+                  }, {
+                    field: 'predicate',
+                    title: 'Predicate',
+                    aligh: 'left',
+                    sortable: true,
+                    editable: {
+                      mode: "inline",
+                      name: 'predicate',
+                      type: "typeaheadjs",
+                      placement: "right",
+                      typeahead: {
+                        name: 'predicate',
+                        local: [
+                          "http://www.w3.org/2002/07/owl#",
+                          "http://www.w3.org/2000/01/rdf-schema#",
+                          "http://xmlns.com/foaf/0.1/",
+                          "http://rdfs.org/sioc/ns#",
+                          "http://purl.org/dc/elements/1.1/",
+                        ].concat(pl)
+                      }
+                    },
+                    formatter: RDFE.Editor.prototype.nodeFormatter
+                  }, {
+                    field: 'object',
+                    title: 'Object',
+                    aligh: 'left',
+                    sortable: true,
+                    editable: {
+                      mode: "inline"
+                    },
+                    formatter: RDFE.Editor.prototype.nodeFormatter
+                  }, {
+                    field: 'actions',
+                    title: 'Actions',
+                    align: 'center',
+                    valign: 'middle',
+                    clickToSelect: false,
+                    editable: false,
+                    formatter: function(value, row, index) {
+                        return [
+                            '<a class="remove ml10" href="javascript:void(0)" title="Remove">',
+                                '<i class="glyphicon glyphicon-remove"></i>',
+                            '</a>'
+                        ].join('');
+                    },
+                    events: {
+                        'click .remove': function (e, value, row, index) {
+                            self.doc.store.delete(self.doc.store.rdf.createGraph([value]), graphUri, function(success) {
+                                if(!success) {
+                                    $(self).trigger('rdf-editor-error', { "type": 'triple-delete-failed', "message": 'Failed to delete triple.' });
+                                }
+                            });
+                        }
+                    }
+                  }]
+                });
+            }
+            else {
+                // FIXME: error handling.
+              console.log('Failed to query triples in doc.');
+            }
+        });
     });
 };
 
