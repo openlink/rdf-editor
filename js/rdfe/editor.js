@@ -265,9 +265,9 @@ RDFE.Editor.prototype.createEditorUi = function(doc, container) {
                 container.append($list);
 
                 // add index to triples for identification
-                var i = 0;
                 var triples = g.toArray();
-                $.each(triples, function() { this.id = i; i+=1; });
+                for(var i = 0; i < triples.length; i+=1)
+                  triples[i].id = i;
                 console.log(triples);
 
                 $list.bootstrapTable({
