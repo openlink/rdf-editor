@@ -263,6 +263,13 @@ RDFE.Editor.prototype.createEditorUi = function(doc, container) {
                 container.empty();
                 var $list = $(document.createElement('table')).addClass('table');
                 container.append($list);
+
+                // add index to triples for identification
+                var i = 0;
+                var triples = g.toArray();
+                $.each(triples, function() { this.id = i; i+=1; });
+                console.log(triples);
+
                 $list.bootstrapTable({
                   striped:true,
                   sortName:'s',
@@ -271,7 +278,7 @@ RDFE.Editor.prototype.createEditorUi = function(doc, container) {
                   searchAlign: 'left',
                   showHeader: true,
                   editable: true,
-                  data: g.toArray(),
+                  data: triples,
                   dataSetter: tripleEditorDataSetter,
                   columns: [{
                     field: 'subject',
@@ -343,8 +350,15 @@ RDFE.Editor.prototype.createEditorUi = function(doc, container) {
                     },
                     events: {
                         'click .remove': function (e, value, row, index) {
-                            self.doc.store.delete(self.doc.store.rdf.createGraph([value]), graphUri, function(success) {
-                                if(!success) {
+                            var triple = row;
+                            self.doc.store.delete(self.doc.store.rdf.createGraph([triple]), self.doc.graph, function(success) {
+                                if(success) {
+                                    $list.bootstrapTable('remove', {
+                                        field: 'id',
+                                        values: [row.id]
+                                    });
+                                }
+                                else {
                                     $(self).trigger('rdf-editor-error', { "type": 'triple-delete-failed', "message": 'Failed to delete triple.' });
                                 }
                             });
