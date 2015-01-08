@@ -64,7 +64,10 @@
                     var data = that.getData(),
                         row = data[$(this).parents('tr[data-index]').data('index')];
 
-                    row[column.field] = params.submitValue;
+                    if (that.options.dataSetter)
+                        that.options.dataSetter(row, column.field, params.submitValue);
+                    else
+                        row[column.field] = params.submitValue;
                 });
         });
         this.trigger('editable-init');
