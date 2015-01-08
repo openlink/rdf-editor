@@ -175,7 +175,6 @@ RDFE.Editor.prototype.createTripleActions = function(tripleRow, graphUri) {
                 self.doc.store.insert(self.doc.store.rdf.createGraph([newTriple]), graphUri, function(success){
                     if(success) {
                         // we simply update the old triple values in the tr tag
-                        console.log( "TRIPLE:\n"+newTriple );
                         self.saveTripleToElem($tripleTr, newTriple);
                     }
                     else {
@@ -268,7 +267,6 @@ RDFE.Editor.prototype.createEditorUi = function(doc, container) {
                 var triples = g.toArray();
                 for(var i = 0; i < triples.length; i+=1)
                   triples[i].id = i;
-                console.log(triples);
 
                 $list.bootstrapTable({
                   striped:true,
