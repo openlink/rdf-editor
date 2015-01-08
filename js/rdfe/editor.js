@@ -54,8 +54,7 @@ RDFE.Editor.prototype.makeTriple = function(s, p, o) {
         oo=this.doc.store.rdf.createNamedNode(o);
     }
     else {
-        var l = this.doc.store.parseLiteral(o);
-        oo = this.doc.store.rdf.createLiteral(l.value, l.lang, l.type);
+        oo = this.doc.store.rdf.createLiteral(o, null, null);
     }
     return(this.doc.store.rdf.createTriple(ss, pp, oo));
 };
@@ -267,6 +266,8 @@ RDFE.Editor.prototype.createEditorUi = function(doc, container) {
                 var triples = g.toArray();
                 for(var i = 0; i < triples.length; i+=1)
                   triples[i].id = i;
+                // remember last index for triple adding
+                $list.data('maxindex', i);
 
                 $list.bootstrapTable({
                   striped:true,
@@ -364,6 +365,8 @@ RDFE.Editor.prototype.createEditorUi = function(doc, container) {
                     }
                   }]
                 });
+
+                self.tripleTable = $list;
             }
             else {
                 // FIXME: error handling.
@@ -379,28 +382,38 @@ RDFE.Editor.prototype.createNewStatementEditor = function(container) {
   if(!this.doc)
     return false;
 
-  container.prepend(' \
-      <tr class="triple triple-new"> \
-      <td data-title="Subject"><a href="#" data-type="text" class="triple editable editable-click s">' + '' + '</a></td> \
-      <td data-title="Predicate"><a href="#" data-type="text" class="triple editable editable-click p">' + '' + '</a></td> \
-      <td data-title="Object"><a href="#" data-type="text" class="triple editable editable-click o">' + '' + '</a></td> \
-      <td><a href="#" class="btn btn-primary btn-xs triple-action triple-action-new-cancel">Cancel<br></a> \
-        <a href="#" class="btn btn-default btn-xs triple-action triple-action-new-save">Save<br></a></td> \
-      </tr>\n');
-  var $newTripleTr = container.find('tr.triple-new');
+  container.html(' \
+      <div class="form-horizontal"> \
+      <div class="form-group"><label for="subject" class="col-sm-2 control-label">Subject</label> \
+      <div class="col-sm-10"><input name="subject" class="form-control" /></div></div> \
+      <div class="form-group"><label for="predicate" class="col-sm-2 control-label">Predicate</label> \
+      <div class="col-sm-10"><input name="predicate" class="form-control" /></div></div> \
+      <div class="form-group"><label for="object" class="col-sm-2 control-label">Object</label> \
+      <div class="col-sm-10"><input name="object" class="form-control" /></div></div> \
+      <div class="form-group"><div class="col-sm-10 col-sm-offset-2"><a href="#" class="btn btn-default triple-action triple-action-new-cancel">Cancel</a> \
+        <a href="#" class="btn btn-primary triple-action triple-action-new-save">Save</a></div></div> \
+      </form>\n');
 
-  $newTripleTr.find('.editable').editable({ mode: "inline" });
-
-  $newTripleTr.find('a.triple-action-new-cancel').click(function(e) {
-      $newTripleTr.remove();
+  container.find('a.triple-action-new-cancel').click(function(e) {
+      container.empty();
   });
 
-  $newTripleTr.find('a.triple-action-new-save').click(function(e) {
-      var t = self.getNewTriple($newTripleTr);
+  container.find('a.triple-action-new-save').click(function(e) {
+      // FIXME: use the same editors we use in the tables
+      // FIXME: get the range of the property and convert the object accordingly
+      var s = container.find('input[name="subject"]').val();
+      var p = container.find('input[name="predicate"]').val();
+      var o = container.find('input[name="object"]').val();
+      var t = self.makeTriple(s, p, o);
       self.doc.store.insert(self.doc.store.rdf.createGraph([t]), self.doc.graph, function(success){
           if(success) {
-              $newTripleTr.remove();
-              self.createTripleActions(self.createTripleRow(t, container), self.doc.graph);
+              container.empty();
+              if(self.tripleTable) {
+                  var i = self.tripleTable.data('maxindex');
+                  i += 1;
+                  self.tripleTable.bootstrapTable('append', $.extend(t, {id: i}));
+                  self.tripleTable.data('maxindex', i);
+              }
           }
           else {
               console.log('Failed to add new triple to store.');
