@@ -309,8 +309,22 @@ RDFE.Editor.prototype.createEditorUi = function(doc, container) {
                     title: 'Object',
                     aligh: 'left',
                     sortable: true,
-                    editable: {
-                      mode: "inline"
+                    editable: function(triple) {
+                        if (triple.object.datatype == 'http://www.w3.org/2001/XMLSchema#dateTime') {
+                            return {
+                                type: "datetime",
+                                format: 'yyyy-mm-ddThh:ii:ssZ',
+                                viewformat: 'yyyy-mm-ddThh:ii:ssZ',
+                                datetimepicker: {
+                                    weekStart: 1
+                                }
+                            };
+                        }
+                        else {
+                            return {
+                                mode: "inline"
+                            };
+                        }
                     },
                     formatter: RDFE.Editor.prototype.nodeFormatter
                   }, {
