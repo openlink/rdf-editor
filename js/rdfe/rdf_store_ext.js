@@ -50,3 +50,11 @@ rdfstore.Store.prototype.termToNode = function(term) {
   else
     return this.rdf.createNamedNode(term.value); // FIXME: blank nodes are so much trouble. We need to find a way to handle them properly
 };
+
+rdfstore.Store.prototype.rdf.api.NamedNode.prototype.localeCompare = function(compareNode, locales, options) {
+    return this.toString().localeCompare(compareNode.toString(), locales, options);
+};
+
+rdfstore.Store.prototype.rdf.api.Literal.prototype.localeCompare = function(compareNode, locales, options) {
+    return this.toString().localeCompare(compareNode.toString(), locales, options);
+};
