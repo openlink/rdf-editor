@@ -59,15 +59,25 @@
                 return;
             }
 
-            that.$body.find('a[data-name="' + column.field + '"]').editable(column.editable)
+            var data = that.getData();
+
+            that.$body.find('a[data-name="' + column.field + '"]')
+                .each(function() {
+                    if(typeof(column.editable) == 'function') {
+                        var row = data[$(this).parents('tr[data-index]').data('index')];
+                        $(this).editable(column.editable(row, column.field));
+                    }
+                    else {
+                        $(this).editable(column.editable)
+                    }
+                })
                 .off('save').on('save', function (e, params) {
-                    var data = that.getData(),
-                        row = data[$(this).parents('tr[data-index]').data('index')];
+                    var row = data[$(this).parents('tr[data-index]').data('index')];
 
                     if (that.options.dataSetter)
-                        that.options.dataSetter(row, column.field, params.submitValue);
+                        that.options.dataSetter(row, column.field, params.newValue);
                     else
-                        row[column.field] = params.submitValue;
+                        row[column.field] = params.newValue;
                 });
         });
         this.trigger('editable-init');
