@@ -154,18 +154,8 @@
 
 
       <div id="panel-view-triples" class="main-view-panel" style="display:none;">
-        <table class="table table-bordered table-striped" style="table-layout: fixed;">
-          <thead>
-            <tr>
-              <th data-field="subject" data-sortable="true">Subject</th>
-              <th data-field="property" data-sortable="true">Predicate</th>
-              <th data-field="object" data-sortable="true">Object</th>
-              <th></th>
-            </tr>
-          </thead>
-          <tbody id="sparqlcontents">
-          </tbody>
-        </table>
+        <div id="sparqlcontents">
+        </div>
       </div>
     </div>
 
@@ -279,6 +269,7 @@
     <script src="js/typeahead.js"></script>
     <script src="js/typeaheadjs.js"></script>
     <script src="js/bootstrap-table.js"></script>
+    <script src="js/bootstrap-table-editable.js"></script>
 
     <script>
       var val = new VAL();
