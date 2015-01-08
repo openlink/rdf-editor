@@ -208,7 +208,7 @@ RDFE.Editor.prototype.createTripleActions = function(tripleRow, graphUri) {
 RDFE.Editor.prototype.nodeFormatter = function(value) {
     if(value.interfaceName == "Literal") {
         if(value.datatype == 'http://www.w3.org/2001/XMLSchema#dateTime')
-            return (new Date(value.nominalValue)).toISOString();
+            return (new Date(value.nominalValue)).toString();
         else
             return value.nominalValue;
     }
