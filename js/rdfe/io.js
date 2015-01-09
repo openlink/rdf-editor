@@ -82,7 +82,7 @@ RDFE.io = function(options) {
           parser.parse(data, function (error, triple, prefixes) {
               if(error) {
                   // FIXME: proper error handling with a callback
-                  alert(result);
+                  alert(error);
               }
               if (triple == null) {
                   // exec success function
@@ -213,7 +213,7 @@ RDFE.gsp = function(options) {
             parser.parse(data, function (error, triple, prefixes) {
                 if(error) {
                     // FIXME: proper error handling with a callback
-                    alert(result);
+                    alert(error);
                 }
                 if (triple == null) {
                     // exec success function
@@ -319,7 +319,7 @@ RDFE.ldp = function(options) {
             parser.parse(data, function (error, triple, prefixes) {
                 if(error) {
                     // FIXME: proper error handling with a callback
-                    alert(result);
+                    alert(error);
                 }
                 if (triple == null) {
                     // exec success function
