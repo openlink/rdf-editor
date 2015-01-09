@@ -58,3 +58,23 @@ rdfstore.Store.prototype.rdf.api.NamedNode.prototype.localeCompare = function(co
 rdfstore.Store.prototype.rdf.api.Literal.prototype.localeCompare = function(compareNode, locales, options) {
     return this.toString().localeCompare(compareNode.toString(), locales, options);
 };
+
+// FIXME: No Blank node support!!!!!
+rdfstore.Store.prototype.n3ToRdfStoreTriple = function(triple) {
+  //console.log('Convert N3 triple: ', triple);
+  var s = this.rdf.createNamedNode(triple.subject);
+  var p = this.rdf.createNamedNode(triple.predicate);
+  var o = null;
+  if(N3.Util.isLiteral(triple.object)) {
+      // rdfstore treats the empty string as a valid language
+      var l = N3.Util.getLiteralLanguage(triple.object);
+      if(l == '')
+          l = null;
+      o = this.rdf.createLiteral(N3.Util.getLiteralValue(triple.object), l, N3.Util.getLiteralType(triple.object));
+  }
+  else {
+      o = this.rdf.createNamedNode(triple.object);
+  }
+  //console.log('Converted triple: ', this.rdf.createTriple(s, p, o));
+  return this.rdf.createTriple(s, p, o);
+};

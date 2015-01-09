@@ -78,17 +78,22 @@ RDFE.io = function(options) {
         params = RDFE.params(params, self.options);
         var __success = function(data, textStatus) {
           RDFE.graphClear(store, storeGraph);
-          store.load('text/turtle', data, storeGraph, function (success, result) {
-              if (!success) {
+          var parser = N3.Parser();
+          parser.parse(data, function (error, triple, prefixes) {
+              if(error) {
+                  // FIXME: proper error handling with a callback
                   alert(result);
-                  return;
               }
-
-              // exec success function
-              if (params["__success"])
-                  params["__success"](data);
+              if (triple == null) {
+                  // exec success function
+                  if (params["__success"])
+                      params["__success"](data);
+              }
+              else {
+                  store.insert([store.n3ToRdfStoreTriple(triple)], storeGraph, function() {});
+              }
           });
-        }
+        };
         params["__success"] = params["success"];
         params["success"] = __success;
         self.retrieve(graph, params, true);
@@ -204,15 +209,22 @@ RDFE.gsp = function(options) {
         params = RDFE.params(params, self.options);
         var __success = function(data, textStatus) {
             RDFE.graphClear(store, storeGraph);
-            store.load('text/turtle', data, storeGraph, function (success, result){
-              if (!success) {
-                  alert(result);
-                  return;
-              }
-              if (params["__success"])
-                  params["__success"](data);
+            var parser = N3.Parser();
+            parser.parse(data, function (error, triple, prefixes) {
+                if(error) {
+                    // FIXME: proper error handling with a callback
+                    alert(result);
+                }
+                if (triple == null) {
+                    // exec success function
+                    if (params["__success"])
+                        params["__success"](data);
+                }
+                else {
+                    store.insert([store.n3ToRdfStoreTriple(triple)], storeGraph, function() {});
+                }
             });
-        }
+        };
         params["__success"] = params["success"];
         params["success"] = __success;
         self.retrieve(graph, params, true);
@@ -303,16 +315,22 @@ RDFE.ldp = function(options) {
         params = RDFE.params(params, self.options);
         var __success = function(data, textStatus) {
             RDFE.graphClear(store, storeGraph);
-            store.load('text/turtle', data, storeGraph, function(success, result) {
-                if (!success) {
+            var parser = N3.Parser();
+            parser.parse(data, function (error, triple, prefixes) {
+                if(error) {
+                    // FIXME: proper error handling with a callback
                     alert(result);
-                    return;
+                }
+                if (triple == null) {
+                    // exec success function
+                    if (params["__success"])
+                        params["__success"](data);
+                }
+                else {
+                    store.insert([store.n3ToRdfStoreTriple(triple)], storeGraph, function() {});
                 }
             });
-
-            if (params["__success"])
-                params["__success"](data);
-        }
+        };
         params["__success"] = params["success"];
         params["success"] = __success;
         self.retrieve(path, params, true);
