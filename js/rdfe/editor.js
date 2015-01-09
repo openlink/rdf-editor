@@ -42,7 +42,7 @@ RDFE.Editor.prototype.nodeFormatter = function(value) {
     }
 };
 
-RDFE.Editor.prototype.createEditorUi = function(doc, container) {
+RDFE.Editor.prototype.createEditorUi = function(doc, container, callback) {
     var self = this;
     this.doc = doc;
 
@@ -194,6 +194,9 @@ RDFE.Editor.prototype.createEditorUi = function(doc, container) {
                 });
 
                 self.tripleTable = $list;
+
+                if(callback)
+                      callback();
             }
             else {
                 // FIXME: error handling.
@@ -261,7 +264,7 @@ RDFE.Editor.prototype.entityListActionsFormatter = function(value, row, index) {
     ].join('');
 };
 
-RDFE.Editor.prototype.createEntityList = function(doc, container) {
+RDFE.Editor.prototype.createEntityList = function(doc, container, callback) {
     var self = this;
     this.doc = doc;
 
@@ -343,6 +346,9 @@ RDFE.Editor.prototype.createEntityList = function(doc, container) {
             // FIXME: error handling.
           console.log('Failed to query entities in doc.');
         }
+
+        if (callback)
+            callback();
     });
 };
 

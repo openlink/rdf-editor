@@ -315,13 +315,12 @@
 
         mainDoc.load(url, io_rdfe, function() {
             if($('#panel-view-triples').is(":visible")) {
-                editor.createEditorUi(mainDoc, $("#sparqlcontents"));
+                editor.createEditorUi(mainDoc, $("#sparqlcontents"), function() { toggleSpinner(false); });
             }
             else {
-                editor.createEntityList(mainDoc, $("#entitiesContents"));
+                editor.createEntityList(mainDoc, $("#entitiesContents"), function() { toggleSpinner(false); });
                 $('#panel-view-entities').show();
             }
-            toggleSpinner(false);
             $('#docUrl').text(url);
             $.jStorage.set("editor-document-url", url);
         }, function() {
