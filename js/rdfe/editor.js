@@ -12,37 +12,8 @@ RDFE.Editor = function(params) {
   this.doc = new RDFE.Document();
 };
 
-// draw_graph_contents() { }
-// insert() { }
-// delete() { }
-// update() { delete(); insert() ; draw_graph_contents() }
-
-// useful functions
-RDFE.Editor.escapeHTML = function(str) {
-    return (str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;') );
-};
-
-// rdf_store bits
 RDFE.Editor.io_strip_URL_quoting = function(str) {
     return(str.replace(RegExp('^<(.*)>$'), '$1'));
-};
-
-RDFE.Editor.io_strip_litstr_quoting = function(str) {
-    return(str.replace(RegExp('^"(.*)"$'), '$1'));
-};
-
-/**
- * Parse a string into a node object.
- */
-RDFE.Editor.prototype.parseNTNode = function(s) {
-    if(s[0] == '<')
-        return this.doc.store.rdf.createNamedNode(RDFE.Editor.io_strip_URL_quoting(s));
-    else if(s.startsWith('_:'))
-        return this.doc.store.rdf.createNamedNode(s); // FIXME: blank nodes are so much trouble. We need to find a way to handle them properly
-    else {
-        var l = this.doc.store.parseLiteral(s);
-        return this.doc.store.rdf.createLiteral(l.value, l.lang, l.type);
-    }
 };
 
 RDFE.Editor.prototype.makeTriple = function(s, p, o) {
@@ -54,131 +25,50 @@ RDFE.Editor.prototype.makeTriple = function(s, p, o) {
         oo=this.doc.store.rdf.createNamedNode(o);
     }
     else {
-        var l = this.doc.store.parseLiteral(o);
-        oo = this.doc.store.rdf.createLiteral(l.value, l.lang, l.type);
+        oo = this.doc.store.rdf.createLiteral(o, null, null);
     }
     return(this.doc.store.rdf.createTriple(ss, pp, oo));
 };
 
-
-RDFE.Editor.prototype.getOldTriple = function(el) {
-    var s=unescape(el.attr("data-statement-s-old"));
-    var p=unescape(el.attr("data-statement-p-old"));
-    var o=unescape(el.attr("data-statement-o-old"));
-    return this.doc.store.rdf.createTriple(this.parseNTNode(s), this.parseNTNode(p), this.parseNTNode(o));
-};
-
-RDFE.Editor.prototype.getNewTriple = function(el) {
-    var s=el.find("td[data-title='Subject'] a").text();
-    var p=el.find("td[data-title='Predicate'] a").text();
-    var o=el.find("td[data-title='Object'] a").text();
-    return(this.makeTriple(s,p,o));
-};
-
-RDFE.Editor.prototype.saveTripleToElem = function(tripleTr, triple) {
-    tripleTr.attr ('data-statement-s-old', escape(triple.subject.toNT()));
-    tripleTr.attr ('data-statement-p-old', escape(triple.predicate.toNT()));
-    tripleTr.attr ('data-statement-o-old', escape(triple.object.toNT()));
-    //tripleTr.attr ('data-statement-o-old', escape(triple.object.toString()));
-};
-
-RDFE.Editor.prototype.createTripleRow = function(t, container) {
-    var s=t.subject;
-    var p=t.predicate;
-    var o=t.object;
-    var oVal = RDFE.Editor.escapeHTML(o.toString());
-    var oDataType = 'text';
-    var datatype = '';
-    var interfaceName = '';
-
-    if (o.datatype == 'http://www.w3.org/2001/XMLSchema#dateTime') {
-        oVal = (new Date(o.nominalValue)).toISOString();
-        oDataType = 'datetime';
+RDFE.Editor.prototype.nodeFormatter = function(value) {
+    if(value.interfaceName == "Literal") {
+        if(value.datatype == 'http://www.w3.org/2001/XMLSchema#dateTime')
+            return (new Date(value.nominalValue)).toString();
+        else
+            return value.nominalValue;
     }
     else {
-        oVal = RDFE.Editor.escapeHTML(o.nominalValue);
+        return value.toString();
     }
-    if (o.datatype)
-        datatype = ' dtype="'+ o.datatype +'" ';
-
-    if (o.interfaceName)
-        interfaceName = ' interfaceName="'+ o.interfaceName +'" ';
-
-    container.append(' \
-        <tr class="triple" \
-        data-statement-s-old="' + escape(s.toNT()) + '" \
-        data-statement-p-old="' + escape(p.toNT()) + '" \
-        data-statement-o-old="' + escape(o.toNT()) + '"> \
-        <td data-title="Subject"><a href="#" data-type="text" class="triple editable editable-click s">' + RDFE.Editor.escapeHTML(s.toString()) + '</a></td> \
-        <td data-title="Predicate"><a href="#" name="predicate" data-type="typeaheadjs" data-placement="right" class="triple editable editable-click p">' + RDFE.Editor.escapeHTML(p.toString())+ '</a></td> \
-        <td data-title="Object"><a href="#" data-type="'+ oDataType +'"'+ datatype + interfaceName + ' class="triple editable editable-click '+ oDataType +' o">' + oVal + '</a></td> \
-        <td><a href="#" class="btn btn-danger btn-xs triple-action triple-action-delete">Delete</a></td> \
-        </tr>\n');
-
-    return container.find('tr.triple').last();
 };
 
-RDFE.Editor.prototype.createTripleActions = function(tripleRow, graphUri) {
+RDFE.Editor.prototype.createEditorUi = function(doc, container, callback) {
     var self = this;
+    this.doc = doc;
 
-    var editable_opts = { mode: "inline" };
-    var existingPredicates = [];
-    $(".triple .p").each( function() { existingPredicates.push($(this).text().toString()) } );
+    var tripleEditorDataSetter = function(triple, field, newValue) {
+        var newNode = newValue;
 
-    var editable_dt_opts = {
-        format: 'yyyy-mm-ddThh:ii:ssZ',
-        viewformat: 'yyyy-mm-ddThh:ii:ssZ',
-        datetimepicker: {
-            weekStart: 1
+        if (field != 'object' ||
+            triple.object.interfaceName == 'NamedNode') {
+            newNode = self.doc.store.rdf.createNamedNode(RDFE.Editor.io_strip_URL_quoting(newValue));
         }
-    };
-
-    tripleRow.find('.p.editable').editable({
-      name: 'predicate',
-      typeahead: {
-          name: 'predicate',
-          local: [
-            "http://www.w3.org/2002/07/owl#",
-            "http://www.w3.org/2000/01/rdf-schema#",
-            "http://xmlns.com/foaf/0.1/",
-            "http://rdfs.org/sioc/ns#",
-            "http://purl.org/dc/elements/1.1/",
-          ].concat(existingPredicates) }
-      });
-
-    tripleRow.find('.editable:not(.datetime)').editable(editable_opts);
-    tripleRow.find('.editable.datetime').editable(editable_dt_opts);
-    tripleRow.find('.editable').on('save', function(e, params) {
-        var $this = $(this);
-        var $tripleTr = $this.closest('tr');
-
-        var newOVal = params.newValue;
-        if ($this.attr('data-type') == 'datetime') {
-            var d = new Date(params.newValue);
-            newOVal = d.toISOString();
+        else if (triple.object.datatype == 'http://www.w3.org/2001/XMLSchema#dateTime') {
+            var d = new Date(newValue);
+            newNode = self.doc.store.rdf.createLiteral(d.toISOString(), triple.object.language, triple.object.datatype);
         }
-        if ($this.attr('interfaceName') == 'Literal') {
-            newOVal = '"'+ newOVal + '"';
-            if ($this.attr('dtype'))
-                newOVal = newOVal + '^^<' + $this.attr('dtype') + '>';
+        else {
+            newNode = self.doc.store.rdf.createLiteral(newValue, triple.object.language, triple.object.datatype);
         }
 
-        var updated_field = $this.hasClass("o") ? 'o' : $this.hasClass("s") ? 's' : $this.hasClass("p") ? 'p' : '';
-        var s = updated_field == 's' ? params.newValue : $tripleTr.find('a.s').text();
-        var p = updated_field == 'p' ? params.newValue : $tripleTr.find('a.p').text();
-        var o = updated_field == 'o' ? newOVal : $tripleTr.find('a.o').text();
-
-        self.doc.store.delete(self.doc.store.rdf.createGraph([self.getOldTriple($tripleTr)]), graphUri, function(success) {
+        self.doc.store.delete(self.doc.store.rdf.createGraph([triple]), self.doc.graph, function(success) {
             if(success) {
                 console.log("Successfully deleted old triple")
-                var newTriple = self.makeTriple(s, p, o);
-                self.doc.store.insert(self.doc.store.rdf.createGraph([newTriple]), graphUri, function(success){
-                    if(success) {
-                        // we simply update the old triple values in the tr tag
-                        console.log( "TRIPLE:\n"+newTriple );
-                        self.saveTripleToElem($tripleTr, newTriple);
-                    }
-                    else {
+                // update data in the bootstrap-table array
+                triple[field] = newNode;
+
+                self.doc.store.insert(self.doc.store.rdf.createGraph([triple]), self.doc.graph, function(success){
+                    if(!success) {
                         console.log('Failed to add new triple to store.');
                         // FIXME: Error handling!!!
                     }
@@ -189,37 +79,130 @@ RDFE.Editor.prototype.createTripleActions = function(tripleRow, graphUri) {
                 // FIXME: Error handling!!!
             }
         });
-    });
+    };
 
-    tripleRow.find('.triple-action-delete').on("click", function(e) {
-        var $this = $(this);
-        var $tripleTr = $this.closest('tr');
-        self.doc.store.delete(self.doc.store.rdf.createGraph([self.getOldTriple($tripleTr)]), graphUri, function(success){
+    doc.listProperties(function (pl) {
+        console.log('Found existing predicates: ', pl);
+        doc.store.graph(doc.graph, function(success, g) {
             if(success) {
-                $tripleTr.remove();
+                container.empty();
+                var $list = $(document.createElement('table')).addClass('table');
+                container.append($list);
+
+                // add index to triples for identification
+                var triples = g.toArray();
+                for(var i = 0; i < triples.length; i+=1)
+                  triples[i].id = i;
+                // remember last index for triple adding
+                $list.data('maxindex', i);
+
+                $list.bootstrapTable({
+                  striped:true,
+                  sortName:'s',
+                  pagination:true,
+                  search:true,
+                  searchAlign: 'left',
+                  showHeader: true,
+                  editable: true,
+                  data: triples,
+                  dataSetter: tripleEditorDataSetter,
+                  columns: [{
+                    field: 'subject',
+                    title: 'Subject',
+                    aligh: 'left',
+                    sortable: true,
+                    editable: {
+                      mode: "inline"
+                    },
+                    formatter: RDFE.Editor.prototype.nodeFormatter
+                  }, {
+                    field: 'predicate',
+                    title: 'Predicate',
+                    aligh: 'left',
+                    sortable: true,
+                    editable: {
+                      mode: "inline",
+                      name: 'predicate',
+                      type: "typeaheadjs",
+                      placement: "right",
+                      typeahead: {
+                        name: 'predicate',
+                        local: [
+                          "http://www.w3.org/2002/07/owl#",
+                          "http://www.w3.org/2000/01/rdf-schema#",
+                          "http://xmlns.com/foaf/0.1/",
+                          "http://rdfs.org/sioc/ns#",
+                          "http://purl.org/dc/elements/1.1/",
+                        ].concat(pl)
+                      }
+                    },
+                    formatter: RDFE.Editor.prototype.nodeFormatter
+                  }, {
+                    field: 'object',
+                    title: 'Object',
+                    aligh: 'left',
+                    sortable: true,
+                    editable: function(triple) {
+                        if (triple.object.datatype == 'http://www.w3.org/2001/XMLSchema#dateTime') {
+                            return {
+                                type: "datetime",
+                                format: 'yyyy-mm-ddThh:ii:ssZ',
+                                viewformat: 'yyyy-mm-ddThh:ii:ssZ',
+                                datetimepicker: {
+                                    weekStart: 1
+                                }
+                            };
+                        }
+                        else {
+                            return {
+                                mode: "inline"
+                            };
+                        }
+                    },
+                    formatter: RDFE.Editor.prototype.nodeFormatter
+                  }, {
+                    field: 'actions',
+                    title: 'Actions',
+                    align: 'center',
+                    valign: 'middle',
+                    clickToSelect: false,
+                    editable: false,
+                    formatter: function(value, row, index) {
+                        return [
+                            '<a class="remove ml10" href="javascript:void(0)" title="Remove">',
+                                '<i class="glyphicon glyphicon-remove"></i>',
+                            '</a>'
+                        ].join('');
+                    },
+                    events: {
+                        'click .remove': function (e, value, row, index) {
+                            var triple = row;
+                            self.doc.store.delete(self.doc.store.rdf.createGraph([triple]), self.doc.graph, function(success) {
+                                if(success) {
+                                    $list.bootstrapTable('remove', {
+                                        field: 'id',
+                                        values: [row.id]
+                                    });
+                                }
+                                else {
+                                    $(self).trigger('rdf-editor-error', { "type": 'triple-delete-failed', "message": 'Failed to delete triple.' });
+                                }
+                            });
+                        }
+                    }
+                  }]
+                });
+
+                self.tripleTable = $list;
+
+                if(callback)
+                      callback();
             }
             else {
-                // FIXME: Error handling!!!
+                // FIXME: error handling.
+              console.log('Failed to query triples in doc.');
             }
         });
-    });
-};
-
-RDFE.Editor.prototype.createEditorUi = function(doc, container) {
-    var self = this;
-    this.doc = doc;
-
-    doc.store.graph(doc.graph, function(success, g) {
-        if(success) {
-            container.empty();
-            for(var i = 0; i < g.length; i++) {
-                self.createTripleActions(self.createTripleRow(g.toArray()[i], container), doc.graph);
-            }
-        }
-        else {
-            // FIXME: error handling.
-          console.log('Failed to query triples in doc.');
-        }
     });
 };
 
@@ -229,28 +212,38 @@ RDFE.Editor.prototype.createNewStatementEditor = function(container) {
   if(!this.doc)
     return false;
 
-  container.prepend(' \
-      <tr class="triple triple-new"> \
-      <td data-title="Subject"><a href="#" data-type="text" class="triple editable editable-click s">' + '' + '</a></td> \
-      <td data-title="Predicate"><a href="#" data-type="text" class="triple editable editable-click p">' + '' + '</a></td> \
-      <td data-title="Object"><a href="#" data-type="text" class="triple editable editable-click o">' + '' + '</a></td> \
-      <td><a href="#" class="btn btn-primary btn-xs triple-action triple-action-new-cancel">Cancel<br></a> \
-        <a href="#" class="btn btn-default btn-xs triple-action triple-action-new-save">Save<br></a></td> \
-      </tr>\n');
-  var $newTripleTr = container.find('tr.triple-new');
+  container.html(' \
+      <div class="form-horizontal"> \
+      <div class="form-group"><label for="subject" class="col-sm-2 control-label">Subject</label> \
+      <div class="col-sm-10"><input name="subject" class="form-control" /></div></div> \
+      <div class="form-group"><label for="predicate" class="col-sm-2 control-label">Predicate</label> \
+      <div class="col-sm-10"><input name="predicate" class="form-control" /></div></div> \
+      <div class="form-group"><label for="object" class="col-sm-2 control-label">Object</label> \
+      <div class="col-sm-10"><input name="object" class="form-control" /></div></div> \
+      <div class="form-group"><div class="col-sm-10 col-sm-offset-2"><a href="#" class="btn btn-default triple-action triple-action-new-cancel">Cancel</a> \
+        <a href="#" class="btn btn-primary triple-action triple-action-new-save">Save</a></div></div> \
+      </form>\n');
 
-  $newTripleTr.find('.editable').editable({ mode: "inline" });
-
-  $newTripleTr.find('a.triple-action-new-cancel').click(function(e) {
-      $newTripleTr.remove();
+  container.find('a.triple-action-new-cancel').click(function(e) {
+      container.empty();
   });
 
-  $newTripleTr.find('a.triple-action-new-save').click(function(e) {
-      var t = self.getNewTriple($newTripleTr);
+  container.find('a.triple-action-new-save').click(function(e) {
+      // FIXME: use the same editors we use in the tables
+      // FIXME: get the range of the property and convert the object accordingly
+      var s = container.find('input[name="subject"]').val();
+      var p = container.find('input[name="predicate"]').val();
+      var o = container.find('input[name="object"]').val();
+      var t = self.makeTriple(s, p, o);
       self.doc.store.insert(self.doc.store.rdf.createGraph([t]), self.doc.graph, function(success){
           if(success) {
-              $newTripleTr.remove();
-              self.createTripleActions(self.createTripleRow(t, container), self.doc.graph);
+              container.empty();
+              if(self.tripleTable) {
+                  var i = self.tripleTable.data('maxindex');
+                  i += 1;
+                  self.tripleTable.bootstrapTable('append', $.extend(t, {id: i}));
+                  self.tripleTable.data('maxindex', i);
+              }
           }
           else {
               console.log('Failed to add new triple to store.');
@@ -271,7 +264,7 @@ RDFE.Editor.prototype.entityListActionsFormatter = function(value, row, index) {
     ].join('');
 };
 
-RDFE.Editor.prototype.createEntityList = function(doc, container) {
+RDFE.Editor.prototype.createEntityList = function(doc, container, callback) {
     var self = this;
     this.doc = doc;
 
@@ -353,6 +346,9 @@ RDFE.Editor.prototype.createEntityList = function(doc, container) {
             // FIXME: error handling.
           console.log('Failed to query entities in doc.');
         }
+
+        if (callback)
+            callback();
     });
 };
 
