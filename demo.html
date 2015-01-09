@@ -154,18 +154,10 @@
 
 
       <div id="panel-view-triples" class="main-view-panel" style="display:none;">
-        <table class="table table-bordered table-striped" style="table-layout: fixed;">
-          <thead>
-            <tr>
-              <th data-field="subject" data-sortable="true">Subject</th>
-              <th data-field="property" data-sortable="true">Predicate</th>
-              <th data-field="object" data-sortable="true">Object</th>
-              <th></th>
-            </tr>
-          </thead>
-          <tbody id="sparqlcontents">
-          </tbody>
-        </table>
+        <div id="tripleAddContent">
+        </div>
+        <div id="sparqlcontents">
+        </div>
       </div>
     </div>
 
@@ -279,6 +271,7 @@
     <script src="js/typeahead.js"></script>
     <script src="js/typeaheadjs.js"></script>
     <script src="js/bootstrap-table.js"></script>
+    <script src="js/bootstrap-table-editable.js"></script>
 
     <script>
       var val = new VAL();
@@ -321,12 +314,13 @@
         toggleSpinner(true);
 
         mainDoc.load(url, io_rdfe, function() {
-            if($('#panel-view-triples').is(":visible"))
-                editor.createEditorUi(mainDoc, $("#sparqlcontents"));
-            else
-                editor.createEntityList(mainDoc, $("#entitiesContents"));
-            $('#panel-view-entities').show();
-            toggleSpinner(false);
+            if($('#panel-view-triples').is(":visible")) {
+                editor.createEditorUi(mainDoc, $("#sparqlcontents"), function() { toggleSpinner(false); });
+            }
+            else {
+                editor.createEntityList(mainDoc, $("#entitiesContents"), function() { toggleSpinner(false); });
+                $('#panel-view-entities').show();
+            }
             $('#docUrl').text(url);
             $.jStorage.set("editor-document-url", url);
         }, function() {
@@ -475,7 +469,7 @@
 
         $('button#add').click(function(e) {
             if($('#panel-view-triples').is(":visible"))
-              editor.createNewStatementEditor($('#sparqlcontents'));
+              editor.createNewStatementEditor($('#tripleAddContent'));
             else
               alert('FIXME: need to show new resource dialog with type selection.');
         });

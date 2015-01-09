@@ -102,3 +102,17 @@ RDFE.Document.prototype.getEntityLabel = function(url, success) {
     }
   });
 };
+
+RDFE.Document.prototype.listProperties = function(callback) {
+  var self = this;
+  self.store.execute("select distinct ?p from <" + self.graph + "> where { ?s ?p ?o }", function(success, r) {
+    var pl = [];
+
+    if(success) {
+      for(var i = 0; i < r.length; i += 1)
+        pl.push(r[i].p.value);
+    }
+
+    callback(pl);
+  });
+};
