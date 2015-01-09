@@ -40,6 +40,15 @@
         overflow: hidden;
         text-overflow: ellipsis;
       }
+      #busyspinner {margin: 1em; }
+      .entity-label {
+        font-weight: bold;
+        font-style: italic;
+      }
+      .fixed-table-body {
+        height: auto;
+        overflow: inherit;
+      }
     </style>
 
     <script src="js/jquery-1.11.1.min.js"></script>
@@ -73,35 +82,35 @@
 
     <script>
       var ontologyManager;
-      RDFE.Config('config.json', function() {
-              ontologyManager = new RDFE.OntologyManager();
-              ontologyManager.init();
-          }
+      var rdfeConfig = new RDFE.Config('config.json', function(config) {
+          ontologyManager = new RDFE.OntologyManager(null, config.options.OntologyManager);
+          ontologyManager.init();
+        }
       );
 
       $(document).ready(function() {
-          $('#o').val('test/test2.ttl');
-          // $('#o').val('test/goodrelations.ttl');
-          $("#o_submit").on("click", function(e) {
-              ontologyManager.ontologyParse($('#o').val());
-          });
-          $('#f').val('test/fresnel.ttl');
-          $("#f_submit").on("click", function(e) {
-              ontologyManager.fresnelParse($('#f').val());
-          });
-          $('#t').val('foaf:Person');
-          $("#t_submit").on("click", function(e) {
-              var x = function(template) {
-                  var RegisterForm = Backbone.Form.extend({schema: template.toBackboneForm()});
+        $('#o').val('test/test2.ttl');
+        // $('#o').val('test/goodrelations.ttl');
+        $("#o_submit").on("click", function(e) {
+            ontologyManager.ontologyParse($('#o').val());
+        });
+        $('#f').val('test/fresnel.ttl');
+        $("#f_submit").on("click", function(e) {
+            ontologyManager.fresnelParse($('#f').val());
+        });
+        $('#t').val('foaf:Person');
+        $("#t_submit").on("click", function(e) {
+          var x = function(template) {
+            var RegisterForm = Backbone.Form.extend({schema: template.toBackboneForm()});
 
-                  //Create the form instance and add to the page
-                  var form = new RegisterForm().render();
+            //Create the form instance and add to the page
+            var form = new RegisterForm().render();
 
-                  $('#x').empty().append(form.el);
-                  $('#templateDialog').modal();
-              }
-              ontologyManager.templateParse($('#t').val(), null, x);
-          });
+            $('#x').empty().append(form.el);
+            $('#templateDialog').modal();
+          }
+          ontologyManager.templateParse($('#t').val(), null, x);
+        });
       });
 
     </script>
