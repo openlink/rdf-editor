@@ -247,32 +247,41 @@
 
 
     <script src="js/jquery-1.11.1.min.js"></script>
+    <script src="js/jquery-deparam.min.js"></script>
+    <script src="js/jquery.cookie.js"></script>
+    <script src="js/spin.js"></script>
+    <script src="js/jquery.spin.js"></script>
+
     <script src="js/bootstrap.min.js"></script>
     <script src="js/bootstrap-editable.min.js"></script>
     <script src="js/bootstrap-datetimepicker.min.js"></script>
-    <script src="js/jquery-deparam.min.js"></script>
-    <script src="js/jquery.cookie.js"></script>
+    <script src="js/bootstrap-table.js"></script>
+    <script src="js/bootstrap-table-editable.js"></script>
+    <script src="js/bootstrap-growl.min.js"></script>
+    <script src="js/typeahead.js"></script>
+    <script src="js/typeaheadjs.js"></script>
+
     <script src="js/n3-browser.min.js"></script>
-    <script src="js/rdfe/io.js"></script>
     <script src="js/rdf_store.js"></script>
+    <script src="js/rdfxml_parser.js"></script>
+
     <script src="js/val.js"></script>
-    <script src="js/rdfe/rdf_store_ext.js"></script>
-    <script src="js/rdfe/document.js"></script>
+
     <script src="js/underscore-min.js"></script>
     <script src="js/backbone-min.js"></script>
     <script src="js/backbone-forms.min.js"></script>
     <script src="js/backbone-forms-list.min.js"></script>
     <script src="js/backbone-forms-bootstrap3.js"></script>
+
+    <script src="js/jstorage.js"></script>
+
+    <script src="js/rdfe/io.js"></script>
+    <script src="js/rdfe/ontology.js"></script>
+
+    <script src="js/rdfe/rdf_store_ext.js"></script>
+    <script src="js/rdfe/document.js"></script>
     <script src="js/rdfe/document_backbone_bridge.js"></script>
     <script src="js/rdfe/editor.js"></script>
-    <script src="js/jstorage.js"></script>
-    <script src="js/bootstrap-growl.min.js"></script>
-    <script src="js/spin.js"></script>
-    <script src="js/jquery.spin.js"></script>
-    <script src="js/typeahead.js"></script>
-    <script src="js/typeaheadjs.js"></script>
-    <script src="js/bootstrap-table.js"></script>
-    <script src="js/bootstrap-table-editable.js"></script>
 
     <script>
       var val = new VAL();
@@ -294,6 +303,13 @@
       // SPARQL I/O
       var IO_SPARQL_HOST = $.jStorage.get("editor-sparql-endpoint", window.location.protocol + '//' + window.location.host + '/sparql');
       var IO_SPARQL_GRAPH = $.jStorage.get("editor-document-url", 'urn:foo');
+
+      var ontologyManager;
+      var rdfeConfig = new RDFE.Config('config.json', function(config) {
+          ontologyManager = new RDFE.OntologyManager(null, config.options.OntologyManager);
+          ontologyManager.init();
+        }
+      );
 
       // The main document which contains the loaded data
       var mainDoc = new RDFE.Document();
@@ -475,11 +491,11 @@
               alert('FIXME: need to show new resource dialog with type selection.');
         });
 
-	$("#io_spq").change(
-	  function() {
-	    $.jStorage.set("editor-sparql-endpoint", $("#io_spq").val());
-	  }
-	) ;
+      	$("#io_spq").change(
+      	  function() {
+      	    $.jStorage.set("editor-sparql-endpoint", $("#io_spq").val());
+      	  }
+      	) ;
 
         // reload the contents when the panel shows
         $(document).on('show-view-triples', function() {
