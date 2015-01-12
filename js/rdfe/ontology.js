@@ -58,7 +58,6 @@ RDFE.OM_ONTOLOGY_CLASSES_TEMPLATE =
   '\n          { ' +
   '\n            ?c a rdfs:Class . ' +
   '\n          } ' +
-  '\n          ?c rdfs:isDefinedBy <{1}> . ' +
   '\n        } ' +
   '\n  ORDER BY ?c';
 
@@ -80,7 +79,6 @@ RDFE.OM_ONTOLOGY_PROPERTIES_TEMPLATE =
   '\n          {' +
   '\n            ?p a rdf:Property' +
   '\n          } .' +
-  '\n          ?p rdfs:isDefinedBy <{1}> . ' +
   '\n        }';
 
 RDFE.OM_ONTOLOGY_INDIVIDUALS_TEMPLATE =
@@ -573,8 +571,17 @@ RDFE.OntologyManager = function(store, config, options) {
             callback = params.success;
             delete params.success;
           }
-          for (var i = 0; i < results.length; i++) {
-            new RDFE.Ontology(self, URI, results[i]["o"].value, params);
+          if (results.length) {
+            var graph = URI;
+            for (var i = 0; i < results.length; i++) {
+              var ontologyURI = results[i]["o"].value;
+              // Fix for some ontlogies
+              if ((graph.charAt(graph.length - 1) == '#') && (graph.substring(0, graph.length - 1) == ontologyURI))
+                ontologyURI = graph;
+              new RDFE.Ontology(self, ontologyURI, graph, params);
+            }
+          } else {
+            new RDFE.Ontology(self, URI, URI, params);
           }
           if (callback)
             callback();
@@ -665,7 +672,7 @@ RDFE.OntologyManager = function(store, config, options) {
  * Ontology
  *
  */
-RDFE.Ontology = function(ontologyManager, graph, URI, options) {
+RDFE.Ontology = function(ontologyManager, URI, graph, options) {
   var self = this;
 
   // console.log('ontology =>', URI);
@@ -784,12 +791,12 @@ RDFE.Ontology = function(ontologyManager, graph, URI, options) {
  * Ontology Class
  *
  */
-RDFE.OntologyClass = function(ontology, ontologyClassURI, options) {
+RDFE.OntologyClass = function(ontology, URI, options) {
   var self = this;
 
-  // console.log('class =>', ontologyClassURI);
+  // console.log('class =>', URI);
   this.options = $.extend({}, options);
-  this.URI = ontologyClassURI;
+  this.URI = URI;
   this.subClassOf = [];
   this.disjointWith = [];
   this.properties = [];
@@ -807,7 +814,7 @@ RDFE.OntologyClass = function(ontology, ontologyClassURI, options) {
     self.properties.push(property);
   }
 
-  self.ontology.manager.store.node(ontologyClassURI, self.ontology.graph, function(success, results) {
+  self.ontology.manager.store.node(URI, self.ontology.graph, function(success, results) {
     if (!success) {
       console.error('class =>', results);
       return;
@@ -843,16 +850,16 @@ RDFE.OntologyClass = function(ontology, ontologyClassURI, options) {
  * Ontology Property
  *
  */
-RDFE.OntologyProperty = function(ontology, ontologyPropertyURI, options) {
+RDFE.OntologyProperty = function(ontology, URI, options) {
   var self = this;
   var store = ontology.manager.store;
 
-  // console.log('property =>', ontologyPropertyURI);
+  // console.log('property =>', URI);
   this.options = $.extend({}, options);
-  this.URI = ontologyPropertyURI;
+  this.URI = URI;
   this.ontology = ontology;
 
-  store.node(ontologyPropertyURI, self.ontology.graph, function(success, results) {
+  store.node(URI, self.ontology.graph, function(success, results) {
     if (!success) {
       console.error('property =>', results);
       return;
@@ -884,7 +891,7 @@ RDFE.OntologyProperty = function(ontology, ontologyPropertyURI, options) {
         self.range = RDFE.coalesce(self.range, o);
 
       else if (!self.domain && (p == RDFE.uriDenormalize('rdfs:domain')))
-        self.domain = RDFE.collectionQuery(self.ontology.manager.store, self.ontology.graph, ontologyPropertyURI, 'rdfs:domain', o);
+        self.domain = RDFE.collectionQuery(self.ontology.manager.store, self.ontology.graph, URI, 'rdfs:domain', o);
     }
   });
 }
