@@ -49,7 +49,10 @@ RDFE.Editor.prototype.createEditorUi = function(doc, container, callback) {
     var tripleEditorDataSetter = function(triple, field, newValue) {
         var newNode = newValue;
 
-        if (field != 'object' ||
+        if (newValue.toStoreNode) {
+          newNode = newValue.toStoreNode(self.doc.store);
+        }
+        else if (field != 'object' ||
             triple.object.interfaceName == 'NamedNode') {
             newNode = self.doc.store.rdf.createNamedNode(RDFE.Editor.io_strip_URL_quoting(newValue));
         }
@@ -118,7 +121,7 @@ RDFE.Editor.prototype.createEditorUi = function(doc, container, callback) {
                   }, {
                     field: 'predicate',
                     title: 'Predicate',
-                    aligh: 'left',
+                    align: 'left',
                     sortable: true,
                     editable: {
                       mode: "inline",
@@ -140,7 +143,7 @@ RDFE.Editor.prototype.createEditorUi = function(doc, container, callback) {
                   }, {
                     field: 'object',
                     title: 'Object',
-                    aligh: 'left',
+                    align: 'left',
                     sortable: true,
                     editable: function(triple) {
                         if (triple.object.datatype == 'http://www.w3.org/2001/XMLSchema#dateTime') {
@@ -152,6 +155,13 @@ RDFE.Editor.prototype.createEditorUi = function(doc, container, callback) {
                                     weekStart: 1
                                 }
                             };
+                        }
+                        else if(triple.object.interfaceName == 'Literal') {
+                          return {
+                            mode: "inline",
+                            type: "rdfnode",
+                            value: triple.object
+                          };
                         }
                         else {
                             return {
