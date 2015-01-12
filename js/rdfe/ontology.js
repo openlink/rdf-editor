@@ -552,8 +552,12 @@ RDFE.OntologyManager = function(store, config, options) {
   }
 
   this.ontologyParse = function(URI, params) {
-    if (params && (params.force == false) && this.ontologyByURI(URI))
+    if (params && (params.force == false) && this.ontologyByURI(URI)) {
+      if (params && params.success)
+        params.success();
+
       return;
+    }
 
     var __ontologyLoaded = (function(params) {
       return function() {
@@ -858,6 +862,9 @@ RDFE.OntologyProperty = function(ontology, ontologyPropertyURI, options) {
       var p = results.triples[i].predicate.valueOf();
       var o = results.triples[i].object.valueOf();
       // console.log('property =>', p, o);
+      if (p == RDFE.uriDenormalize('rdf:type'))
+        self.class = o;
+
       if (p == RDFE.uriDenormalize('rdfs:label'))
         self.label = RDFE.coalesce(self.label, o);
 
@@ -1145,6 +1152,21 @@ RDFE.Template = function(ontologyManager, URI, options, callback) {
   this.manager.templates.push(this);
   this.properties = [];
 
+  this.toBackboneForm = function() {
+    var schema = {};
+    for (var i = 0; i < self.properties.length; i++) {
+      var property = self.properties[i];
+      var item = {};
+      item["type"] = ((property.class == RDFE.uriDenormalize('owl:ObjectProperty'))? 'Select': 'Text');
+      if (item["type"] == 'Select')
+        item["options"] = ['1', '2'];
+      item["title"] = RDFE.coalesce(property.label, property.title, RDFE.uriLabel(property.URI));
+      item["help"] = RDFE.coalesce(property.comment, property.description);
+      schema[property.URI] = item;
+    }
+    return schema;
+  }
+
   var ontology;
   if (this.options.ontology) {
     ontology = this.options.ontology;
@@ -1214,20 +1236,9 @@ RDFE.Template = function(ontologyManager, URI, options, callback) {
   if (this.ontology) {
     this.URI = RDFE.uriDenormalize(URI);
     this.manager.ontologyParse(this.ontology, {
-      "force": true,
+      "force": false,
       "success": __ontologyLoaded
     });
   }
 
-  this.toBackboneForm = function() {
-    var schema = {};
-    for (var i = 0; i < self.properties.length; i++) {
-      var property = self.properties[i];
-      schema[property.URI] = {
-        "title": RDFE.coalesce(property.label, property.title, RDFE.uriLabel(property.URI)),
-        "help": RDFE.coalesce(property.comment, property.description)
-      };
-    }
-    return schema;
-  }
 }
