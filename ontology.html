@@ -29,6 +29,9 @@
     <link href="css/bootstrap.min.css" rel="stylesheet">
     <link href="css/bootstrap-fixes.css" rel="stylesheet">
     <link href="css/bootstrap-editable.css" rel="stylesheet"/>
+    <link href="css/bootstrap-datetimepicker.min.css" rel="stylesheet" type="text/css"></link>
+    <link href="css/backbone-forms-bootstrap3.css" rel="stylesheet" type="text/css"></link>
+    <link href="css/typeahead.js-bootstrap.css" rel="stylesheet">
     <style type="text/css">
       body {
         padding-top: 70px;
@@ -37,39 +40,77 @@
         overflow: hidden;
         text-overflow: ellipsis;
       }
+      #busyspinner {margin: 1em; }
+      .entity-label {
+        font-weight: bold;
+        font-style: italic;
+      }
+      .fixed-table-body {
+        height: auto;
+        overflow: inherit;
+      }
     </style>
 
     <script src="js/jquery-1.11.1.min.js"></script>
     <script src="js/bootstrap.min.js"></script>
     <script src="js/bootstrap-editable.min.js"></script>
-    <script src="js/underscore-min.js"></script>
+    <script src="js/bootstrap-datetimepicker.min.js"></script>
     <script src="js/jquery-deparam.min.js"></script>
     <script src="js/jquery.cookie.js"></script>
     <script src="js/rdf_store.js"></script>
-    <script src="js/rdfe/rdf_store_ext.js"></script>
     <script src="js/rdfxml_parser.js"></script>
     <script src="js/val.js"></script>
+    <script src="js/underscore-min.js"></script>
+    <script src="js/backbone-min.js"></script>
+    <script src="js/backbone-forms.min.js"></script>
+    <script src="js/backbone-forms-list.min.js"></script>
+    <script src="js/backbone-forms-bootstrap3.js"></script>
+    <script src="js/jstorage.js"></script>
+    <script src="js/bootstrap-growl.min.js"></script>
+    <script src="js/spin.js"></script>
+    <script src="js/jquery.spin.js"></script>
+    <script src="js/typeahead.js"></script>
+    <script src="js/typeaheadjs.js"></script>
+    <script src="js/bootstrap-table.js"></script>
+
+    <script src="js/rdfe/rdf_store_ext.js"></script>
     <script src="js/rdfe/io.js"></script>
-    <script src="js/rdfe/editor.js"></script>
     <script src="js/rdfe/ontology.js"></script>
+    <script src="js/rdfe/editor.js"></script>
+    <script src="js/rdfe/document.js"></script>
+    <script src="js/rdfe/document_backbone_bridge.js"></script>
+
     <script>
       var ontologyManager;
-      RDFE.Config('config.json', function() {
-              ontologyManager= new RDFE.OntologyManager();
-              ontologyManager.init();
-          }
+      var rdfeConfig = new RDFE.Config('config.json', function(config) {
+          ontologyManager = new RDFE.OntologyManager(null, config.options.OntologyManager);
+          ontologyManager.init();
+        }
       );
 
       $(document).ready(function() {
-          $('#o').val('test/test2.ttl');
-          // $('#o').val('test/goodrelations.ttl');
-          $("#o_submit").on("click", function(e) {
-              ontologyManager.ontologyParse($('#o').val());
-          });
-          $('#f').val('test/fresnel.ttl');
-          $("#f_submit").on("click", function(e) {
-              ontologyManager.fresnelParse($('#f').val());
-          });
+        $('#o').val('test/test2.ttl');
+        // $('#o').val('test/goodrelations.ttl');
+        $("#o_submit").on("click", function(e) {
+            ontologyManager.ontologyParse($('#o').val());
+        });
+        $('#f').val('test/fresnel.ttl');
+        $("#f_submit").on("click", function(e) {
+            ontologyManager.fresnelParse($('#f').val());
+        });
+        $('#t').val('foaf:Person');
+        $("#t_submit").on("click", function(e) {
+          var x = function(template) {
+            var RegisterForm = Backbone.Form.extend(template.toBackboneForm());
+
+            //Create the form instance and add to the page
+            var form = new RegisterForm().render();
+
+            $('#x').empty().append(form.el);
+            $('#templateDialog').modal();
+          }
+          ontologyManager.templateParse($('#t').val(), null, x);
+        });
       });
 
     </script>
@@ -133,7 +174,40 @@
           </div>
         </div>
       </div>
+      <div class="row">
+        <div class="col-cg-12">
+          <div class="form-group">
+            <h2><label for="t" class="col-sm-2 control-label">Template</label></h2>
+            <div class="col-sm-10">
+              <div class="input-group input-group-lg">
+                <input type="text" id="t" name="t" value="" class="form-control" />
+                <span class="input-group-btn">
+                  <input type="button" id="t_submit" name="t_submit" class="btn btn-primary" value="Retrieve" />
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
+
+    <div id="templateDialog" class="modal fade">
+      <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+          <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+            <h4 class="modal-title">Show Template</h4>
+          </div>
+          <div class="modal-body">
+            <form id="x" class="form-horizontal">
+            </form>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+          </div>
+        </div><!-- /.modal-content -->
+      </div><!-- /.modal-dialog -->
+    </div><!-- /.modal -->
 
     <script>
       var val = new VAL();
