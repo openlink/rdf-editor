@@ -135,7 +135,31 @@ resource editor:
       }
     },
     "http://www.w3.org/2001/XMLSchema#boolean": {
-      label: 'Boolean'
+      label: 'Boolean',
+      setup: function(elem, remove) {
+        if(remove) {
+          if(elem.bootstrapToggle)
+            elem.bootstrapToggle('destroy');
+          elem.attr('type', 'text');
+        }
+        else {
+          if(elem.bootstrapToggle)
+            elem.bootstrapToggle({
+              on: 'True',
+              off: 'False'
+            });
+          elem.attr('type', 'checkbox');
+        }
+      },
+      getValue: function(elem) {
+        return (elem.is(":checked") ? "true" : "false");
+      },
+      setValue: function(elem, val) {
+        if(parseInt(val) == 1 || (typeof val == "string" && val.toLowerCase() == 'true'))
+          elem.attr('checked', 'checked');
+        else
+          elem.removeAttr('checked');
+      }
     },
     "http://www.w3.org/2001/XMLSchema#string": {
       label: 'String'
@@ -243,7 +267,7 @@ resource editor:
 
   LiteralEditor.prototype.getValue = function() {
     return {
-      value: this.mainElem.val(),
+      value: (literalTypes[this.currentType].getValue ? literalTypes[this.currentType].getValue(this.mainElem) : this.mainElem.val()),
       datatype: (this.currentType != 'http://www.w3.org/2000/01/rdf-schema#Literal' ? this.currentType : undefined),
       language: (this.lang ? this.lang : undefined),
       toStoreNode: toStoreNodeFct,
@@ -259,6 +283,8 @@ resource editor:
       this.lang = node.language;
 
       this.mainElem.val(node.value || node.nominalValue);
+      if(literalTypes[this.currentType].setValue)
+        literalTypes[this.currentType].setValue(this.mainElem, this.mainElem.val());
       this.langElem.val(this.lang);
       this.typeElem.val(this.currentType);
 
