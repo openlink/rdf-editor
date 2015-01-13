@@ -10,10 +10,10 @@
         render: function() {
           this.$input = this.$tpl.filter('input');
           this.setClass();
-          this.$input.literalEditor(this.options.rdfnode);
+          this.$input.rdfNodeEditor(this.options.rdfnode);
         },
         activate: function() {
-          this.$input.literalEditor().setEditFocus();
+          this.$input.rdfNodeEditor().setEditFocus();
         },
         value2html: function(value, element) {
           if(!value) {
@@ -26,10 +26,10 @@
           return null;
         },
         input2value: function() {
-          return this.$input.literalEditor().getValue();
+          return this.$input.rdfNodeEditor().getValue();
         },
         value2input: function(value) {
-          this.$input.literalEditor().setValue(value);
+          this.$input.rdfNodeEditor().setValue(value);
         }
     });
     RdfNode.defaults = $.extend({}, $.fn.editabletypes.abstractinput.defaults, {
