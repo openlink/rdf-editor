@@ -1,18 +1,3 @@
-/*
-literal editor:
-- options:
-  - type (string, int, decimal, datetime, date)
-  - optional lang select for "type == string"
-  - optional type selection if the type is not given (dropdown)
-- input verification
-- date and datetime selection
-
-resource editor:
-- options
-  - list of possibilities (uri + optional label + curi)
-  - custom input yes/no
-*/
-
 (function ($) {
   var defaults = {
     type: null,
@@ -41,7 +26,7 @@ resource editor:
     return $.isNumeric(v);
   };
 
-  var literalTypes = {
+  var nodeTypes = {
     'http://www.w3.org/2000/01/rdf-schema#Literal': {
       label: 'Plain Literal'
     },
@@ -205,7 +190,7 @@ resource editor:
     return this.value;
   };
 
-  var LiteralEditor = function(elem, options) {
+  var RdfNodeEditor = function(elem, options) {
     var self = this;
 
     self.mainElem = elem;
@@ -218,7 +203,7 @@ resource editor:
     });
 
     // put the input into a div for easier control
-    var $c = $(document.createElement('div')).addClass('literalEditor');
+    var $c = $(document.createElement('div')).addClass('rdfNodeEditor');
     var $e = $(elem);
     $e.after($c);
     $c.append($e);
@@ -245,15 +230,15 @@ resource editor:
     self.typeElem = $t;
     self.typeContainer = $tc;
     $t.addClass('form-control');
-    for(t in literalTypes) {
-      $t.append($(document.createElement('option')).attr('value', t).text(literalTypes[t].label));
+    for(t in nodeTypes) {
+      $t.append($(document.createElement('option')).attr('value', t).text(nodeTypes[t].label));
     }
     $tc.append($t);
     $c.append($tc);
     var typeChFct = function() {
       self.lastType = self.currentType;
       self.currentType = (self.options.selectize ? $t[0].selectize.getValue() : $t.val());
-      self.verifyFct = literalTypes[self.currentType].verify;
+      self.verifyFct = nodeTypes[self.currentType].verify;
       self.updateEditor();
       self.verifyInput();
       $(self).trigger('change', self.mainElem);
@@ -273,7 +258,7 @@ resource editor:
     }
   };
 
-  LiteralEditor.prototype.updateEditor = function() {
+  RdfNodeEditor.prototype.updateEditor = function() {
     // always show the type selection field if the type differs
     if(this.options.type != this.currentType)
       this.typeContainer.show();
@@ -282,14 +267,15 @@ resource editor:
     else
       this.langElem.show();
     if(this.lastType != this.currentType) {
-      if(this.lastType && literalTypes[this.lastType].setup)
-        literalTypes[this.lastType].setup(this.mainElem, true);
-      if(literalTypes[this.currentType].setup)
-        literalTypes[this.currentType].setup(this.mainElem);
+      if(this.lastType && nodeTypes[this.lastType].setup)
+        nodeTypes[this.lastType].setup(this.mainElem, true);
+      if(nodeTypes[this.currentType].setup)
+        nodeTypes[this.currentType].setup(this.mainElem);
     }
   };
 
-  LiteralEditor.prototype.getValue = function() {
+  RdfNodeEditor.prototype.getValue = function() {
+    console.log('getValue ', this);
     if(this.currentType == 'http://www.w3.org/1999/02/22-rdf-syntax-ns#Resource')
       return {
         type: 'uri',
@@ -300,7 +286,7 @@ resource editor:
     else
       return {
         type: 'literal',
-        value: (literalTypes[this.currentType].getValue ? literalTypes[this.currentType].getValue(this.mainElem) : this.mainElem.val()),
+        value: (nodeTypes[this.currentType].getValue ? nodeTypes[this.currentType].getValue(this.mainElem) : this.mainElem.val()),
         datatype: (this.currentType != 'http://www.w3.org/2000/01/rdf-schema#Literal' ? this.currentType : undefined),
         language: (this.lang ? this.lang : undefined),
         toStoreNode: toStoreNodeFct,
@@ -308,8 +294,8 @@ resource editor:
       };
   };
 
-  LiteralEditor.prototype.setValue = function(node) {
-    //console.log('LiteralEditor.prototype.setValue ', node);
+  RdfNodeEditor.prototype.setValue = function(node) {
+    //console.log('RdfNodeEditor.prototype.setValue ', node);
     if(node) {
       this.lastType = this.currentType;
       if (node.type === 'uri' || node.interfaceName === 'NamedNode')
@@ -319,8 +305,9 @@ resource editor:
       this.lang = node.language;
 
       this.mainElem.val(node.value || node.nominalValue);
-      if(literalTypes[this.currentType].setValue)
-        literalTypes[this.currentType].setValue(this.mainElem, this.mainElem.val());
+      if(nodeTypes[this.currentType].setValue)
+        nodeTypes[this.currentType].setValue(this.mainElem, this.mainElem.val());
+
       this.langElem.val(this.lang);
       this.typeElem.val(this.currentType);
       if(this.options.selectize)
@@ -330,11 +317,11 @@ resource editor:
     }
   };
 
-  LiteralEditor.prototype.isValid = function(node) {
+  RdfNodeEditor.prototype.isValid = function(node) {
     return(this.verifyFct ? this.verifyFct(this.mainElem.val()) : true);
   };
 
-  LiteralEditor.prototype.verifyInput = function() {
+  RdfNodeEditor.prototype.verifyInput = function() {
     var self = this;
     var val = $(this.mainElem).val();
     var v = true;
@@ -346,19 +333,19 @@ resource editor:
       self.mainElem.addClass('has-error');
   };
 
-  LiteralEditor.prototype.setEditFocus = function() {
+  RdfNodeEditor.prototype.setEditFocus = function() {
     this.mainElem.focus();
   };
 
-  LiteralEditor.prototype.blur = function() {
+  RdfNodeEditor.prototype.blur = function() {
     this.mainElem.blur();
   };
 
-  $.fn.literalEditor = function(methodOrOptions) {
-    var le = this.data('literalEditor');
+  $.fn.rdfNodeEditor = function(methodOrOptions) {
+    var le = this.data('rdfNodeEditor');
     if(!le) {
-      le = new LiteralEditor(this, methodOrOptions);
-      this.data('literalEditor', le);
+      le = new RdfNodeEditor(this, methodOrOptions);
+      this.data('rdfNodeEditor', le);
     }
     return le;
   };
