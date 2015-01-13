@@ -420,6 +420,36 @@ RDFE.collectionQuery = function(store, graph, s, p, o, m) {
   return items;
 }
 
+RDFE.individuals = function(store, graph, c) {
+  var RDFE_INDIVIDUALS_TEMPLATE =
+    '\n PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> ' +
+    '\n PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#> ' +
+    '\n PREFIX owl: <http://www.w3.org/2002/07/owl#> ' +
+    '\n PREFIX fresnel: <http://www.w3.org/2004/09/fresnel#> ' +
+    '\n SELECT distinct ?item ' +
+    '\n  WHERE { ' +
+    '\n          {0} {?item a <{1}>.} ' +
+    '\n        } ';
+
+  var items = [];
+
+  var sparql = RDFE_INDIVIDUALS_TEMPLATE.format((graph)? '<{0}>'.format(graph): '', c);
+  store.execute(sparql, (function(items) {
+    return function(success, results) {
+      var c;
+      if (success && results.length) {
+        for (var i = 0; i < results.length; i++) {
+          c = RDFE.sparqlValue(results[i]["item"]);
+          if (!RDFE.isBlankNode(c))
+            items.push(c);
+        }
+      }
+    };
+  })(items));
+
+  return items;
+}
+
 /*
  *
  * Ontology Manager
@@ -784,6 +814,16 @@ RDFE.Ontology = function(ontologyManager, URI, graph, options) {
       }
     });
   }
+
+  this.individualsByClassURI = function(classURI) {
+    var items = [];
+    for (var i = 0; i < self.individuals.length; i++) {
+      if (self.individuals[i].class == classURI)
+        items.push(self.individuals[i].URI);
+    }
+    return items;
+  }
+
 }
 
 /*
@@ -869,10 +909,18 @@ RDFE.OntologyProperty = function(ontology, URI, options) {
       var p = results.triples[i].predicate.valueOf();
       var o = results.triples[i].object.valueOf();
       // console.log('property =>', p, o);
-      if (p == RDFE.uriDenormalize('rdf:type'))
-        self.class = o;
+      if (p == RDFE.uriDenormalize('rdf:type')) {
+        if      (o == RDFE.uriDenormalize('rdf:Property'))
+          self.class = RDFE.coalesce(self.class, o);
 
-      if (p == RDFE.uriDenormalize('rdfs:label'))
+        else if (o == RDFE.uriDenormalize('owl:ObjectProperty'))
+          self.class = o;
+
+        else if (o == RDFE.uriDenormalize('owl:DatatypeProperty'))
+          self.class = o;
+
+      }
+      else if (p == RDFE.uriDenormalize('rdfs:label'))
         self.label = RDFE.coalesce(self.label, o);
 
       else if (p == RDFE.uriDenormalize('rdfs:comment'))
@@ -1159,19 +1207,59 @@ RDFE.Template = function(ontologyManager, URI, options, callback) {
   this.manager.templates.push(this);
   this.properties = [];
 
-  this.toBackboneForm = function() {
+  this.toBackboneForm = function(documentModel) {
     var schema = {};
+    var fields = [];
+    schema[RDFE.uriDenormalize('rdf:type')] = {
+        "type": 'Text',
+        "node-token": 'uri',
+        "title": 'Type',
+        "editorAttrs": {"disabled": 'disabled'}
+    };
+    fields.push(RDFE.uriDenormalize('rdf:type'));
     for (var i = 0; i < self.properties.length; i++) {
       var property = self.properties[i];
       var item = {};
-      item["type"] = ((property.class == RDFE.uriDenormalize('owl:ObjectProperty'))? 'Select': 'Text');
-      if (item["type"] == 'Select')
-        item["options"] = ['1', '2'];
-      item["title"] = RDFE.coalesce(property.label, property.title, RDFE.uriLabel(property.URI));
-      item["help"] = RDFE.coalesce(property.comment, property.description);
-      schema[property.URI] = item;
+      var fieldType;
+      var token;
+      var range = property.range;
+      if        (property.class == RDFE.uriDenormalize('owl:DatatypeProperty')) {
+        if (RDFE.uriOntology(range) == RDFE.prefixes['xsd'])
+          range = RDFE.uriLabel(range);
+        if        (_.contains(['int', 'number', 'long', 'integer'], range)) {
+          fieldType = 'Number';
+        } else if (_.contains(['float'], range)) {
+          fieldType = 'Number';
+        } else if (_.contains(['dateTyme', 'date', 'time'], range)) {
+          fieldType = 'DateTime';
+        } else if (range == 'boolean') {
+          fieldType = 'Checkbox';
+        } else {
+          fieldType = 'Text';
+        }
+        token = 'literal';
+      } else if (property.class == RDFE.uriDenormalize('owl:ObjectProperty')) {
+        fieldType = 'Select';
+        item["options"] = (function(documentModel, range) {
+          return function(callback, editor) {
+            var items = self.ontology.individualsByClassURI(range);
+            if (documentModel)
+              items = items || RDFE.individuals(documentModel.doc.store, range);
+
+            callback(items);
+        };})(documentModel, range);
+        token = 'uri';
+      }
+      if (fieldType) {
+        item["type"] = fieldType;
+        item["node-token"] = token;
+        item["title"] = RDFE.coalesce(property.label, property.title, RDFE.uriLabel(property.URI));
+        item["editorAttrs"] = {"title": RDFE.coalesce(property.comment, property.description)};
+        schema[property.URI] = item;
+        fields.push(property.URI);
+      }
     }
-    return schema;
+    return {"schema": schema, "fields": fields};
   }
 
   var ontology;
@@ -1204,8 +1292,8 @@ RDFE.Template = function(ontologyManager, URI, options, callback) {
 
       var hasLens = false;
       var properties = [];
-      var ontology = self.manager.ontologyByURI(self.ontology);
-      if (!ontology) return;
+      self.ontology = self.manager.ontologyByURI(self.ontology);
+      if (!self.ontology) return;
 
       var fresnel = self.manager.fresnelByURI(self.fresnel);
       if (fresnel) {
@@ -1213,16 +1301,16 @@ RDFE.Template = function(ontologyManager, URI, options, callback) {
         if (lens && lens.showProperties) {
           hasLens = true;
           for (var i = 0; i < lens.showProperties.length; i++) {
-            var property = ontology.propertyByURI(lens.showProperties[i]);
+            var property = self.ontology.propertyByURI(lens.showProperties[i]);
             if (property && hasDomain(property, self.URI))
               properties.push(property);
           }
         }
       }
       if (!hasLens) {
-        for (var i = 0; i < ontology.properties.length; i++) {
-          if (hasDomain(ontology.properties[i], self.URI))
-            properties.push(ontology.properties[i]);
+        for (var i = 0; i < self.ontology.properties.length; i++) {
+          if (hasDomain(self.ontology.properties[i], self.URI))
+            properties.push(self.ontology.properties[i]);
         }
       }
       self.properties = properties;
@@ -1239,10 +1327,10 @@ RDFE.Template = function(ontologyManager, URI, options, callback) {
       __fresnelLoaded();
     }
   }
-  this.ontology = ontology;
-  if (this.ontology) {
+  self.ontology = ontology;
+  if (ontology) {
     this.URI = RDFE.uriDenormalize(URI);
-    this.manager.ontologyParse(this.ontology, {
+    this.manager.ontologyParse(ontology, {
       "force": false,
       "success": __ontologyLoaded
     });
