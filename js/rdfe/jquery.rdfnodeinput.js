@@ -17,6 +17,7 @@ resource editor:
   var defaults = {
     type: null,
     showLangSelect: true,
+    selectize: false
   };
 
   var intVerify = function(v, includeZero, includeNeg, includePos, maxi, mini) {
@@ -229,30 +230,42 @@ resource editor:
     }
 
     // create type-selection
+    var $tc = $(document.createElement('div'));
     var $t = $(document.createElement('select'));
     self.typeElem = $t;
+    self.typeContainer = $tc;
     $t.addClass('form-control');
     for(t in literalTypes) {
       $t.append($(document.createElement('option')).attr('value', t).text(literalTypes[t].label));
     }
-    $c.append($t);
-    $t.change(function() {
+    $tc.append($t);
+    $c.append($tc);
+    var typeChFct = function() {
       self.lastType = self.currentType;
-      self.currentType = $t.val();
+      self.currentType = (self.options.selectize ? $t[0].selectize.getValue() : $t.val());
       self.verifyFct = literalTypes[self.currentType].verify;
       self.updateEditor();
       self.verifyInput();
-    });
+    };
+    if(self.options.selectize) {
+      $t.selectize({
+        onChange: typeChFct
+      });
+      $t[0].selectize.setValue(this.currentType);
+    }
+    else {
+      $t.change(typeChFct);
+    }
     if(self.options.type) {
       $t.val(self.options.type);
-      $t.hide();
+      self.typeContainer.hide();
     }
   };
 
   LiteralEditor.prototype.updateEditor = function() {
     // always show the type selection field if the type differs
     if(this.options.type != this.currentType)
-      this.typeElem.show();
+      this.typeContainer.show();
     if(!this.options.showLangSelect || this.currentType != 'http://www.w3.org/2000/01/rdf-schema#Literal')
       this.langElem.hide();
     else
@@ -287,6 +300,8 @@ resource editor:
         literalTypes[this.currentType].setValue(this.mainElem, this.mainElem.val());
       this.langElem.val(this.lang);
       this.typeElem.val(this.currentType);
+      if(this.options.selectize)
+        this.typeElem[0].selectize.setValue(this.currentType);
 
       this.updateEditor();
     }
