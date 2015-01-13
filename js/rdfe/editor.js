@@ -114,8 +114,15 @@ RDFE.Editor.prototype.createEditorUi = function(doc, container, callback) {
                     title: 'Subject',
                     aligh: 'left',
                     sortable: true,
-                    editable: {
-                      mode: "inline"
+                    editable: function(triple) {
+                      return {
+                        mode: "inline",
+                        type: "rdfnode",
+                        rdfnode: {
+                          type: 'http://www.w3.org/1999/02/22-rdf-syntax-ns#Resource'
+                        },
+                        value: triple.subject
+                      }
                     },
                     formatter: RDFE.Editor.prototype.nodeFormatter
                   }, {
@@ -146,18 +153,11 @@ RDFE.Editor.prototype.createEditorUi = function(doc, container, callback) {
                     align: 'left',
                     sortable: true,
                     editable: function(triple) {
-                       if(triple.object.interfaceName == 'Literal') {
-                          return {
-                            mode: "inline",
-                            type: "rdfnode",
-                            value: triple.object
-                          };
-                        }
-                        else {
-                            return {
-                                mode: "inline"
-                            };
-                        }
+                      return {
+                        mode: "inline",
+                        type: "rdfnode",
+                        value: triple.object
+                      };
                     },
                     formatter: RDFE.Editor.prototype.nodeFormatter
                   }, {
