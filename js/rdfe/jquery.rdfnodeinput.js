@@ -206,7 +206,10 @@ resource editor:
     self.options = $.extend({}, defaults, options);
     self.currentType = self.options.type || 'http://www.w3.org/2000/01/rdf-schema#Literal';
 
-    self.mainElem.on('input', function() { self.verifyInput(); });
+    self.mainElem.on('input', function() {
+      self.verifyInput();
+      $(self).trigger('change', self.mainElem);
+    });
 
     // put the input into a div for easier control
     var $c = $(document.createElement('div')).addClass('literalEditor');
@@ -224,6 +227,7 @@ resource editor:
     $ls.on('input', function() {
       self.lang = $ls.val();
       self.verifyInput();
+      $(self).trigger('change', self.mainElem);
     });
     if (!self.options.showLangSelect) {
       $ls.hide();
@@ -246,6 +250,7 @@ resource editor:
       self.verifyFct = literalTypes[self.currentType].verify;
       self.updateEditor();
       self.verifyInput();
+      $(self).trigger('change', self.mainElem);
     };
     if(self.options.selectize) {
       $t.selectize({
@@ -325,6 +330,10 @@ resource editor:
 
   LiteralEditor.prototype.setEditFocus = function() {
     this.mainElem.focus();
+  };
+
+  LiteralEditor.prototype.blur = function() {
+    this.mainElem.blur();
   };
 
   $.fn.literalEditor = function(methodOrOptions) {
