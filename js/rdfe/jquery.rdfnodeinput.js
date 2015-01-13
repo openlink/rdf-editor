@@ -141,10 +141,28 @@ resource editor:
       label: 'String'
     },
     "http://www.w3.org/2001/XMLSchema#dateTime": {
-      label: 'Datetime'
+      label: 'Datetime',
+      setup: function(input, remove) {
+        if(remove)
+          input.datetimepicker('remove');
+        else
+          input.datetimepicker({
+            format: "yyyy-mm-ddThh:ii:ssZ",
+            weekStart: 1
+          });
+      }
     },
     "http://www.w3.org/2001/XMLSchema#date": {
-      label: 'Date'
+      label: 'Date',
+      setup: function(input, remove) {
+        if(remove)
+          input.datetimepicker('remove');
+        else
+          input.datetimepicker({
+            format: "yyyy-mm-dd",
+            weekStart: 1
+          });
+      }
     }
   };
 
@@ -195,19 +213,31 @@ resource editor:
     }
     $c.append($t);
     $t.change(function() {
+      self.lastType = self.currentType;
       self.currentType = $t.val();
       self.verifyFct = literalTypes[self.currentType].verify;
-      if(self.options.showLangSelect) {
-        if(self.currentType != 'http://www.w3.org/2000/01/rdf-schema#Literal')
-          $ls.hide();
-        else
-          $ls.show();
-      }
+      self.updateEditor();
       self.verifyInput();
     });
     if(self.options.type) {
       $t.val(self.options.type);
       $t.hide();
+    }
+  };
+
+  LiteralEditor.prototype.updateEditor = function() {
+    // always show the type selection field if the type differs
+    if(this.options.type != this.currentType)
+      this.typeElem.show();
+    if(!this.options.showLangSelect || this.currentType != 'http://www.w3.org/2000/01/rdf-schema#Literal')
+      this.langElem.hide();
+    else
+      this.langElem.show();
+    if(this.lastType != this.currentType) {
+      if(this.lastType && literalTypes[this.lastType].setup)
+        literalTypes[this.lastType].setup(this.mainElem, true);
+      if(literalTypes[this.currentType].setup)
+        literalTypes[this.currentType].setup(this.mainElem);
     }
   };
 
@@ -224,6 +254,7 @@ resource editor:
   LiteralEditor.prototype.setValue = function(node) {
     //console.log('LiteralEditor.prototype.setValue ', node);
     if(node) {
+      this.lastType = this.currentType;
       this.currentType = node.datatype || 'http://www.w3.org/2000/01/rdf-schema#Literal';
       this.lang = node.language;
 
@@ -231,11 +262,7 @@ resource editor:
       this.langElem.val(this.lang);
       this.typeElem.val(this.currentType);
 
-      // always show the type selection field if the type differs
-      if(this.options.type != node.datatype)
-        this.typeElem.show();
-      if(this.currentType != 'http://www.w3.org/2000/01/rdf-schema#Literal')
-        this.langElem.hide();
+      this.updateEditor();
     }
   };
 
