@@ -101,7 +101,7 @@
         $('#t').val('foaf:Person');
         $("#t_submit").on("click", function(e) {
           var x = function(template) {
-            var RegisterForm = Backbone.Form.extend({schema: template.toBackboneForm()});
+            var RegisterForm = Backbone.Form.extend(template.toBackboneForm());
 
             //Create the form instance and add to the page
             var form = new RegisterForm().render();
