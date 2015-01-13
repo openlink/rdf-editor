@@ -45,6 +45,9 @@ resource editor:
     'http://www.w3.org/2000/01/rdf-schema#Literal': {
       label: 'Plain Literal'
     },
+    'http://www.w3.org/1999/02/22-rdf-syntax-ns#Resource': {
+      label: 'Resource'
+    },
     "http://www.w3.org/2001/XMLSchema#integer": {
       label: 'Integer',
       verify: function(v) {
@@ -192,7 +195,10 @@ resource editor:
   };
 
   var toStoreNodeFct = function(store) {
-    return store.rdf.createLiteral(this.value, this.language, this.datatype);
+    if(this.type == 'uri')
+      return store.rdf.createNamedNode(this.value);
+    else
+      return store.rdf.createLiteral(this.value, this.language, this.datatype);
   };
 
   var toStringFct = function() {
@@ -284,20 +290,32 @@ resource editor:
   };
 
   LiteralEditor.prototype.getValue = function() {
-    return {
-      value: (literalTypes[this.currentType].getValue ? literalTypes[this.currentType].getValue(this.mainElem) : this.mainElem.val()),
-      datatype: (this.currentType != 'http://www.w3.org/2000/01/rdf-schema#Literal' ? this.currentType : undefined),
-      language: (this.lang ? this.lang : undefined),
-      toStoreNode: toStoreNodeFct,
-      toString: toStringFct
-    };
+    if(this.currentType == 'http://www.w3.org/1999/02/22-rdf-syntax-ns#Resource')
+      return {
+        type: 'uri',
+        value: this.mainElem.val(),
+        toStoreNode: toStoreNodeFct,
+        toString: toStringFct
+      };
+    else
+      return {
+        type: 'literal',
+        value: (literalTypes[this.currentType].getValue ? literalTypes[this.currentType].getValue(this.mainElem) : this.mainElem.val()),
+        datatype: (this.currentType != 'http://www.w3.org/2000/01/rdf-schema#Literal' ? this.currentType : undefined),
+        language: (this.lang ? this.lang : undefined),
+        toStoreNode: toStoreNodeFct,
+        toString: toStringFct
+      };
   };
 
   LiteralEditor.prototype.setValue = function(node) {
     //console.log('LiteralEditor.prototype.setValue ', node);
     if(node) {
       this.lastType = this.currentType;
-      this.currentType = node.datatype || 'http://www.w3.org/2000/01/rdf-schema#Literal';
+      if (node.type === 'uri' || node.interfaceName === 'NamedNode')
+        this.currentType = 'http://www.w3.org/1999/02/22-rdf-syntax-ns#Resource';
+      else
+        this.currentType = node.datatype || 'http://www.w3.org/2000/01/rdf-schema#Literal';
       this.lang = node.language;
 
       this.mainElem.val(node.value || node.nominalValue);
