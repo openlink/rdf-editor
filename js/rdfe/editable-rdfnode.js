@@ -33,6 +33,7 @@
         }
     });
     RdfNode.defaults = $.extend({}, $.fn.editabletypes.abstractinput.defaults, {
+        rdfnode: {},
         tpl: '<input type="text">'
     });
     $.fn.editabletypes.rdfnode = RdfNode;
