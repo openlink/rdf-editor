@@ -49,7 +49,10 @@ RDFE.Editor.prototype.createEditorUi = function(doc, container, callback) {
     var tripleEditorDataSetter = function(triple, field, newValue) {
         var newNode = newValue;
 
-        if (field != 'object' ||
+        if (newValue.toStoreNode) {
+          newNode = newValue.toStoreNode(self.doc.store);
+        }
+        else if (field != 'object' ||
             triple.object.interfaceName == 'NamedNode') {
             newNode = self.doc.store.rdf.createNamedNode(RDFE.Editor.io_strip_URL_quoting(newValue));
         }
@@ -111,14 +114,21 @@ RDFE.Editor.prototype.createEditorUi = function(doc, container, callback) {
                     title: 'Subject',
                     aligh: 'left',
                     sortable: true,
-                    editable: {
-                      mode: "inline"
+                    editable: function(triple) {
+                      return {
+                        mode: "inline",
+                        type: "rdfnode",
+                        rdfnode: {
+                          type: 'http://www.w3.org/1999/02/22-rdf-syntax-ns#Resource'
+                        },
+                        value: triple.subject
+                      }
                     },
                     formatter: RDFE.Editor.prototype.nodeFormatter
                   }, {
                     field: 'predicate',
                     title: 'Predicate',
-                    aligh: 'left',
+                    align: 'left',
                     sortable: true,
                     editable: {
                       mode: "inline",
@@ -140,24 +150,14 @@ RDFE.Editor.prototype.createEditorUi = function(doc, container, callback) {
                   }, {
                     field: 'object',
                     title: 'Object',
-                    aligh: 'left',
+                    align: 'left',
                     sortable: true,
                     editable: function(triple) {
-                        if (triple.object.datatype == 'http://www.w3.org/2001/XMLSchema#dateTime') {
-                            return {
-                                type: "datetime",
-                                format: 'yyyy-mm-ddThh:ii:ssZ',
-                                viewformat: 'yyyy-mm-ddThh:ii:ssZ',
-                                datetimepicker: {
-                                    weekStart: 1
-                                }
-                            };
-                        }
-                        else {
-                            return {
-                                mode: "inline"
-                            };
-                        }
+                      return {
+                        mode: "inline",
+                        type: "rdfnode",
+                        value: triple.object
+                      };
                     },
                     formatter: RDFE.Editor.prototype.nodeFormatter
                   }, {
