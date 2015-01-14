@@ -1,4 +1,4 @@
-var RdfNodeBackBoneEditor = Backbone.Form.editors.Base.extend({
+Backbone.Form.editors.Rdfnode = Backbone.Form.editors.Base.extend({
 
   tagName: 'input',
 
@@ -25,29 +25,31 @@ var RdfNodeBackBoneEditor = Backbone.Form.editors.Base.extend({
   initialize: function(options) {
     // Call parent constructor
     Backbone.Form.editors.Base.prototype.initialize.call(this, options);
+  },
 
+  render: function() {
     var self = this;
 
     this.$el.attr('type', 'text');
     this.$el.rdfNodeEditor(this.schema.rdfnode);
+    self.editor = this.$el.rdfNodeEditor();
+    self.setElement(self.editor.getElement());
 
-    this.$el.rdfNodeEditor().on('change', function() {
+    $(this.editor).on('change', function() {
       self.trigger('change', this);
     });
-  },
 
-  render: function() {
     this.setValue(this.value);
 
     return this;
   },
 
   getValue: function() {
-    return this.$el.rdfNodeEditor().getValue();
+    return this.editor.getValue();
   },
 
   setValue: function(value) {
-    this.$el.rdfNodeEditor().setValue(value);
+    this.editor.setValue(value);
   },
 
   focus: function() {
@@ -58,12 +60,12 @@ var RdfNodeBackBoneEditor = Backbone.Form.editors.Base.extend({
     // This, in turn, should result in this editor's `focus` event
     // being triggered, setting `this.hasFocus` to `true`.
     // See above for more detail.
-    this.$el.rdfNodeEditor().setEditFocus();
+    this.editor.setEditFocus();
   },
 
   blur: function() {
     if (!this.hasFocus) return;
 
-    this.$el.rdfNodeEditor().blur();
+    this.editor.blur();
   }
 });
