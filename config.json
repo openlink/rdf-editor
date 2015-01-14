@@ -38,6 +38,6 @@
     }
   ],
   "Actions": [
-    "open", "save", "saveAs"
+    "open", "save", "saveas", "bookmarks"
   ]
 }
