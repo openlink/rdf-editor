@@ -350,7 +350,7 @@
         this.currentType = 'http://www.w3.org/1999/02/22-rdf-syntax-ns#Resource';
       else
         this.currentType = node.datatype || 'http://www.w3.org/2000/01/rdf-schema#Literal';
-      this.lang = node.language;
+      this.lang = node.language || node.lang;
 
       this.mainElem.val(node.value || node.nominalValue);
       if(this.resSelect) {
