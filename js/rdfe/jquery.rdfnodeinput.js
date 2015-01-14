@@ -2,7 +2,8 @@
   var defaults = {
     type: null,
     showLangSelect: true,
-    selectize: false
+    selectize: false,
+    create: true
   };
 
   var intVerify = function(v, includeZero, includeNeg, includePos, maxi, mini) {
@@ -199,73 +200,120 @@
 
     self.mainElem.on('input', function() {
       self.verifyInput();
-      $(self).trigger('change', self.mainElem);
+      self.change();
     });
 
     // put the input into a div for easier control
-    var $c = $(document.createElement('div')).addClass('rdfNodeEditor');
-    var $e = $(elem);
-    $e.after($c);
-    $c.append($e);
+    self.container = $(document.createElement('div')).addClass('rdfNodeEditor');
+    self.inputContainer = $(document.createElement('div')).addClass('rdfNodeInputContainer');
+    var $e = $(elem).addClass('form-control');
+    $e.after(self.container);
+    self.inputContainer.append($e);
+    self.container.append(self.inputContainer);
+
+    // setup choices
+    if(self.options.choices) {
+      self.resSelect = $(document.createElement('select'));
+      self.inputContainer.append(self.resSelect);
+      self.mainElem.hide();
+      var selectizeSetup = function(items) {
+        self.resSelect.selectize({
+          valueField: "value",
+          searchField: "value",
+          sortField: "value",
+          options: items,
+          create: self.options.create,
+          onChange: function(value) {
+            self.mainElem.val(value);
+            self.change();
+          },
+          render: {
+            item: function(item, escape) {
+              return '<div>' + escape(item.value) + '</div>';
+            },
+            option: function(item, escape) {
+              return '<div>' + escape(item.value) + '</div>';
+            }
+          },
+          create: function(input) {
+            return {
+              type: "uri",
+              value: input,
+              toStoreNode: toStoreNodeFct,
+              toString: toStringFct
+            };
+          }
+        });
+      };
+      if(typeof(self.options.choices) == 'object') {
+        selectizeSetup(self.options.choices);
+      }
+      else if(typeof(self.options.choices) == 'function') {
+        self.options.choices(function (items) {
+          selectizeSetup(items);
+        });
+      }
+    }
 
     // create language input
-    var $ls = $(document.createElement('input'));
-    self.langElem = $ls;
-    $ls.addClass('form-control');
-    $c.append($ls);
+    self.langElem = $(document.createElement('input')).addClass('form-control');
+    self.langContainer = $(document.createElement('div')).addClass('rdfNodeLangContainer');
+    self.langContainer.append($(document.createElement('div')).addClass("input-group").append($(document.createElement('span')).addClass("input-group-addon").text('Lang')).append(self.langElem));
+    self.container.append(self.langContainer);
     if(self.currentType != 'http://www.w3.org/2000/01/rdf-schema#Literal')
-      $ls.hide();
-    $ls.on('input', function() {
-      self.lang = $ls.val();
+      self.langContainer.hide();
+    self.langElem.on('input', function() {
+      self.lang = self.langElem.val();
       self.verifyInput();
-      $(self).trigger('change', self.mainElem);
+      self.change();
     });
     if (!self.options.showLangSelect) {
-      $ls.hide();
+      self.langContainer.hide();
     }
 
     // create type-selection
-    var $tc = $(document.createElement('div'));
-    var $t = $(document.createElement('select'));
-    self.typeElem = $t;
-    self.typeContainer = $tc;
-    $t.addClass('form-control');
+    self.typeContainer = $(document.createElement('div')).addClass('rdfNodeTypeContainer');
+    self.typeElem = $(document.createElement('select')).addClass('form-control');
     for(t in nodeTypes) {
-      $t.append($(document.createElement('option')).attr('value', t).text(nodeTypes[t].label));
+      self.typeElem.append($(document.createElement('option')).attr('value', t).text(nodeTypes[t].label));
     }
-    $tc.append($t);
-    $c.append($tc);
+    self.typeContainer.append(self.typeElem);
+    self.container.append(self.typeContainer);
     var typeChFct = function() {
       self.lastType = self.currentType;
-      self.currentType = (self.options.selectize ? $t[0].selectize.getValue() : $t.val());
+      self.currentType = (self.options.selectize ? self.typeElem[0].selectize.getValue() : self.typeElem.val());
       self.verifyFct = nodeTypes[self.currentType].verify;
       self.updateEditor();
       self.verifyInput();
-      $(self).trigger('change', self.mainElem);
+      self.change();
     };
     if(self.options.selectize) {
-      $t.selectize({
+      self.typeElem.selectize({
         onChange: typeChFct
       });
-      $t[0].selectize.setValue(this.currentType);
+      self.typeElem[0].selectize.setValue(this.currentType);
     }
     else {
-      $t.change(typeChFct);
+      self.typeElem.change(typeChFct);
     }
     if(self.options.type) {
-      $t.val(self.options.type);
+      self.typeElem.val(self.options.type);
       self.typeContainer.hide();
     }
+  };
+
+  RdfNodeEditor.prototype.change = function() {
+    $(this).trigger('change', this);
   };
 
   RdfNodeEditor.prototype.updateEditor = function() {
     // always show the type selection field if the type differs
     if(this.options.type != this.currentType)
-      this.typeContainer.show();
+      this.typeContainer.css('display', 'table-cell');
     if(!this.options.showLangSelect || this.currentType != 'http://www.w3.org/2000/01/rdf-schema#Literal')
-      this.langElem.hide();
+      this.langContainer.hide();
     else
-      this.langElem.show();
+      this.langContainer.css('display', 'table-cell');
     if(this.lastType != this.currentType) {
       if(this.lastType && nodeTypes[this.lastType].setup)
         nodeTypes[this.lastType].setup(this.mainElem, true);
@@ -275,7 +323,6 @@
   };
 
   RdfNodeEditor.prototype.getValue = function() {
-    console.log('getValue ', this);
     if(this.currentType == 'http://www.w3.org/1999/02/22-rdf-syntax-ns#Resource')
       return {
         type: 'uri',
@@ -298,13 +345,18 @@
     //console.log('RdfNodeEditor.prototype.setValue ', node);
     if(node) {
       this.lastType = this.currentType;
-      if (node.type === 'uri' || node.interfaceName === 'NamedNode')
+      var t = node.type || node.token || node.interfaceName;
+      if (t === 'uri' || t === 'NamedNode')
         this.currentType = 'http://www.w3.org/1999/02/22-rdf-syntax-ns#Resource';
       else
         this.currentType = node.datatype || 'http://www.w3.org/2000/01/rdf-schema#Literal';
       this.lang = node.language;
 
       this.mainElem.val(node.value || node.nominalValue);
+      if(this.resSelect) {
+        this.resSelect[0].selectize.addOption(node);
+        this.resSelect[0].selectize.setValue(node.value);
+      }
       if(nodeTypes[this.currentType].setValue)
         nodeTypes[this.currentType].setValue(this.mainElem, this.mainElem.val());
 
@@ -339,6 +391,10 @@
 
   RdfNodeEditor.prototype.blur = function() {
     this.mainElem.blur();
+  };
+
+  RdfNodeEditor.prototype.getElement = function() {
+    return this.container;
   };
 
   $.fn.rdfNodeEditor = function(methodOrOptions) {
