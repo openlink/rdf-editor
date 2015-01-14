@@ -462,63 +462,6 @@ RDFE.individuals = function(store, graph, c) {
  * Ontology Manager
  *
  */
-RDFE.Config = function(source, callback) {
-  var self = this;
-
-  this.options = {};
-
-  // RDFE.OontologyManager options
-  this.options.OntologyManager = {};
-
-  // Ontologies
-  this.options.OntologyManager.OM_LOAD_TEMPLATE = RDFE.OM_LOAD_TEMPLATE;
-  this.options.OntologyManager.OM_LOAD_PROXY_TEMPLATE = RDFE.OM_LOAD_PROXY_TEMPLATE;
-  this.options.OntologyManager.OM_PREFIX_TEMPLATE = RDFE.OM_PREFIX_TEMPLATE;
-  this.options.OntologyManager.OM_ONTOLOGY_TEMPLATE = RDFE.OM_ONTOLOGY_TEMPLATE;
-  this.options.OntologyManager.OM_ONTOLOGY_CLASSES_TEMPLATE = RDFE.OM_ONTOLOGY_CLASSES_TEMPLATE;
-  this.options.OntologyManager.OM_ONTOLOGY_PROPERTIES_TEMPLATE = RDFE.OM_ONTOLOGY_PROPERTIES_TEMPLATE;
-  this.options.OntologyManager.OM_ONTOLOGY_INDIVIDUALS_TEMPLATE = RDFE.OM_ONTOLOGY_INDIVIDUALS_TEMPLATE;
-
-  // Fresnel
-  this.options.OntologyManager.OM_FRESNEL_LENSES_TEMPLATE = RDFE.OM_FRESNEL_LENSES_TEMPLATE;
-  this.options.OntologyManager.OM_FRESNEL_FORMATS_TEMPLATE = RDFE.OM_FRESNEL_FORMATS_TEMPLATE;
-  this.options.OntologyManager.OM_FRESNEL_GROUPS_TEMPLATE = RDFE.OM_FRESNEL_GROUPS_TEMPLATE;
-
-  this.options.OntologyManager.useProxy = false;
-
-  this.options.Templates = {};
-
-  this.options.Bookmarks = {};
-
-  if (!source) return;
-  $.ajax({
-    url: source,
-    type: 'GET',
-    dataType: 'json',
-    success: (function(callback) {
-      return function(data) {
-        self.options.OntologyManager = $.extend(self.options.OntologyManager, data.OntologyManager);
-
-        // Templates options
-        self.options.Templates = $.extend(self.options.Templates, data.Templates);
-
-        // Bookmarks options
-        self.options.Bookmarks = $.extend(self.options.Bookmarks, data.bookmarks);
-
-        if (callback) callback(self);
-      };
-    })(callback),
-    error: function(jqXHR, textStatus, errorThrown) {
-      console.error('config load =>', errorThrown);
-    }
-  });
-}
-
-/*
- *
- * Ontology Manager
- *
- */
 RDFE.OntologyManager = function(store, config, options) {
   var self = this;
 
@@ -556,7 +499,7 @@ RDFE.OntologyManager = function(store, config, options) {
   }
 
   this.load = function(URI, params) {
-    var host = (self.options.useProxy) ? self.options.OM_LOAD_PROXY_TEMPLATE.format(encodeURIComponent(URI)) : self.options.OM_LOAD_TEMPLATE.format(URI);
+    var host = (self.options.proxy) ? RDFE.OM_LOAD_PROXY_TEMPLATE.format(encodeURIComponent(URI)) : RDFE.OM_LOAD_TEMPLATE.format(URI);
     var acceptType = (params && params.acceptType) ? params.acceptType : 'text/n3; q=1, text/turtle; q=0.8, application/rdf+xml; q=0.6';
     var __ontologyLoaded = (function(URI, params) {
       return function(data, status, xhr) {
@@ -597,7 +540,7 @@ RDFE.OntologyManager = function(store, config, options) {
     var __ontologyLoaded = (function(params) {
       return function() {
         // ontology
-        var sparql = self.options.OM_ONTOLOGY_TEMPLATE.format(URI);
+        var sparql = RDFE.OM_ONTOLOGY_TEMPLATE.format(URI);
         self.store.execute(sparql, function(success, results) {
           if (!success) {
             console.error('ontology =>', results);
@@ -772,7 +715,7 @@ RDFE.Ontology = function(ontologyManager, URI, graph, options) {
   this.load('http://nobase');
 
   // ontology classes
-  var sparql = self.manager.options.OM_ONTOLOGY_CLASSES_TEMPLATE.format(self.graph, self.URI);
+  var sparql = RDFE.OM_ONTOLOGY_CLASSES_TEMPLATE.format(self.graph, self.URI);
   this.manager.store.execute(sparql, function(success, results) {
     if (!success) {
       console.error('ontology =>', results);
@@ -787,7 +730,7 @@ RDFE.Ontology = function(ontologyManager, URI, graph, options) {
   });
 
   // ontology properties
-  var sparql = self.manager.options.OM_ONTOLOGY_PROPERTIES_TEMPLATE.format(self.graph, self.URI);
+  var sparql = RDFE.OM_ONTOLOGY_PROPERTIES_TEMPLATE.format(self.graph, self.URI);
   this.manager.store.execute(sparql, function(success, results) {
     if (!success) {
       console.error('ontology =>', results);
@@ -808,7 +751,7 @@ RDFE.Ontology = function(ontologyManager, URI, graph, options) {
   // ontology individuals
   for (var i = 0; i < self.classes.length; i++) {
     // console.log('ontology class =>', self.classes[i].URI);
-    var sparql = this.manager.options.OM_ONTOLOGY_INDIVIDUALS_TEMPLATE.format(this.graph, this.classes[i].URI);
+    var sparql = RDFE.OM_ONTOLOGY_INDIVIDUALS_TEMPLATE.format(this.graph, this.classes[i].URI);
     this.manager.store.execute(sparql, function(success, results) {
       if (!success) {
         console.error('ontology individuals =>', results);
@@ -1016,7 +959,7 @@ RDFE.Fresnel = function(ontologyManager, URI, options) {
 
   // fresnel lenses
   if (this.options.lenses) {
-    var sparql = this.manager.options.OM_FRESNEL_LENSES_TEMPLATE.format(URI);
+    var sparql = RDFE.OM_FRESNEL_LENSES_TEMPLATE.format(URI);
     this.manager.store.execute(sparql, function(success, results) {
       if (!success) {
         console.error('fresnel groups =>', results);
@@ -1030,7 +973,7 @@ RDFE.Fresnel = function(ontologyManager, URI, options) {
 
   // fresnel formats
   if (this.options.formats) {
-    var sparql = this.manager.options.OM_FRESNEL_FORMATS_TEMPLATE.format(URI);
+    var sparql = RDFE.OM_FRESNEL_FORMATS_TEMPLATE.format(URI);
     this.manager.store.execute(sparql, function(success, results) {
       if (!success) {
         console.error('fresnel groups =>', results);
@@ -1044,7 +987,7 @@ RDFE.Fresnel = function(ontologyManager, URI, options) {
 
   // fresnel groups
   if (this.options.groups) {
-    var sparql = this.manager.options.OM_FRESNEL_GROUPS_TEMPLATE.format(URI);
+    var sparql = RDFE.OM_FRESNEL_GROUPS_TEMPLATE.format(URI);
     this.manager.store.execute(sparql, function(success, results) {
       if (!success) {
         console.error('fresnel groups =>', results);
