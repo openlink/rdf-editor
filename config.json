@@ -1,40 +1,43 @@
 {
-    "OntologyManager": {
-        "useProxy": false,
-        "preloadOntologies": [],
-        "preloadFresnels": []
+  "Ontology": {
+    "proxy": true,
+    "preloadOntologies": [],
+    "preloadFresnels": []
+  },
+  "bookmarks": [
+    {
+      "label": "Test Foo Data",
+      "uri": "urn:foo",
+      "type": "sparql"
     },
-    "bookmarks": [
-      {
-        "label": "Test Foo Data",
-        "uri": "urn:foo",
-        "type": "sparql"
-      },
-      {
-        "label": "Daimler VDF Data",
-        "uri": "urn:daimler:vdf:import",
-        "type": "sparql"
-      },
-      {
-        "label": "Daimler BCE Data",
-        "uri": "http://ldp.e.corpintra.net/graph/bce",
-        "type": "sparql"
-      },
-      {
-        "label": "Daimler BCE Filter",
-        "uri": "http://ldp.e.corpintra.net/graph/bceui",
-        "type": "sparql"
-      },
-      {
-        "label": "Daimler BCE Use Cases",
-        "uri": "http://ldp.e.corpintra.net/graph/bceuc",
-        "type": "sparql"
-      }
-    ],
-    "Templates": [
-        {
-            "label": "Person",
-            "uri": "foaf:Person"
-        }
-    ]
+    {
+      "label": "Daimler VDF Data",
+      "uri": "urn:daimler:vdf:import",
+      "type": "sparql"
+    },
+    {
+      "label": "Daimler BCE Data",
+      "uri": "http://ldp.e.corpintra.net/graph/bce",
+      "type": "sparql"
+    },
+    {
+      "label": "Daimler BCE Filter",
+      "uri": "http://ldp.e.corpintra.net/graph/bceui",
+      "type": "sparql"
+    },
+    {
+      "label": "Daimler BCE Use Cases",
+      "uri": "http://ldp.e.corpintra.net/graph/bceuc",
+      "type": "sparql"
+    }
+  ],
+  "Templates": [
+    {
+      "label": "Person",
+      "uri": "foaf:Person"
+    }
+  ],
+  "Actions": [
+    "open", "save", "saveas", "bookmarks"
+  ]
 }
