@@ -19,6 +19,13 @@
  *  51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA
  *
  */
+if (typeof String.prototype.startsWith != 'function') {
+  // see below for better implementation!
+  String.prototype.startsWith = function(str) {
+    return this.indexOf(str) == 0;
+  };
+}
+
 if (!RDFE) RDFE = {};
 
 RDFE.OM_LOAD_TEMPLATE =
@@ -1211,53 +1218,57 @@ RDFE.Template = function(ontologyManager, URI, options, callback) {
     var schema = {};
     var fields = [];
     schema[RDFE.uriDenormalize('rdf:type')] = {
-        "type": 'Text',
-        "node-token": 'uri',
-        "title": 'Type',
-        "editorAttrs": {"disabled": 'disabled'}
+      "type": "List",
+      "itemType": 'Rdfnode',
+      "rdfnode": {
+        type: "http://www.w3.org/1999/02/22-rdf-syntax-ns#Resource",
+        create: false
+      },
+      "title": 'Type',
+      "editorAttrs": {"disabled": 'disabled'}
     };
     fields.push(RDFE.uriDenormalize('rdf:type'));
+
+    var getIndividuals = function(range, callback) {
+      var items = self.ontology.individualsByClassURI(range);
+      if (documentModel)
+        items = items || RDFE.individuals(documentModel.doc.store, range);
+
+      callback(items);
+    };
+
     for (var i = 0; i < self.properties.length; i++) {
       var property = self.properties[i];
-      var item = {};
-      var fieldType;
-      var token;
-      var range = property.range;
-      if        (property.class == RDFE.uriDenormalize('owl:DatatypeProperty')) {
-        if (RDFE.uriOntology(range) == RDFE.prefixes['xsd'])
-          range = RDFE.uriLabel(range);
-        if        (_.contains(['int', 'number', 'long', 'integer'], range)) {
-          fieldType = 'Number';
-        } else if (_.contains(['float'], range)) {
-          fieldType = 'Number';
-        } else if (_.contains(['dateTyme', 'date', 'time'], range)) {
-          fieldType = 'DateTime';
-        } else if (range == 'boolean') {
-          fieldType = 'Checkbox';
-        } else {
-          fieldType = 'Text';
+      var item = {
+        type: "List",
+        itemType: "Rdfnode",
+        title: RDFE.coalesce(property.label, property.title, RDFE.uriLabel(property.URI)),
+        rdfnode: {},
+        editorAttrs: {
+          "title": RDFE.coalesce(property.comment, property.description)
         }
-        token = 'literal';
-      } else if (property.class == RDFE.uriDenormalize('owl:ObjectProperty')) {
-        fieldType = 'Select';
-        item["options"] = (function(documentModel, range) {
-          return function(callback, editor) {
-            var items = self.ontology.individualsByClassURI(range);
-            if (documentModel)
-              items = items || RDFE.individuals(documentModel.doc.store, range);
-
-            callback(items);
-        };})(documentModel, range);
-        token = 'uri';
+      };
+      if(property.class == RDFE.uriDenormalize('owl:DatatypeProperty')) {
+        item.rdfnode.type = property.range;
       }
-      if (fieldType) {
-        item["type"] = fieldType;
-        item["node-token"] = token;
-        item["title"] = RDFE.coalesce(property.label, property.title, RDFE.uriLabel(property.URI));
-        item["editorAttrs"] = {"title": RDFE.coalesce(property.comment, property.description)};
-        schema[property.URI] = item;
-        fields.push(property.URI);
+      else if (property.class == RDFE.uriDenormalize('owl:ObjectProperty')) {
+        item.rdfnode.type = "http://www.w3.org/1999/02/22-rdf-syntax-ns#Resource";
+        item.rdfnode.choices = function(callback) { getIndividuals(property.range, callback); };
+        item.rdfnode.create = true; //FIXME: make this configurable
       }
+      else if (property.range) {
+        if(property.range == "http://www.w3.org/2000/01/rdf-schema#Literal" ||
+           property.range.startsWith('http://www.w3.org/2001/XMLSchema#')) {
+          item.rdfnode.type = property.range;
+        }
+        else {
+          item.rdfnode.type = "http://www.w3.org/1999/02/22-rdf-syntax-ns#Resource";
+          item.rdfnode.choices = function(callback) { getIndividuals(property.range, callback); };
+          item.rdfnode.create = true; //FIXME: make this configurable
+        }
+      }
+      schema[property.URI] = item;
+      fields.push(property.URI);
     }
     return {"schema": schema, "fields": fields};
   }
