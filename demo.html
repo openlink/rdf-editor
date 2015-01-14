@@ -118,7 +118,7 @@
 
       <div class="btn-toolbar" role="toolbar">
         <div class="btn-group" role="group">
-          <button id="open" type="button" class="btn btn-default"><span class="glyphicon glyphicon-open" aria-hidden="true"></span> Open</button>
+          <button id="open" type="button" class="btn btn-default" style="display:none"><span class="glyphicon glyphicon-open" aria-hidden="true"></span> Open</button>
           <div class="btn-group" role="group" style="display:none">
             <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-expanded="false">
               <span class="glyphicon glyphicon-star" aria-hidden="true"></span> Bookmarks <span class="caret"></span>
@@ -128,8 +128,8 @@
           </div>
         </div>
         <div class="btn-group" role="group">
-          <button id="save" type="button" class="btn btn-default"><span class="glyphicon glyphicon-save" aria-hidden="true"></span> Save</button>
-          <button id="saveAs" type="button" class="btn btn-default"><span class="glyphicon glyphicon-save" aria-hidden="true"></span> Save As...</button>
+          <button id="save" type="button" class="btn btn-default" style="display:none"><span class="glyphicon glyphicon-save" aria-hidden="true"></span> Save</button>
+          <button id="saveAs" type="button" class="btn btn-default" style="display:none"><span class="glyphicon glyphicon-save" aria-hidden="true"></span> Save As...</button>
         </div>
         <div class="btn-group" role="group">
           <button id="add" type="button" class="btn btn-default"><span class="glyphicon glyphicon-plus" aria-hidden="true"></span> Add</button>
@@ -279,6 +279,7 @@
     <script src="js/jstorage.js"></script>
 
     <script src="js/rdfe/io.js"></script>
+    <script src="js/rdfe/config.js"></script>
     <script src="js/rdfe/ontology.js"></script>
 
     <script src="js/rdfe/rdf_store_ext.js"></script>
@@ -307,15 +308,19 @@
         }
       });
 
-
       // SPARQL I/O
       var IO_SPARQL_HOST = $.jStorage.get("editor-sparql-endpoint", window.location.protocol + '//' + window.location.host + '/sparql');
       var IO_SPARQL_GRAPH = $.jStorage.get("editor-document-url", 'urn:foo');
 
       var ontologyManager;
       var rdfeConfig = new RDFE.Config('config.json', function(config) {
-          ontologyManager = new RDFE.OntologyManager(null, config.options.OntologyManager);
+          ontologyManager = new RDFE.OntologyManager(null, config.options.Ontology);
           ontologyManager.init();
+
+          var configActions = config.options.Actions;
+          for (var i = 0; i < configActions.length; i++) {
+            $('button#'+configActions[i]).show();
+          }
         }
       );
 
@@ -456,6 +461,7 @@
         $('button#open').click(function(e) {
           $('#openDocDialog').modal();
         });
+
         $('#openDocDialog #openDocBtn').click(function() {
           var url = $('#openDocDialog input[name="openDocLocation"]').val();
           ioRetrieve(url);
@@ -463,11 +469,11 @@
         });
 
         $('button#save').click(function(e) {
-            save();
+          save();
         });
 
         $('button#saveAs').click(function(e) {
-            saveAs();
+          saveAs();
         });
         $('#saveAsDialog #saveAsBtn').click(function() {
           var url = $('#saveAsDialog input[name="saveAsLocation"]').val();
@@ -507,12 +513,12 @@
 
         // reload the contents when the panel shows
         $(document).on('show-view-triples', function() {
-            console.log('show-view-triples event');
-            editor.createEditorUi(mainDoc, $("#sparqlcontents"));
+          console.log('show-view-triples event');
+          editor.createEditorUi(mainDoc, $("#sparqlcontents"));
         });
         $(document).on('show-view-entities', function() {
-            console.log('show-view-entities event');
-            editor.createEntityList(mainDoc, $("#entitiesContents"));
+          console.log('show-view-entities event');
+          editor.createEntityList(mainDoc, $("#entitiesContents"));
         });
 
         function togglePanel(id) {
@@ -523,7 +529,7 @@
         }
 
         $('input[name="view"]').change(function(e) {
-            togglePanel(e.target.id);
+          togglePanel(e.target.id);
         });
       });
     </script>
