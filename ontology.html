@@ -75,6 +75,7 @@
 
     <script src="js/rdfe/rdf_store_ext.js"></script>
     <script src="js/rdfe/io.js"></script>
+    <script src="js/rdfe/config.js"></script>
     <script src="js/rdfe/ontology.js"></script>
     <script src="js/rdfe/editor.js"></script>
     <script src="js/rdfe/document.js"></script>
@@ -83,7 +84,7 @@
     <script>
       var ontologyManager;
       var rdfeConfig = new RDFE.Config('config.json', function(config) {
-          ontologyManager = new RDFE.OntologyManager(null, config.options.OntologyManager);
+          ontologyManager = new RDFE.OntologyManager(null, config.options.Ontology);
           ontologyManager.init();
         }
       );
