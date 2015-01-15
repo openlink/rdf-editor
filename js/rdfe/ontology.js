@@ -1264,7 +1264,7 @@ RDFE.PropertyTemplate = function(ontologyManager, URI, options, callback) {
     var getIndividuals = function(range, callback) {
       var items = self.ontology.individualsByClassURI(range);
       if (documentModel)
-        items = items || RDFE.individuals(documentModel.doc, range);
+        $.merge(items, RDFE.individuals(documentModel.doc, range));
 
       callback(items);
     };
