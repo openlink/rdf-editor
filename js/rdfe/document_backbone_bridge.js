@@ -32,9 +32,12 @@ RDFE.Document.Model = Backbone.Model.extend({
               continue;
 
             self.schema[r[i].p.value] = {
-              type: "List", //FIXME: convert the code from Aziz into a function which can be reused here, ideally we should use the property's range
+              type: "List",
               title: r[i].p.value.split(/[/#]/).pop(),
-              itemType: "Rdfnode"
+              itemType: "Rdfnode",
+              rdfnode: {
+                // FIXME: use information from the ontologyManager here
+              }
             };
             self.fields.push(r[i].p.value);
           }
@@ -48,13 +51,14 @@ RDFE.Document.Model = Backbone.Model.extend({
         }
 
         if (uriClass) {
+          // FIXME: Do 'not' use a global ontologyManager variable here!!!!!!
           var template = new RDFE.Template(ontologyManager, uriClass, null, function(template) {
             var data = template.toBackboneForm(self);
             if (data && data.schema) {
               self.schema = data.schema;
               self.fields = data.fields;
             }
-            // add fields related to entity but not in the template ???
+            // add fields related to entity but not in the template ??? TODO: this should be controlled by the fresnel lens (allProeprties)
             simpleSchema(self, r);
 
             if (success)
