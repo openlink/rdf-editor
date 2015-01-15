@@ -120,7 +120,7 @@ RDFE.Document.prototype.listProperties = function(callback) {
 /**
  * List all the entities in the document. A "label" property is added to each node
  * in the result passed to the @p callback function.
- * @param type optional type the entities should have.
+ * @param type optional type(s) the entities should have. Can be a list or a string.
  * @param callback a function which takes an array of rdfstore nodes as input.
  * @param errorCb Callback function in case an error occurs, takes err msg as input.
  */
@@ -135,12 +135,21 @@ RDFE.Document.prototype.listEntities = function(type, callback, errorCb) {
     errCb = callback;
     t = null;
   }
+  else if(typeof(t) == 'string')
+    t = [t];
 
   var q = "select distinct ?s ?l ?pl from <" + self.graph + "> where { ";
-  if(t)
-    q += "?s a <" + t + "> . "; // FIXME: type inference!!!!
-  else
+  if(t && t.length > 0) {
+    q += "?s a ?t . filter(";
+    for(var i = 0; i < t.length; i++) {
+      if(i > 0) q += "||";
+      q += "?t = <" + t[i] + ">";
+    }
+    q += ") . ";
+  }
+  else {
     q += "?s ?p ?o . ";
+  }
   q += "optional { ?s rdfs:label ?l . } . optional { ?s skos:prefLabel ?pl } . }";
   self.store.execute(q, function(success, r) {
     var sl = [];
