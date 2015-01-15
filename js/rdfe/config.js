@@ -30,6 +30,12 @@ RDFE.Config = function(source, callback) {
         if (data.actions)
           self.options.actions = data.actions;
 
+        if(data.labelProps)
+          self.options.labelProps = data.labelProps;
+
+        if(!data.labelProps || data.labelProps.length == 0)
+          data.labelProps = RDFE.Config.defaults.labelProps;
+
         if (callback) callback(self);
       };
     })(callback),
@@ -60,5 +66,11 @@ RDFE.Config.defaults = {
     'save',
     'saveAs',
     'bookmarks'
+  ],
+
+  // the properties to use (in order) for fetching resource, class, and property labels
+  labelProps: [
+    'http://www.w3.org/2004/02/skos/core#prefLabel',
+    'http://www.w3.org/2000/01/rdf-schema#'
   ]
 };
