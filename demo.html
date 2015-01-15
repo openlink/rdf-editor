@@ -328,7 +328,7 @@
           }
 
           if($.inArray("bookmarks", config.options.actions) >= 0)
-            loadBookmarks();
+            loadBookmarks(config);
 
           mainDoc = new RDFE.Document(config);
           toggleView(config.options.defaultView);
@@ -450,30 +450,28 @@
         $('#saveAsDialog').modal();
       }
 
-      function loadBookmarks() {
+      function loadBookmarks(config) {
         var $bmEl = $('#openDocDialog #openDocBookmarks');
         $bmEl.empty();
 
-        $.get('config.json', null, 'json').done(function(data) {
-          var bm = data.bookmarks;
-          if(bm) {
+        var bm = config.options.bookmarks;
+        if(bm) {
+          for(var i = 0; i < bm.length; i+=1) {
+            $bmEl.append('<li><a class="bookmark" href="' + bm[i].uri + '">' + bm[i].label + '</a></li>');
+          }
+          if(bm.length > 0) {
+            var $bmMenu = $('#bookmarks');
+            $bmMenu.closest('div.btn-group').show();
             for(var i = 0; i < bm.length; i+=1) {
-              $bmEl.append('<li><a class="bookmark" href="' + bm[i].uri + '">' + bm[i].label + '</a></li>');
-            }
-            if(bm.length > 0) {
-              var $bmMenu = $('#bookmarks');
-              $bmMenu.closest('div.btn-group').show();
-              for(var i = 0; i < bm.length; i+=1) {
-                $bmMenu.append('<li><a class="bookmark" href="' + bm[i].uri + '">' + bm[i].label + '</a></li>');
-              }
+              $bmMenu.append('<li><a class="bookmark" href="' + bm[i].uri + '">' + bm[i].label + '</a></li>');
             }
           }
+        }
 
-          $('a.bookmark').click(function(e) {
-            e.preventDefault();
-            ioRetrieve($(this).attr('href'));
-            $('#openDocDialog').modal('hide');
-          });
+        $('a.bookmark').click(function(e) {
+          e.preventDefault();
+          ioRetrieve($(this).attr('href'));
+          $('#openDocDialog').modal('hide');
         });
       }
 
