@@ -35,15 +35,15 @@
       var url = document.location.protocol + '//' + document.location.host;
       var IO_SPARQL_HOST = url + '/sparql';
       var IO_SPARQL_GRAPH = 'http://example.org/io';
-      var io_rdfe = new RDFE.io({"host": IO_SPARQL_HOST, "ajaxError": myAjaxError, "ajaxSuccess": myAjaxSuccess});
+      var io_rdfe = new RDFE.IO({"host": IO_SPARQL_HOST, "ajaxError": myAjaxError, "ajaxSuccess": myAjaxSuccess});
 
       // SPARQL GSP
       var GSP_SPARQL_HOST = url + '/sparql-graph-crud';
       var GSP_SPARQL_GRAPH = 'http://example.org/gsp';
-      var gsp_rdfe = new RDFE.gsp({"host": GSP_SPARQL_HOST, "ajaxError": myAjaxError, "ajaxSuccess": myAjaxSuccess});
+      var gsp_rdfe = new RDFE.GSP({"host": GSP_SPARQL_HOST, "ajaxError": myAjaxError, "ajaxSuccess": myAjaxSuccess});
 
       // SPARQL LDP
-      var ldp_rdfe = new RDFE.ldp({"ajaxError": myAjaxError, "ajaxSuccess": myAjaxSuccess});
+      var ldp_rdfe = new RDFE.LDP({"ajaxError": myAjaxError, "ajaxSuccess": myAjaxSuccess});
 
       // Get File Content
       var reader;

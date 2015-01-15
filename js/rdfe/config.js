@@ -9,43 +9,42 @@ RDFE.Config = function(source, callback) {
   var self = this;
   this.options = RDFE.Config.defaults;
 
-  if (!source)
-    return;
+  if (source) {
+    $.ajax({
+      url: source,
+      type: 'GET',
+      dataType: 'json',
+      success: (function(callback) {
+        return function(data) {
+          self.options.ontology = $.extend(self.options.ontology, data.ontology);
 
-  $.ajax({
-    url: source,
-    type: 'GET',
-    dataType: 'json',
-    success: (function(callback) {
-      return function(data) {
-        self.options.ontology = $.extend(self.options.ontology, data.ontology);
+          // Templates options
+          self.options.templates = $.extend(self.options.templates, data.templates);
 
-        // Templates options
-        self.options.templates = $.extend(self.options.templates, data.templates);
+          // Bookmarks options
+          self.options.bookmarks = $.extend(self.options.bookmarks, data.bookmarks);
 
-        // Bookmarks options
-        self.options.bookmarks = $.extend(self.options.bookmarks, data.bookmarks);
+          // Editor options
+          if (data.actions)
+            self.options.actions = data.actions;
 
-        // Editor options
-        if (data.actions)
-          self.options.actions = data.actions;
+          if(data.labelProps)
+            self.options.labelProps = data.labelProps;
 
-        if(data.labelProps)
-          self.options.labelProps = data.labelProps;
+          if(!data.labelProps || data.labelProps.length == 0)
+            data.labelProps = RDFE.Config.defaults.labelProps;
 
-        if(!data.labelProps || data.labelProps.length == 0)
-          data.labelProps = RDFE.Config.defaults.labelProps;
+          if(data.defaultView)
+            self.options.defaultView = data.defaultView;
 
-        if(data.defaultView)
-          self.options.defaultView = data.defaultView;
-
-        if (callback) callback(self);
-      };
-    })(callback),
-    error: function(jqXHR, textStatus, errorThrown) {
-      console.error('config load =>', errorThrown);
-    }
-  });
+          if (callback) callback(self);
+        };
+      })(callback),
+      error: function(jqXHR, textStatus, errorThrown) {
+        console.error('config load =>', errorThrown);
+      }
+    });
+  }
 };
 
 RDFE.Config.defaults = {
