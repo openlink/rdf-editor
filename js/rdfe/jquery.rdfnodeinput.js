@@ -234,7 +234,7 @@
               return '<div>' + escape(item.label) + '</div>';
             },
             option: function(item, escape) {
-              return '<div>' + escape(item.value) + '</div>';
+              return '<div>' + escape(item.label) + ' <small>(' + escape(item.value) + ')</small></div>';
             }
           }
         });
