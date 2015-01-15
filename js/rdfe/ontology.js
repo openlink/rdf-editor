@@ -437,14 +437,14 @@ RDFE.individuals = function(doc, type) {
  * Ontology Manager
  *
  */
-RDFE.OntologyManager = function(store, config, options) {
+RDFE.OntologyManager = function(store, config) {
   var self = this;
 
   if (!store) store = rdfstore.create();
   store.registerParser("application/rdf+xml", RDFXMLParser.parser);
 
   this.store = store;
-  this.options = $.extend(config, options);
+  this.options = config;
   this.ontologies = [];
   this.fresnels = [];
   this.templates = [];

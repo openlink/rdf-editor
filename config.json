@@ -1,5 +1,5 @@
 {
-  "Ontology": {
+  "ontology": {
     "proxy": true,
     "preloadOntologies": [],
     "preloadFresnels": []
@@ -31,13 +31,13 @@
       "type": "sparql"
     }
   ],
-  "Templates": [
+  "templates": [
     {
       "label": "Person",
       "uri": "foaf:Person"
     }
   ],
-  "Actions": [
+  "actions": [
     "open", "save", "saveas", "bookmarks"
   ]
 }
