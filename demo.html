@@ -315,15 +315,15 @@
 
       var ontologyManager;
       var rdfeConfig = new RDFE.Config('config.json', function(config) {
-          ontologyManager = new RDFE.OntologyManager(null, config.options.Ontology);
+          ontologyManager = new RDFE.OntologyManager(null, config.options.ontology);
           ontologyManager.init();
 
-          var configActions = config.options.Actions;
+          var configActions = config.options.actions;
           for (var i = 0; i < configActions.length; i++) {
             $('button#action-'+configActions[i]).show();
           }
 
-          if($.inArray("bookmarks", config.options.Actions) >= 0)
+          if($.inArray("bookmarks", config.options.actions) >= 0)
             loadBookmarks();
         }
       );
