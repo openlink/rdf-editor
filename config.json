@@ -38,6 +38,7 @@
     }
   ],
   "actions": [
-    "open", "save", "saveas", "bookmarks"
-  ]
+      "open", "save", "saveas", "bookmarks", "entities", "triples"
+  ],
+  "defaultView": "entities"
 }

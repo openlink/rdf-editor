@@ -135,10 +135,10 @@
           <button id="action-add" type="button" class="btn btn-default"><span class="glyphicon glyphicon-plus" aria-hidden="true"></span> Add</button>
         </div>
         <div class="btn-group" role="group" data-toggle="buttons">
-          <label class="btn btn-default active" title="Show the Entities in the Document">
-            <input type="radio" name="view" id="view-entities" autocomplete="off" checked><span class="glyphicon glyphicon-list" aria-hidden="true"></span> Entities
+          <label id="action-entities" class="btn btn-default" title="Show the Entities in the Document" style="display:none">
+            <input type="radio" name="view" id="view-entities" autocomplete="off"><span class="glyphicon glyphicon-list" aria-hidden="true"></span> Entities
           </label>
-          <label class="btn btn-default" title="Show All Triples in the Document">
+          <label id="action-triples" class="btn btn-default" title="Show All Triples in the Document" style="display:none">
             <input type="radio" name="view" id="view-triples" autocomplete="off"><span class="glyphicon glyphicon-th" aria-hidden="true"></span> Triples
           </label>
         </div>
@@ -324,7 +324,7 @@
 
           var configActions = config.options.actions;
           for (var i = 0; i < configActions.length; i++) {
-            $('button#action-'+configActions[i]).show();
+            $('#action-'+configActions[i]).show();
           }
 
           if($.inArray("bookmarks", config.options.actions) >= 0)
@@ -351,12 +351,24 @@
         toggleSpinner(true);
 
         mainDoc.load(url, io_rdfe, function() {
+            var view = rdfeConfig.options.defaultView;
             if($('#panel-view-triples').is(":visible")) {
+              view = 'triples';
+            }
+            else if($('#panel-view-entities').is(":visible")) {
+              view = 'entities';
+            }
+            if(view == "triples") {
                 editor.createEditorUi(mainDoc, $("#sparqlcontents"), function() { toggleSpinner(false); });
+                $('#panel-view-triples').show();
+                $('#action-triples').addClass('active').find('input').attr('checked', 'checked');
+                $('#action-entities').removeClass('active').find('input').removeAttr('checked');
             }
             else {
                 editor.createEntityList(mainDoc, $("#entitiesContents"), function() { toggleSpinner(false); });
                 $('#panel-view-entities').show();
+                $('#action-triples').removeClass('active').find('input').removeAttr('checked');
+                $('#action-entities').addClass('active').find('input').attr('checked', 'checked');
             }
             $('#docUrl').text(url);
             $.jStorage.set("editor-document-url", url);
