@@ -279,6 +279,7 @@
     <script src="js/jstorage.js"></script>
 
     <script src="js/rdfe/io.js"></script>
+    <script src="js/rdfe/rdfnode.js"></script>
     <script src="js/rdfe/config.js"></script>
     <script src="js/rdfe/ontology.js"></script>
 
@@ -312,24 +313,27 @@
       var IO_SPARQL_HOST = $.jStorage.get("editor-sparql-endpoint", window.location.protocol + '//' + window.location.host + '/sparql');
       var IO_SPARQL_GRAPH = $.jStorage.get("editor-document-url", 'urn:foo');
 
+      // The main document which contains the loaded data
+      var mainDoc;
+      var editor = new RDFE.Editor();
       var ontologyManager;
+
       var rdfeConfig = new RDFE.Config('config.json', function(config) {
-          ontologyManager = new RDFE.OntologyManager(null, config.options.Ontology);
+          ontologyManager = new RDFE.OntologyManager(null, config.options.ontology);
           ontologyManager.init();
 
-          var configActions = config.options.Actions;
+          var configActions = config.options.actions;
           for (var i = 0; i < configActions.length; i++) {
             $('button#action-'+configActions[i]).show();
           }
 
-          if($.inArray("bookmarks", config.options.Actions) >= 0)
+          if($.inArray("bookmarks", config.options.actions) >= 0)
             loadBookmarks();
+
+          mainDoc = new RDFE.Document(config);
         }
       );
 
-      // The main document which contains the loaded data
-      var mainDoc = new RDFE.Document();
-      var editor = new RDFE.Editor();
 
       function toggleSpinner(on) {
         if(on)

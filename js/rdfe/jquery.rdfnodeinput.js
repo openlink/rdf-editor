@@ -180,17 +180,6 @@
     }
   };
 
-  var toStoreNodeFct = function(store) {
-    if(this.type == 'uri')
-      return store.rdf.createNamedNode(this.value);
-    else
-      return store.rdf.createLiteral(this.value, this.language, this.datatype);
-  };
-
-  var toStringFct = function() {
-    return this.value;
-  };
-
   var RdfNodeEditor = function(elem, options) {
     var self = this;
 
@@ -217,31 +206,36 @@
       self.inputContainer.append(self.resSelect);
       self.mainElem.hide();
       var selectizeSetup = function(items) {
+        var nodes = [];
+        for(var i = 0; i < items.length; i++) {
+          var n = RDFE.RdfNode.fromStoreNode(items[i])
+          // a small hacky way of allowing labels for the choices.
+          n.label = items[i].label || n.value;
+          nodes.push(n);
+        }
         self.resSelect.selectize({
           valueField: "value",
-          searchField: "value",
-          sortField: "value",
-          options: items,
-          create: self.options.create,
+          searchField: "label",
+          sortField: "label",
+          options: nodes,
+          create: (self.options.create ? function(input, cb) {
+            var n = new RDFE.RdfNode('uri', input);
+            n.label = input;
+            this.options[input] = n;
+            cb(n);
+          } : false),
+          createOnBlur: true,
           onChange: function(value) {
             self.mainElem.val(value);
             self.change();
           },
           render: {
             item: function(item, escape) {
-              return '<div>' + escape(item.value) + '</div>';
+              return '<div>' + escape(item.label) + '</div>';
             },
             option: function(item, escape) {
-              return '<div>' + escape(item.value) + '</div>';
+              return '<div>' + escape(item.label) + ' <small>(' + escape(item.value) + ')</small></div>';
             }
-          },
-          create: function(input) {
-            return {
-              type: "uri",
-              value: input,
-              toStoreNode: toStoreNodeFct,
-              toString: toStringFct
-            };
           }
         });
       };
@@ -324,35 +318,32 @@
 
   RdfNodeEditor.prototype.getValue = function() {
     if(this.currentType == 'http://www.w3.org/1999/02/22-rdf-syntax-ns#Resource')
-      return {
-        type: 'uri',
-        value: this.mainElem.val(),
-        toStoreNode: toStoreNodeFct,
-        toString: toStringFct
-      };
+      return new RDFE.RdfNode(
+        'uri',
+        this.mainElem.val()
+      );
     else
-      return {
-        type: 'literal',
-        value: (nodeTypes[this.currentType].getValue ? nodeTypes[this.currentType].getValue(this.mainElem) : this.mainElem.val()),
-        datatype: (this.currentType != 'http://www.w3.org/2000/01/rdf-schema#Literal' ? this.currentType : undefined),
-        language: (this.lang ? this.lang : undefined),
-        toStoreNode: toStoreNodeFct,
-        toString: toStringFct
-      };
+      return new RDFE.RdfNode(
+        'literal',
+        (nodeTypes[this.currentType].getValue ? nodeTypes[this.currentType].getValue(this.mainElem) : this.mainElem.val()),
+        (this.currentType != 'http://www.w3.org/2000/01/rdf-schema#Literal' ? this.currentType : undefined),
+        (this.lang ? this.lang : undefined)
+      );
   };
 
-  RdfNodeEditor.prototype.setValue = function(node) {
+  RdfNodeEditor.prototype.setValue = function(node_) {
     //console.log('RdfNodeEditor.prototype.setValue ', node);
-    if(node) {
+    if(node_) {
+      var node = RDFE.RdfNode.fromStoreNode(node_);
       this.lastType = this.currentType;
-      var t = node.type || node.token || node.interfaceName;
-      if (t === 'uri' || t === 'NamedNode')
+      var t = node.type;
+      if (t === 'uri')
         this.currentType = 'http://www.w3.org/1999/02/22-rdf-syntax-ns#Resource';
       else
         this.currentType = node.datatype || 'http://www.w3.org/2000/01/rdf-schema#Literal';
-      this.lang = node.language || node.lang;
+      this.lang = node.language;
 
-      this.mainElem.val(node.value || node.nominalValue);
+      this.mainElem.val(node.value);
       if(this.resSelect) {
         this.resSelect[0].selectize.addOption(node);
         this.resSelect[0].selectize.setValue(node.value);
