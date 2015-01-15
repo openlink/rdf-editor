@@ -116,3 +116,50 @@ RDFE.Document.prototype.listProperties = function(callback) {
     callback(pl);
   });
 };
+
+/**
+ * List all the entities in the document. A "label" property is added to each node
+ * in the result passed to the @p callback function.
+ * @param type optional type the entities should have.
+ * @param callback a function which takes an array of rdfstore nodes as input.
+ * @param errorCb Callback function in case an error occurs, takes err msg as input.
+ */
+RDFE.Document.prototype.listEntities = function(type, callback, errorCb) {
+  var t = type,
+      cb = callback,
+      errCb = errorCb,
+      self = this;
+
+  if(typeof(t) == 'function') {
+    cb = type;
+    errCb = callback;
+    t = null;
+  }
+
+  var q = "select distinct ?s ?l ?pl from <" + self.graph + "> where { ";
+  if(t)
+    q += "?s a <" + t + "> . "; // FIXME: type inference!!!!
+  else
+    q += "?s ?p ?o . ";
+  q += "optional { ?s rdfs:label ?l . } . optional { ?s skos:prefLabel ?pl } . }";
+  self.store.execute(q, function(success, r) {
+    var sl = [];
+
+    if(success) {
+      for(var i = 0; i < r.length; i += 1) {
+        var n = r[i].s;
+        if(r[i].pl)
+          n.label = r[i].pl.value;
+        else if(r[i].l)
+          n.label = r[i].l.value;
+        else
+          n.label = r[i].s.value.split(/[/#]/).pop();
+        sl.push(n);
+      }
+    }
+    else if(errorCb)
+      errorCb(r);
+
+    cb(sl);
+  });
+};
