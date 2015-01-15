@@ -265,90 +265,77 @@ RDFE.Editor.prototype.createEntityList = function(doc, container, callback) {
   var self = this;
   this.doc = doc;
 
-  doc.store.execute("select distinct ?s ?sl ?spl where { graph <" + self.doc.graph + "> { ?s ?p ?o . } . optional { graph <" + self.doc.graph + "> { ?s rdfs:label ?sl } } . optional { graph <" + self.doc.graph + "> { ?s skos:prefLabel ?spl } } } order by ?s ?t", function(success, r) {
-    if (success) {
-      container.empty();
+  doc.listEntities(function (entities) {
+    container.empty();
 
-      var $list = $(document.createElement('table')).addClass('table');
-      container.append($list);
+    var $list = $(document.createElement('table')).addClass('table');
+    container.append($list);
 
-      // create entries
-      var entityData = [];
-      for (var i = 0; i < r.length; i++) {
-        var uri = r[i].s.value;
-        var label = uri;
-        if (r[i].spl)
-          label = r[i].spl.value;
-        else if (r[i].sl)
-          label = r[i].sl.value;
-        else
-          label = label.split(/[/#]/).pop();
-        entityData.push({
-          'label': label,
-          'uri': uri
-        });
-      }
-
-      var editFct = function(uri) {
-        // open the editor and once its done re-create the entity list
-        self.showEditor(container, uri, function() {
-          self.createEntityList(doc, container);
-        });
-      };
-      var deleteFct = function(uri) {
-        self.doc.deleteEntity(uri, function() {
-          $list.bootstrapTable('remove', {
-            field: 'uri',
-            values: [uri]
-          });
-          $(self).trigger('rdf-editor-success', {
-            "type": 'entity-delete-done',
-            "uri": uri,
-            "message": "Successfully deleted entity " + uri + "."
-          });
-        }, function(msg) {
-          $(self).trigger('rdf-editor-error', {
-            "type": 'entity-delete-failed',
-            "message": msg
-          });
-        });
-      };
-
-      $list.bootstrapTable({
-        striped: true,
-        sortName: 'label',
-        pagination: true,
-        search: true,
-        searchAlign: 'left',
-        showHeader: true,
-        data: entityData,
-        idField: 'uri',
-        columns: [{
-          field: 'label',
-          title: 'Entity Name',
-          aligh: 'left',
-          sortable: true
-        }, {
-          field: 'actions',
-          title: 'Actions',
-          align: 'center',
-          valign: 'middle',
-          clickToSelect: false,
-          formatter: RDFE.Editor.prototype.entityListActionsFormatter,
-          events: {
-            'click .edit': function(e, value, row, index) {
-              editFct(row.uri);
-            },
-            'click .remove': function(e, value, row, index) {
-              deleteFct(row.uri);
-            }
-          }
-        }]
+    var editFct = function(uri) {
+      // open the editor and once its done re-create the entity list
+      self.showEditor(container, uri, function() {
+        self.createEntityList(doc, container);
       });
-    } else {
-      // FIXME: error handling.
-      console.log('Failed to query entities in doc.');
-    }
+    };
+    var deleteFct = function(uri) {
+      self.doc.deleteEntity(uri, function() {
+        $list.bootstrapTable('remove', {
+          field: 'value',
+          values: [uri]
+        });
+        $(self).trigger('rdf-editor-success', {
+          "type": 'entity-delete-done',
+          "uri": uri,
+          "message": "Successfully deleted entity " + uri + "."
+        });
+      }, function(msg) {
+        $(self).trigger('rdf-editor-error', {
+          "type": 'entity-delete-failed',
+          "message": msg
+        });
+      });
+    };
+
+    $list.bootstrapTable({
+      striped: true,
+      sortName: 'label',
+      pagination: true,
+      search: true,
+      searchAlign: 'left',
+      showHeader: true,
+      data: entities,
+      idField: 'value',
+      columns: [{
+        field: 'label',
+        title: 'Entity Name',
+        aligh: 'left',
+        sortable: true
+      }, {
+        field: 'actions',
+        title: 'Actions',
+        align: 'center',
+        valign: 'middle',
+        clickToSelect: false,
+        formatter: RDFE.Editor.prototype.entityListActionsFormatter,
+        events: {
+          'click .edit': function(e, value, row, index) {
+            editFct(row.value);
+          },
+          'click .remove': function(e, value, row, index) {
+            deleteFct(row.value);
+          }
+        }
+      }]
+    });
+
+    if (callback)
+      callback();
+  }, function(msg) {
+    // an error occured while reading the entities
+    $(self).trigger('rdf-editor-error', {
+      "type": 'editor-entity-listing-failed',
+      "message": msg
+    });
 
     if (callback)
       callback();
