@@ -58,8 +58,7 @@ RDFE.Config.defaults = {
   },
 
   // a set of bookmarks which can be loaded from the "bookmarks" action
-  bookmarks: {
-  },
+  bookmarks: [],
 
   // actions to enable in the UI
   actions: [
