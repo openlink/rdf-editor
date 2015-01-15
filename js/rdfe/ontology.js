@@ -424,45 +424,27 @@ RDFE.collectionQuery = function(store, graph, s, p, o, m) {
   return items;
 }
 
-RDFE.individuals = function(store, graph, c) {
-  var RDFE_INDIVIDUALS_TEMPLATE =
-    '\n PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> ' +
-    '\n SELECT distinct ?item ' +
-    '\n  WHERE { ' +
-    '\n          {0} {?item a <{1}>.} ' +
-    '\n        } ';
-
+RDFE.individuals = function(doc, type) {
   var items = [];
-  var sparql = RDFE_INDIVIDUALS_TEMPLATE.format(graph, c);
-  store.execute(sparql, (function(items) {
-    return function(success, results) {
-      var c;
-      if (success && results.length) {
-        for (var i = 0; i < results.length; i++) {
-          c = RDFE.sparqlValue(results[i]["item"]);
-          if (!RDFE.isBlankNode(c))
-            items.push(c);
-        }
-      }
-    };
-  })(items));
-
+  doc.listEntities(type, function(r) {
+    items = r;
+  });
   return items;
-}
+};
 
 /*
  *
  * Ontology Manager
  *
  */
-RDFE.OntologyManager = function(store, config, options) {
+RDFE.OntologyManager = function(store, config) {
   var self = this;
 
   if (!store) store = rdfstore.create();
   store.registerParser("application/rdf+xml", RDFXMLParser.parser);
 
   this.store = store;
-  this.options = $.extend(config, options);
+  this.options = config;
   this.ontologies = [];
   this.fresnels = [];
   this.templates = [];
@@ -1282,7 +1264,7 @@ RDFE.PropertyTemplate = function(ontologyManager, URI, options, callback) {
     var getIndividuals = function(range, callback) {
       var items = self.ontology.individualsByClassURI(range);
       if (documentModel)
-        items = items || RDFE.individuals(documentModel.doc.store, range);
+        $.merge(items, RDFE.individuals(documentModel.doc, range));
 
       callback(items);
     };

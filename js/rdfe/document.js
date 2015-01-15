@@ -1,9 +1,10 @@
 if(!RDFE)
   RDFE = {};
 
-RDFE.Document = function(params) {
+RDFE.Document = function(config) {
   var self = this;
 
+  self.config = config;
   self.store = rdfstore.create();
   self.store.registerDefaultNamespace('skos', 'http://www.w3.org/2004/02/skos/core#');
   self.graph = 'urn:graph:default';
@@ -86,21 +87,27 @@ RDFE.Document.prototype.deleteEntity = function(uri, success, fail) {
   });
 };
 
+/**
+ * Get the label for the given resource using the configured label properties.
+ * if no label can be found the last section of the url is used instead.
+ */
 RDFE.Document.prototype.getEntityLabel = function(url, success) {
   var self = this;
-  self.store.execute('select ?pl from <' + self.graph + '> where { <' + url + '> skos:prefLabel ?pl . }', function(s, r) {
-    if(!s || r.length == 0) {
-      self.store.execute('select ?l from <' + self.graph + '> where { <' + url + '> rdfs:label ?l . }', function(s, r) {
-        if(!s || r.length == 0)
-          success(url.split(/[/#]/).pop());
-        else
+  var getLabel = function(lps, i) {
+    // fall back to the last section of the uri
+    if(i >= lps.length)
+      success(url.split(/[/#]/).pop());
+    else
+      self.store.execute('select ?l from <' + self.graph + '> where { <' + url + '> <' + lps[i] + '> ?l . }', function(s, r) {
+        if(s && r.length > 0) {
           success(r[0].l.value);
+        }
+        else {
+          getLabel(lps, i+1);
+        }
       });
-    }
-    else {
-      success(r[0].pl.value);
-    }
-  });
+  };
+  getLabel(self.config.options.labelProps, 0);
 };
 
 RDFE.Document.prototype.listProperties = function(callback) {
@@ -114,5 +121,71 @@ RDFE.Document.prototype.listProperties = function(callback) {
     }
 
     callback(pl);
+  });
+};
+
+/**
+ * List all the entities in the document. A "label" property is added to each node
+ * in the result passed to the @p callback function.
+ * @param type optional type(s) the entities should have. Can be a list or a string.
+ * @param callback a function which takes an array of rdfstore nodes as input.
+ * @param errorCb Callback function in case an error occurs, takes err msg as input.
+ */
+RDFE.Document.prototype.listEntities = function(type, callback, errorCb) {
+  var t = type,
+      cb = callback,
+      errCb = errorCb,
+      self = this;
+
+  if(typeof(t) == 'function') {
+    cb = type;
+    errCb = callback;
+    t = null;
+  }
+  else if(typeof(t) == 'string')
+    t = [t];
+
+  var q = "select distinct ?s ";
+  for(var i = 0; i < self.config.options.labelProps.length; i++) {
+    q += "?l" + i + " ";
+  }
+  q += " from <" + self.graph + "> where { ";
+  if(t && t.length > 0) {
+    q += "?s a ?t . filter(";
+    for(var i = 0; i < t.length; i++) {
+      if(i > 0) q += "||";
+      q += "?t = <" + t[i] + ">";
+    }
+    q += ") . ";
+  }
+  else {
+    q += "?s ?p ?o . ";
+  }
+  for(var i = 0; i < self.config.options.labelProps.length; i++) {
+    q += "optional { ?s <" + self.config.options.labelProps[i] + "> ?l" + i + " . } . ";
+  }
+  q += '}';
+
+  self.store.execute(q, function(success, r) {
+    var sl = [];
+
+    if(success) {
+      for(var i = 0; i < r.length; i += 1) {
+        var n = r[i].s;
+        for(var j = 0; j < self.config.options.labelProps.length; j++) {
+          if(r[i]["l" + j]) {
+            n.label = r[i]["l" + j].value;
+            break;
+          }
+        }
+        if(!n.label)
+          n.label = r[i].s.value.split(/[/#]/).pop();
+        sl.push(n);
+      }
+    }
+    else if(errorCb)
+      errorCb(r);
+
+    cb(sl);
   });
 };
