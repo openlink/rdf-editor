@@ -331,6 +331,7 @@
             loadBookmarks();
 
           mainDoc = new RDFE.Document(config);
+          toggleView(config.options.defaultView);
         }
       );
 
@@ -352,24 +353,15 @@
 
         mainDoc.load(url, io_rdfe, function() {
             var view = rdfeConfig.options.defaultView;
-            if($('#panel-view-triples').is(":visible")) {
+            if($('#panel-view-triples').is(":visible"))
               view = 'triples';
-            }
-            else if($('#panel-view-entities').is(":visible")) {
+            else if($('#panel-view-entities').is(":visible"))
               view = 'entities';
-            }
-            if(view == "triples") {
-                editor.createEditorUi(mainDoc, $("#sparqlcontents"), function() { toggleSpinner(false); });
-                $('#panel-view-triples').show();
-                $('#action-triples').addClass('active').find('input').attr('checked', 'checked');
-                $('#action-entities').removeClass('active').find('input').removeAttr('checked');
-            }
-            else {
-                editor.createEntityList(mainDoc, $("#entitiesContents"), function() { toggleSpinner(false); });
-                $('#panel-view-entities').show();
-                $('#action-triples').removeClass('active').find('input').removeAttr('checked');
-                $('#action-entities').addClass('active').find('input').attr('checked', 'checked');
-            }
+            if(view == "triples")
+              editor.createEditorUi(mainDoc, $("#sparqlcontents"), function() { toggleSpinner(false); });
+            else
+              editor.createEntityList(mainDoc, $("#entitiesContents"), function() { toggleSpinner(false); });
+            toggleView(view);
             $('#docUrl').text(url);
             $.jStorage.set("editor-document-url", url);
         }, function() {
@@ -377,6 +369,20 @@
             console.log('Failed to load document');
             toggleSpinner(false);
         });
+      }
+
+      function toggleView(view) {
+        if(view == "triples") {
+          $('#panel-view-triples').show();
+          $('#action-triples').addClass('active').find('input').attr('checked', 'checked');
+          $('#action-entities').removeClass('active').find('input').removeAttr('checked');
+        }
+        else {
+          editor.createEntityList(mainDoc, $("#entitiesContents"), function() { toggleSpinner(false); });
+          $('#panel-view-entities').show();
+          $('#action-triples').removeClass('active').find('input').removeAttr('checked');
+          $('#action-entities').addClass('active').find('input').attr('checked', 'checked');
+        }
       }
 
       // subscribe to editor events
