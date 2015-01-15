@@ -218,7 +218,13 @@
           searchField: "label",
           sortField: "label",
           options: nodes,
-          create: self.options.create,
+          create: (self.options.create ? function(input, cb) {
+            var n = new RDFE.RdfNode('uri', input);
+            n.label = input;
+            this.options[input] = n;
+            cb(n);
+          } : false),
+          createOnBlur: true,
           onChange: function(value) {
             self.mainElem.val(value);
             self.change();
@@ -230,11 +236,6 @@
             option: function(item, escape) {
               return '<div>' + escape(item.value) + '</div>';
             }
-          },
-          create: function(input) {
-            var n = new RDFE.RdfNode(input);
-            n.label = input;
-            return n;
           }
         });
       };
