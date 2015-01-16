@@ -50,7 +50,9 @@ RDFE.Config = function(source, callback) {
 RDFE.Config.defaults = {
   // configuration related to the ontology manager
   ontology: {
-    proxy: false
+    proxy: false,
+    forceLoad: false,
+    preloadOnly: false
   },
 
   // configuration related to the class templates
