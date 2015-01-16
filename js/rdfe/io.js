@@ -26,7 +26,7 @@ RDFE.IO.createIO = function(type, options) {
     return new RDFE.IO.SPARQL(o);
   else if(t == 'gsp')
     return new RDFE.IO.GSP(o);
-  else if(t == 'ldp')
+  else if(t == 'ldp' || t == "webdav" || t == "dav")
     return new RDFE.IO.LDP(o);
   else
     throw "Unsupport IO type: " + t;
