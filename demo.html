@@ -151,6 +151,8 @@
       <br/>
 
       <div id="panel-view-entities" class="main-view-panel" style="display:none">
+        <div id="entityAddContent">
+        </div>
         <div id="entitiesContents">
         </div>
       </div>
@@ -520,10 +522,11 @@
         });
 
         $('button#action-add').click(function(e) {
-            if($('#panel-view-triples').is(":visible"))
-              editor.createNewStatementEditor($('#tripleAddContent'));
-            else
-              alert('FIXME: need to show new resource dialog with type selection.');
+          if ($('#panel-view-triples').is(":visible")) {
+            editor.createNewStatementEditor($('#tripleAddContent'));
+          } else {
+            editor.createNewEntityEditor($('#entityAddContent'));
+          }
         });
 
       	$("#io_spq").change(
