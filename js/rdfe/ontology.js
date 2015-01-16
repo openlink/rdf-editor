@@ -572,6 +572,16 @@ RDFE.OntologyManager.prototype.ontologyByPrefix = function(prefix) {
   return null;
 }
 
+RDFE.OntologyManager.prototype.ontologyRemove = function(URI) {
+  var self = this;
+  for (var i = 0; i < self.ontologies.length; i++) {
+    if (self.ontologies[i].URI == URI) {
+      self.ontologies.splice(i, 1);
+      return;
+    }
+  }
+}
+
 RDFE.OntologyManager.prototype.fresnelParse = function(URI, params) {
   // console.log(URI);
   var self = this;
@@ -612,6 +622,16 @@ RDFE.OntologyManager.prototype.fresnelByURI = function(URI) {
   return null;
 }
 
+RDFE.OntologyManager.prototype.fresnelRemove = function(URI) {
+  var self = this;
+  for (var i = 0; i < self.fresnels.length; i++) {
+    if (self.fresnels[i].URI == URI) {
+      self.fresnels.splice(i, 1);
+      return;
+    }
+  }
+}
+
 RDFE.OntologyManager.prototype.templateParse = function(URI, params, callback) {
   // console.log(URI);
   var self = this;
@@ -632,6 +652,16 @@ RDFE.OntologyManager.prototype.templateByURI = function(URI) {
   for (var i = 0; i < self.templates.length; i++) {
     if (self.templates[i].URI == URI)
       return self.templates[i];
+  }
+}
+
+RDFE.OntologyManager.prototype.templateRemove = function(URI) {
+  var self = this;
+  for (var i = 0; i < self.templates.length; i++) {
+    if (self.templates[i].URI == URI) {
+      self.templates.splice(i, 1);
+      return;
+    }
   }
 }
 
