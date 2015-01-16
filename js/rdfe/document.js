@@ -8,6 +8,7 @@ RDFE.Document = function(config) {
   self.store = rdfstore.create();
   self.store.registerDefaultNamespace('skos', 'http://www.w3.org/2004/02/skos/core#');
   self.graph = 'urn:graph:default';
+  self.dirty = false;
 };
 
 RDFE.Document.prototype.load = function(url, io, success, fail) {
@@ -15,6 +16,7 @@ RDFE.Document.prototype.load = function(url, io, success, fail) {
     var successFct = function(data) {
         self.url = url;
         self.io = io;
+        self.dirty = false;
 
         if (success)
             success();
@@ -51,6 +53,7 @@ RDFE.Document.prototype.save = function(url, io, success, fail) {
     else {
       var __success = function() {
         self.url = myUrl;
+        self.dirty = false;
 
         if(mySuccess)
           mySuccess();
@@ -71,6 +74,7 @@ RDFE.Document.prototype.deleteEntity = function(uri, success, fail) {
 
   self.store.execute('with <' + self.graph + '> delete { <' + uri + '> ?p ?o } where { <' + uri + '> ?p ?o }', function(s, r) {
     if(s) {
+      self.dirty = true;
       self.store.execute('with <' + self.graph + '> delete { ?s ?p <' + uri + '> } where { ?s ?p <' + uri + '> }', function(s, r) {
         if (s) {
           if (success)
