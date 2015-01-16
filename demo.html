@@ -238,7 +238,17 @@
               <div class="form-group">
                 <label for="openDocLocation" class="col-sm-2 control-label">Location</label>
                 <div class="col-sm-10">
-                  <input type="text" id="openDocLocation" name="openDocLocation" class="form-control" />
+                  <div class="input-group">
+                    <input type="text" id="openDocLocation" name="openDocLocation" class="form-control" />
+                    <span class="input-group-btn">
+                      <select name="openDocIoType" id="openDocIoType" class="btn">
+                        <option value="sparql">Sparql Endpoint</option>
+                        <option value="webdav">WebDAV Location</option>
+                        <option value="ldp">LDP Container</option>
+                        <option value="gsp">SPARQL Graph Store Protocol</option>
+                      </select>
+                    </span>
+                  </div>
                 </div>
               </div>
             </form>
@@ -361,11 +371,22 @@
           editor.createEntityList(mainDoc, $("#entitiesContents"), function() { toggleSpinner(false); });
       }
 
-      function ioRetrieve(url) {
-        var io_rdfe = RDFE.IO.createIO("sparql", {
-          "host": $('#io_spq').val(),
-          "graph": url
-        });
+      function ioRetrieve(url, type) {
+        var io_rdfe;
+        try {
+          io_rdfe = RDFE.IO.createIO(type || "sparql", {
+            "sparqlEndpoint": $('#io_spq').val(),
+            "graph": url
+          });
+        }
+        catch(e) {
+          $.growl({
+            message: e
+          }, {
+            type: "danger"
+          });
+          return;
+        }
 
         toggleSpinner(true);
 
@@ -375,6 +396,7 @@
             toggleView(view);
             $('#docUrl').text(url);
             $.jStorage.set("editor-document-url", url);
+            $.jStorage.set("editor-document-io-type", type);
         }, function() {
             // FIXME: error handling!!!
             console.log('Failed to load document');
@@ -493,26 +515,27 @@
         var bm = config.options.bookmarks;
         if(bm) {
           for(var i = 0; i < bm.length; i+=1) {
-            $bmEl.append('<li><a class="bookmark" href="' + bm[i].uri + '">' + bm[i].label + '</a></li>');
+            $bmEl.append('<li><a class="bookmark" href="' + bm[i].uri + '" data-io-type="' + bm[i].type + '">' + bm[i].label + '</a></li>');
           }
           if(bm.length > 0) {
             var $bmMenu = $('#bookmarks');
             $bmMenu.closest('div.btn-group').show();
             for(var i = 0; i < bm.length; i+=1) {
-              $bmMenu.append('<li><a class="bookmark" href="' + bm[i].uri + '">' + bm[i].label + '</a></li>');
+              $bmMenu.append('<li><a class="bookmark" href="' + bm[i].uri + '" data-io-type="' + bm[i].type + '">' + bm[i].label + '</a></li>');
             }
           }
         }
 
         $('a.bookmark').click(function(e) {
           e.preventDefault();
-          ioRetrieve($(this).attr('href'));
+          ioRetrieve($(this).attr('href'), $(this).attr('data-io-type'));
           $('#openDocDialog').modal('hide');
         });
       }
 
       $(document).ready(function() {
         $("#openDocLocation").val($.jStorage.get("editor-document-url"));
+        $("#openDocIoType").val($.jStorage.get("editor-document-io-type"));
 
         $('button#action-new').click(function(e) {
           documentNew();
@@ -523,8 +546,9 @@
         });
 
         $('#openDocDialog #openDocBtn').click(function() {
-          var url = $('#openDocDialog input[name="openDocLocation"]').val();
-          ioRetrieve(url);
+          var url = $('#openDocDialog input[name="openDocLocation"]').val(),
+              ioType = $('#openDocDialog select[name="openDocIoType"]').val();
+          ioRetrieve(url, ioType);
           $('#openDocDialog').modal('hide');
         });
 
