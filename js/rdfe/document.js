@@ -63,6 +63,18 @@ RDFE.Document.prototype.save = function(url, io, success, fail) {
     }
 };
 
+RDFE.Document.prototype.new = function(success, fail) {
+  var self = this;
+  self.url = null;
+  self.io = null;
+  self.store.clear(self.graph, function(s) {
+    if(s && success)
+      success();
+    else if(!s && fail)
+      fail();
+  });
+};
+
 RDFE.Document.prototype.deleteEntity = function(uri, success, fail) {
   var self = this;
 
