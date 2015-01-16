@@ -129,7 +129,7 @@
         </div>
         <div class="btn-group" role="group">
           <button id="action-save" type="button" class="btn btn-default" style="display:none"><span class="glyphicon glyphicon-save" aria-hidden="true"></span> Save</button>
-          <button id="action-saveAs" type="button" class="btn btn-default" style="display:none"><span class="glyphicon glyphicon-save" aria-hidden="true"></span> Save As...</button>
+          <button id="action-saveas" type="button" class="btn btn-default" style="display:none"><span class="glyphicon glyphicon-save" aria-hidden="true"></span> Save As...</button>
         </div>
         <div class="btn-group" role="group">
           <button id="action-add" type="button" class="btn btn-default"><span class="glyphicon glyphicon-plus" aria-hidden="true"></span> Add</button>
@@ -495,7 +495,7 @@
           save();
         });
 
-        $('button#action-saveAs').click(function(e) {
+        $('button#action-saveas').click(function(e) {
           saveAs();
         });
         $('#saveAsDialog #saveAsBtn').click(function() {
