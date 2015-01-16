@@ -5,7 +5,8 @@ String.prototype.format = function() {
   });
 };
 
-var RDFE = {};
+if(!window.RDFE)
+  window.RDFE = {};
 
 // GSP statements
 RDFE.GSP_RETRIEVE = 'CONSTRUCT {?s ?p ?o} WHERE {GRAPH <{0}> {?s ?p ?o}}';

@@ -5,6 +5,9 @@ if (typeof String.prototype.startsWith != 'function') {
   };
 }
 
+if(!window.RDFE)
+  window.RDFE = {};
+
 RDFE.Editor = function(params) {
   var self = this;
 

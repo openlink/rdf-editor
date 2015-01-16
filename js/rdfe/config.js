@@ -1,4 +1,5 @@
-if (!RDFE) RDFE = {};
+if(!window.RDFE)
+  window.RDFE = {};
 
 /*
  *
