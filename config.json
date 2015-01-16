@@ -38,7 +38,7 @@
     }
   ],
   "actions": [
-      "open", "save", "saveas", "bookmarks", "entities", "triples"
+      "new", "open", "save", "saveas", "bookmarks", "entities", "triples"
   ],
   "defaultView": "entities",
   "labelProps": [
