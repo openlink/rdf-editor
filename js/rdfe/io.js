@@ -69,7 +69,13 @@ RDFE.IO.SPARQL_CLEAR = 'CLEAR GRAPH <{0}>';
 
 RDFE.IO.SPARQL = function(options) {
   var self = this;
-  self.options = $.extend({}, options);
+  self.options = $.extend({}, RDFE.IO.SPARQL.defaults, options);
+  if(!self.options.sparqlEndpoint || self.options.sparqlEndpoint.length == 0)
+    self.options.sparqlEndpoint = RDFE.IO.SPARQL.defaults.sparqlEndpoint;
+}
+
+RDFE.IO.SPARQL.defaults = {
+  sparqlEndpoint: window.location.protocol + '//' + window.location.host + '/sparql'
 }
 
 RDFE.IO.SPARQL.prototype.retrieve = function(graph, params, silent) {
@@ -175,7 +181,7 @@ RDFE.IO.SPARQL.prototype.exec = function(q, params) {
   $(document).ajaxSuccess(params.ajaxSuccess);
 
   $.ajax({
-    url: params.host,
+    url: params.sparqlEndpoint,
     success: params.success,
     type: params.method || 'GET',
     data: {

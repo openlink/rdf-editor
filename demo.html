@@ -313,10 +313,6 @@
         }
       });
 
-      // SPARQL I/O
-      var IO_SPARQL_HOST = $.jStorage.get("editor-sparql-endpoint", window.location.protocol + '//' + window.location.host + '/sparql');
-      var IO_SPARQL_GRAPH = $.jStorage.get("editor-document-url", 'urn:foo');
-
       // The main document which contains the loaded data
       var mainDoc;
       var editor = new RDFE.Editor();
@@ -336,6 +332,8 @@
 
           mainDoc = new RDFE.Document(config);
           toggleView(config.options.defaultView);
+
+          $("#io_spq").val($.jStorage.get("editor-sparql-endpoint", config.options.sparqlEndpoint));
         }
       );
 
@@ -514,8 +512,7 @@
       }
 
       $(document).ready(function() {
-        $("#openDocLocation").val(IO_SPARQL_GRAPH);
-        $("#io_spq").val(IO_SPARQL_HOST);
+        $("#openDocLocation").val($.jStorage.get("editor-document-url"));
 
         $('button#action-new').click(function(e) {
           documentNew();
