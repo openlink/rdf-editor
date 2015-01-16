@@ -36,28 +36,28 @@ RDFE.graphClear = function(store, graph) {
  * SPARQL IOD - insert, update, delete
  *
  */
-RDFE.IO_RETRIEVE = 'CONSTRUCT {?s ?p ?o} WHERE {GRAPH <{0}> {?s ?p ?o}}';
-RDFE.IO_INSERT = 'INSERT DATA {GRAPH <{0}> { {1}}}';
-RDFE.IO_INSERT_SINGLE = '<{0}> <{1}> {2}';
-RDFE.IO_DELETE = 'DELETE DATA {GRAPH <{0}> { <{1}> <{2}> {3} . }}';
-RDFE.IO_CLEAR = 'CLEAR GRAPH <{0}>';
+RDFE.SPARQL_RETRIEVE = 'CONSTRUCT {?s ?p ?o} WHERE {GRAPH <{0}> {?s ?p ?o}}';
+RDFE.SPARQL_INSERT = 'INSERT DATA {GRAPH <{0}> { {1}}}';
+RDFE.SPARQL_INSERT_SINGLE = '<{0}> <{1}> {2}';
+RDFE.SPARQL_DELETE = 'DELETE DATA {GRAPH <{0}> { <{1}> <{2}> {3} . }}';
+RDFE.SPARQL_CLEAR = 'CLEAR GRAPH <{0}>';
 
-RDFE.IO = function(options) {
+RDFE.SPARQL = function(options) {
   var self = this;
   self.options = $.extend({}, options);
 }
 
-RDFE.IO.prototype.retrieve = function(graph, params, silent) {
+RDFE.SPARQL.prototype.retrieve = function(graph, params, silent) {
   var self = this;
   params = RDFE.params(params, self.options);
   if (silent) {
     params["ajaxError"] = null;
     params["ajaxSuccess"] = null;
   }
-  self.exec(RDFE.IO_RETRIEVE.format(graph), params);
+  self.exec(RDFE.SPARQL_RETRIEVE.format(graph), params);
 }
 
-RDFE.IO.prototype.retrieveToStore = function(graph, store, storeGraph, params) {
+RDFE.SPARQL.prototype.retrieveToStore = function(graph, store, storeGraph, params) {
   var self = this;
   params = RDFE.params(params, self.options);
   var __success = function(data, textStatus) {
@@ -83,13 +83,13 @@ RDFE.IO.prototype.retrieveToStore = function(graph, store, storeGraph, params) {
   self.retrieve(graph, params, true);
 }
 
-RDFE.IO.prototype.insert = function(graph, s, p, o, params) {
+RDFE.SPARQL.prototype.insert = function(graph, s, p, o, params) {
   var self = this;
   params = RDFE.params(params, self.options);
-  self.exec(RDFE.IO_INSERT.format(graph, RDFE.IO_INSERT_SINGLE.format(s, p, o)), params);
+  self.exec(RDFE.SPARQL_INSERT.format(graph, RDFE.SPARQL_INSERT_SINGLE.format(s, p, o)), params);
 }
 
-RDFE.IO.prototype.insertFromStore = function(graph, store, storeGraph, params) {
+RDFE.SPARQL.prototype.insertFromStore = function(graph, store, storeGraph, params) {
   var self = this;
   params = RDFE.params(params, self.options);
   store.graph(storeGraph, function(success, result) {
@@ -109,13 +109,13 @@ RDFE.IO.prototype.insertFromStore = function(graph, store, storeGraph, params) {
           var triples = '';
           var delimiter = '\n';
           for (var j = start; j < start + chunkSize && j < result.length; j += 1) {
-            triples += delimiter + RDFE.IO_INSERT_SINGLE.format(result.toArray()[j].subject, result.toArray()[j].predicate, result.toArray()[j].object.toNT());
+            triples += delimiter + RDFE.SPARQL_INSERT_SINGLE.format(result.toArray()[j].subject, result.toArray()[j].predicate, result.toArray()[j].object.toNT());
             delimiter = ' .\n';
           }
           params["success"] = function() {
             chunk(start + chunkSize);
           };
-          self.exec(RDFE.IO_INSERT.format(graph, triples), $.extend({
+          self.exec(RDFE.SPARQL_INSERT.format(graph, triples), $.extend({
             method: 'POST'
           }, params));
         }
@@ -128,23 +128,23 @@ RDFE.IO.prototype.insertFromStore = function(graph, store, storeGraph, params) {
   });
 }
 
-RDFE.IO.prototype.delete = function(graph, s, p, o, params) {
+RDFE.SPARQL.prototype.delete = function(graph, s, p, o, params) {
   var self = this;
   params = RDFE.params(params, self.options);
-  self.exec(RDFE.IO_DELETE.format(graph, s, p, o), params);
+  self.exec(RDFE.SPARQL_DELETE.format(graph, s, p, o), params);
 }
 
-RDFE.IO.prototype.clear = function(graph, params, silent) {
+RDFE.SPARQL.prototype.clear = function(graph, params, silent) {
   var self = this;
   params = RDFE.params(params, self.options);
   if (silent) {
     params["ajaxError"] = null;
     params["ajaxSuccess"] = null;
   }
-  self.exec(RDFE.IO_CLEAR.format(graph), params);
+  self.exec(RDFE.SPARQL_CLEAR.format(graph), params);
 }
 
-RDFE.IO.prototype.exec = function(q, params) {
+RDFE.SPARQL.prototype.exec = function(q, params) {
   var self = this;
   $(document).ajaxError(params.ajaxError);
   $(document).ajaxSuccess(params.ajaxSuccess);
