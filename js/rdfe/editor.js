@@ -65,6 +65,9 @@ RDFE.Editor.prototype.createEditorUi = function(doc, container, callback) {
     self.doc.store.delete(self.doc.store.rdf.createGraph([triple]), self.doc.graph, function(success) {
       if (success) {
         console.log("Successfully deleted old triple")
+
+        self.doc.dirty = true;
+
           // update data in the bootstrap-table array
         triple[field] = newNode;
 
@@ -180,6 +183,8 @@ RDFE.Editor.prototype.createEditorUi = function(doc, container, callback) {
                       field: 'id',
                       values: [row.id]
                     });
+
+                    self.doc.dirty = true;
                   }
                   else {
                     $(self).trigger('rdf-editor-error', { "type": 'triple-delete-failed', "message": 'Failed to delete triple.' });
@@ -233,7 +238,10 @@ RDFE.Editor.prototype.createNewStatementEditor = function(container) {
     var t = self.makeTriple(s, p, o);
     self.doc.store.insert(self.doc.store.rdf.createGraph([t]), self.doc.graph, function(success) {
       if (success) {
+        self.doc.dirty = true;
+
         container.empty();
+
         if (self.tripleTable) {
           var i = self.tripleTable.data('maxindex');
           i += 1;
@@ -296,7 +304,10 @@ RDFE.Editor.prototype.createNewEntityEditor = function(container) {
     var t = self.makeTriple(s, RDFE.uriDenormalize('rdf:type'), c);
     self.doc.store.insert(self.doc.store.rdf.createGraph([t]), self.doc.graph, function(success) {
       if (success) {
+        self.doc.dirty = true;
+
         container.empty();
+
         if (self.entityTable) {
           var i = self.entityTable.data('maxindex');
           self.entityTable.bootstrapTable('append', {"uri": s, "label": s, "id": i});
