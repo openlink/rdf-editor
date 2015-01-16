@@ -118,6 +118,7 @@
 
       <div class="btn-toolbar" role="toolbar">
         <div class="btn-group" role="group">
+          <button id="action-new" type="button" class="btn btn-default" style="display:none"><span class="glyphicon glyphicon-file" aria-hidden="true"></span> New</button>
           <button id="action-open" type="button" class="btn btn-default" style="display:none"><span class="glyphicon glyphicon-open" aria-hidden="true"></span> Open</button>
           <div id="action-bookmarks" class="btn-group" role="group" style="display:none">
             <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-expanded="false">
@@ -294,6 +295,7 @@
     <script src="js/rdfe/backbone-forms-rdfnode.js"></script>
     <script src="js/bootstrap-toggle.min.js"></script>
     <script src="js/selectize.min.js"></script>
+    <script src="js/bootbox.min.js"></script>
 
     <script>
       var val = new VAL();
@@ -345,6 +347,22 @@
           $('#busyspinner').spin(false);
       }
 
+      function currentView() {
+        var view = rdfeConfig.options.defaultView;
+        if($('#panel-view-triples').is(":visible"))
+          view = 'triples';
+        else if($('#panel-view-entities').is(":visible"))
+          view = 'entities';
+        return view;
+      }
+
+      function updateViewContents(view) {
+        if((view || currentView()) == "triples")
+          editor.createEditorUi(mainDoc, $("#sparqlcontents"), function() { toggleSpinner(false); });
+        else
+          editor.createEntityList(mainDoc, $("#entitiesContents"), function() { toggleSpinner(false); });
+      }
+
       function ioRetrieve(url) {
         var io_rdfe = new RDFE.IO({
           "host": $('#io_spq').val(),
@@ -354,15 +372,8 @@
         toggleSpinner(true);
 
         mainDoc.load(url, io_rdfe, function() {
-            var view = rdfeConfig.options.defaultView;
-            if($('#panel-view-triples').is(":visible"))
-              view = 'triples';
-            else if($('#panel-view-entities').is(":visible"))
-              view = 'entities';
-            if(view == "triples")
-              editor.createEditorUi(mainDoc, $("#sparqlcontents"), function() { toggleSpinner(false); });
-            else
-              editor.createEntityList(mainDoc, $("#entitiesContents"), function() { toggleSpinner(false); });
+            var view = currentView();
+            updateViewContents(view);
             toggleView(view);
             $('#docUrl').text(url);
             $.jStorage.set("editor-document-url", url);
@@ -452,6 +463,31 @@
         $('#saveAsDialog').modal();
       }
 
+      function documentNew() {
+        var n = function() {
+          mainDoc.new(function() {
+            updateViewContents();
+            $('#docUrl').text("no document loaded");
+          }, function() {
+            $.growl({
+              message: "Failed to clear Document for unknown reasons.",
+              icon: "glyphicon glyphicon-fire"
+            }, {
+              type: 'danger'
+            });
+          });
+        };
+        if(mainDoc.dirty) {
+          bootbox.confirm("Your Document has unsaved changes. Do you really want to create a new Document?", function(r) {
+            if(r)
+              n();
+          });
+        }
+        else {
+          n();
+        }
+      }
+
       function loadBookmarks(config) {
         var $bmEl = $('#openDocDialog #openDocBookmarks');
         $bmEl.empty();
@@ -480,6 +516,10 @@
       $(document).ready(function() {
         $("#openDocLocation").val(IO_SPARQL_GRAPH);
         $("#io_spq").val(IO_SPARQL_HOST);
+
+        $('button#action-new').click(function(e) {
+          documentNew();
+        });
 
         $('button#action-open').click(function(e) {
           $('#openDocDialog').modal();
