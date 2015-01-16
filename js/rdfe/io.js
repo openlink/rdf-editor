@@ -317,7 +317,7 @@ RDFE.IO.LDP = function(options) {
 }
 
 RDFE.IO.LDP.prototype.retrieve = function(path, params, silent) {
-  params = RDFE.IO.params(params, self.options);
+  params = RDFE.IO.params(params, this.options);
   if (silent) {
     params["ajaxError"] = null;
     params["ajaxSuccess"] = null;
@@ -325,11 +325,11 @@ RDFE.IO.LDP.prototype.retrieve = function(path, params, silent) {
   var headers = {
     "Accept": 'text/turtle, */*;q=0.1'
   };
-  self.exec('GET', path, headers, null, params);
+  this.exec('GET', path, headers, null, params);
 }
 
 RDFE.IO.LDP.prototype.retrieveToStore = function(path, store, storeGraph, params) {
-  params = RDFE.IO.params(params, self.options);
+  params = RDFE.IO.params(params, this.options);
   var __success = function(data, textStatus) {
     RDFE.IO.graphClear(store, storeGraph);
     var parser = N3.Parser();
@@ -350,19 +350,20 @@ RDFE.IO.LDP.prototype.retrieveToStore = function(path, store, storeGraph, params
   };
   params["__success"] = params["success"];
   params["success"] = __success;
-  self.retrieve(path, params, true);
+  this.retrieve(path, params, true);
 }
 
 RDFE.IO.LDP.prototype.insert = function(path, content, params) {
-  params = RDFE.IO.params(params, self.options);
+  params = RDFE.IO.params(params, this.options);
   var headers = {
     "Content-Type": 'text/turtle',
     "Slug": RDFE.IO.fileName(path)
   };
-  self.exec('POST', RDFE.IO.fileParent(path), headers, content, params);
+  this.exec('POST', RDFE.IO.fileParent(path), headers, content, params);
 }
 
 RDFE.IO.LDP.prototype.insertFromStore = function(path, store, storeGraph, params) {
+  var self = this;
   params = RDFE.IO.params(params, self.options);
   store.graph(storeGraph, function(success, result) {
     if (!success) {
@@ -376,6 +377,7 @@ RDFE.IO.LDP.prototype.insertFromStore = function(path, store, storeGraph, params
 }
 
 RDFE.IO.LDP.prototype.update = function(path, s, p, o, params) {
+  var self = this;
   params = RDFE.IO.params(params, self.options);
   var content = q.format(RDFE.IO.LDP_INSERT, s, p, o);
   var headers = {
@@ -385,6 +387,7 @@ RDFE.IO.LDP.prototype.update = function(path, s, p, o, params) {
 }
 
 RDFE.IO.LDP.prototype.delete = function(path, params) {
+  var self = this;
   params = RDFE.IO.params(params, self.options);
   self.exec('DELETE', path, null, null, params);
 }
@@ -392,6 +395,7 @@ RDFE.IO.LDP.prototype.delete = function(path, params) {
 RDFE.IO.LDP.prototype.clear = RDFE.IO.LDP.prototype.delete;
 
 RDFE.IO.LDP.prototype.exec = function(method, path, headers, content, params) {
+  var self = this;
   $(document).ajaxError(params.ajaxError);
   $(document).ajaxSuccess(params.ajaxSuccess);
 
