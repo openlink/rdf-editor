@@ -9,6 +9,29 @@ if(!window.RDFE)
   window.RDFE = {};
 RDFE.IO = {};
 
+RDFE.IO.createIO = function(type, options) {
+  var t = "sparql";
+  var o = {};
+  if(typeof(type) == 'string') {
+    t = type;
+    o = options;
+  }
+  else if(typeof(type) == 'object') {
+    o = type;
+    if(o.type)
+      t = o.type;
+  }
+
+  if(t == 'sparql')
+    return new RDFE.IO.SPARQL(o);
+  else if(t == 'gsp')
+    return new RDFE.IO.GSP(o);
+  else if(t == 'ldp')
+    return new RDFE.IO.LDP(o);
+  else
+    throw "Unsupport IO type: " + t;
+};
+
 // GSP statements
 RDFE.IO.GSP_RETRIEVE = 'CONSTRUCT {?s ?p ?o} WHERE {GRAPH <{0}> {?s ?p ?o}}';
 
