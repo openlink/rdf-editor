@@ -81,5 +81,7 @@ RDFE.Config.defaults = {
   ],
 
   // the default view that opens on start ("entities" or "triples")
-  defaultView: "entities"
+  defaultView: "entities",
+
+  sparqlEndpoint: undefined
 };
