@@ -1,5 +1,5 @@
-if(!RDFE)
-  RDFE = {};
+if(!window.RDFE)
+  window.RDFE = {};
 
 RDFE.Document = function(config) {
   var self = this;

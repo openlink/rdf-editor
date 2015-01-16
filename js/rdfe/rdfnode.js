@@ -1,4 +1,5 @@
-if (!RDFE) RDFE = {};
+if(!window.RDFE)
+  window.RDFE = {};
 
 /**
  * The RDFE.RdfNode is a generic representation of an RDF node. URIs and literal are supported.
