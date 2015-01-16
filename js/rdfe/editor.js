@@ -250,48 +250,94 @@ RDFE.Editor.prototype.createNewStatementEditor = function(container) {
   });
 };
 
-RDFE.Editor.prototype.createNewEntityEditor = function(container) {
+RDFE.Editor.prototype.createNewEntityEditor = function(container, manager) {
   var self = this;
+  var $classesSelect, classesSelect;
+  var ontologiesList = function () {
+    var items = [];
+    for (var i = 0, l = manager.ontologies.length; i < l; i++) {
+      items.push({"uri": manager.ontologies[i].URI});
+    }
+    return items;
+  };
 
-  if (!this.doc)
+  var classesList = function (ontology) {
+    var items = [];
+
+    classesSelect.clearOptions();
+    if (ontology) {
+      for (var i = 0, l = ontology.classes.length; i < l; i++) {
+        items.push({"uri": ontology.classes[i].URI});
+      }
+    }
+    classesSelect.addOption(items);
+  };
+
+  if (!this.doc) {
     return false;
+  }
 
   container.html(
     '<div class="form-horizontal"> ' +
-    '  <div class="form-group"><label for="ontology" class="col-sm-2 control-label">Ontology</label> ' +
+    '  <div class="form-group"> ' +
+    '    <label for="ontology" class="col-sm-2 control-label">Ontology</label> ' +
     '    <div class="col-sm-10"> ' +
-    '      <input name="ontology" class="form-control" /> ' +
+    '      <select name="ontology" id="ontology" class="form-control" /> ' +
+    '    </div> ' +
     '  </div> ' +
-    '</div> ' +
-    '<div class="form-group"> ' +
-    '  <label for="class" class="col-sm-2 control-label">Class</label> ' +
-    '  <div class="col-sm-10"> ' +
-    '    <input name="class" class="form-control" /> ' +
+    '  <div class="form-group"> ' +
+    '    <label for="class" class="col-sm-2 control-label">Class</label> ' +
+    '    <div class="col-sm-10"> ' +
+    '      <select name="class" id="class" class="form-control" /> ' +
+    '    </div> ' +
     '  </div> ' +
-    '</div> ' +
-    '<div class="form-group"> ' +
-    '   <label for="subject" class="col-sm-2 control-label">Subject</label> ' +
-    '  <div class="col-sm-10"> ' +
-    '     <input name="subject" class="form-control" /> ' +
-    '   </div> ' +
-    '</div> ' +
-    '<div class="form-group"> ' +
-    '  <div class="col-sm-10 col-sm-offset-2"> ' +
-    '    <a href="#" class="btn btn-default triple-action triple-action-new-cancel">Cancel</a> ' +
-    '    <a href="#" class="btn btn-primary triple-action triple-action-new-save">Save</a> ' +
+    '  <div class="form-group"> ' +
+    '     <label for="subject" class="col-sm-2 control-label">Subject</label> ' +
+    '     <div class="col-sm-10"> ' +
+    '       <input name="subject" id="subject" class="form-control" /> ' +
+    '     </div> ' +
     '  </div> ' +
-    '</div> ' +
-    '</form>\n');
+    '  <div class="form-group"> ' +
+    '    <div class="col-sm-10 col-sm-offset-2"> ' +
+    '      <a href="#" class="btn btn-default triple-action triple-action-new-cancel">Cancel</a> ' +
+    '      <a href="#" class="btn btn-primary triple-action triple-action-new-save">Save</a> ' +
+    '    </div> ' +
+    '  </div> ' +
+    '</div>\n');
+
+  $('#ontology').selectize({
+    create: true,
+    valueField: 'uri',
+    labelField: 'uri',
+    options: ontologiesList(),
+    onChange: function(value) {
+      if (!value.length) {
+        classesList();
+      } else {
+        manager.ontologyParse(value, {
+          "success": function (ontology) {
+            classesList(ontology);
+          }
+        });
+      }
+    }
+  });
+
+  $classesSelect = $('#class').selectize({
+    create: true,
+    valueField: 'uri',
+    labelField: 'uri',
+    options: []
+  });
+  classesSelect = $classesSelect[0].selectize;
 
   container.find('a.triple-action-new-cancel').click(function(e) {
     container.empty();
   });
 
   container.find('a.triple-action-new-save').click(function(e) {
-    // FIXME: use the same editors we use in the tables
-    // FIXME: get the range of the property and convert the object accordingly
-    var o = container.find('input[name="ontology"]').val();
-    var c = container.find('input[name="class"]').val();
+    var o = $('#ontology')[0].selectize.getValue();
+    var c = $('#class')[0].selectize.getValue();
     var s = container.find('input[name="subject"]').val();
     var t = self.makeTriple(s, RDFE.uriDenormalize('rdf:type'), c);
     self.doc.store.insert(self.doc.store.rdf.createGraph([t]), self.doc.graph, function(success) {
@@ -313,10 +359,10 @@ RDFE.Editor.prototype.createNewEntityEditor = function(container) {
 RDFE.Editor.prototype.entityListActionsFormatter = function(value, row, index) {
   return [
     '<a class="edit ml10" href="javascript:void(0)" title="Edit">',
-    '<i class="glyphicon glyphicon-edit"></i>',
+    '  <i class="glyphicon glyphicon-edit"></i>',
     '</a>',
     '<a class="remove ml10" href="javascript:void(0)" title="Remove">',
-    '<i class="glyphicon glyphicon-remove"></i>',
+    '  <i class="glyphicon glyphicon-remove"></i>',
     '</a>'
   ].join('');
 };

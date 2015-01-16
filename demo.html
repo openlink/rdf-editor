@@ -525,7 +525,7 @@
           if ($('#panel-view-triples').is(":visible")) {
             editor.createNewStatementEditor($('#tripleAddContent'));
           } else {
-            editor.createNewEntityEditor($('#entityAddContent'));
+            editor.createNewEntityEditor($('#entityAddContent'), ontologyManager);
           }
         });
 
