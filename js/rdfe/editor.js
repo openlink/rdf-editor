@@ -411,12 +411,6 @@ RDFE.Editor.prototype.createEntityList = function(doc, container, callback) {
   });
 };
 
-RDFE.Editor.prototype.createEntityListActions = function(container) {
-  // TODO: maybe we could embed the action buttons into the panel header like done in http://stackoverflow.com/a/23831762/3596238
-  // TODO: create filter dropdown which allows to select the type of resource to filter by
-  // TODO: create search field to search the list of entities
-};
-
 RDFE.Editor.prototype.showEditor = function(container, url, closeCb) {
   var self = this;
   var model = new RDFE.Document.Model();
