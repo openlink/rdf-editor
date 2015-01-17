@@ -33,9 +33,6 @@ String.prototype.format = function() {
       throw "Unsupport IO type: " + t;
   };
 
-  // GSP statements
-  var GSP_RETRIEVE = 'CONSTRUCT {?s ?p ?o} WHERE {GRAPH <{0}> {?s ?p ?o}}';
-
   var extendParams = function(params, options) {
     return $.extend({}, options, params);
   }
@@ -57,364 +54,416 @@ String.prototype.format = function() {
     store.clear(graph, dummyFct);
   }
 
+  RDFE.IO.Base = (function() {
+    // constructor
+    var c = function(url) {
+      this.url = url;
+    };
+
+    // class-inheritance utitity function
+    c.inherit = function(cls) {
+      // We use an intermediary empty constructor to create an
+      // inheritance chain, because using the super class' constructor
+      // might have side effects.
+      var construct = function () {};
+      construct.prototype = this.prototype;
+      cls.prototype = new construct;
+      cls.prototype.constructor = cls;
+      cls.super = this;
+      return cls;
+    };
+
+    return c;
+  })();
+
   /*
   *
   * SPARQL IOD - insert, update, delete
   *
   */
-  var SPARQL_RETRIEVE = 'CONSTRUCT {?s ?p ?o} WHERE {GRAPH <{0}> {?s ?p ?o}}';
-  var SPARQL_INSERT = 'INSERT DATA {GRAPH <{0}> { {1}}}';
-  var SPARQL_INSERT_SINGLE = '<{0}> <{1}> {2}';
-  var SPARQL_DELETE = 'DELETE DATA {GRAPH <{0}> { <{1}> <{2}> {3} . }}';
-  var SPARQL_CLEAR = 'CLEAR GRAPH <{0}>';
+  RDFE.IO.SPARQL = (function() {
+    var c = RDFE.IO.Base.inherit(function(url, options) {
+      var self = this;
 
-  RDFE.IO.SPARQL = function(options) {
-    var self = this;
-    self.options = $.extend({}, RDFE.IO.SPARQL.defaults, options);
-    if(!self.options.sparqlEndpoint || self.options.sparqlEndpoint.length == 0)
-      self.options.sparqlEndpoint = RDFE.IO.SPARQL.defaults.sparqlEndpoint;
-  }
+      // call super-constructor
+      self.constructor.super.call(this, url);
 
-  RDFE.IO.SPARQL.defaults = {
-    sparqlEndpoint: window.location.protocol + '//' + window.location.host + '/sparql'
-  }
+      var defaults = {
+        sparqlEndpoint: window.location.protocol + '//' + window.location.host + '/sparql'
+      }
 
-  RDFE.IO.SPARQL.prototype.retrieve = function(graph, params, silent) {
-    var self = this;
-    params = extendParams(params, self.options);
-    if (silent) {
-      params["ajaxError"] = null;
-      params["ajaxSuccess"] = null;
+      self.options = $.extend({}, defaults, options);
+      if(!self.options.sparqlEndpoint || self.options.sparqlEndpoint.length == 0)
+        self.options.sparqlEndpoint = defaults.sparqlEndpoint;
+    });
+
+    var SPARQL_RETRIEVE = 'CONSTRUCT {?s ?p ?o} WHERE {GRAPH <{0}> {?s ?p ?o}}';
+    var SPARQL_INSERT = 'INSERT DATA {GRAPH <{0}> { {1}}}';
+    var SPARQL_INSERT_SINGLE = '<{0}> <{1}> {2}';
+    var SPARQL_DELETE = 'DELETE DATA {GRAPH <{0}> { <{1}> <{2}> {3} . }}';
+    var SPARQL_CLEAR = 'CLEAR GRAPH <{0}>';
+
+    c.prototype.retrieve = function(graph, params, silent) {
+      var self = this;
+      params = extendParams(params, self.options);
+      if (silent) {
+        params["ajaxError"] = null;
+        params["ajaxSuccess"] = null;
+      }
+      self.exec(SPARQL_RETRIEVE.format(graph), params);
     }
-    self.exec(SPARQL_RETRIEVE.format(graph), params);
-  }
 
-  RDFE.IO.SPARQL.prototype.retrieveToStore = function(graph, store, storeGraph, params) {
-    var self = this;
-    params = extendParams(params, self.options);
-    var __success = function(data, textStatus) {
-      clearGraph(store, storeGraph);
-      var parser = N3.Parser();
-      parser.parse(data, function(error, triple, prefixes) {
-        if (error) {
-          // FIXME: proper error handling with a callback
-          alert(error);
-        }
-        if (triple == null) {
-          // exec success function
-          if (params["__success"]) {
-            params["__success"](data);
-          }
-        } else {
-          store.insert([store.n3ToRdfStoreTriple(triple)], storeGraph, function() {});
-        }
-      });
-    };
-    params["__success"] = params["success"];
-    params["success"] = __success;
-    self.retrieve(graph, params, true);
-  }
-
-  RDFE.IO.SPARQL.prototype.insert = function(graph, s, p, o, params) {
-    var self = this;
-    params = extendParams(params, self.options);
-    self.exec(SPARQL_INSERT.format(graph, SPARQL_INSERT_SINGLE.format(s, p, o)), params);
-  }
-
-  RDFE.IO.SPARQL.prototype.insertFromStore = function(graph, store, storeGraph, params) {
-    var self = this;
-    params = extendParams(params, self.options);
-    store.graph(storeGraph, function(success, result) {
-      if (!success) {
-        alert(result);
-        return;
-      }
-
+    c.prototype.retrieveToStore = function(graph, store, storeGraph, params) {
+      var self = this;
+      params = extendParams(params, self.options);
       var __success = function(data, textStatus) {
-        var chunkSize = params.chunkSize || 400;
-        var chunk = function(start) {
-          if (start >= result.length) {
-            params["success"] = params['__success'];
-            params['__success'] = null;
-            params['success']();
-          } else {
-            var triples = '';
-            var delimiter = '\n';
-            for (var j = start; j < start + chunkSize && j < result.length; j += 1) {
-              triples += delimiter + SPARQL_INSERT_SINGLE.format(result.toArray()[j].subject, result.toArray()[j].predicate, result.toArray()[j].object.toNT());
-              delimiter = ' .\n';
-            }
-            params["success"] = function() {
-              chunk(start + chunkSize);
-            };
-            self.exec(SPARQL_INSERT.format(graph, triples), $.extend({
-              method: 'POST'
-            }, params));
+        clearGraph(store, storeGraph);
+        var parser = N3.Parser();
+        parser.parse(data, function(error, triple, prefixes) {
+          if (error) {
+            // FIXME: proper error handling with a callback
+            alert(error);
           }
-        };
-        chunk(0);
-      }
+          if (triple == null) {
+            // exec success function
+            if (params["__success"]) {
+              params["__success"](data);
+            }
+          } else {
+            store.insert([store.n3ToRdfStoreTriple(triple)], storeGraph, function() {});
+          }
+        });
+      };
       params["__success"] = params["success"];
       params["success"] = __success;
-      self.clear(graph, params);
-    });
-  }
-
-  RDFE.IO.SPARQL.prototype.delete = function(graph, s, p, o, params) {
-    var self = this;
-    params = extendParams(params, self.options);
-    self.exec(SPARQL_DELETE.format(graph, s, p, o), params);
-  }
-
-  RDFE.IO.SPARQL.prototype.clear = function(graph, params, silent) {
-    var self = this;
-    params = extendParams(params, self.options);
-    if (silent) {
-      params["ajaxError"] = null;
-      params["ajaxSuccess"] = null;
+      self.retrieve(graph, params, true);
     }
-    self.exec(SPARQL_CLEAR.format(graph), params);
-  }
 
-  RDFE.IO.SPARQL.prototype.exec = function(q, params) {
-    var self = this;
-    $(document).ajaxError(params.ajaxError);
-    $(document).ajaxSuccess(params.ajaxSuccess);
+    c.prototype.insert = function(graph, s, p, o, params) {
+      var self = this;
+      params = extendParams(params, self.options);
+      self.exec(SPARQL_INSERT.format(graph, SPARQL_INSERT_SINGLE.format(s, p, o)), params);
+    }
 
-    $.ajax({
-      url: params.sparqlEndpoint,
-      success: params.success,
-      type: params.method || 'GET',
-      data: {
-        "query": q,
-        "format": params.format
-      },
-      dataType: 'text'
-    });
-  }
+    c.prototype.insertFromStore = function(graph, store, storeGraph, params) {
+      var self = this;
+      params = extendParams(params, self.options);
+      store.graph(storeGraph, function(success, result) {
+        if (!success) {
+          alert(result);
+          return;
+        }
+
+        var __success = function(data, textStatus) {
+          var chunkSize = params.chunkSize || 400;
+          var chunk = function(start) {
+            if (start >= result.length) {
+              params["success"] = params['__success'];
+              params['__success'] = null;
+              params['success']();
+            } else {
+              var triples = '';
+              var delimiter = '\n';
+              for (var j = start; j < start + chunkSize && j < result.length; j += 1) {
+                triples += delimiter + SPARQL_INSERT_SINGLE.format(result.toArray()[j].subject, result.toArray()[j].predicate, result.toArray()[j].object.toNT());
+                delimiter = ' .\n';
+              }
+              params["success"] = function() {
+                chunk(start + chunkSize);
+              };
+              self.exec(SPARQL_INSERT.format(graph, triples), $.extend({
+                method: 'POST'
+              }, params));
+            }
+          };
+          chunk(0);
+        }
+        params["__success"] = params["success"];
+        params["success"] = __success;
+        self.clear(graph, params);
+      });
+    }
+
+    c.prototype.delete = function(graph, s, p, o, params) {
+      var self = this;
+      params = extendParams(params, self.options);
+      self.exec(SPARQL_DELETE.format(graph, s, p, o), params);
+    }
+
+    c.prototype.clear = function(graph, params, silent) {
+      var self = this;
+      params = extendParams(params, self.options);
+      if (silent) {
+        params["ajaxError"] = null;
+        params["ajaxSuccess"] = null;
+      }
+      self.exec(SPARQL_CLEAR.format(graph), params);
+    }
+
+    c.prototype.exec = function(q, params) {
+      var self = this;
+      $(document).ajaxError(params.ajaxError);
+      $(document).ajaxSuccess(params.ajaxSuccess);
+
+      $.ajax({
+        url: params.sparqlEndpoint,
+        success: params.success,
+        type: params.method || 'GET',
+        data: {
+          "query": q,
+          "format": params.format
+        },
+        dataType: 'text'
+      });
+    }
+
+    return c;
+  }());
 
   /*
   *
   * SPARQL Graph Store Protocol (GSP)
   *
   */
-  RDFE.IO.GSP = function(options) {
-    var self = this;
-    self.options = $.extend({
-      "contentType": 'application/octet-stream',
-      "processData": false,
-    }, options);
+  RDFE.IO.GSP = (function() {
+    var c = RDFE.IO.Base.inherit(function(url, options) {
+      var self = this;
 
-  }
+      // call super-constructor
+      self.constructor.super.call(this, url);
 
-  RDFE.IO.GSP.prototype.retrieve = function(graph, params, silent) {
-    params = extendParams(params, self.options);
-    if (silent) {
-      params["ajaxError"] = null;
-      params["ajaxSuccess"] = null;
-    }
-    $(document).ajaxError(params.ajaxError);
-    $(document).ajaxSuccess(params.ajaxSuccess);
+      var defaults = {
+        "contentType": 'application/octet-stream',
+        "processData": false
+      };
 
-    $.ajax({
-      url: params.host,
-      success: params.success,
-      type: 'GET',
-      data: {
-        "query": GSP_RETRIEVE.format(graph),
-        "format": params.format
-      },
-      dataType: 'text'
+      self.options = $.extend({}, defaults, options);
     });
-  }
 
-  RDFE.IO.GSP.prototype.retrieveToStore = function(graph, store, storeGraph, params) {
-    params = extendParams(params, self.options);
-    var __success = function(data, textStatus) {
-      clearGraph(store, storeGraph);
-      var parser = N3.Parser();
-      parser.parse(data, function(error, triple, prefixes) {
-        if (error) {
-          // FIXME: proper error handling with a callback
-          alert(error);
-        }
-        if (triple == null) {
-          // exec success function
-          if (params["__success"]) {
-            params["__success"](data);
-          }
-        } else {
-          store.insert([store.n3ToRdfStoreTriple(triple)], storeGraph, function() {});
-        }
+    // GSP statements
+    var GSP_RETRIEVE = 'CONSTRUCT {?s ?p ?o} WHERE {GRAPH <{0}> {?s ?p ?o}}';
+
+    c.prototype.retrieve = function(graph, params, silent) {
+      params = extendParams(params, self.options);
+      if (silent) {
+        params["ajaxError"] = null;
+        params["ajaxSuccess"] = null;
+      }
+      $(document).ajaxError(params.ajaxError);
+      $(document).ajaxSuccess(params.ajaxSuccess);
+
+      $.ajax({
+        url: params.host,
+        success: params.success,
+        type: 'GET',
+        data: {
+          "query": GSP_RETRIEVE.format(graph),
+          "format": params.format
+        },
+        dataType: 'text'
       });
-    };
-    params["__success"] = params["success"];
-    params["success"] = __success;
-    self.retrieve(graph, params, true);
-  }
+    }
 
-  RDFE.IO.GSP.prototype.insert = function(graph, content, params) {
-    params = extendParams(params, self.options);
-    self.exec('PUT', graph, content, params);
-  }
-
-  RDFE.IO.GSP.prototype.insertFromStore = function(graph, store, storeGraph, params) {
-    params = extendParams(params, self.options);
-    store.graph(storeGraph, function(success, result) {
-      if (!success) {
-        alert(result);
-        return;
-      }
-
-      // clear graph before
+    c.prototype.retrieveToStore = function(graph, store, storeGraph, params) {
+      params = extendParams(params, self.options);
       var __success = function(data, textStatus) {
-        params["success"] = params["__success"];
-        self.insert(graph, result.toNT(), params);
-      }
+        clearGraph(store, storeGraph);
+        var parser = N3.Parser();
+        parser.parse(data, function(error, triple, prefixes) {
+          if (error) {
+            // FIXME: proper error handling with a callback
+            alert(error);
+          }
+          if (triple == null) {
+            // exec success function
+            if (params["__success"]) {
+              params["__success"](data);
+            }
+          } else {
+            store.insert([store.n3ToRdfStoreTriple(triple)], storeGraph, function() {});
+          }
+        });
+      };
       params["__success"] = params["success"];
       params["success"] = __success;
-      self.clear(graph, params, true);
-    });
-  }
-
-  RDFE.IO.GSP.prototype.update = function(graph, content, params) {
-    params = extendParams(params, self.options);
-    self.exec('POST', graph, content, params);
-  }
-
-  self.delete = function(graph, params, silent) {
-    params = extendParams(params, self.options);
-    if (silent) {
-      params["ajaxError"] = null;
-      params["ajaxSuccess"] = null;
+      self.retrieve(graph, params, true);
     }
-    self.exec('DELETE', graph, null, params);
-  }
 
-  RDFE.IO.GSP.prototype.clear = RDFE.IO.GSP.prototype.delete;
+    c.prototype.insert = function(graph, content, params) {
+      params = extendParams(params, self.options);
+      self.exec('PUT', graph, content, params);
+    }
 
-  RDFE.IO.GSP.prototype.exec = function(method, graph, content, params) {
-    $(document).ajaxError(params.ajaxError);
-    $(document).ajaxSuccess(params.ajaxSuccess);
+    c.prototype.insertFromStore = function(graph, store, storeGraph, params) {
+      params = extendParams(params, self.options);
+      store.graph(storeGraph, function(success, result) {
+        if (!success) {
+          alert(result);
+          return;
+        }
 
-    var host = params.host + '?graph=' + encodeURIComponent(graph);
-    $.ajax({
-      url: host,
-      success: params.success,
-      type: method,
-      contentType: params.contentType,
-      processData: params.processData,
-      data: content,
-      dataType: 'text'
-    });
-  }
+        // clear graph before
+        var __success = function(data, textStatus) {
+          params["success"] = params["__success"];
+          self.insert(graph, result.toNT(), params);
+        }
+        params["__success"] = params["success"];
+        params["success"] = __success;
+        self.clear(graph, params, true);
+      });
+    }
+
+    c.prototype.update = function(graph, content, params) {
+      params = extendParams(params, self.options);
+      self.exec('POST', graph, content, params);
+    }
+
+    self.delete = function(graph, params, silent) {
+      params = extendParams(params, self.options);
+      if (silent) {
+        params["ajaxError"] = null;
+        params["ajaxSuccess"] = null;
+      }
+      self.exec('DELETE', graph, null, params);
+    }
+
+    c.prototype.clear = c.prototype.delete;
+
+    c.prototype.exec = function(method, graph, content, params) {
+      $(document).ajaxError(params.ajaxError);
+      $(document).ajaxSuccess(params.ajaxSuccess);
+
+      var host = params.host + '?graph=' + encodeURIComponent(graph);
+      $.ajax({
+        url: host,
+        success: params.success,
+        type: method,
+        contentType: params.contentType,
+        processData: params.processData,
+        data: content,
+        dataType: 'text'
+      });
+    }
+
+    return c;
+  })();
 
   /*
   *
   * SPARQL LDP
   *
   */
-  var LDP_INSERT = 'INSERT DATA {GRAPH <{0}> { <{1}> <{2}> {3} . }}';
-  RDFE.IO.LDP = function(options) {
-    var self = this;
-    self.options = $.extend({
-      "dataType": 'text'
-    }, options);
+  RDFE.IO.LDP = (function() {
+    var c = RDFE.IO.Base.inherit(function(url, options) {
+      var self = this;
 
-  }
+      // call super-constructor
+      self.constructor.super.call(this, url);
 
-  RDFE.IO.LDP.prototype.retrieve = function(path, params, silent) {
-    params = extendParams(params, this.options);
-    if (silent) {
-      params["ajaxError"] = null;
-      params["ajaxSuccess"] = null;
-    }
-    var headers = {
-      "Accept": 'text/turtle, */*;q=0.1'
-    };
-    this.exec('GET', path, headers, null, params);
-  }
+      var defaults = {
+        "dataType": 'text'
+      };
 
-  RDFE.IO.LDP.prototype.retrieveToStore = function(path, store, storeGraph, params) {
-    params = extendParams(params, this.options);
-    var __success = function(data, textStatus) {
-      clearGraph(store, storeGraph);
-      var parser = N3.Parser();
-      parser.parse(data, function(error, triple, prefixes) {
-        if (error) {
-          // FIXME: proper error handling with a callback
-          alert(error);
-        }
-        if (triple == null) {
-          // exec success function
-          if (params["__success"]) {
-            params["__success"](data);
-          }
-        } else {
-          store.insert([store.n3ToRdfStoreTriple(triple)], storeGraph, function() {});
-        }
-      });
-    };
-    params["__success"] = params["success"];
-    params["success"] = __success;
-    this.retrieve(path, params, true);
-  }
+      self.options = $.extend({}, defaults, options);
+    });
 
-  RDFE.IO.LDP.prototype.insert = function(path, content, params) {
-    params = extendParams(params, this.options);
-    var headers = {
-      "Content-Type": 'text/turtle',
-      "Slug": getFn(path)
-    };
-    this.exec('POST', getFParent(path), headers, content, params);
-  }
+    var LDP_INSERT = 'INSERT DATA {GRAPH <{0}> { <{1}> <{2}> {3} . }}';
 
-  RDFE.IO.LDP.prototype.insertFromStore = function(path, store, storeGraph, params) {
-    var self = this;
-    params = extendParams(params, self.options);
-    store.graph(storeGraph, function(success, result) {
-      if (!success) {
-        alert(result);
-        return;
+    c.prototype.retrieve = function(path, params, silent) {
+      params = extendParams(params, this.options);
+      if (silent) {
+        params["ajaxError"] = null;
+        params["ajaxSuccess"] = null;
       }
+      var headers = {
+        "Accept": 'text/turtle, */*;q=0.1'
+      };
+      this.exec('GET', path, headers, null, params);
+    }
 
-      var content = result.toNT();
-      self.insert(path, content, params);
-    });
-  }
+    c.prototype.retrieveToStore = function(path, store, storeGraph, params) {
+      params = extendParams(params, this.options);
+      var __success = function(data, textStatus) {
+        clearGraph(store, storeGraph);
+        var parser = N3.Parser();
+        parser.parse(data, function(error, triple, prefixes) {
+          if (error) {
+            // FIXME: proper error handling with a callback
+            alert(error);
+          }
+          if (triple == null) {
+            // exec success function
+            if (params["__success"]) {
+              params["__success"](data);
+            }
+          } else {
+            store.insert([store.n3ToRdfStoreTriple(triple)], storeGraph, function() {});
+          }
+        });
+      };
+      params["__success"] = params["success"];
+      params["success"] = __success;
+      this.retrieve(path, params, true);
+    }
 
-  RDFE.IO.LDP.prototype.update = function(path, s, p, o, params) {
-    var self = this;
-    params = extendParams(params, self.options);
-    var content = q.format(LDP_INSERT, s, p, o);
-    var headers = {
-      "Content-Type": 'application/sparql-update'
-    };
-    self.exec('PATCH', path, headers, content, params);
-  }
+    c.prototype.insert = function(path, content, params) {
+      params = extendParams(params, this.options);
+      var headers = {
+        "Content-Type": 'text/turtle',
+        "Slug": getFn(path)
+      };
+      this.exec('POST', getFParent(path), headers, content, params);
+    }
 
-  RDFE.IO.LDP.prototype.delete = function(path, params) {
-    var self = this;
-    params = extendParams(params, self.options);
-    self.exec('DELETE', path, null, null, params);
-  }
+    c.prototype.insertFromStore = function(path, store, storeGraph, params) {
+      var self = this;
+      params = extendParams(params, self.options);
+      store.graph(storeGraph, function(success, result) {
+        if (!success) {
+          alert(result);
+          return;
+        }
 
-  RDFE.IO.LDP.prototype.clear = RDFE.IO.LDP.prototype.delete;
+        var content = result.toNT();
+        self.insert(path, content, params);
+      });
+    }
 
-  RDFE.IO.LDP.prototype.exec = function(method, path, headers, content, params) {
-    var self = this;
-    $(document).ajaxError(params.ajaxError);
-    $(document).ajaxSuccess(params.ajaxSuccess);
+    c.prototype.update = function(path, s, p, o, params) {
+      var self = this;
+      params = extendParams(params, self.options);
+      var content = q.format(LDP_INSERT, s, p, o);
+      var headers = {
+        "Content-Type": 'application/sparql-update'
+      };
+      self.exec('PATCH', path, headers, content, params);
+    }
 
-    $.ajax({
-      url: path,
-      success: params.success,
-      type: method,
-      headers: headers,
-      contentType: 'application/octet-stream',
-      processData: false,
-      data: content,
-      dataType: params.dataType
-    });
-  }
+    c.prototype.delete = function(path, params) {
+      var self = this;
+      params = extendParams(params, self.options);
+      self.exec('DELETE', path, null, null, params);
+    }
+
+    c.prototype.clear = c.prototype.delete;
+
+    c.prototype.exec = function(method, path, headers, content, params) {
+      var self = this;
+      $(document).ajaxError(params.ajaxError);
+      $(document).ajaxSuccess(params.ajaxSuccess);
+
+      $.ajax({
+        url: path,
+        success: params.success,
+        type: method,
+        headers: headers,
+        contentType: 'application/octet-stream',
+        processData: false,
+        data: content,
+        dataType: params.dataType
+      });
+    }
+
+    return c;
+  })();
 })(jQuery);
