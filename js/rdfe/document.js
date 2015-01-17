@@ -11,12 +11,20 @@ RDFE.Document = function(config) {
   self.dirty = false;
 };
 
+RDFE.Document.prototype.setChanged = function(d) {
+  if(d === undefined)
+    d = true;
+  this.dirty = d;
+  if(d)
+    $(this).trigger('changed', this);
+};
+
 RDFE.Document.prototype.load = function(url, io, success, fail) {
     var self = this;
     var successFct = function(data) {
         self.url = url;
         self.io = io;
-        self.dirty = false;
+        self.setChanged(false);
 
         if (success)
             success();
@@ -53,7 +61,7 @@ RDFE.Document.prototype.save = function(url, io, success, fail) {
     else {
       var __success = function() {
         self.url = myUrl;
-        self.dirty = false;
+        self.setChanged(false);
 
         if(mySuccess)
           mySuccess();
@@ -86,7 +94,7 @@ RDFE.Document.prototype.deleteEntity = function(uri, success, fail) {
 
   self.store.execute('with <' + self.graph + '> delete { <' + uri + '> ?p ?o } where { <' + uri + '> ?p ?o }', function(s, r) {
     if(s) {
-      self.dirty = true;
+      self.setChanged();
       self.store.execute('with <' + self.graph + '> delete { ?s ?p <' + uri + '> } where { ?s ?p <' + uri + '> }', function(s, r) {
         if (s) {
           if (success)
@@ -100,6 +108,53 @@ RDFE.Document.prototype.deleteEntity = function(uri, success, fail) {
     else if (fail) {
       fail(r);
     }
+  });
+};
+
+RDFE.Document.prototype.addTriple = function(triple, success, fail) {
+  var self = this;
+  self.store.insert(self.store.rdf.createGraph([triple]), self.graph, function(s) {
+    if(s) {
+      self.setChanged();
+      if(success)
+        success();
+    }
+    else if (fail) {
+      fail();
+    }
+  });
+};
+
+RDFE.Document.prototype.deleteTriple = function(triple, success, fail) {
+  var self = this;
+  self.store.delete(self.store.rdf.createGraph([triple]), self.graph, function(s) {
+    if(s) {
+      self.setChanged();
+      if(success)
+        success();
+    }
+    else if (fail) {
+      fail();
+    }
+  });
+};
+
+RDFE.Document.prototype.updateTriple = function(oldTr, newTr, success, fail) {
+  var self = this;
+  self.store.delete(self.store.rdf.createGraph([oldTr]), self.graph, function(s) {
+    if (s) {
+      triple[field] = newNode;
+
+      self.store.insert(self.store.rdf.createGraph([newTr]), self.graph, function(s) {
+        self.setChanged();
+        if (s && fail)
+          fail();
+        else if(success)
+          success();
+      });
+    }
+    else if(fail)
+      fail();
   });
 };
 
