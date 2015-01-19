@@ -56,8 +56,7 @@ String.prototype.format = function() {
 
   RDFE.IO.Base = (function() {
     // constructor
-    var c = function(url) {
-      this.url = url;
+    var c = function() {
     };
 
     // class-inheritance utitity function
@@ -82,11 +81,11 @@ String.prototype.format = function() {
   *
   */
   RDFE.IO.SPARQL = (function() {
-    var c = RDFE.IO.Base.inherit(function(url, options) {
+    var c = RDFE.IO.Base.inherit(function(options) {
       var self = this;
 
       // call super-constructor
-      self.constructor.super.call(this, url);
+      self.constructor.super.call(this);
 
       var defaults = {
         sparqlEndpoint: window.location.protocol + '//' + window.location.host + '/sparql'
@@ -226,11 +225,12 @@ String.prototype.format = function() {
   *
   */
   RDFE.IO.GSP = (function() {
-    var c = RDFE.IO.Base.inherit(function(url, options) {
+    var c = RDFE.IO.Base.inherit(function(options) {
+      console.log('GSP');
       var self = this;
 
       // call super-constructor
-      self.constructor.super.call(this, url);
+      self.constructor.super.call(this);
 
       var defaults = {
         "contentType": 'application/octet-stream',
@@ -355,11 +355,11 @@ String.prototype.format = function() {
   *
   */
   RDFE.IO.LDP = (function() {
-    var c = RDFE.IO.Base.inherit(function(url, options) {
+    var c = RDFE.IO.Base.inherit(function(options) {
       var self = this;
 
       // call super-constructor
-      self.constructor.super.call(this, url);
+      self.constructor.super.call(this);
 
       var defaults = {
         "dataType": 'text'
