@@ -443,7 +443,7 @@ RDFE.OntologyManager = function(store, config) {
 
   this.store = store;
   this.options = $.extend(RDFE.Config.defaults.ontology, config);
-  this.ontologies = [];
+  this.ontologies = {};
   this.fresnels = [];
   this.templates = [];
   this.prefixes = RDFE.prefixes;
@@ -453,10 +453,10 @@ RDFE.OntologyManager.prototype.init = function(options) {
   var self = this;
 
   // clean store
-  for (var i = 0, l = self.ontologies.length; i < l; i++) {
-    self.graphClear(self.ontologies[i].graph);
+  for (onto in self.ontologies) {
+    self.graphClear(self.ontologies[onto].graph);
   }
-  this.ontologies = [];
+  this.ontologies = {};
   for (var i = 0, l = self.fresnels.length; i < l; i++) {
     self.graphClear(self.fresnels[i].graph);
   }
@@ -576,32 +576,15 @@ RDFE.OntologyManager.prototype.ontologiesParse = function(ontologies, params) {
 }
 
 RDFE.OntologyManager.prototype.ontologyByURI = function(URI) {
-  var self = this;
-  for (var i = 0, l = self.ontologies.length; i < l; i++) {
-    if (self.ontologies[i].URI == URI) {
-      return self.ontologies[i];
-    }
-  }
-  return null;
+  return this.ontologies[URI];
 }
 
 RDFE.OntologyManager.prototype.ontologyByPrefix = function(prefix) {
-  var self = this;
-  for (var i = 0, l = self.ontologies.length; i < l; i++) {
-    if (self.ontologies[i].prefix == prefix)
-      return self.ontologies[i];
-  }
-  return null;
+  return this.ontologies[this.prefixes[prefix]];
 }
 
 RDFE.OntologyManager.prototype.ontologyRemove = function(URI) {
-  var self = this;
-  for (var i = 0, l = self.ontologies.length; i < l; i++) {
-    if (self.ontologies[i].URI == URI) {
-      self.ontologies.splice(i, 1);
-      return;
-    }
-  }
+  delete this.ontologies[URI];
 }
 
 RDFE.OntologyManager.prototype.fresnelParse = function(URI, params) {
@@ -750,15 +733,7 @@ RDFE.Ontology = function(ontologyManager, URI, graph, options) {
   this.manager = ontologyManager;
 
   // replace or add to this.manager.ontologies array
-  var ontologies = this.manager.ontologies;
-  for (var i = 0, l = ontologies.length; i < l; i++) {
-    if (ontologies[i].URI == URI) {
-      ontologies[i] = this;
-    }
-  }
-  if (i == ontologies.length) {
-    ontologies.push(this);
-  }
+  var ontologies = this.manager.ontologies[URI] = this;
 
   // ontology label, comment and etc
   var load = function(URI) {
