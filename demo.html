@@ -209,6 +209,17 @@
           <div class="modal-body">
             <form class="form-horizontal">
               <div class="form-group">
+                <label for="saveAsIoType" class="col-sm-2 control-label">IO Type</label>
+                <div class="col-sm-10">
+                  <select name="saveAsIoType" id="saveAsIoType" class="form-control">
+                    <option value="sparql">Sparql Endpoint</option>
+                    <option value="webdav">WebDAV Location</option>
+                    <option value="ldp">LDP Container</option>
+                    <option value="gsp">SPARQL Graph Store Protocol</option>
+                  </select>
+                </div>
+              </div>
+              <div class="form-group">
                 <label for="saveAsLocation" class="col-sm-2 control-label">Location</label>
                 <div class="col-sm-10">
                   <input type="text" id="io_spq" name="saveAsLocation" class="form-control" />
@@ -242,19 +253,20 @@
               </div>
 
               <div class="form-group">
+                <label for="openDocIoType" class="col-sm-2 control-label">IO Type</label>
+                <div class="col-sm-10">
+                  <select name="openDocIoType" id="openDocIoType" class="form-control">
+                    <option value="sparql">Sparql Endpoint</option>
+                    <option value="webdav">WebDAV Location</option>
+                    <option value="ldp">LDP Container</option>
+                    <option value="gsp">SPARQL Graph Store Protocol</option>
+                  </select>
+                </div>
+              </div>
+              <div class="form-group">
                 <label for="openDocLocation" class="col-sm-2 control-label">Location</label>
                 <div class="col-sm-10">
-                  <div class="input-group">
-                    <input type="text" id="openDocLocation" name="openDocLocation" class="form-control" />
-                    <span class="input-group-btn">
-                      <select name="openDocIoType" id="openDocIoType" class="btn">
-                        <option value="sparql">Sparql Endpoint</option>
-                        <option value="webdav">WebDAV Location</option>
-                        <option value="ldp">LDP Container</option>
-                        <option value="gsp">SPARQL Graph Store Protocol</option>
-                      </select>
-                    </span>
-                  </div>
+                  <input type="text" id="openDocLocation" name="openDocLocation" class="form-control" />
                 </div>
               </div>
             </form>
@@ -381,10 +393,7 @@
       function ioRetrieve(url, type) {
         var io_rdfe;
         try {
-          io_rdfe = RDFE.IO.createIO(type || "sparql", {
-            "sparqlEndpoint": $('#io_spq').val(),
-            "graph": url
-          });
+          io_rdfe = getIO(type || "sparql");
         }
         catch(e) {
           $.growl({
@@ -487,6 +496,7 @@
 
       function saveAs() {
         $('#saveAsDialog').find('input[name="saveAsLocation"]').val(mainDoc.url);
+        $('#saveAsDialog').find('input[name="saveAsIoType"]').val(mainDoc.ioType || "sparql");
         $('#saveAsDialog').modal();
       }
 
@@ -540,6 +550,13 @@
         });
       }
 
+      function getIO(ioType) {
+        return RDFE.IO.createIO(ioType, {
+          "sparqlEndpoint": $('#io_spq').val(),
+          "gspEndpoint": $('#gspEndpoint').val()
+        });
+      }
+
       $(document).ready(function() {
         $("#openDocLocation").val($.jStorage.get("editor-document-url"));
         $("#openDocIoType").val($.jStorage.get("editor-document-io-type"));
@@ -567,8 +584,9 @@
           saveAs();
         });
         $('#saveAsDialog #saveAsBtn').click(function() {
-          var url = $('#saveAsDialog input[name="saveAsLocation"]').val();
-          mainDoc.save(url,
+          var url = $('#saveAsDialog input[name="saveAsLocation"]').val(),
+              ioType = $('#saveAsIoType').val();
+          mainDoc.save(url, getIO(ioType),
             function() {
               $('#saveAsDialog').modal('hide');
               $('#docUrl').text(url);
