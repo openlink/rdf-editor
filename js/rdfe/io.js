@@ -234,7 +234,8 @@ String.prototype.format = function() {
 
       var defaults = {
         "contentType": 'application/octet-stream',
-        "processData": false
+        "processData": false,
+        "gspEndpoint": window.location.protocol + '//' + window.location.host + '/sparql-graph-crud'
       };
 
       self.options = $.extend({}, defaults, options);
