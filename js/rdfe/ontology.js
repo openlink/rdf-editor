@@ -5,7 +5,8 @@ if (typeof String.prototype.startsWith != 'function') {
   };
 }
 
-if (!RDFE) RDFE = {};
+if(!window.RDFE)
+  window.RDFE = {};
 
 RDFE.OM_LOAD_TEMPLATE =
   '{0}';

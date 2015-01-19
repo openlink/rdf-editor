@@ -1,4 +1,5 @@
-if (!RDFE) RDFE = {};
+if(!window.RDFE)
+  window.RDFE = {};
 
 /*
  *
@@ -80,5 +81,9 @@ RDFE.Config.defaults = {
   ],
 
   // the default view that opens on start ("entities" or "triples")
-  defaultView: "entities"
+  defaultView: "entities",
+
+  sparqlEndpoint: window.location.protocol + '//' + window.location.host + '/sparql',
+
+  gspEndpoint: window.location.protocol + '//' + window.location.host + '/sparql-graph-crud'
 };

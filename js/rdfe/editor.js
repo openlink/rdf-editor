@@ -5,6 +5,9 @@ if (typeof String.prototype.startsWith != 'function') {
   };
 }
 
+if(!window.RDFE)
+  window.RDFE = {};
+
 RDFE.Editor = function(params) {
   var self = this;
 
@@ -62,25 +65,12 @@ RDFE.Editor.prototype.createEditorUi = function(doc, container, callback) {
       newNode = self.doc.store.rdf.createLiteral(newValue, triple.object.language, triple.object.datatype);
     }
 
-    self.doc.store.delete(self.doc.store.rdf.createGraph([triple]), self.doc.graph, function(success) {
-      if (success) {
-        console.log("Successfully deleted old triple")
-
-        self.doc.dirty = true;
-
-          // update data in the bootstrap-table array
-        triple[field] = newNode;
-
-        self.doc.store.insert(self.doc.store.rdf.createGraph([triple]), self.doc.graph, function(success) {
-          if (!success) {
-            console.log('Failed to add new triple to store.');
-            // FIXME: Error handling!!!
-          }
-        });
-      } else {
-        console.log('Failed to add delete old triple from store.');
-        // FIXME: Error handling!!!
-      }
+    var newTriple = triple;
+    newTriple[field] = newNode;
+    self.doc.updateTriple(triple, newTriple, function(success) {
+      // do nothing
+    }, function() {
+      // FIXME: error handling
     });
   };
 
@@ -177,18 +167,13 @@ RDFE.Editor.prototype.createEditorUi = function(doc, container, callback) {
             events: {
               'click .remove': function (e, value, row, index) {
                 var triple = row;
-                self.doc.store.delete(self.doc.store.rdf.createGraph([triple]), self.doc.graph, function(success) {
-                  if(success) {
-                    $list.bootstrapTable('remove', {
-                      field: 'id',
-                      values: [row.id]
-                    });
-
-                    self.doc.dirty = true;
-                  }
-                  else {
-                    $(self).trigger('rdf-editor-error', { "type": 'triple-delete-failed', "message": 'Failed to delete triple.' });
-                  }
+                self.doc.deleteTriple(triple, function() {
+                  $list.bootstrapTable('remove', {
+                    field: 'id',
+                    values: [row.id]
+                  });
+                }, function() {
+                  $(self).trigger('rdf-editor-error', { "type": 'triple-delete-failed', "message": 'Failed to delete triple.' });
                 });
               }
             }
@@ -236,24 +221,22 @@ RDFE.Editor.prototype.createNewStatementEditor = function(container) {
     var p = container.find('input[name="predicate"]').val();
     var o = container.find('input[name="object"]').val();
     var t = self.makeTriple(s, p, o);
-    self.doc.store.insert(self.doc.store.rdf.createGraph([t]), self.doc.graph, function(success) {
-      if (success) {
-        self.doc.dirty = true;
+    self.doc.addTriple(t, function() {
+      container.empty();
 
-        container.empty();
-
-        if (self.tripleTable) {
-          var i = self.tripleTable.data('maxindex');
-          i += 1;
-          self.tripleTable.bootstrapTable('append', $.extend(t, {
-            id: i
-          }));
-          self.tripleTable.data('maxindex', i);
-        }
-      } else {
-        console.log('Failed to add new triple to store.');
-        // FIXME: Error handling!!!
+      if (self.tripleTable) {
+        var i = self.tripleTable.data('maxindex');
+        i += 1;
+        self.tripleTable.bootstrapTable('append', $.extend(t, {
+          id: i
+        }));
+        self.tripleTable.data('maxindex', i);
       }
+    }, function() {
+      $(self).trigger('rdf-editor-error', {
+        "type": 'triple-insert-failed',
+        "message": "Failed to add new triple to store."
+      });
     });
   });
 };
@@ -348,21 +331,19 @@ RDFE.Editor.prototype.createNewEntityEditor = function(container, manager) {
     var c = $('#class')[0].selectize.getValue();
     var s = container.find('input[name="subject"]').val();
     var t = self.makeTriple(s, RDFE.uriDenormalize('rdf:type'), c);
-    self.doc.store.insert(self.doc.store.rdf.createGraph([t]), self.doc.graph, function(success) {
-      if (success) {
-        self.doc.dirty = true;
+    self.doc.addTriple(t, function() {
+      container.empty();
 
-        container.empty();
-
-        if (self.entityTable) {
-          var i = self.entityTable.data('maxindex');
-          self.entityTable.bootstrapTable('append', {"uri": s, "label": s, "id": i});
-          self.entityTable.data('maxindex', i+1);
-        }
-      } else {
-        console.log('Failed to add new triple to store.');
-        // FIXME: Error handling!!!
+      if (self.entityTable) {
+        var i = self.entityTable.data('maxindex');
+        self.entityTable.bootstrapTable('append', {"uri": s, "label": s, "id": i});
+        self.entityTable.data('maxindex', i+1);
       }
+    }, function() {
+      $(self).trigger('rdf-editor-error', {
+        "type": 'triple-insert-failed',
+        "message": "Failed to add new triple to store."
+      });
     });
   });
 };
@@ -474,12 +455,6 @@ RDFE.Editor.prototype.createEntityList = function(doc, container, callback) {
       console.log('Failed to query entities in doc.');
     }
   });
-};
-
-RDFE.Editor.prototype.createEntityListActions = function(container) {
-  // TODO: maybe we could embed the action buttons into the panel header like done in http://stackoverflow.com/a/23831762/3596238
-  // TODO: create filter dropdown which allows to select the type of resource to filter by
-  // TODO: create search field to search the list of entities
 };
 
 RDFE.Editor.prototype.showEditor = function(container, url, closeCb) {

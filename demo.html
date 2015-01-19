@@ -178,9 +178,15 @@
           <div class="modal-body">
             <form class="form-horizontal">
               <div class="form-group">
-                <label for="io_spq" class="col-sm-2 control-label">SPARQL endpoint</label>
-                <div class="col-sm-10">
+                <label for="io_spq" class="col-sm-4 control-label">SPARQL Endpoint</label>
+                <div class="col-sm-8">
                   <input type="text" id="io_spq" name="io_spq" class="form-control" />
+                </div>
+              </div>
+              <div class="form-group">
+                <label for="gspEndpoint" class="col-sm-4 control-label">SPARQL Graph Protocol Endpoint</label>
+                <div class="col-sm-8">
+                  <input type="text" id="gspEndpoint" name="gspEndpoint" class="form-control" />
                 </div>
               </div>
             </form>
@@ -202,6 +208,17 @@
           </div>
           <div class="modal-body">
             <form class="form-horizontal">
+              <div class="form-group">
+                <label for="saveAsIoType" class="col-sm-2 control-label">IO Type</label>
+                <div class="col-sm-10">
+                  <select name="saveAsIoType" id="saveAsIoType" class="form-control">
+                    <option value="sparql">Sparql Endpoint</option>
+                    <option value="webdav">WebDAV Location</option>
+                    <option value="ldp">LDP Container</option>
+                    <option value="gsp">SPARQL Graph Store Protocol</option>
+                  </select>
+                </div>
+              </div>
               <div class="form-group">
                 <label for="saveAsLocation" class="col-sm-2 control-label">Location</label>
                 <div class="col-sm-10">
@@ -235,6 +252,17 @@
                 </div>
               </div>
 
+              <div class="form-group">
+                <label for="openDocIoType" class="col-sm-2 control-label">IO Type</label>
+                <div class="col-sm-10">
+                  <select name="openDocIoType" id="openDocIoType" class="form-control">
+                    <option value="sparql">Sparql Endpoint</option>
+                    <option value="webdav">WebDAV Location</option>
+                    <option value="ldp">LDP Container</option>
+                    <option value="gsp">SPARQL Graph Store Protocol</option>
+                  </select>
+                </div>
+              </div>
               <div class="form-group">
                 <label for="openDocLocation" class="col-sm-2 control-label">Location</label>
                 <div class="col-sm-10">
@@ -313,10 +341,6 @@
         }
       });
 
-      // SPARQL I/O
-      var IO_SPARQL_HOST = $.jStorage.get("editor-sparql-endpoint", window.location.protocol + '//' + window.location.host + '/sparql');
-      var IO_SPARQL_GRAPH = $.jStorage.get("editor-document-url", 'urn:foo');
-
       // The main document which contains the loaded data
       var mainDoc;
       var editor = new RDFE.Editor();
@@ -336,6 +360,9 @@
 
           mainDoc = new RDFE.Document(config);
           toggleView(config.options.defaultView);
+
+          $("#io_spq").val($.jStorage.get("editor-sparql-endpoint", config.options.sparqlEndpoint));
+          $("#gspEndpoint").val($.jStorage.get("editor-sparql-graph-endpoint", config.options.gspEndpoint));
         }
       );
 
@@ -363,11 +390,19 @@
           editor.createEntityList(mainDoc, $("#entitiesContents"), function() { toggleSpinner(false); });
       }
 
-      function ioRetrieve(url) {
-        var io_rdfe = new RDFE.IO({
-          "host": $('#io_spq').val(),
-          "graph": url
-        });
+      function ioRetrieve(url, type) {
+        var io_rdfe;
+        try {
+          io_rdfe = getIO(type || "sparql");
+        }
+        catch(e) {
+          $.growl({
+            message: e
+          }, {
+            type: "danger"
+          });
+          return;
+        }
 
         toggleSpinner(true);
 
@@ -377,6 +412,7 @@
             toggleView(view);
             $('#docUrl').text(url);
             $.jStorage.set("editor-document-url", url);
+            $.jStorage.set("editor-document-io-type", type);
         }, function() {
             // FIXME: error handling!!!
             console.log('Failed to load document');
@@ -460,6 +496,7 @@
 
       function saveAs() {
         $('#saveAsDialog').find('input[name="saveAsLocation"]').val(mainDoc.url);
+        $('#saveAsDialog').find('input[name="saveAsIoType"]').val(mainDoc.ioType || "sparql");
         $('#saveAsDialog').modal();
       }
 
@@ -495,27 +532,34 @@
         var bm = config.options.bookmarks;
         if(bm) {
           for(var i = 0; i < bm.length; i+=1) {
-            $bmEl.append('<li><a class="bookmark" href="' + bm[i].uri + '">' + bm[i].label + '</a></li>');
+            $bmEl.append('<li><a class="bookmark" href="' + bm[i].uri + '" data-io-type="' + bm[i].type + '">' + bm[i].label + '</a></li>');
           }
           if(bm.length > 0) {
             var $bmMenu = $('#bookmarks');
             $bmMenu.closest('div.btn-group').show();
             for(var i = 0; i < bm.length; i+=1) {
-              $bmMenu.append('<li><a class="bookmark" href="' + bm[i].uri + '">' + bm[i].label + '</a></li>');
+              $bmMenu.append('<li><a class="bookmark" href="' + bm[i].uri + '" data-io-type="' + bm[i].type + '">' + bm[i].label + '</a></li>');
             }
           }
         }
 
         $('a.bookmark').click(function(e) {
           e.preventDefault();
-          ioRetrieve($(this).attr('href'));
+          ioRetrieve($(this).attr('href'), $(this).attr('data-io-type'));
           $('#openDocDialog').modal('hide');
         });
       }
 
+      function getIO(ioType) {
+        return RDFE.IO.createIO(ioType, {
+          "sparqlEndpoint": $('#io_spq').val(),
+          "gspEndpoint": $('#gspEndpoint').val()
+        });
+      }
+
       $(document).ready(function() {
-        $("#openDocLocation").val(IO_SPARQL_GRAPH);
-        $("#io_spq").val(IO_SPARQL_HOST);
+        $("#openDocLocation").val($.jStorage.get("editor-document-url"));
+        $("#openDocIoType").val($.jStorage.get("editor-document-io-type"));
 
         $('button#action-new').click(function(e) {
           documentNew();
@@ -526,8 +570,9 @@
         });
 
         $('#openDocDialog #openDocBtn').click(function() {
-          var url = $('#openDocDialog input[name="openDocLocation"]').val();
-          ioRetrieve(url);
+          var url = $('#openDocDialog input[name="openDocLocation"]').val(),
+              ioType = $('#openDocDialog select[name="openDocIoType"]').val();
+          ioRetrieve(url, ioType);
           $('#openDocDialog').modal('hide');
         });
 
@@ -539,8 +584,9 @@
           saveAs();
         });
         $('#saveAsDialog #saveAsBtn').click(function() {
-          var url = $('#saveAsDialog input[name="saveAsLocation"]').val();
-          mainDoc.save(url,
+          var url = $('#saveAsDialog input[name="saveAsLocation"]').val(),
+              ioType = $('#saveAsIoType').val();
+          mainDoc.save(url, getIO(ioType),
             function() {
               $('#saveAsDialog').modal('hide');
               $('#docUrl').text(url);
