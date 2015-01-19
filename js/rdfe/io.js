@@ -239,6 +239,8 @@ String.prototype.format = function() {
       };
 
       self.options = $.extend({}, defaults, options);
+      if(!self.options.gspEndpoint || self.options.gspEndpoint.length == 0)
+        self.options.gspEndpoint = defaults.gspEndpoint;
     });
 
     // GSP statements
@@ -251,19 +253,7 @@ String.prototype.format = function() {
         params["ajaxError"] = null;
         params["ajaxSuccess"] = null;
       }
-      $(document).ajaxError(params.ajaxError);
-      $(document).ajaxSuccess(params.ajaxSuccess);
-
-      $.ajax({
-        url: params.host,
-        success: params.success,
-        type: 'GET',
-        data: {
-          "query": GSP_RETRIEVE.format(graph),
-          "format": params.format
-        },
-        dataType: 'text'
-      });
+      this.exec("GET", graph, null, params);
     }
 
     c.prototype.retrieveToStore = function(graph, store, storeGraph, params) {
@@ -339,7 +329,7 @@ String.prototype.format = function() {
       $(document).ajaxError(params.ajaxError);
       $(document).ajaxSuccess(params.ajaxSuccess);
 
-      var host = params.host + '?graph=' + encodeURIComponent(graph);
+      var host = params.gspEndpoint + '?graph=' + encodeURIComponent(graph);
       $.ajax({
         url: host,
         success: params.success,
