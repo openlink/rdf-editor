@@ -245,18 +245,6 @@ RDFE.Editor.prototype.createNewEntityEditor = function(container, manager) {
   var self = this;
   var $classesSelect, classesSelect;
 
-  var classesList = function (ontology) {
-    var items = [];
-
-    classesSelect.clearOptions();
-    if (ontology) {
-      for (var i = 0, l = ontology.classes.length; i < l; i++) {
-        items.push({"uri": ontology.classes[i].URI});
-      }
-    }
-    classesSelect.addOption(items);
-  };
-
   if (!this.doc) {
     return false;
   }
@@ -291,20 +279,28 @@ RDFE.Editor.prototype.createNewEntityEditor = function(container, manager) {
 
   $('#ontology').ontoBox({
     ontoManager: manager
-  }).on('changed', function(e, value) {
-    console.log('Selected: ', value);
-    if (!value) {
-      classesList();
-    } else {
-      classesList(value);
-    }
+  }).on('changed', function(e, ontology) {
+    classesSelect.clearOptions();
+    if(ontology)
+      classesSelect.addOption(ontology.classes);
   });
 
   $classesSelect = $('#class').selectize({
-    create: true,
-    valueField: 'uri',
-    labelField: 'uri',
-    options: []
+    create: function(input, cb) {
+      cb({ URI: input });
+    },
+    valueField: 'URI',
+    sortField: [ 'label', 'URI' ],
+    searchField: [ 'label', 'URI' ],
+    options: [],
+    render: {
+      item: function(item, escape) {
+        return '<div>' + escape(item.label || item.title || item.URI) + '</div>';
+      },
+      option: function(item, escape) {
+        return '<div>' + escape(item.label || item.title || item.URI) + '<br/><small>(' + escape(item.URI) + ')</small></div>';
+      }
+    }
   });
   classesSelect = $classesSelect[0].selectize;
 
