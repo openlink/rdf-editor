@@ -107,10 +107,11 @@
         <div class="col-md-3">
           <div class="panel panel-default">
             <div class="panel-heading">
-              <h3 class="panel-title">Editing Aids</h3>
+              <h3 class="panel-title">Ontologies</h3>
             </div>
             <div class="panel-body">
-              FIXME: this is where the loaded ontologies go
+              <select id="ontologySelection">
+              </select>
             </div>
           </div>
         </div>
@@ -324,6 +325,7 @@
     <script src="js/bootstrap-toggle.min.js"></script>
     <script src="js/selectize.min.js"></script>
     <script src="js/bootbox.min.js"></script>
+    <script src="js/rdfe/jquery.ontobox.js"></script>
 
     <script>
       var val = new VAL();
@@ -363,6 +365,8 @@
 
           $("#io_spq").val($.jStorage.get("editor-sparql-endpoint", config.options.sparqlEndpoint));
           $("#gspEndpoint").val($.jStorage.get("editor-sparql-graph-endpoint", config.options.gspEndpoint));
+
+          $('#ontologySelection').ontoBox({ "ontoManager": ontologyManager });
         }
       );
 
@@ -496,7 +500,7 @@
 
       function saveAs() {
         $('#saveAsDialog').find('input[name="saveAsLocation"]').val(mainDoc.url);
-        $('#saveAsDialog').find('input[name="saveAsIoType"]').val(mainDoc.ioType || "sparql");
+        $('#saveAsDialog').find('input[name="saveAsIoType"]').val(mainDoc.io ? mainDoc.io.type : "sparql");
         $('#saveAsDialog').modal();
       }
 
@@ -551,15 +555,17 @@
       }
 
       function getIO(ioType) {
-        return RDFE.IO.createIO(ioType, {
+        var io = RDFE.IO.createIO(ioType, {
           "sparqlEndpoint": $('#io_spq').val(),
           "gspEndpoint": $('#gspEndpoint').val()
         });
+        io.type = ioType;
+        return io;
       }
 
       $(document).ready(function() {
         $("#openDocLocation").val($.jStorage.get("editor-document-url"));
-        $("#openDocIoType").val($.jStorage.get("editor-document-io-type"));
+        $("#openDocIoType").val($.jStorage.get("editor-document-io-type") || "sparql");
 
         $('button#action-new').click(function(e) {
           documentNew();
