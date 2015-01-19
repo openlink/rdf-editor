@@ -6,31 +6,34 @@ String.prototype.format = function() {
 };
 
 (function($) {
-  if(!window.RDFE)
+  if (!window.RDFE) {
     window.RDFE = {};
+  }
   RDFE.IO = {};
 
   RDFE.IO.createIO = function(type, options) {
     var t = "sparql";
     var o = {};
-    if(typeof(type) == 'string') {
+    if (typeof(type) == 'string') {
       t = type;
       o = options;
-    }
-    else if(typeof(type) == 'object') {
+    } else if (typeof(type) == 'object') {
       o = type;
-      if(o.type)
+      if (o.type) {
         t = o.type;
+      }
     }
 
-    if(t == 'sparql')
+    if (t == 'sparql')
       return new RDFE.IO.SPARQL(o);
-    else if(t == 'gsp')
+
+    else if (t == 'gsp')
       return new RDFE.IO.GSP(o);
-    else if(t == 'ldp' || t == "webdav" || t == "dav")
+
+    else if (t == 'ldp' || t == "webdav" || t == "dav")
       return new RDFE.IO.LDP(o);
-    else
-      throw "Unsupport IO type: " + t;
+
+    throw "Unsupport IO type: " + t;
   };
 
   var extendParams = function(params, options) {
@@ -92,8 +95,9 @@ String.prototype.format = function() {
       }
 
       self.options = $.extend({}, defaults, options);
-      if(!self.options.sparqlEndpoint || self.options.sparqlEndpoint.length == 0)
+      if (!self.options.sparqlEndpoint || self.options.sparqlEndpoint.length == 0) {
         self.options.sparqlEndpoint = defaults.sparqlEndpoint;
+      }
     });
 
     var SPARQL_RETRIEVE = 'CONSTRUCT {?s ?p ?o} WHERE {GRAPH <{0}> {?s ?p ?o}}';
@@ -239,8 +243,9 @@ String.prototype.format = function() {
       };
 
       self.options = $.extend({}, defaults, options);
-      if(!self.options.gspEndpoint || self.options.gspEndpoint.length == 0)
+      if(!self.options.gspEndpoint || self.options.gspEndpoint.length == 0) {
         self.options.gspEndpoint = defaults.gspEndpoint;
+      }
     });
 
     // GSP statements
