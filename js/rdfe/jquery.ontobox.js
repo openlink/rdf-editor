@@ -18,7 +18,7 @@
       sortField: [ "prefix", "URI" ],
       options: self.options.ontoManager.ontologies,
       onChange: function(value) {
-        $(self).trigger('changed', value);
+        $(self).trigger('changed', self.options.ontoManager.ontologyByURI(value));
       },
       create: function(input, cb) {
         var url = self.options.ontoManager.prefixes[input] || input;
@@ -54,6 +54,10 @@
 
   OntoBox.prototype.selectedOntology = function() {
     return this.sel.getItem(this.selectedOntologyURI());
+  };
+
+  OntoBox.prototype.on = function(e, cb) {
+    $(this).on(e, cb);
   };
 
   $.fn.ontoBox = function(methodOrOptions) {

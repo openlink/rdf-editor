@@ -244,13 +244,6 @@ RDFE.Editor.prototype.createNewStatementEditor = function(container) {
 RDFE.Editor.prototype.createNewEntityEditor = function(container, manager) {
   var self = this;
   var $classesSelect, classesSelect;
-  var ontologiesList = function () {
-    var items = [];
-    for (var i = 0, l = manager.ontologies.length; i < l; i++) {
-      items.push({"uri": manager.ontologies[i].URI});
-    }
-    return items;
-  };
 
   var classesList = function (ontology) {
     var items = [];
@@ -296,21 +289,14 @@ RDFE.Editor.prototype.createNewEntityEditor = function(container, manager) {
     '  </div> ' +
     '</div>\n');
 
-  $('#ontology').selectize({
-    create: true,
-    valueField: 'uri',
-    labelField: 'uri',
-    options: ontologiesList(),
-    onChange: function(value) {
-      if (!value.length) {
-        classesList();
-      } else {
-        manager.ontologyParse(value, {
-          "success": function (ontology) {
-            classesList(ontology);
-          }
-        });
-      }
+  $('#ontology').ontoBox({
+    ontoManager: manager
+  }).on('changed', function(e, value) {
+    console.log('Selected: ', value);
+    if (!value) {
+      classesList();
+    } else {
+      classesList(value);
     }
   });
 
