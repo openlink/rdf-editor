@@ -446,6 +446,7 @@ RDFE.OntologyManager = function(store, config) {
   this.ontologies = [];
   this.fresnels = [];
   this.templates = [];
+  this.prefixes = RDFE.prefixes;
 }
 
 RDFE.OntologyManager.prototype.init = function(options) {
@@ -508,6 +509,7 @@ RDFE.OntologyManager.prototype.load = function(URI, params) {
 
 RDFE.OntologyManager.prototype.ontologyParse = function(URI, params) {
   var self = this;
+  var $self = $(self);
   var options = $.extend(self.options, params);
   var ontology = this.ontologyByURI(URI);
   if ((options.preloadOnly == true) || (ontology && (options.forceLoad == false))) {
@@ -551,9 +553,14 @@ RDFE.OntologyManager.prototype.ontologyParse = function(URI, params) {
             callback(ontology);
           }
         }
+        $self.trigger('changed', [ self ]);
+        $self.trigger('ontologyLoaded', [ self, ontology ]);
       });
     }
   })(params);
+
+  $self.trigger('loadingOntology', [ self, URI ]);
+
   self.load(URI, {
     "success": __ontologyLoaded
   });
@@ -621,6 +628,8 @@ RDFE.OntologyManager.prototype.fresnelParse = function(URI, params) {
       if (callback) {
         callback(fresnel);
       }
+
+      $self.trigger('changed', [ self ]);
     }
   })(params);
   self.load(URI, {
