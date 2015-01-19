@@ -287,15 +287,16 @@ String.prototype.format = function() {
       };
       params["__success"] = params["success"];
       params["success"] = __success;
-      self.retrieve(graph, params, true);
+      this.retrieve(graph, params, true);
     }
 
     c.prototype.insert = function(graph, content, params) {
-      params = extendParams(params, self.options);
-      self.exec('PUT', graph, content, params);
+      params = extendParams(params, this.options);
+      this.exec('PUT', graph, content, params);
     }
 
     c.prototype.insertFromStore = function(graph, store, storeGraph, params) {
+      var self = this;
       params = extendParams(params, self.options);
       store.graph(storeGraph, function(success, result) {
         if (!success) {
