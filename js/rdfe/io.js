@@ -153,7 +153,9 @@ String.prototype.format = function() {
       params = extendParams(params, self.options);
       store.graph(storeGraph, function(success, result) {
         if (!success) {
-          alert(result);
+          if (params.error) {
+            params.error(result);
+          }
           return;
         }
 
@@ -211,6 +213,7 @@ String.prototype.format = function() {
       $.ajax({
         url: params.sparqlEndpoint,
         success: params.success,
+        error: params.error,
         type: params.method || 'GET',
         data: {
           "query": q,
@@ -243,7 +246,7 @@ String.prototype.format = function() {
       };
 
       self.options = $.extend({}, defaults, options);
-      if(!self.options.gspEndpoint || self.options.gspEndpoint.length == 0) {
+      if (!self.options.gspEndpoint || self.options.gspEndpoint.length == 0) {
         self.options.gspEndpoint = defaults.gspEndpoint;
       }
     });
@@ -269,8 +272,9 @@ String.prototype.format = function() {
         var parser = N3.Parser();
         parser.parse(data, function(error, triple, prefixes) {
           if (error) {
-            // FIXME: proper error handling with a callback
-            alert(error);
+            if (params.error) {
+              params.error(error);
+            }
           }
           if (triple == null) {
             // exec success function
@@ -297,7 +301,9 @@ String.prototype.format = function() {
       params = extendParams(params, self.options);
       store.graph(storeGraph, function(success, result) {
         if (!success) {
-          alert(result);
+          if (params.error) {
+            params.error(result);
+          }
           return;
         }
 
@@ -338,6 +344,7 @@ String.prototype.format = function() {
       $.ajax({
         url: host,
         success: params.success,
+        error: params.error,
         type: method,
         contentType: params.contentType,
         processData: params.processData,
@@ -389,8 +396,9 @@ String.prototype.format = function() {
         var parser = N3.Parser();
         parser.parse(data, function(error, triple, prefixes) {
           if (error) {
-            // FIXME: proper error handling with a callback
-            alert(error);
+            if (params.error) {
+              params.error(error);
+            }
           }
           if (triple == null) {
             // exec success function
@@ -421,7 +429,9 @@ String.prototype.format = function() {
       params = extendParams(params, self.options);
       store.graph(storeGraph, function(success, result) {
         if (!success) {
-          alert(result);
+          if (params.error) {
+            params.error(result);
+          }
           return;
         }
 
@@ -456,6 +466,7 @@ String.prototype.format = function() {
       $.ajax({
         url: path,
         success: params.success,
+        error: params.error,
         type: method,
         headers: headers,
         contentType: 'application/octet-stream',
