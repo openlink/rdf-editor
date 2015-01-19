@@ -1,5 +1,5 @@
-if (!RDFE)
-  RDFE = {};
+if(!window.RDFE)
+  window.RDFE = {};
 
 RDFE.Document.Model = Backbone.Model.extend({
   setEntity: function(doc, uri) {
