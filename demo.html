@@ -500,7 +500,7 @@
 
       function saveAs() {
         $('#saveAsDialog').find('input[name="saveAsLocation"]').val(mainDoc.url);
-        $('#saveAsDialog').find('input[name="saveAsIoType"]').val(mainDoc.ioType || "sparql");
+        $('#saveAsDialog').find('input[name="saveAsIoType"]').val(mainDoc.io ? mainDoc.io.type : "sparql");
         $('#saveAsDialog').modal();
       }
 
@@ -555,15 +555,17 @@
       }
 
       function getIO(ioType) {
-        return RDFE.IO.createIO(ioType, {
+        var io = RDFE.IO.createIO(ioType, {
           "sparqlEndpoint": $('#io_spq').val(),
           "gspEndpoint": $('#gspEndpoint').val()
         });
+        io.type = ioType;
+        return io;
       }
 
       $(document).ready(function() {
         $("#openDocLocation").val($.jStorage.get("editor-document-url"));
-        $("#openDocIoType").val($.jStorage.get("editor-document-io-type"));
+        $("#openDocIoType").val($.jStorage.get("editor-document-io-type") || "sparql");
 
         $('button#action-new').click(function(e) {
           documentNew();
