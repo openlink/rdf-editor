@@ -71,7 +71,7 @@
       }
 
       // hide the "add" button in case the cardinality has been reached
-      if (self.schema.maxCardinality && value.length >= self.schema.maxCardinality)
+      if (self.schema.maxCardinality && self.items.length >= self.schema.maxCardinality)
         $el.find('button[data-action="add"]').hide();
 
       this.setElement($el);
