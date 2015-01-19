@@ -329,6 +329,14 @@ RDFE.ontologyByPrefix = function(prefix) {
   return RDFE.prefixes[prefix];
 }
 
+RDFE.prefixByOntology = function(url) {
+  for(prefix in RDFE.prefixes)
+    if(RDFE.prefixes[prefix] == url)
+      return prefix;
+
+  return null;
+}
+
 /*
  *
  * Return all triplets related to the subject
@@ -726,7 +734,7 @@ RDFE.Ontology = function(ontologyManager, URI, graph, options) {
   this.options = $.extend({}, options);
   this.graph = graph;
   this.URI = URI;
-  this.prefix = 'xxx';
+  this.prefix = RDFE.prefixByOntology(URI);
   this.classes = [];
   this.properties = [];
   this.individuals = [];
