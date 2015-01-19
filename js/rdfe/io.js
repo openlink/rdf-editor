@@ -245,6 +245,7 @@ String.prototype.format = function() {
     var GSP_RETRIEVE = 'CONSTRUCT {?s ?p ?o} WHERE {GRAPH <{0}> {?s ?p ?o}}';
 
     c.prototype.retrieve = function(graph, params, silent) {
+      var self = this;
       params = extendParams(params, self.options);
       if (silent) {
         params["ajaxError"] = null;
@@ -266,6 +267,7 @@ String.prototype.format = function() {
     }
 
     c.prototype.retrieveToStore = function(graph, store, storeGraph, params) {
+      var self = this;
       params = extendParams(params, self.options);
       var __success = function(data, textStatus) {
         clearGraph(store, storeGraph);
@@ -316,11 +318,13 @@ String.prototype.format = function() {
     }
 
     c.prototype.update = function(graph, content, params) {
+      var self = this;
       params = extendParams(params, self.options);
       self.exec('POST', graph, content, params);
     }
 
     self.delete = function(graph, params, silent) {
+      var self = this;
       params = extendParams(params, self.options);
       if (silent) {
         params["ajaxError"] = null;
