@@ -14,7 +14,7 @@ RDFE.Document.Model = Backbone.Model.extend({
   },
 
   /// read the properties of this.uri from the store and put them into the model
-  docToModel: function(success, fail) {
+  docToModel: function(ontologyManager, success, fail) {
     var self = this;
     self.schema = {};
     self.fields = [];
@@ -51,7 +51,6 @@ RDFE.Document.Model = Backbone.Model.extend({
         }
 
         if (uriClass) {
-          // FIXME: Do 'not' use a global ontologyManager variable here!!!!!!
           var template = new RDFE.Template(ontologyManager, uriClass, null, function(template) {
             var data = template.toBackboneForm(self);
             if (data && data.schema) {

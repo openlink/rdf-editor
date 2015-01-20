@@ -8,11 +8,12 @@ if (typeof String.prototype.startsWith != 'function') {
 if(!window.RDFE)
   window.RDFE = {};
 
-RDFE.Editor = function(params) {
+RDFE.Editor = function(ontoMan, params) {
   var self = this;
 
   // empty default doc
   this.doc = new RDFE.Document();
+  this.ontologyManager = ontoMan;
 };
 
 RDFE.Editor.io_strip_URL_quoting = function(str) {
@@ -449,7 +450,7 @@ RDFE.Editor.prototype.showEditor = function(container, url, closeCb) {
   var self = this;
   var model = new RDFE.Document.Model();
   model.setEntity(this.doc, url);
-  model.docToModel(function() {
+  model.docToModel(this.ontologyManager, function() {
     var form = new Backbone.Form({
       "model": model
     });
