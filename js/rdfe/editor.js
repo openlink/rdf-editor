@@ -8,11 +8,10 @@ if (typeof String.prototype.startsWith != 'function') {
 if(!window.RDFE)
   window.RDFE = {};
 
-RDFE.Editor = function(ontoMan, params) {
+RDFE.Editor = function(doc, ontoMan, params) {
   var self = this;
 
-  // empty default doc
-  this.doc = new RDFE.Document();
+  this.doc = doc;
   this.ontologyManager = ontoMan;
 };
 
@@ -33,11 +32,12 @@ RDFE.Editor.prototype.makeTriple = function(s, p, o) {
   return (this.doc.store.rdf.createTriple(ss, pp, oo));
 };
 
-RDFE.Editor.prototype.createTripleList = function(doc, container, callback) {
+RDFE.Editor.prototype.createTripleList = function(container, callback) {
   var self = this;
   this.doc = doc;
 
-  this.tripleView = new RDFE.TripleView(doc);
+  if(!this.tripleView)
+    this.tripleView = new RDFE.TripleView(this.doc);
   this.tripleView.render(container, callback);
 };
 
@@ -185,7 +185,10 @@ RDFE.Editor.prototype.createNewEntityEditor = function(container, manager) {
   });
 };
 
-RDFE.Editor.prototype.createEntityList = function(doc, container, callback) {
-  var el = new RDFE.EntityView(doc, this.ontologyManager);
-  el.render(container, callback);
+RDFE.Editor.prototype.createEntityList = function(container, callback) {
+  var self = this;
+  if(!self.entityView) {
+    self.entityView = new RDFE.EntityView(this.doc, this.ontologyManager);
+  }
+  self.entityView.render(container, callback);
 };
