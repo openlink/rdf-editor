@@ -122,6 +122,13 @@
       });
     };
 
+    c.prototype.addEntity = function(entity) {
+      var i = this.entityTable.data('maxindex');
+      entity.id = i;
+      this.entityTable.bootstrapTable('append', entity);
+      this.entityTable.data('maxindex', i+1);
+    };
+
     return c;
   })();
 })(jQuery);
