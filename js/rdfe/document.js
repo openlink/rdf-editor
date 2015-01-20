@@ -143,8 +143,6 @@ RDFE.Document.prototype.updateTriple = function(oldTr, newTr, success, fail) {
   var self = this;
   self.store.delete(self.store.rdf.createGraph([oldTr]), self.graph, function(s) {
     if (s) {
-      triple[field] = newNode;
-
       self.store.insert(self.store.rdf.createGraph([newTr]), self.graph, function(s) {
         self.setChanged();
         if (s && fail)
