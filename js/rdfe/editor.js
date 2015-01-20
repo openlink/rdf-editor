@@ -171,10 +171,8 @@ RDFE.Editor.prototype.createNewEntityEditor = function(container, manager) {
     self.doc.addTriple(t, function() {
       container.empty();
 
-      if (self.entityTable) {
-        var i = self.entityTable.data('maxindex');
-        self.entityTable.bootstrapTable('append', {"uri": s, "label": s, "id": i});
-        self.entityTable.data('maxindex', i+1);
+      if (self.entityView) {
+        self.entityView.addEntity({"uri": s, "label": s});
       }
     }, function() {
       $(self).trigger('rdf-editor-error', {
