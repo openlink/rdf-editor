@@ -538,7 +538,6 @@ RDFE.OntologyManager.prototype.load = function(URI, params) {
   var __ontologyLoaded = (function(URI, params) {
     return function(data, status, xhr) {
       var contentType = (xhr.getResponseHeader('content-type') || '').split(';')[0];
-      self.graphClear(URI);
       self.store.load(contentType, data.trim('"'), URI, (function(params) {
         return function(success, results) {
           if (!success) {
@@ -578,7 +577,24 @@ RDFE.OntologyManager.prototype.ontologyParse = function(URI, params) {
   var __ontologyLoaded = (function(params) {
     return function() {
       // ontology classes & properties parse
-      var ontology = self.Ontology(URI, URI, options);
+      var sparql = RDFE.OM_ONTOLOGY_TEMPLATE.format(URI);
+      self.store.execute(sparql, function(success, results) {
+        if (!success) {
+          console.error('ontology =>', results);
+          return;
+        }
+        if (results.length) {
+          var graph = URI;
+          for (var i = 0; i < results.length; i++) {
+            var ontologyURI = results[i]["o"].value;
+            // Fix for some ontlogies
+            if ((graph.charAt(graph.length - 1) == '#') && (graph.substring(0, graph.length - 1) == ontologyURI)) {
+              ontologyURI = graph;
+            }
+            self.Ontology(graph, ontologyURI, params);
+          }
+        }
+      });
       self.ontologyClassesParse(URI, params);
       self.ontologyPropertiesParse(URI, params);
 
@@ -661,7 +677,7 @@ RDFE.OntologyManager.prototype.ontologyPropertiesParse = function(graph, params)
         for (var j = 0, m = property.domain.length; j < m; j++) {
           var ontologyClass = self.ontologyClassByURI(property.domain[j]);
           if (ontologyClass) {
-            if (property.subClassOf) {
+            if (!_.isEmpty(ontologyClass.subClassOf)) {
               var restrictions = {};
               var queryRestriction = function (restriction) {
                 var RDFE_TEMPLATE =
@@ -671,14 +687,15 @@ RDFE.OntologyManager.prototype.ontologyPropertiesParse = function(graph, params)
                   '\n          <{1}> rdfs:subClassOf ' +
                   '\n          [ ' +
                   '\n            owl:onProperty <{2}>; ' +
-                  '\n            <{3}> ?item ' +
+                  '\n            {3} ?item ' +
                   '\n          ]. ' +
                   '\n        } ';
                 var sparql = RDFE_TEMPLATE.format(graph, ontologyClass.URI, property.URI, restriction);
                 self.store.execute(sparql, function(success, results) {
                   if (success) {
                     for (var i = 0, l = results.length; i < l; i++) {
-                        return restrictions[RDFE.uriLabel(restriction)] = parseInt(RDFE.sparqlValue(results[i]["item"]));
+                      restrictions[RDFE.uriLabel(restriction)] = parseInt(RDFE.sparqlValue(results[i]["item"]));
+                      return;
                     }
                   }
                 });
