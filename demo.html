@@ -391,7 +391,7 @@
 
       function updateViewContents(view) {
         if((view || currentView()) == "triples")
-          editor.createEditorUi(mainDoc, $("#sparqlcontents"), function() { toggleSpinner(false); });
+          editor.createTripleList(mainDoc, $("#sparqlcontents"), function() { toggleSpinner(false); });
         else
           editor.createEntityList(mainDoc, $("#entitiesContents"), function() { toggleSpinner(false); });
       }
@@ -632,7 +632,7 @@
         // reload the contents when the panel shows
         $(document).on('show-view-triples', function() {
           console.log('show-view-triples event');
-          editor.createEditorUi(mainDoc, $("#sparqlcontents"));
+          editor.createTripleList(mainDoc, $("#sparqlcontents"));
         });
         $(document).on('show-view-entities', function() {
           console.log('show-view-entities event');
