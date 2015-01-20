@@ -345,7 +345,7 @@
 
       // The main document which contains the loaded data
       var mainDoc;
-      var editor = new RDFE.Editor();
+      var editor;
       var ontologyManager;
 
       var rdfeConfig = new RDFE.Config('config.json', function(config) {
@@ -361,6 +361,8 @@
             loadBookmarks(config);
 
           mainDoc = new RDFE.Document(config);
+          editor = new RDFE.Editor(ontologyManager);
+
           toggleView(config.options.defaultView);
 
           $("#io_spq").val($.jStorage.get("editor-sparql-endpoint", config.options.sparqlEndpoint));
