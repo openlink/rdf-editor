@@ -44,7 +44,7 @@ RDFE.Editor.prototype.nodeFormatter = function(value) {
   }
 };
 
-RDFE.Editor.prototype.createEditorUi = function(doc, container, callback) {
+RDFE.Editor.prototype.createTripleList = function(doc, container, callback) {
   var self = this;
   this.doc = doc;
 
