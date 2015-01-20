@@ -459,7 +459,7 @@ RDFE.Editor.prototype.showEditor = function(container, url, closeCb) {
     container.empty();
 
     // add a header to the form using the entity's label
-    container.append('<h4>Editing <span class="entity-label">' + url.split(/[/#]/).pop() + '<span></h4><hr/>');
+    container.append('<h4>Editing <a href="' + url + '"><span class="entity-label">' + url.split(/[/#]/).pop() + '<span></a></h4><hr/>');
     self.doc.getEntityLabel(url, function(label) {
       container.find('h4 span').text(label);
     });
