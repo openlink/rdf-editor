@@ -1406,25 +1406,38 @@ RDFE.Template = function(ontologyManager, URI, options, callback) {
   this.manager.templates.push(this);
 
   var __properties = function () {
-    var fresnelLens = self.manager.fresnelLensByURI(self.URI);
+    var URIs = [self.URI];
     var ontologyClass = self.manager.ontologyClassByURI(self.URI);
-    if (fresnelLens && fresnelLens.showProperties) {
-      for (var i = 0, l = fresnelLens.showProperties.length; i < l; i++) {
-        var propertyURI = fresnelLens.showProperties[i];
-        var property;
-        if (ontologyClass) {
-          property = ontologyClass.propertyByURI(propertyURI);
-        }
-        if (!property) {
-          property = self.manager.ontologyPpropertyByURI(propertyURI);
-        }
-        if (property && property.hasDomain(self.URI)) {
-          self.properties.push(property);
+    if (ontologyClass && !_.isEmpty(ontologyClass.subClassOf)) {
+      for (var i = 0, l = ontologyClass.subClassOf.length; i < l; i++) {
+        if (!RDFE.isBlankNode(ontologyClass.subClassOf[i])) {
+          URIs.push(ontologyClass.subClassOf[i]);
         }
       }
     }
-    if ((self.properties.length == 0) && ontologyClass) {
-      self.properties = ontologyClass.propertiesAsArray();
+    for (var i = 0, l = URIs.length; i < l; i++) {
+      var properties = [];
+      var ontologyClass = self.manager.ontologyClassByURI(URIs[i]);
+      var fresnelLens = self.manager.fresnelLensByURI(URIs[i]);
+      if (fresnelLens && fresnelLens.showProperties) {
+        for (var j = 0, m = fresnelLens.showProperties.length; j < m; j++) {
+          var propertyURI = fresnelLens.showProperties[j];
+          var property;
+          if (ontologyClass) {
+            property = ontologyClass.propertyByURI(propertyURI);
+          }
+          if (!property) {
+            property = self.manager.ontologyPpropertyByURI(propertyURI);
+          }
+          if (property && property.hasDomain(URIs[i])) {
+            self.properties.push(property);
+          }
+        }
+      }
+      if ((properties.length == 0) && ontologyClass) {
+        properties = ontologyClass.propertiesAsArray();
+      }
+      self.properties = _.union(self.properties, properties);
     }
     if (callback) {
       callback(self);
