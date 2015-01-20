@@ -53,8 +53,14 @@
 
           var editFct = function(uri) {
             // open the editor and once its done re-create the entity list
-            if(!self.entityEditor)
+            if(!self.entityEditor) {
               self.entityEditor = new RDFE.EntityEditor(self.doc, self.ontologyManager);
+              $(self.entityEditor).on('rdf-editor-error', function(e) {
+                $(self).trigger('rdf-editor-error', d);
+              }).on('rdf-editor-success', function(e, d) {
+                $(self).trigger('rdf-editor-success', d);
+              });
+            }
             self.entityEditor.render(container, uri, function() {
               self.render(container);
             });

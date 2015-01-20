@@ -36,8 +36,14 @@ RDFE.Editor.prototype.createTripleList = function(container, callback) {
   var self = this;
   this.doc = doc;
 
-  if(!this.tripleView)
+  if(!this.tripleView) {
     this.tripleView = new RDFE.TripleView(this.doc);
+    $(self.tripleView).on('rdf-editor-error', function(e) {
+      $(self).trigger('rdf-editor-error', d);
+    }).on('rdf-editor-success', function(e, d) {
+      $(self).trigger('rdf-editor-success', d);
+    });
+  }
   this.tripleView.render(container, callback);
 };
 
@@ -187,6 +193,11 @@ RDFE.Editor.prototype.createEntityList = function(container, callback) {
   var self = this;
   if(!self.entityView) {
     self.entityView = new RDFE.EntityView(this.doc, this.ontologyManager);
+    $(self.entityView).on('rdf-editor-error', function(e) {
+      $(self).trigger('rdf-editor-error', d);
+    }).on('rdf-editor-success', function(e, d) {
+      $(self).trigger('rdf-editor-success', d);
+    });
   }
   self.entityView.render(container, callback);
 };
