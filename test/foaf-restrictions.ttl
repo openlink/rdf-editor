@@ -13,6 +13,3 @@ foaf:Person
     owl:onProperty foaf:firstName ;
     owl:cardinality "1"^^xsd:nonNegativeInteger
   ].
-
-foaf:firstName
-  a rdf:Property, owl:DatatypeProperty .
