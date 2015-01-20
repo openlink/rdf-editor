@@ -169,118 +169,6 @@
     </div>
 
 
-    <div id="configDialog" class="modal fade">
-      <div class="modal-dialog modal-lg">
-        <div class="modal-content">
-          <div class="modal-header">
-            <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
-            <h4 class="modal-title">RDF Editor Configuration</h4>
-          </div>
-          <div class="modal-body">
-            <form class="form-horizontal">
-              <div class="form-group">
-                <label for="io_spq" class="col-sm-4 control-label">SPARQL Endpoint</label>
-                <div class="col-sm-8">
-                  <input type="text" id="io_spq" name="io_spq" class="form-control" />
-                </div>
-              </div>
-              <div class="form-group">
-                <label for="gspEndpoint" class="col-sm-4 control-label">SPARQL Graph Protocol Endpoint</label>
-                <div class="col-sm-8">
-                  <input type="text" id="gspEndpoint" name="gspEndpoint" class="form-control" />
-                </div>
-              </div>
-            </form>
-          </div>
-          <div class="modal-footer">
-            <button type="button" class="btn btn-primary" data-dismiss="modal">Close</button>
-          </div>
-        </div><!-- /.modal-content -->
-      </div><!-- /.modal-dialog -->
-    </div><!-- /.modal -->
-
-
-    <div id="saveAsDialog" class="modal fade">
-      <div class="modal-dialog modal-lg">
-        <div class="modal-content">
-          <div class="modal-header">
-            <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
-            <h4 class="modal-title">Save Document</h4>
-          </div>
-          <div class="modal-body">
-            <form class="form-horizontal">
-              <div class="form-group">
-                <label for="saveAsIoType" class="col-sm-2 control-label">IO Type</label>
-                <div class="col-sm-10">
-                  <select name="saveAsIoType" id="saveAsIoType" class="form-control">
-                    <option value="sparql">Sparql Endpoint</option>
-                    <option value="webdav">WebDAV Location</option>
-                    <option value="ldp">LDP Container</option>
-                    <option value="gsp">SPARQL Graph Store Protocol</option>
-                  </select>
-                </div>
-              </div>
-              <div class="form-group">
-                <label for="saveAsLocation" class="col-sm-2 control-label">Location</label>
-                <div class="col-sm-10">
-                  <input type="text" id="io_spq" name="saveAsLocation" class="form-control" />
-                </div>
-              </div>
-            </form>
-          </div>
-          <div class="modal-footer">
-            <button id="saveAsBtn" type="button" class="btn btn-primary">Save</button>
-            <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
-          </div>
-        </div><!-- /.modal-content -->
-      </div><!-- /.modal-dialog -->
-    </div><!-- /.modal -->
-
-    <div id="openDocDialog" class="modal fade">
-      <div class="modal-dialog modal-lg">
-        <div class="modal-content">
-          <div class="modal-header">
-            <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
-            <h4 class="modal-title">Open Document</h4>
-          </div>
-          <div class="modal-body">
-            <form class="form-horizontal">
-              <div class="form-group">
-                <label class="col-sm-2 control-label">Bookmarks</label>
-                <div class="col-sm-10">
-                  <ul id="openDocBookmarks">
-                  </ul>
-                </div>
-              </div>
-
-              <div class="form-group">
-                <label for="openDocIoType" class="col-sm-2 control-label">IO Type</label>
-                <div class="col-sm-10">
-                  <select name="openDocIoType" id="openDocIoType" class="form-control">
-                    <option value="sparql">Sparql Endpoint</option>
-                    <option value="webdav">WebDAV Location</option>
-                    <option value="ldp">LDP Container</option>
-                    <option value="gsp">SPARQL Graph Store Protocol</option>
-                  </select>
-                </div>
-              </div>
-              <div class="form-group">
-                <label for="openDocLocation" class="col-sm-2 control-label">Location</label>
-                <div class="col-sm-10">
-                  <input type="text" id="openDocLocation" name="openDocLocation" class="form-control" />
-                </div>
-              </div>
-            </form>
-          </div>
-          <div class="modal-footer">
-            <button id="openDocBtn" type="button" class="btn btn-primary">Open</button>
-            <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
-          </div>
-        </div><!-- /.modal-content -->
-      </div><!-- /.modal-dialog -->
-    </div><!-- /.modal -->
-
-
     <script src="js/jquery-1.11.1.min.js"></script>
     <script src="js/jquery-deparam.min.js"></script>
     <script src="js/jquery.cookie.js"></script>
@@ -347,31 +235,7 @@
       var mainDoc;
       var editor;
       var ontologyManager;
-
-      var rdfeConfig = new RDFE.Config('config.json', function(config) {
-          ontologyManager = new RDFE.OntologyManager(null, config.options.ontology);
-          ontologyManager.init();
-
-          var configActions = config.options.actions;
-          for (var i = 0; i < configActions.length; i++) {
-            $('#action-'+configActions[i]).show();
-          }
-
-          if($.inArray("bookmarks", config.options.actions) >= 0)
-            loadBookmarks(config);
-
-          mainDoc = new RDFE.Document(config);
-          editor = new RDFE.Editor(ontologyManager);
-
-          toggleView(config.options.defaultView);
-
-          $("#io_spq").val($.jStorage.get("editor-sparql-endpoint", config.options.sparqlEndpoint));
-          $("#gspEndpoint").val($.jStorage.get("editor-sparql-graph-endpoint", config.options.gspEndpoint));
-
-          $('#ontologySelection').ontoBox({ "ontoManager": ontologyManager });
-        }
-      );
-
+      var rdfeConfig;
 
       function toggleSpinner(on) {
         if(on)
@@ -566,8 +430,72 @@
       }
 
       $(document).ready(function() {
-        $("#openDocLocation").val($.jStorage.get("editor-document-url"));
-        $("#openDocIoType").val($.jStorage.get("editor-document-io-type") || "sparql");
+        $(document.createElement('div')).appendTo($("body")).load("data/dialogs.html", function() {
+          $("#openDocLocation").val($.jStorage.get("editor-document-url"));
+          $("#openDocIoType").val($.jStorage.get("editor-document-io-type") || "sparql");
+
+          rdfeConfig = new RDFE.Config('config.json', function(config) {
+              ontologyManager = new RDFE.OntologyManager(null, config.options.ontology);
+
+              ontologyManager.init();
+
+              var configActions = config.options.actions;
+              for (var i = 0; i < configActions.length; i++) {
+                $('#action-'+configActions[i]).show();
+              }
+
+              if($.inArray("bookmarks", config.options.actions) >= 0)
+                loadBookmarks(config);
+
+              mainDoc = new RDFE.Document(config);
+              editor = new RDFE.Editor(ontologyManager);
+
+              toggleView(config.options.defaultView);
+
+              $("#io_spq").val($.jStorage.get("editor-sparql-endpoint", config.options.sparqlEndpoint));
+              $("#gspEndpoint").val($.jStorage.get("editor-sparql-graph-endpoint", config.options.gspEndpoint));
+
+              $('#ontologySelection').ontoBox({ "ontoManager": ontologyManager });
+            }
+          );
+
+          $('#openDocDialog #openDocBtn').click(function() {
+            var url = $('#openDocDialog input[name="openDocLocation"]').val(),
+                ioType = $('#openDocDialog select[name="openDocIoType"]').val();
+            ioRetrieve(url, ioType);
+            $('#openDocDialog').modal('hide');
+          });
+
+          $('#saveAsDialog #saveAsBtn').click(function() {
+            var url = $('#saveAsDialog input[name="saveAsLocation"]').val(),
+                ioType = $('#saveAsIoType').val();
+            mainDoc.save(url, getIO(ioType),
+              function() {
+                $('#saveAsDialog').modal('hide');
+                $('#docUrl').text(url);
+                $.jStorage.set("editor-document-url", url);
+                $.growl({
+                  message: "Successfully saved document to <code>" + url + "</code>",
+                  icon: "glyphicon glyphicon-ok"
+                }, {
+                  type: 'success'
+                });
+              }, function(msg) {
+                $.growl({
+                  message: msg,
+                  icon: "glyphicon glyphicon-fire"
+                }, {
+                  type: 'danger'
+                });
+              });
+          });
+
+          $("#io_spq").change(
+            function() {
+              $.jStorage.set("editor-sparql-endpoint", $("#io_spq").val());
+            }
+          );
+        });
 
         $('button#action-new').click(function(e) {
           documentNew();
@@ -577,42 +505,12 @@
           $('#openDocDialog').modal();
         });
 
-        $('#openDocDialog #openDocBtn').click(function() {
-          var url = $('#openDocDialog input[name="openDocLocation"]').val(),
-              ioType = $('#openDocDialog select[name="openDocIoType"]').val();
-          ioRetrieve(url, ioType);
-          $('#openDocDialog').modal('hide');
-        });
-
         $('button#action-save').click(function(e) {
           save();
         });
 
         $('button#action-saveas').click(function(e) {
           saveAs();
-        });
-        $('#saveAsDialog #saveAsBtn').click(function() {
-          var url = $('#saveAsDialog input[name="saveAsLocation"]').val(),
-              ioType = $('#saveAsIoType').val();
-          mainDoc.save(url, getIO(ioType),
-            function() {
-              $('#saveAsDialog').modal('hide');
-              $('#docUrl').text(url);
-              $.jStorage.set("editor-document-url", url);
-              $.growl({
-                message: "Successfully saved document to <code>" + url + "</code>",
-                icon: "glyphicon glyphicon-ok"
-              }, {
-                type: 'success'
-              });
-            }, function(msg) {
-              $.growl({
-                message: msg,
-                icon: "glyphicon glyphicon-fire"
-              }, {
-                type: 'danger'
-              });
-            });
         });
 
         $('button#action-add').click(function(e) {
@@ -622,12 +520,6 @@
             editor.createNewEntityEditor($('#entityAddContent'), ontologyManager);
           }
         });
-
-      	$("#io_spq").change(
-      	  function() {
-      	    $.jStorage.set("editor-sparql-endpoint", $("#io_spq").val());
-      	  }
-      	) ;
 
         // reload the contents when the panel shows
         $(document).on('show-view-triples', function() {
