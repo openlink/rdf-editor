@@ -6,26 +6,13 @@
 @prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
 @prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
 
-foaf:
-  a owl:Ontology ;
-  dc11:title "Friend of a Friend (FOAF) vocabulary" ;
-  dc11:description "The Friend of a Friend (FOAF) RDF vocabulary, described using W3C RDF Schema and the Web Ontology Language." .
-
-rdfs:Class a owl:Class .
 foaf:Person
   a rdfs:Class, owl:Class ;
-  rdfs:label "Person" ;
-  rdfs:comment "A person." ;
   rdfs:subClassOf [
     a owl:Restriction ;
     owl:onProperty foaf:firstName ;
     owl:cardinality "1"^^xsd:nonNegativeInteger
-  ] ;
-  rdfs:isDefinedBy foaf: .
+  ].
 
 foaf:firstName
-  a rdf:Property, owl:DatatypeProperty ;
-  rdfs:comment "A string expressing what the user is happy for the general public (normally) to know about their current activity." ;
-  rdfs:domain foaf:Person ;
-  rdfs:range rdfs:Literal ;
-  rdfs:isDefinedBy foaf: .
+  a rdf:Property, owl:DatatypeProperty .
