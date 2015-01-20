@@ -307,22 +307,6 @@
         }
       }
 
-      // subscribe to editor events
-      $(editor).on('rdf-editor-success', function(e, d) {
-        $.growl({
-          message: d.message
-        }, {
-          type: "success"
-        });
-      });
-      $(editor).on('rdf-editor-error', function(e, d) {
-        $.growl({
-          message: d.message
-        }, {
-          type: "danger"
-        });
-      });
-
       // set defaults
       $.growl(false, {
         placement: {
@@ -452,6 +436,22 @@
 
               mainDoc = new RDFE.Document(config);
               editor = new RDFE.Editor(mainDoc, ontologyManager);
+
+              // subscribe to editor events
+              $(editor).on('rdf-editor-success', function(e, d) {
+                $.growl({
+                  message: d.message
+                }, {
+                  type: "success"
+                });
+              });
+              $(editor).on('rdf-editor-error', function(e, d) {
+                $.growl({
+                  message: d.message
+                }, {
+                  type: "danger"
+                });
+              });
 
               toggleView(config.options.defaultView);
 
