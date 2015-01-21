@@ -34,7 +34,6 @@ RDFE.Editor.prototype.makeTriple = function(s, p, o) {
 
 RDFE.Editor.prototype.createTripleList = function(container, callback) {
   var self = this;
-  this.doc = doc;
 
   if(!this.tripleView) {
     this.tripleView = new RDFE.TripleView(this.doc);
