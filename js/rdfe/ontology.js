@@ -706,7 +706,6 @@ RDFE.OntologyManager.prototype.ontologyRestrictionsParse = function(graph, ontol
         var sparql = RDFE_TEMPLATE.format(graph, ontologyClass.URI);
         self.store.execute(sparql, function(success, results) {
           if (success) {
-            var rows = 0;
             var property;
             var propertyURI = '',
                 cardinalityURI = '',
@@ -715,30 +714,15 @@ RDFE.OntologyManager.prototype.ontologyRestrictionsParse = function(graph, ontol
               var v1 = RDFE.sparqlValue(results[i]['v1']);
               var v2 = RDFE.sparqlValue(results[i]['v2']);
               var v3 = RDFE.sparqlValue(results[i]['v3']);
-              if ((i % 3 == 0) || (propertyURI != v1)) {
-                rows = 0;
-                propertyURI = '';
-                cardinalityURI = '';
-                cardinalityValue = '';
-              }
-              propertyURI = v1;
-              if (RDFE.uriDenormalize('rdf:type') == v2) {
-                rows++;
-              }
-              if (RDFE.uriDenormalize('owl:onProperty') == v2) {
-                rows++;
-              }
               if (
                   (RDFE.uriDenormalize('owl:minCardinality') == v2) ||
                   (RDFE.uriDenormalize('owl:maxCardinality') == v2) ||
                   (RDFE.uriDenormalize('owl:cardinality') == v2)
                  )
               {
-                rows++;
+                propertyURI = v1;
                 cardinalityURI = v2;
                 cardinalityValue = v3;
-              }
-              if (rows == 3) {
                 property = _.clone(self.OntologyProperty(graph, propertyURI));
                 property[RDFE.uriLabel(cardinalityURI)] = parseInt(cardinalityValue);
                 ontologyClass.properties[property.URI] = property;
