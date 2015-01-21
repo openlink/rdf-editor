@@ -472,7 +472,9 @@ RDFE.OntologyManager.prototype.Ontology = function(graph, URI, options) {
   var self = this;
   var ontology = self.ontologyByURI(URI);
   if (ontology) {
-    ontology.parse(graph, options);
+    if (graph && ontology.sources.indexOf(graph) == -1) {
+      ontology.parse(graph, options);
+    }
   } else {
     ontology = new RDFE.Ontology(self, graph, URI, options);
   }
@@ -484,7 +486,9 @@ RDFE.OntologyManager.prototype.OntologyClass = function(graph, URI, options) {
   var self = this;
   var ontologyClass = self.ontologyClassByURI(URI);
   if (ontologyClass) {
-    ontologyClass.parse(graph, options);
+    if (graph && ontologyClass.sources.indexOf(graph) === -1) {
+      ontologyClass.parse(graph, options);
+    }
   } else {
     ontologyClass = new RDFE.OntologyClass(self, graph, URI, options);
   }
@@ -496,7 +500,9 @@ RDFE.OntologyManager.prototype.OntologyProperty = function(graph, URI, options) 
   var self = this;
   var ontologyProperty = self.ontologyPropertyByURI(URI);
   if (ontologyProperty) {
-    ontologyProperty.parse(graph, options);
+    if (graph && ontologyProperty.sources.indexOf(graph) === -1) {
+      ontologyProperty.parse(graph, options);
+    }
   } else {
     ontologyProperty = new RDFE.OntologyProperty(self, graph, URI, options);
   }
@@ -741,7 +747,9 @@ RDFE.OntologyManager.prototype.FresnelLens = function(graph, URI, options) {
   var self = this;
   var fresnelLens = self.fresnelLensByURI(URI);
   if (fresnelLens) {
-    fresnelLens.parse(graph, options);
+    if (graph && fresnelLens.sources.indexOf(graph) === -1) {
+      fresnelLens.parse(graph, options);
+    }
   } else {
     fresnelLens = new RDFE.FresnelLens(self, graph, URI, options);
   }
@@ -753,7 +761,9 @@ RDFE.OntologyManager.prototype.FresnelFormat = function(graph, URI, options) {
   var self = this;
   var fresnelFormat = self.fresnelFormatByURI(URI);
   if (fresnelFormat) {
-    fresnelFormat.parse(graph, options);
+    if (graph && fresnelFormat.sources.indexOf(graph) === -1) {
+      fresnelFormat.parse(graph, options);
+    }
   } else {
     fresnelFormat = new RDFE.FresnelFormat(self, graph, URI, options);
   }
@@ -765,7 +775,9 @@ RDFE.OntologyManager.prototype.FresnelGroup = function(graph, URI, options) {
   var self = this;
   var fresnelGroup = self.fresnelGroupByURI(URI);
   if (fresnelGroup) {
-    fresnelGroup.parse(graph, options);
+    if (graph && fresnelGroup.sources.indexOf(graph) === -1) {
+      fresnelGroup.parse(graph, options);
+    }
   } else {
     fresnelGroup = new RDFE.FresnelGroup(self, graph, URI, options);
   }
@@ -1002,6 +1014,7 @@ RDFE.Ontology = function(ontologyManager, graph, URI, options) {
   this.options = $.extend({}, options);
   this.URI = URI;
   this.prefix = RDFE.prefixByOntology(URI);
+  this.sources = [];
   this.classes = {};
   this.properties = {};
 
@@ -1015,6 +1028,9 @@ RDFE.Ontology.prototype.parse = function(graph, options) {
   var self = this;
   if (!graph) {
     return;
+  }
+  if (self.sources.indexOf(graph) == -1) {
+    self.sources.push(graph);
   }
   self.manager.store.node(self.URI, graph, function(success, results) {
     if (!success) {
@@ -1072,6 +1088,7 @@ RDFE.OntologyClass = function(ontologyManager, graph, URI, options) {
 
   this.options = $.extend({}, options);
   this.URI = URI;
+  this.sources = [];
   this.subClassOf = [];
   this.disjointWith = [];
   this.properties = {};
@@ -1092,6 +1109,9 @@ RDFE.OntologyClass.prototype.parse = function(graph, options) {
   var self = this;
   if (!graph) {
     return;
+  }
+  if (self.sources.indexOf(graph) == -1) {
+    self.sources.push(graph);
   }
   ontologyManager.store.node(self.URI, graph, function(success, results) {
     if (!success) {
@@ -1144,6 +1164,7 @@ RDFE.OntologyProperty = function(ontologyManager, graph, URI, options) {
 
   this.options = $.extend({}, options);
   this.URI = URI;
+  this.sources = [];
 
   this.manager = ontologyManager;
   this.manager.ontologyProperties[URI] = self;
@@ -1158,6 +1179,9 @@ RDFE.OntologyProperty.prototype.parse = function(graph, options) {
   var self = this;
   if (!graph) {
     return;
+  }
+  if (self.sources.indexOf(graph) == -1) {
+    self.sources.push(graph);
   }
   self.manager.store.node(self.URI, graph, function(success, results) {
     if (!success) {
@@ -1233,6 +1257,7 @@ RDFE.OntologyIndividual = function(ontologyManager, graph, URI, options) {
 
   this.options = $.extend({}, options);
   this.URI = URI;
+  this.sources = [];
 
   this.manager = ontologyManager;
   this.manager.individuals[URI] = this;
@@ -1242,6 +1267,12 @@ RDFE.OntologyIndividual = function(ontologyManager, graph, URI, options) {
 
 RDFE.OntologyIndividual.prototype.parse = function(graph, options) {
   var self = this;
+  if (!graph) {
+    return;
+  }
+  if (self.sources.indexOf(graph) == -1) {
+    self.sources.push(graph);
+  }
   self.manager.store.node(self.URI, graph, function(success, results) {
     if (!success) {
       console.error('individual =>', results);
@@ -1279,6 +1310,7 @@ RDFE.FresnelLens = function(ontologyManager, graph, URI, options) {
   // console.log('fresnel lens =>', URI);
   var self = this;
   this.URI = URI;
+  this.sources = [];
 
   this.manager = ontologyManager;
   this.manager.fresnelLenses[URI] = this;
@@ -1288,7 +1320,12 @@ RDFE.FresnelLens = function(ontologyManager, graph, URI, options) {
 
 RDFE.FresnelLens.prototype.parse = function(graph, options) {
   var self = this;
-
+  if (!graph) {
+    return;
+  }
+  if (self.sources.indexOf(graph) == -1) {
+    self.sources.push(graph);
+  }
   self.manager.store.node(self.URI, graph, function(success, results) {
     if (!success) {
       console.error('fresnel lens =>', results);
@@ -1330,6 +1367,7 @@ RDFE.FresnelFormat = function(ontologyManager, graph, URI, options) {
   var self = this;
 
   this.URI = URI;
+  this.sources = [];
   this.propertyFormatDomain = [];
 
   this.manager = ontologyManager;
@@ -1340,7 +1378,12 @@ RDFE.FresnelFormat = function(ontologyManager, graph, URI, options) {
 
 RDFE.FresnelFormat.prototype.parse = function(graph, options) {
   var self = this;
-
+  if (!graph) {
+    return;
+  }
+  if (self.sources.indexOf(graph) == -1) {
+    self.sources.push(graph);
+  }
   self.manager.store.node(self.URI, graph, function(success, results) {
     if (!success) {
       console.error('fresnel format =>', results);
@@ -1387,6 +1430,7 @@ RDFE.FresnelGroup = function(ontologyManager, graph, URI, options) {
   // console.log('fresnel group =>', URI);
   var self = this;
   this.URI = URI;
+  this.sources = [];
 
   this.manager = ontologyManager;
   this.manager.fresnelGroups[URI] = this;
@@ -1396,6 +1440,12 @@ RDFE.FresnelGroup = function(ontologyManager, graph, URI, options) {
 
 RDFE.FresnelGroup.prototype.parse = function(graph, options) {
   var self = this;
+  if (!graph) {
+    return;
+  }
+  if (self.sources.indexOf(graph) == -1) {
+    self.sources.push(graph);
+  }
   self.manager.store.node(self.URI, graph, function(success, results) {
     if (!success) {
       console.error('fresnel group =>', results);
