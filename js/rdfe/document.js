@@ -83,6 +83,35 @@ RDFE.Document.prototype.new = function(success, fail) {
   });
 };
 
+RDFE.Document.prototype.deleteTriples = function(s, p, o, success, fail) {
+  var t = '';
+  if(s)
+    t += s.toN3();
+  else
+    t += '?s';
+  t += ' ';
+  if(p)
+    t += p.toN3();
+  else
+    t += '?p';
+  t += ' ';
+  if(o)
+    t += o.toN3();
+  else
+    t += '?o';
+
+  var q = 'with <' + self.graph + '> delete { ' + t + ' } where { ' + t + ' }';
+  self.store.execute(q, function(s, r) {
+    if(s) {
+      self.setChanged();
+      if(success)
+        success();
+    }
+    else if(fail)
+      fail();
+  });
+};
+
 RDFE.Document.prototype.deleteEntity = function(uri, success, fail) {
   var self = this;
 
