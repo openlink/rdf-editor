@@ -9,6 +9,7 @@
 @prefix google: <http://rdf.data-vocabulary.org/#>.
 @prefix skos: <http://www.w3.org/2004/02/skos/core#> .
 @prefix bce: <http://ldp.e.corpintra.net/ontology/bce#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
 
 lens:TouchPointLens a fresnel:Lens;
     fresnel:classLensDomain bce:TouchPoint;
