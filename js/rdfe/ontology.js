@@ -235,6 +235,8 @@ RDFE.isUriPrefix = function(v) {
  *
  */
 RDFE.uriOntology = function(v) {
+  if(!v)
+    return null;
   var m = Math.max(v.lastIndexOf(':'), v.lastIndexOf('/'), v.lastIndexOf('#'))
   if (m != -1) {
     return v.substring(0, m + 1);
