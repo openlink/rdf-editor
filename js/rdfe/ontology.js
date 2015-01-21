@@ -897,6 +897,7 @@ RDFE.OntologyManager.prototype.fresnelGroupsParse = function(graph, params) {
   }
 }
 
+// FIXME: why is the classLensDomain not the key in the self.fresnelLenses dict??? Who cares about the uris for the lenses??
 RDFE.OntologyManager.prototype.findFresnelLens = function(domainURI) {
   var self = this;
   for (v in self.fresnelLenses) {
@@ -905,6 +906,7 @@ RDFE.OntologyManager.prototype.findFresnelLens = function(domainURI) {
       return x;
     }
   }
+  // FIXME: check super-classes for lens definitions
   return null;
 }
 
