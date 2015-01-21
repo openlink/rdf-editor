@@ -479,6 +479,7 @@ RDFE.OntologyManager.prototype.Ontology = function(graph, URI, options) {
     }
   } else {
     ontology = new RDFE.Ontology(self, graph, URI, options);
+    $(self).trigger('ontologyLoaded', [ self, ontology ]);
   }
 
   return ontology;
@@ -619,11 +620,10 @@ RDFE.OntologyManager.prototype.ontologyParse = function(URI, params) {
       self.graphClear(URI);
 
       if (params && params.success) {
-        params.success(ontology);
+        params.success(ontology); // FIXME: ontology is not defined
       }
 
       $self.trigger('changed', [ self ]);
-      // $self.trigger('ontologyLoaded', [ self, ontology ]);
     }
   })(params);
 
