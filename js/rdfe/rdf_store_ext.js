@@ -92,19 +92,21 @@ rdfstore.Store.prototype.loadTurtle = function(data, graph, callback) {
   };
 
   var cnt = 0;
+  var triples = [];
   parser.parse(data, function(error, triple, prefixes) {
     if (error) {
       if(callback)
         callback(false, error);
     }
     if (triple == null) {
+      self.insert(self.rdf.createGraph(triples), graph, function() {});
       // exec success function
       if (callback) {
         callback(true, cnt);
       }
     }
     else {
-      self.insert([convertTriple(triple)], graph, function() {});
+      triples.push(convertTriple(triple));
       cnt++;
     }
   });
