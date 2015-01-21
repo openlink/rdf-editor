@@ -1,8 +1,10 @@
 {
   "ontology": {
-    "proxy": true,
+    "proxy": false,
+    "fresnelLenses": true,
+    "fresnelFormats": true,
+    "fresnelGroups": true,
     "preloadOntologies": [
-      "http://xmlns.com/foaf/0.1/",
       "http://trueg.selfhost.eu:8899/rdf-editor/test/foaf-restrictions.ttl",
       "http://trueg.selfhost.eu:8899/rdf-editor/test/BCE-Domain-v0.8.owl.ttl",
       "http://trueg.selfhost.eu:8899/rdf-editor/test/bce-restrictions.ttl"
