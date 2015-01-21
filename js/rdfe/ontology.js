@@ -550,17 +550,19 @@ RDFE.OntologyManager.prototype.load = function(URI, params) {
   var __ontologyLoaded = (function(URI, params) {
     return function(data, status, xhr) {
       var contentType = (xhr.getResponseHeader('content-type') || '').split(';')[0];
-      self.store.load(contentType, data.trim('"'), URI, (function(params) {
-        return function(success, results) {
-          if (!success) {
-            console.error('ontology load =>', results);
-            return;
-          }
-          if (params && params.success) {
-            params.success();
-          }
-        };
-      })(params))
+      var loadResultFct = function(success, results) {
+        if (!success) {
+          console.error('ontology load =>', results);
+          return;
+        }
+        if (params && params.success) {
+          params.success();
+        }
+      };
+      if(contentType.indexOf('turtle') > 0)
+        self.store.loadTurtle(data, URI, loadResultFct);
+      else
+        self.store.load(contentType, data, URI, loadResultFct);
     }
   })(URI, params);
   jQuery.ajax({
