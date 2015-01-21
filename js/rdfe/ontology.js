@@ -1159,6 +1159,39 @@ RDFE.OntologyClass.prototype.propertiesAsArray = function() {
   return properties;
 }
 
+RDFE.OntologyClass.prototype.maxCardinalityForProperty = function(p, cc) {
+  var prop = this.properties[p],
+      c = null;
+
+  // check if this class has a cardinality itself
+  if(prop) {
+    c = prop.cardinality || prop.maxCardinality;
+    if(c)
+      return c;
+  }
+
+  // check super-classes (with loop-protection)
+  for(var i = 0; i < this.subClassOf; i++) {
+    var sc = this.subClassOf[i];
+    if($.inArray(sc.URI, cc) < 0) {
+      cc.push(sc.URI);
+      c = this.subClassOf[i].maxCardinalityForProperty(p, cc);
+      if(c)
+        return c;
+    }
+    else {
+      console.log('CAUTION: Found sub-class loop in ', cc);
+    }
+  }
+
+  return null
+};
+
+RDFE.OntologyClass.prototype.isAggregateProperty = function(p) {
+  // FIXME: actually check the parsed value
+  return (p == "urn:agg");
+};
+
 /*
  *
  * Ontology Property
