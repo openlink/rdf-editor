@@ -12,4 +12,8 @@ foaf:Person
     a owl:Restriction ;
     owl:onProperty foaf:firstName ;
     owl:cardinality "1"^^xsd:nonNegativeInteger
+  ], [
+    a owl:Restriction ;
+    owl:onProperty foaf:lastName ;
+    owl:maxCardinality "2"^^xsd:nonNegativeInteger
   ].
