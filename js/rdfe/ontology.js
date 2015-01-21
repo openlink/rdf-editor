@@ -471,6 +471,8 @@ RDFE.OntologyManager.prototype.graphClear = function(graph) {
 }
 
 RDFE.OntologyManager.prototype.Ontology = function(graph, URI, options) {
+  if(!URI)
+    return null;
   var self = this;
   var ontology = self.ontologyByURI(URI);
   if (ontology) {
@@ -719,29 +721,37 @@ RDFE.OntologyManager.prototype.ontologyRestrictionsParse = function(graph, ontol
             var property;
             var propertyURI = '',
                 cardinalityURI = '',
-                cardinalityValue = '',
-                isAggregate = false;
+                cardinalityValue = '';
             for (var i = 0, l = results.length; i < l; i++) {
               var v1 = RDFE.sparqlValue(results[i]['v1']);
               var v2 = RDFE.sparqlValue(results[i]['v2']);
               var v3 = RDFE.sparqlValue(results[i]['v3']);
 
-              if (RDFE.uriDenormalize('rdf:type') == v2 && v3 == 'http://www.openlinksw.com/ontology/oplowl#AggregateRestriction')
-                isAggregate = true;
+              propertyURI = v1;
 
-              if (
+              if (RDFE.uriDenormalize('rdf:type') == v2 && v3 == 'http://www.openlinksw.com/ontology/oplowl#AggregateRestriction') {
+                console.log('Adding ', v3, 'for', propertyURI);
+                property = ontologyClass.properties[propertyURI];
+                if(!property)
+                  property = _.clone(self.OntologyProperty(graph, propertyURI));
+                property.isAggregate = true;
+                ontologyClass.properties[propertyURI] = property;
+              }
+
+              else if (
                   (RDFE.uriDenormalize('owl:minCardinality') == v2) ||
                   (RDFE.uriDenormalize('owl:maxCardinality') == v2) ||
                   (RDFE.uriDenormalize('owl:cardinality') == v2)
                  )
               {
-                propertyURI = v1;
+                console.log('Adding ', v2, 'for', propertyURI);
                 cardinalityURI = v2;
                 cardinalityValue = v3;
-                property = _.clone(self.OntologyProperty(graph, propertyURI));
+                property = ontologyClass.properties[propertyURI];
+                if(!property)
+                  property = _.clone(self.OntologyProperty(graph, propertyURI));
                 property[RDFE.uriLabel(cardinalityURI)] = parseInt(cardinalityValue);
-                property.isAggregate = isAggregate;
-                ontologyClass.properties[property.URI] = property;
+                ontologyClass.properties[propertyURI] = property;
               }
             }
           }
@@ -1235,7 +1245,8 @@ RDFE.OntologyProperty = function(ontologyManager, graph, URI, options) {
   this.manager.ontologyProperties[URI] = self;
 
   this.ontology = self.manager.Ontology(graph, RDFE.uriOntology(URI), options);
-  this.ontology.properties[URI] = self;
+  if(this.ontology)
+    this.ontology.properties[URI] = self;
 
   this.parse(graph, options);
 }
