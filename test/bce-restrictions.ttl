@@ -8,6 +8,7 @@
 @prefix lens: <http://daimler.com/whatever/test/bce#>.
 @prefix google: <http://rdf.data-vocabulary.org/#>.
 @prefix skos: <http://www.w3.org/2004/02/skos/core#> .
+@prefix bce: <http://ldp.e.corpintra.net/ontology/bce#> .
 
 bce:TouchPoint a owl:Class ;
   rdfs:subClassOf [
