@@ -59,22 +59,53 @@ rdfstore.Store.prototype.rdf.api.Literal.prototype.localeCompare = function(comp
     return this.toString().localeCompare(compareNode.toString(), locales, options);
 };
 
-// FIXME: No Blank node support!!!!!
-rdfstore.Store.prototype.n3ToRdfStoreTriple = function(triple) {
-  //console.log('Convert N3 triple: ', triple);
-  var s = this.rdf.createNamedNode(triple.subject);
-  var p = this.rdf.createNamedNode(triple.predicate);
-  var o = null;
-  if(N3.Util.isLiteral(triple.object)) {
+rdfstore.Store.prototype.loadTurtle = function(data, graph, callback) {
+  var self = this;
+  var parser = N3.Parser();
+
+  // mapping for blank nodes
+  var bns = {};
+
+  var convertNode = function(node) {
+    if(N3.Util.isLiteral(node)) {
       // rdfstore treats the empty string as a valid language
-      var l = N3.Util.getLiteralLanguage(triple.object);
+      var l = N3.Util.getLiteralLanguage(node);
       if(l == '')
-          l = null;
-      o = this.rdf.createLiteral(N3.Util.getLiteralValue(triple.object), l, N3.Util.getLiteralType(triple.object));
-  }
-  else {
-      o = this.rdf.createNamedNode(triple.object);
-  }
-  //console.log('Converted triple: ', this.rdf.createTriple(s, p, o));
-  return this.rdf.createTriple(s, p, o);
+        l = null;
+      return self.rdf.createLiteral(N3.Util.getLiteralValue(node), l, N3.Util.getLiteralType(node));
+    }
+    else if(N3.Util.isBlank(node)) {
+      var bn = bns[node];
+      if(!bn) {
+        bn = self.rdf.createBlankNode();
+        bns[node] = bn;
+      }
+      return bn;
+    }
+    else {
+      return self.rdf.createNamedNode(node);
+    }
+  };
+
+  var convertTriple = function(triple) {
+    return self.rdf.createTriple(convertNode(triple.subject), convertNode(triple.predicate), convertNode(triple.object));
+  };
+
+  var cnt = 0;
+  parser.parse(data, function(error, triple, prefixes) {
+    if (error) {
+      if(callback)
+        callback(false, error);
+    }
+    if (triple == null) {
+      // exec success function
+      if (callback) {
+        callback(true, cnt);
+      }
+    }
+    else {
+      self.insert([convertTriple(triple)], graph, function() {});
+      cnt++;
+    }
+  });
 };
