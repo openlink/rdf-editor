@@ -231,10 +231,13 @@
           },
           render: {
             item: function(item, escape) {
-              return '<div>' + escape(item.label) + '</div>';
+              return '<div>' + escape(item.label || item.value) + '</div>';
             },
             option: function(item, escape) {
-              return '<div>' + escape(item.label) + ' <small>(' + escape(item.value) + ')</small></div>';
+              if(item.label)
+                return '<div>' + escape(item.label) + ' <small>(' + escape(item.value) + ')</small></div>';
+              else
+                return '<div>' + escape(item.value) + '</div>';
             }
           }
         });
