@@ -78,3 +78,54 @@ rdfstore.Store.prototype.n3ToRdfStoreTriple = function(triple) {
   //console.log('Converted triple: ', this.rdf.createTriple(s, p, o));
   return this.rdf.createTriple(s, p, o);
 };
+
+rdfstore.Store.prototype.loadTurtle = function(data, graph, callback) {
+  var self = this;
+  var parser = N3.Parser();
+
+  // mapping for blank nodes
+  var bns = {};
+
+  var convertNode = function(node) {
+    if(N3.Util.isLiteral(node)) {
+      // rdfstore treats the empty string as a valid language
+      var l = N3.Util.getLiteralLanguage(node);
+      if(l == '')
+        l = null;
+      return self.rdf.createLiteral(N3.Util.getLiteralValue(node), l, N3.Util.getLiteralType(node));
+    }
+    else if(N3.Util.isBlank(node)) {
+      var bn = bns[node];
+      if(!bn) {
+        bn = self.rdf.createBlankNode();
+        bns[node] = bn;
+      }
+      return bn;
+    }
+    else {
+      return self.rdf.createNamedNode(node);
+    }
+  };
+
+  var convertTriple = function(triple) {
+    return self.rdf.createTriple(convertNode(triple.subject), convertNode(triple.predicate), convertNode(triple.object));
+  };
+
+  var cnt = 0;
+  parser.parse(data, function(error, triple, prefixes) {
+    if (error) {
+      if(callback)
+        callback(false, error);
+    }
+    if (triple == null) {
+      // exec success function
+      if (callback) {
+        callback(true, cnt);
+      }
+    }
+    else {
+      self.insert([convertTriple(triple)], graph, function() {});
+      cnt++;
+    }
+  });
+};
