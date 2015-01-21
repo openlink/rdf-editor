@@ -719,11 +719,16 @@ RDFE.OntologyManager.prototype.ontologyRestrictionsParse = function(graph, ontol
             var property;
             var propertyURI = '',
                 cardinalityURI = '',
-                cardinalityValue = '';
+                cardinalityValue = '',
+                isAggregate = false;
             for (var i = 0, l = results.length; i < l; i++) {
               var v1 = RDFE.sparqlValue(results[i]['v1']);
               var v2 = RDFE.sparqlValue(results[i]['v2']);
               var v3 = RDFE.sparqlValue(results[i]['v3']);
+
+              if (RDFE.uriDenormalize('rdf:type') == v2 && v3 == 'http://www.openlinksw.com/ontology/oplowl#AggregateRestriction')
+                isAggregate = true;
+
               if (
                   (RDFE.uriDenormalize('owl:minCardinality') == v2) ||
                   (RDFE.uriDenormalize('owl:maxCardinality') == v2) ||
@@ -735,6 +740,7 @@ RDFE.OntologyManager.prototype.ontologyRestrictionsParse = function(graph, ontol
                 cardinalityValue = v3;
                 property = _.clone(self.OntologyProperty(graph, propertyURI));
                 property[RDFE.uriLabel(cardinalityURI)] = parseInt(cardinalityValue);
+                property.isAggregate = isAggregate;
                 ontologyClass.properties[property.URI] = property;
               }
             }
@@ -1184,12 +1190,32 @@ RDFE.OntologyClass.prototype.maxCardinalityForProperty = function(p, cc) {
     }
   }
 
-  return null
+  return null;
 };
 
-RDFE.OntologyClass.prototype.isAggregateProperty = function(p) {
-  // FIXME: actually check the parsed value
-  return (p == "urn:agg");
+RDFE.OntologyClass.prototype.isAggregateProperty = function(p, cc) {
+  var prop = this.properties[p];
+
+  // check if this class has a cardinality itself
+  if(prop) {
+    if(prop.isAggregate)
+      return true;
+  }
+
+  // check super-classes (with loop-protection)
+  for(var i = 0; i < this.subClassOf; i++) {
+    var sc = this.subClassOf[i];
+    if($.inArray(sc.URI, cc) < 0) {
+      cc.push(sc.URI);
+      if(this.subClassOf[i].isAggregate(p, cc))
+        return true;
+    }
+    else {
+      console.log('CAUTION: Found sub-class loop in ', cc);
+    }
+  }
+
+  return false;
 };
 
 /*
