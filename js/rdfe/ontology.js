@@ -669,7 +669,7 @@ RDFE.OntologyManager.prototype.ontologyClassesParse = function(graph, params) {
           for (var j = 0, m = results.length; j < m; j++) {
             var c = results[j]["i"].value;
             if (!RDFE.isBlankNode(c)) {
-              self.OntologyIndividual(graph, c, params);
+              self.individuals.push(new RDFE.OntologyIndividual(self, graph, c, params));
             }
           }
         });
