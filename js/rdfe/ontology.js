@@ -285,7 +285,13 @@ RDFE.uriNormalize = function(v) {
  *
  */
 RDFE.isBlankNode = function(v) {
-  return (v.match(/^\_\:*/)) ? true : false;
+  if (_.isString(v))
+    return (v.match(/^\_\:*/)) ? true : false;
+
+  if (_.isObject(v) && v.URI)
+    return RDFE.isBlankNode(v.URI);
+
+  return false;
 }
 
 /*
@@ -675,16 +681,6 @@ RDFE.OntologyManager.prototype.ontologyPropertiesParse = function(graph, params)
     for (var i = 0, l = results.length; i < l; i++) {
       var p = results[i]["p"].value;
       var property = self.OntologyProperty(graph, p, params);
-
-      // add property to classes
-      if (property.domain) {
-        for (var j = 0, m = property.domain.length; j < m; j++) {
-          var ontologyClass = self.ontologyClassByURI(property.domain[j]);
-          if (ontologyClass) {
-            ontologyClass.properties[p] = property;
-          }
-        }
-      }
     }
   });
 }
@@ -695,46 +691,63 @@ RDFE.OntologyManager.prototype.ontologyRestrictionsParse = function(graph, ontol
   for (var i = 0, l = ontologyClasses.length; i < l; i++) {
     var ontologyClass = ontologyClasses[i];
     for (var j = 0, m = ontologyClass.subClassOf.length; j < m; j++) {
-      if (RDFE.isBlankNode(ontologyClass.subClassOf[j])) {
-        for (x in ontologyClass.properties) {
-          var property = ontologyClass.properties[x];
-          var restrictions = {};
-          var queryRestriction = function (restriction) {
-            var RDFE_TEMPLATE =
-              '\n SELECT distinct ?item ' +
-              '\n   FROM <{0}> ' +
-              '\n  WHERE { ' +
-              '\n          <{1}> rdfs:subClassOf ' +
-              '\n          [ ' +
-              '\n            owl:onProperty <{2}>; ' +
-              '\n            {3} ?item ' +
-              '\n          ]. ' +
-              '\n        } ';
-            var sparql = RDFE_TEMPLATE.format(graph, ontologyClass.URI, property.URI, restriction);
-            self.store.execute(sparql, function(success, results) {
-              if (success) {
-                for (var i = 0, l = results.length; i < l; i++) {
-                  restrictions[RDFE.uriLabel(restriction)] = parseInt(RDFE.sparqlValue(results[i]["item"]));
-                  return;
-                }
+      if (RDFE.isBlankNode(ontologyClass.subClassOf[j])) { // FIXME: why does it have to be a blank node??? Just query all restrictions in one go, at least per class.
+        var RDFE_TEMPLATE =
+        '\n SELECT distinct ?v1 ?v2 ?v3 ' +
+        '\n  FROM <{0}>' +
+        '\n WHERE { ' +
+        '\n         <{1}> rdfs:subClassOf ' +
+        '\n         [ ' +
+        '\n           owl:onProperty ?v1; ' +
+        '\n           ?v2 ?v3 ' +
+        '\n         ]. ' +
+        '\n       } ' +
+        '\n ORDER BY ?v1 ?v2 ';
+        var sparql = RDFE_TEMPLATE.format(graph, ontologyClass.URI);
+        self.store.execute(sparql, function(success, results) {
+          if (success) {
+            var rows = 0;
+            var property;
+            var propertyURI = '',
+                cardinalityURI = '',
+                cardinalityValue = '';
+            for (var i = 0, l = results.length; i < l; i++) {
+              var v1 = RDFE.sparqlValue(results[i]['v1']);
+              var v2 = RDFE.sparqlValue(results[i]['v2']);
+              var v3 = RDFE.sparqlValue(results[i]['v3']);
+              if ((i % 3 == 0) || (propertyURI != v1)) {
+                rows = 0;
+                propertyURI = '';
+                cardinalityURI = '';
+                cardinalityValue = '';
               }
-            });
+              propertyURI = v1;
+              if (RDFE.uriDenormalize('rdf:type') == v2) {
+                rows++;
+              }
+              if (RDFE.uriDenormalize('owl:onProperty') == v2) {
+                rows++;
+              }
+              if (
+                  (RDFE.uriDenormalize('owl:minCardinality') == v2) ||
+                  (RDFE.uriDenormalize('owl:maxCardinality') == v2) ||
+                  (RDFE.uriDenormalize('owl:cardinality') == v2)
+                 )
+              {
+                rows++;
+                cardinalityURI = v2;
+                cardinalityValue = v3;
+              }
+              if (rows == 3) {
+                property = _.clone(self.OntologyProperty(graph, propertyURI));
+                property[RDFE.uriLabel(cardinalityURI)] = parseInt(cardinalityValue);
+                ontologyClass.properties[property.URI] = property;
+              }
+            }
           }
-          // check cardinality first
-          queryRestriction('owl:cardinality');
-
-          // min cardinality
-          queryRestriction('owl:minCardinality');
-
-          // max cardinality
-          queryRestriction('owl:maxCardinality');
-
-          if (!_.isEmpty(restrictions)) {
-            property = _.clone(property);
-            $.extend(property, restrictions);
-            ontologyClass.properties[property.URI] = property;
-          }
-        }
+        });
+        ontologyClass.subClassOf.splice(j, 1);
+        break;
       }
     }
   }
@@ -792,7 +805,7 @@ RDFE.OntologyManager.prototype.fresnelParse = function(URI, params) {
   // console.log(URI);
   var self = this;
   var $self = $(self);
-  if (options.preloadOnly == true) {
+  if (self.options.preloadOnly == true) {
     if (params && params.success) {
       params.success();
     }
@@ -1016,7 +1029,9 @@ RDFE.Ontology = function(ontologyManager, graph, URI, options) {
 
 RDFE.Ontology.prototype.parse = function(graph, options) {
   var self = this;
-
+  if (!graph) {
+    return;
+  }
   self.manager.store.node(self.URI, graph, function(success, results) {
     if (!success) {
       console.error('ontology =>', results);
@@ -1091,6 +1106,9 @@ RDFE.OntologyClass = function(ontologyManager, graph, URI, options) {
 
 RDFE.OntologyClass.prototype.parse = function(graph, options) {
   var self = this;
+  if (!graph) {
+    return;
+  }
   ontologyManager.store.node(self.URI, graph, function(success, results) {
     if (!success) {
       console.error('class =>', results);
@@ -1114,7 +1132,7 @@ RDFE.OntologyClass.prototype.parse = function(graph, options) {
         self.description = RDFE.coalesce(self.description, o);
 
       else if (p == RDFE.uriDenormalize('rdfs:subClassOf'))
-        self.subClassOf.push(o);
+        self.subClassOf.push(self.manager.OntologyClass(graph, o, options));
 
       else if (p == RDFE.uriDenormalize('owl:disjointWith'))
         self.disjointWith.push(o);
@@ -1147,15 +1165,16 @@ RDFE.OntologyProperty = function(ontologyManager, graph, URI, options) {
   this.manager.ontologyProperties[URI] = self;
 
   this.ontology = self.manager.Ontology(graph, RDFE.uriOntology(URI), options);
-  if (this.ontology) {
-    this.ontology.properties[URI] = self;
-  }
+  this.ontology.properties[URI] = self;
 
   this.parse(graph, options);
 }
 
 RDFE.OntologyProperty.prototype.parse = function(graph, options) {
   var self = this;
+  if (!graph) {
+    return;
+  }
   self.manager.store.node(self.URI, graph, function(success, results) {
     if (!success) {
       console.error('property =>', results);
@@ -1193,10 +1212,16 @@ RDFE.OntologyProperty.prototype.parse = function(graph, options) {
         self.subPropertyOf = RDFE.coalesce(self.subPropertyOf, o);
 
       else if (p == RDFE.uriDenormalize('rdfs:range'))
-        self.range = RDFE.coalesce(self.range, o);
+        self.range = RDFE.coalesce(self.range, o); // TODO: would be nice if this was an actual Class object rather than a string. Again, if it does not exist, an empty one can be created.
 
-      else if (!self.domain && (p == RDFE.uriDenormalize('rdfs:domain')))
+      else if (!self.domain && (p == RDFE.uriDenormalize('rdfs:domain'))) {
         self.domain = RDFE.collectionQuery(self.manager.store, graph, self.URI, 'rdfs:domain', o);
+        for (var j = 0, m = self.domain.length; j < m; j++) {
+          var ontologyClass = self.manager.OntologyClass(graph, self.domain[j]);
+          self.domain[j] = ontologyClass;
+          ontologyClass.properties[self.URI] = self;
+        }
+      }
     }
   });
 }
@@ -1256,8 +1281,7 @@ RDFE.OntologyIndividual.prototype.parse = function(graph, options) {
         self.description = RDFE.coalesce(self.description, o);
 
       else if (p == RDFE.uriDenormalize('rdf:type'))
-        // !!!
-        self.class = o;
+        self.class = self.manager.OntologyClass(graph, o. options);
     }
   });
 }
@@ -1424,19 +1448,19 @@ RDFE.Template = function(ontologyManager, URI, options, callback) {
   this.manager.templates.push(this);
 
   var __properties = function () {
-    var URIs = [self.URI];
-    var ontologyClass = self.manager.ontologyClassByURI(self.URI);
-    if (ontologyClass && !_.isEmpty(ontologyClass.subClassOf)) {
+    var ontologyClass = self.manager.OntologyClass(null, self.URI);
+    var ontologyClasses = [ontologyClass];
+    if (!_.isEmpty(ontologyClass.subClassOf)) {
       for (var i = 0, l = ontologyClass.subClassOf.length; i < l; i++) {
         if (!RDFE.isBlankNode(ontologyClass.subClassOf[i])) {
-          URIs.push(ontologyClass.subClassOf[i]);
+          ontologyClasses.push(ontologyClass.subClassOf[i]);
         }
       }
     }
-    for (var i = 0, l = URIs.length; i < l; i++) {
+    for (var i = 0, l = ontologyClasses.length; i < l; i++) {
       var properties = [];
-      var ontologyClass = self.manager.ontologyClassByURI(URIs[i]);
-      var fresnelLens = self.manager.fresnelLensByURI(URIs[i]);
+      var ontologyClass = ontologyClasses[i];
+      var fresnelLens = self.manager.fresnelLensByURI(ontologyClass.URI);
       if (fresnelLens && fresnelLens.showProperties) {
         for (var j = 0, m = fresnelLens.showProperties.length; j < m; j++) {
           var propertyURI = fresnelLens.showProperties[j];
@@ -1447,7 +1471,7 @@ RDFE.Template = function(ontologyManager, URI, options, callback) {
           if (!property) {
             property = self.manager.ontologyPpropertyByURI(propertyURI);
           }
-          if (property && property.hasDomain(URIs[i])) {
+          if (property && property.hasDomain(ontologyClass.URI)) {
             self.properties.push(property);
           }
         }
