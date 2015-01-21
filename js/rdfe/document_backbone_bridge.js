@@ -102,8 +102,13 @@ RDFE.Document.Model = Backbone.Model.extend({
         var lens = null;
         for (var i = 0, l = r.length; i < l; i++) {
           if (r[i].p.value == RDFE.uriDenormalize('rdf:type')) {
-            if(!lens)
+            if(!lens) {
               lens = ontologyManager.findFresnelLens(r[i].o.value);
+              if(lens && lens.showProperties.length == 0) {
+                console.log('Empty fresnel lens. Ignoring...');
+                lens = null;
+              }
+            }
             // TODO: optionally load the ontologies for cTypes. Ideally through a function in the ontology manager, something like getClass()
             //       however, to avoid async code here, it might be better to load the ontologies once the document has been loaded.
             var oc = ontologyManager.ontologyClassByURI(r[i].o.value);
@@ -116,7 +121,7 @@ RDFE.Document.Model = Backbone.Model.extend({
         }
 
         // FIXME: replace fresnel:allProperties with the missing properties, rather than appending them
-        if(!lens || self.fields.contains(RDFE.uriDenormalize('fresnel:allProperties'))) {
+        if(!lens || self.fields.indexOf(RDFE.uriDenormalize('fresnel:allProperties')) >= 0) {
           for (var i = 0, l = r.length; i < l; i++) {
             if(!self.fields[r[i].p.value])
               self.fields.push(r[i].p.value);
