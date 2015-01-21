@@ -12,7 +12,7 @@
 @prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
 @prefix oplowl: <http://www.openlinksw.com/ontology/oplowl#> .
 
-bce:TouchPoint a owl:Class ;
+bce:Touchpoint a owl:Class ;
   rdfs:subClassOf [
     a owl:Restriction ;
     owl:onProperty skos:prefLabel , bce:channel , bce:duration , bce:prio ;

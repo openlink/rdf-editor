@@ -25,3 +25,14 @@ lens:TouchPointLens a fresnel:Lens;
       bce:broader
       bce:legacyId
     ) .
+
+lens:UseCaseLens a fresnel:Lens;
+    fresnel:classLensDomain bce:UseCase;
+    fresnel:purpose fresnel:defaultLens;
+    fresnel:showProperties (
+      skos:prefLabel
+      skos:definition
+      bce:tooltip
+      bce:prio
+      bce:useCaseSequence
+    ) .
