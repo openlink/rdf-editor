@@ -13,61 +13,143 @@ RDFE.Document.Model = Backbone.Model.extend({
     this.set(triple.p.value, d);
   },
 
+  getIndividuals: function(range, callback) {
+    var items = self.ontologyManager.individualsByClassURI(range);
+    $.merge(items, RDFE.individuals(this.doc, range));
+    callback(items);
+  },
+
+  maxCardinalityForProperty: function(cTypes, p) {
+    for(var i = 0; i < cTypes.length; i++) {
+      var c = cTypes[i].maxCardinalityForProperty(p);
+      if(c)
+        return c;
+    }
+    return null;
+  },
+
+  isAggregateProperty: function(cTypes, p) {
+    for(var i = 0; i < cTypes.length; i++) {
+      if(cTypes[i].isAggregateProperty(p))
+        return true;
+    }
+    return false;
+  },
+
+  createSchemaEntryForProperty: function(cTypes, p) {
+    var self = this;
+    var property = self.ontologyManager.ontologyProperties[p] || { URI: p };
+
+    var item = {
+      title: property.label || property.title || property.URI.split(/[/#]/).pop(),
+      cardinality: self.maxCardinalityForProperty(cTypes, p),
+      editorAttrs: {
+        "title": RDFE.coalesce(property.comment, property.description)
+      }
+    };
+
+    if(self.isAggregateProperty(cTypes, p)) {
+      item.type = "NestedModel";
+      item.model = RDFE.Document.Model;
+    }
+    else {
+      item.type = "List";
+      item.itemType = "Rdfnode";
+      item.rdfnode = {};
+
+      // TODO: eventually we should support range inheritence
+      if (property.class == RDFE.uriDenormalize('owl:DatatypeProperty')) {
+        item.rdfnode.type = property.range;
+      }
+      else if (property.class == RDFE.uriDenormalize('owl:ObjectProperty')) {
+        item.rdfnode.type = "http://www.w3.org/1999/02/22-rdf-syntax-ns#Resource";
+        item.rdfnode.choices = function(callback) { self.getIndividuals(property.range, callback); };
+        item.rdfnode.create = true; //FIXME: make this configurable
+      }
+      else if (property.range) {
+        if (property.range == "http://www.w3.org/2000/01/rdf-schema#Literal" ||
+            property.range.startsWith('http://www.w3.org/2001/XMLSchema#')) {
+          item.rdfnode.type = property.range;
+        }
+        else {
+          item.rdfnode.type = "http://www.w3.org/1999/02/22-rdf-syntax-ns#Resource";
+          item.rdfnode.choices = function(callback) { self.getIndividuals(property.range, callback); };
+          item.rdfnode.create = true; //FIXME: make this configurable
+        }
+      }
+    }
+
+    return item;
+  },
+
   /// read the properties of this.uri from the store and put them into the model
   docToModel: function(ontologyManager, success, fail) {
     var self = this;
     self.schema = {};
     self.fields = [];
+    self.ontologyManager = ontologyManager;
 
     this.doc.store.execute('select ?p ?o from <' + self.doc.graph + '> where { <' + self.uri + '> ?p ?o } order by ?p', function(s, r) {
       if (!s) {
         if (fail)
           fail();
       } else {
-        var uriClass;
-        var l = r.length;
-        var simpleSchema = function(self, r) {
-          for (var i = 0; i < l; i++) {
-            if (self.schema[r[i].p.value])
-              continue;
+        //
+        // Get the list of properties (fresnel lens vs. existing properties)
+        //
+        var types = [];
+        self.fields = [];
+        var lens = null;
+        for (var i = 0, l = r.length; i < l; i++) {
+          if (r[i].p.value == RDFE.uriDenormalize('rdf:type')) {
+            if(!lens)
+              lens = ontologyManager.findFresnelLens(r[i].o.value);
+            // TODO: optionally load the ontologies for cTypes. Ideally through a function in the ontology manager, something like getClass()
+            //       however, to avoid async code here, it might be better to load the ontologies once the document has been loaded.
+            var oc = ontologyManager.ontologyClassByURI(r[i].o.value);
+            if(oc)
+              types.push(oc);
+          }
+        }
+        if(lens) {
+          self.fields = lens.showProperties;
+        }
 
-            self.schema[r[i].p.value] = {
-              type: "List",
-              title: r[i].p.value.split(/[/#]/).pop(),
-              itemType: "Rdfnode",
-              rdfnode: {
-                // FIXME: use information from the ontologyManager here
-              }
-            };
-            self.fields.push(r[i].p.value);
+        // FIXME: replace fresnel:allProperties with the missing properties, rather than appending them
+        if(!lens || self.fields.contains(RDFE.uriDenormalize('fresnel:allProperties'))) {
+          for (var i = 0, l = r.length; i < l; i++) {
+            if(!self.fields[r[i].p.value])
+              self.fields.push(r[i].p.value);
           }
         }
 
-        // search for entity class
+        //
+        // Build the schema from the list of properties
+        //
+        for(var i = 0; i < self.fields.length; i++) {
+          self.schema[self.fields[i]] = self.createSchemaEntryForProperty(types, self.fields[i]);
+        }
+
+        //
+        // Add the data to the model
+        //
         for (var i = 0; i < l; i++) {
-          if (!uriClass && (r[i].p.value == RDFE.uriDenormalize('rdf:type')))
-            uriClass = r[i].o.value
-          self.addTriple(r[i]);
+          if(self.isAggregateProperty(types, r[i].p)) {
+            var v = r[i];
+            var subm = new RDFE.Document.Model();
+            subm.setEntity (self.doc, v.o.value);
+            subm.docToModel(ontologyManager, function() {
+              self.fields.push(v.p.value);
+              self.set(v.p.value, subm);
+            });
+          }
+          else {
+            self.addTriple(r[i]);
+          }
         }
 
-        if (uriClass) {
-          var template = new RDFE.Template(ontologyManager, uriClass, null, function(template) {
-            var data = template.toBackboneForm(self);
-            if (data && data.schema) {
-              self.schema = data.schema;
-              self.fields = data.fields;
-            }
-            // add fields related to entity but not in the template ??? TODO: this should be controlled by the fresnel lens (allProeprties)
-            simpleSchema(self, r);
-
-            if (success)
-              success();
-          });
-        } else {
-          simpleSchema(self, r);
-          if (success)
-            success();
-        }
+        if(success)
+          success();
       }
     });
   },
