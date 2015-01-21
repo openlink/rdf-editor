@@ -1,19 +1,19 @@
-@prefix dc: <http://purl.org/dc/elements/1.1/> .
 @prefix foaf: <http://xmlns.com/foaf/0.1/> .
 @prefix owl: <http://www.w3.org/2002/07/owl#> .
-@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix dc11: <http://purl.org/dc/elements/1.1/> .
 @prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
-@prefix xml: <http://www.w3.org/XML/1998/namespace> .
+@prefix geo: <http://www.w3.org/2003/01/geo/wgs84_pos#> .
 @prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
-@prefix : <#>
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
 
-# Every person needs exactly one name and age
-foaf:Person rdfs:subClassOf [
-  a owl:Restriction ;
-  owl:onProperty foaf:name ;
-  owl:cardinality "1"^^xsd:nonNegativeInteger
-] , [
-  a owl:Restriction ;
-  owl:onProperty foaf:age ;
-  owl:cardinality "1"^^xsd:nonNegativeInteger
-] .
+foaf:Person
+  a rdfs:Class, owl:Class ;
+  rdfs:subClassOf [
+    a owl:Restriction ;
+    owl:onProperty foaf:firstName ;
+    owl:cardinality "1"^^xsd:nonNegativeInteger
+  ], [
+    a owl:Restriction ;
+    owl:onProperty foaf:lastName ;
+    owl:maxCardinality "2"^^xsd:nonNegativeInteger
+  ].
