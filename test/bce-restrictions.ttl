@@ -22,7 +22,11 @@ bce:Touchpoint a owl:Class ;
 bce:UseCase a owl:Class ;
   rdfs:subClassOf [
     a owl:Restriction ;
-    owl:onProperty skos:prefLabel , bce:tooltip , bce:prio ;
+    owl:onProperty skos:prefLabel , bce:tooltip , skos:definition ;
+    owl:cardinality "1"^^xsd:nonNegativeInteger
+  ] , [
+    a owl:Restriction , oplowl:AggregateRestriction ;
+    owl:onProperty bce:prio ;
     owl:cardinality "1"^^xsd:nonNegativeInteger
   ] , [
     a owl:Restriction , oplowl:AggregateRestriction ;
