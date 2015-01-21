@@ -140,7 +140,7 @@ RDFE.Document.Model = Backbone.Model.extend({
         // Add the data to the model
         //
         for (var i = 0; i < l; i++) {
-          if(self.isAggregateProperty(types, r[i].p)) {
+          if(self.isAggregateProperty(types, r[i].p.value)) {
             var v = r[i];
             var subm = new RDFE.Document.Model();
             subm.setEntity (self.doc, v.o.value);
