@@ -235,6 +235,8 @@ RDFE.isUriPrefix = function(v) {
  *
  */
 RDFE.uriOntology = function(v) {
+  if(!v)
+    return null;
   var m = Math.max(v.lastIndexOf(':'), v.lastIndexOf('/'), v.lastIndexOf('#'))
   if (m != -1) {
     return v.substring(0, m + 1);
@@ -477,6 +479,7 @@ RDFE.OntologyManager.prototype.Ontology = function(graph, URI, options) {
     }
   } else {
     ontology = new RDFE.Ontology(self, graph, URI, options);
+    $(self).trigger('ontologyLoaded', [ self, ontology ]);
   }
 
   return ontology;
@@ -617,11 +620,10 @@ RDFE.OntologyManager.prototype.ontologyParse = function(URI, params) {
       self.graphClear(URI);
 
       if (params && params.success) {
-        params.success(ontology);
+        params.success(ontology); // FIXME: ontology is not defined
       }
 
       $self.trigger('changed', [ self ]);
-      // $self.trigger('ontologyLoaded', [ self, ontology ]);
     }
   })(params);
 
@@ -667,7 +669,7 @@ RDFE.OntologyManager.prototype.ontologyClassesParse = function(graph, params) {
           for (var j = 0, m = results.length; j < m; j++) {
             var c = results[j]["i"].value;
             if (!RDFE.isBlankNode(c)) {
-              self.OntologyIndividual(graph, c, params);
+              self.individuals.push(new RDFE.OntologyIndividual(self, graph, c, params));
             }
           }
         });
@@ -717,11 +719,16 @@ RDFE.OntologyManager.prototype.ontologyRestrictionsParse = function(graph, ontol
             var property;
             var propertyURI = '',
                 cardinalityURI = '',
-                cardinalityValue = '';
+                cardinalityValue = '',
+                isAggregate = false;
             for (var i = 0, l = results.length; i < l; i++) {
               var v1 = RDFE.sparqlValue(results[i]['v1']);
               var v2 = RDFE.sparqlValue(results[i]['v2']);
               var v3 = RDFE.sparqlValue(results[i]['v3']);
+
+              if (RDFE.uriDenormalize('rdf:type') == v2 && v3 == 'http://www.openlinksw.com/ontology/oplowl#AggregateRestriction')
+                isAggregate = true;
+
               if (
                   (RDFE.uriDenormalize('owl:minCardinality') == v2) ||
                   (RDFE.uriDenormalize('owl:maxCardinality') == v2) ||
@@ -733,6 +740,7 @@ RDFE.OntologyManager.prototype.ontologyRestrictionsParse = function(graph, ontol
                 cardinalityValue = v3;
                 property = _.clone(self.OntologyProperty(graph, propertyURI));
                 property[RDFE.uriLabel(cardinalityURI)] = parseInt(cardinalityValue);
+                property.isAggregate = isAggregate;
                 ontologyClass.properties[property.URI] = property;
               }
             }
@@ -895,6 +903,7 @@ RDFE.OntologyManager.prototype.fresnelGroupsParse = function(graph, params) {
   }
 }
 
+// FIXME: why is the classLensDomain not the key in the self.fresnelLenses dict??? Who cares about the uris for the lenses??
 RDFE.OntologyManager.prototype.findFresnelLens = function(domainURI) {
   var self = this;
   for (v in self.fresnelLenses) {
@@ -903,6 +912,7 @@ RDFE.OntologyManager.prototype.findFresnelLens = function(domainURI) {
       return x;
     }
   }
+  // FIXME: check super-classes for lens definitions
   return null;
 }
 
@@ -1154,6 +1164,59 @@ RDFE.OntologyClass.prototype.propertiesAsArray = function() {
   }
   return properties;
 }
+
+RDFE.OntologyClass.prototype.maxCardinalityForProperty = function(p, cc) {
+  var prop = this.properties[p],
+      c = null;
+
+  // check if this class has a cardinality itself
+  if(prop) {
+    c = prop.cardinality || prop.maxCardinality;
+    if(c)
+      return c;
+  }
+
+  // check super-classes (with loop-protection)
+  for(var i = 0; i < this.subClassOf; i++) {
+    var sc = this.subClassOf[i];
+    if($.inArray(sc.URI, cc) < 0) {
+      cc.push(sc.URI);
+      c = this.subClassOf[i].maxCardinalityForProperty(p, cc);
+      if(c)
+        return c;
+    }
+    else {
+      console.log('CAUTION: Found sub-class loop in ', cc);
+    }
+  }
+
+  return null;
+};
+
+RDFE.OntologyClass.prototype.isAggregateProperty = function(p, cc) {
+  var prop = this.properties[p];
+
+  // check if this class has a cardinality itself
+  if(prop) {
+    if(prop.isAggregate)
+      return true;
+  }
+
+  // check super-classes (with loop-protection)
+  for(var i = 0; i < this.subClassOf; i++) {
+    var sc = this.subClassOf[i];
+    if($.inArray(sc.URI, cc) < 0) {
+      cc.push(sc.URI);
+      if(this.subClassOf[i].isAggregate(p, cc))
+        return true;
+    }
+    else {
+      console.log('CAUTION: Found sub-class loop in ', cc);
+    }
+  }
+
+  return false;
+};
 
 /*
  *
@@ -1465,187 +1528,4 @@ RDFE.FresnelGroup.prototype.parse = function(graph, options) {
         self.containerStyle = RDFE.coalesce(self.containerStyle, o);
     }
   });
-}
-
-/*
- *
- * Templates
- *
- */
-RDFE.Template = function(ontologyManager, URI, options, callback) {
-  // console.log('template =>', URI);
-  var self = this;
-
-  this.options = $.extend({}, options);
-  this.URI = URI;
-  this.properties = [];
-
-  this.manager = ontologyManager;
-  this.manager.templates.push(this);
-
-  var __properties = function () {
-    var ontologyClass = self.manager.OntologyClass(null, self.URI);
-    var ontologyClasses = [ontologyClass];
-    if (!_.isEmpty(ontologyClass.subClassOf)) {
-      for (var i = 0, l = ontologyClass.subClassOf.length; i < l; i++) {
-        if (!RDFE.isBlankNode(ontologyClass.subClassOf[i])) {
-          ontologyClasses.push(ontologyClass.subClassOf[i]);
-        }
-      }
-    }
-    for (var i = 0, l = ontologyClasses.length; i < l; i++) {
-      var properties = [];
-      var ontologyClass = ontologyClasses[i];
-      var fresnelLens = self.manager.fresnelLensByURI(ontologyClass.URI);
-      if (fresnelLens && fresnelLens.showProperties) {
-        for (var j = 0, m = fresnelLens.showProperties.length; j < m; j++) {
-          var propertyURI = fresnelLens.showProperties[j];
-          var property;
-          if (ontologyClass) {
-            property = ontologyClass.propertyByURI(propertyURI);
-          }
-          if (!property) {
-            property = self.manager.ontologyPpropertyByURI(propertyURI);
-          }
-          if (property && property.hasDomain(ontologyClass.URI)) {
-            self.properties.push(property);
-          }
-        }
-      }
-      if ((properties.length == 0) && ontologyClass) {
-        properties = ontologyClass.propertiesAsArray();
-      }
-      self.properties = _.union(self.properties, properties);
-    }
-    if (callback) {
-      callback(self);
-    }
-  }
-  var ontologyClass = this.manager.ontologyClassByURI(URI);
-  if (ontologyClass) {
-    __properties()
-  } else {
-    var ontologyURI = self.manager.ontologyDetermine(URI);
-    if (ontologyURI) {
-      this.URI = RDFE.uriDenormalize(URI);
-      this.manager.ontologyParse(ontologyURI, {
-        "success": function() {
-          __properties();
-        }
-      });
-    }
-  }
-}
-
-RDFE.Template.prototype.toBackboneForm = function(documentModel) {
-  var self = this;
-  var schema = {};
-  var fields = [];
-  schema[RDFE.uriDenormalize('rdf:type')] = {
-    "type": "List",
-    "itemType": 'Rdfnode',
-    "rdfnode": {
-      type: "http://www.w3.org/1999/02/22-rdf-syntax-ns#Resource",
-      create: false
-    },
-    "title": 'Type',
-    "editorAttrs": {"disabled": 'disabled'}
-  };
-  fields.push(RDFE.uriDenormalize('rdf:type'));
-  for (var i = 0, l = self.properties.length; i < l; i++) {
-    var property = self.properties[i];
-    if (!property.template) {
-      property.template = new RDFE.PropertyTemplate(self.manager, property);
-    }
-
-    var item = property.template.getBackboneField(documentModel);
-    if (item) {
-      schema[property.URI] = item;
-      fields.push(property.URI);
-    }
-  }
-  return {"schema": schema, "fields": fields};
-}
-
-/*
- *
- * Property Template
- *
- */
-RDFE.PropertyTemplate = function(ontologyManager, URI, options, callback) {
-  // console.log('property template =>', URI);
-  var self = this;
-
-  this.options = $.extend({}, options);
-  this.manager = ontologyManager;
-
-  if (_.isObject(URI)) {
-    self.property = URI;
-    self.URI = self.property.URI;
-  } else {
-    self.property = this.manager.ontologyPpropertyByURI(URI);
-    self.URI = URI;
-    if (!self.property) {
-      var ontologyURI = self.manager.ontologyDetermine(URI);
-      if (ontologyURI) {
-        this.URI = RDFE.uriDenormalize(URI);
-        this.manager.ontologyParse(ontologyURI, {
-          "success": function() {
-            self.property = this.manager.ontologyPpropertyByURI(self.URI);
-            if (callback) {
-              callback(self);
-            }
-          }
-        });
-      }
-    }
-  }
-  if (callback) {
-    callback(self);
-  }
-}
-
-RDFE.PropertyTemplate.prototype.getBackboneField = function(documentModel) {
-  var self = this;
-  var getIndividuals = function(range, callback) {
-    var items = self.manager.individualsByClassURI(range);
-    if (documentModel) {
-      $.merge(items, RDFE.individuals(documentModel.doc, range));
-    }
-    callback(items);
-  };
-
-  if (!self.property) {
-    return;
-  }
-  var property = self.property;
-  var item = {
-    type: "List",
-    itemType: "Rdfnode",
-    title: RDFE.coalesce(property.label, property.title, RDFE.uriLabel(property.URI)),
-    rdfnode: {},
-    editorAttrs: {
-      "title": RDFE.coalesce(property.comment, property.description)
-    }
-  };
-  if (property.cardinality || property.maxCardinality) {
-    item.maxCardinality = RDFE.coalesce(property.maxCardinality, property.cardinality);
-  }
-  if (property.class == RDFE.uriDenormalize('owl:DatatypeProperty')) {
-    item.rdfnode.type = property.range;
-  } else if (property.class == RDFE.uriDenormalize('owl:ObjectProperty')) {
-    item.rdfnode.type = "http://www.w3.org/1999/02/22-rdf-syntax-ns#Resource";
-    item.rdfnode.choices = function(callback) { getIndividuals(property.range, callback); };
-    item.rdfnode.create = true; //FIXME: make this configurable
-  } else if (property.range) {
-    if (property.range == "http://www.w3.org/2000/01/rdf-schema#Literal" ||
-        property.range.startsWith('http://www.w3.org/2001/XMLSchema#')) {
-      item.rdfnode.type = property.range;
-    } else {
-      item.rdfnode.type = "http://www.w3.org/1999/02/22-rdf-syntax-ns#Resource";
-      item.rdfnode.choices = function(callback) { getIndividuals(property.range, callback); };
-      item.rdfnode.create = true; //FIXME: make this configurable
-    }
-  }
-  return item;
 }
