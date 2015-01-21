@@ -121,19 +121,12 @@ String.prototype.format = function() {
       params = extendParams(params, self.options);
       var __success = function(data, textStatus) {
         clearGraph(store, storeGraph);
-        var parser = N3.Parser();
-        parser.parse(data, function(error, triple, prefixes) {
-          if (error) {
-            // FIXME: proper error handling with a callback
-            alert(error);
+        store.loadTurtle(data, storeGraph, function(success, r) {
+          if (success && params["__success"]) {
+            params["__success"]();
           }
-          if (triple == null) {
-            // exec success function
-            if (params["__success"]) {
-              params["__success"](data);
-            }
-          } else {
-            store.insert([store.n3ToRdfStoreTriple(triple)], storeGraph, function() {});
+          else if(!success && params["error"]) {
+            params["error"](r);
           }
         });
       };
@@ -269,20 +262,12 @@ String.prototype.format = function() {
       params = extendParams(params, self.options);
       var __success = function(data, textStatus) {
         clearGraph(store, storeGraph);
-        var parser = N3.Parser();
-        parser.parse(data, function(error, triple, prefixes) {
-          if (error) {
-            if (params.error) {
-              params.error(error);
-            }
+        store.loadTurtle(data, storeGraph, function(success, r) {
+          if (success && params["__success"]) {
+            params["__success"]();
           }
-          if (triple == null) {
-            // exec success function
-            if (params["__success"]) {
-              params["__success"](data);
-            }
-          } else {
-            store.insert([store.n3ToRdfStoreTriple(triple)], storeGraph, function() {});
+          else if(!success && params["error"]) {
+            params["error"](r);
           }
         });
       };
@@ -393,20 +378,12 @@ String.prototype.format = function() {
       params = extendParams(params, this.options);
       var __success = function(data, textStatus) {
         clearGraph(store, storeGraph);
-        var parser = N3.Parser();
-        parser.parse(data, function(error, triple, prefixes) {
-          if (error) {
-            if (params.error) {
-              params.error(error);
-            }
+        store.loadTurtle(data, storeGraph, function(success, r) {
+          if (success && params["__success"]) {
+            params["__success"]();
           }
-          if (triple == null) {
-            // exec success function
-            if (params["__success"]) {
-              params["__success"](data);
-            }
-          } else {
-            store.insert([store.n3ToRdfStoreTriple(triple)], storeGraph, function() {});
+          else if(!success && params["error"]) {
+            params["error"](r);
           }
         });
       };
