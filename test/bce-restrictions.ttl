@@ -9,7 +9,8 @@
 @prefix google: <http://rdf.data-vocabulary.org/#>.
 @prefix skos: <http://www.w3.org/2004/02/skos/core#> .
 @prefix bce: <http://ldp.e.corpintra.net/ontology/bce#> .
- @prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+@prefix oplowl: <http://www.openlinksw.com/ontology/oplowl#> .
 
 bce:TouchPoint a owl:Class ;
   rdfs:subClassOf [
@@ -21,6 +22,10 @@ bce:TouchPoint a owl:Class ;
 bce:UseCase a owl:Class ;
   rdfs:subClassOf [
     a owl:Restriction ;
-    owl:onProperty skos:prefLabel , bce:useCaseSequence , bce:tooltip , bce:prio ;
+    owl:onProperty skos:prefLabel , bce:tooltip , bce:prio ;
+    owl:cardinality "1"^^xsd:nonNegativeInteger
+  ] , [
+    a owl:Restriction , oplowl:AggregateRestriction ;
+    owl:onProperty bce:useCaseSequence ;
     owl:cardinality "1"^^xsd:nonNegativeInteger
   ] .
