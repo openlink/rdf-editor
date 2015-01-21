@@ -42,7 +42,7 @@ RDFE.Document.Model = Backbone.Model.extend({
 
     var item = {
       title: property.label || property.title || property.URI.split(/[/#]/).pop(),
-      cardinality: self.maxCardinalityForProperty(cTypes, p),
+      maxCardinality: self.maxCardinalityForProperty(cTypes, p),
       editorAttrs: {
         "title": RDFE.coalesce(property.comment, property.description)
       }
