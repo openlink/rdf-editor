@@ -8,11 +8,10 @@ if (typeof String.prototype.startsWith != 'function') {
 if(!window.RDFE)
   window.RDFE = {};
 
-RDFE.Editor = function(ontoMan, params) {
+RDFE.Editor = function(doc, ontoMan, params) {
   var self = this;
 
-  // empty default doc
-  this.doc = new RDFE.Document();
+  this.doc = doc;
   this.ontologyManager = ontoMan;
 };
 
@@ -33,164 +32,19 @@ RDFE.Editor.prototype.makeTriple = function(s, p, o) {
   return (this.doc.store.rdf.createTriple(ss, pp, oo));
 };
 
-RDFE.Editor.prototype.nodeFormatter = function(value) {
-  if (value.interfaceName == "Literal") {
-    if (value.datatype == 'http://www.w3.org/2001/XMLSchema#dateTime')
-      return (new Date(value.nominalValue)).toString();
-    else
-      return value.nominalValue;
-  } else {
-    return value.toString();
-  }
-};
-
-RDFE.Editor.prototype.createTripleList = function(doc, container, callback) {
+RDFE.Editor.prototype.createTripleList = function(container, callback) {
   var self = this;
   this.doc = doc;
 
-  var tripleEditorDataSetter = function(triple, field, newValue) {
-    var newNode = newValue;
-
-    if (newValue.toStoreNode) {
-      newNode = newValue.toStoreNode(self.doc.store);
-    }
-    else if (field != 'object' ||
-      triple.object.interfaceName == 'NamedNode') {
-      newNode = self.doc.store.rdf.createNamedNode(RDFE.Editor.io_strip_URL_quoting(newValue));
-    }
-    else if (triple.object.datatype == 'http://www.w3.org/2001/XMLSchema#dateTime') {
-      var d = new Date(newValue);
-      newNode = self.doc.store.rdf.createLiteral(d.toISOString(), triple.object.language, triple.object.datatype);
-    }
-    else {
-      newNode = self.doc.store.rdf.createLiteral(newValue, triple.object.language, triple.object.datatype);
-    }
-
-    var newTriple = triple;
-    newTriple[field] = newNode;
-    self.doc.updateTriple(triple, newTriple, function(success) {
-      // do nothing
-    }, function() {
-      // FIXME: error handling
+  if(!this.tripleView) {
+    this.tripleView = new RDFE.TripleView(this.doc);
+    $(self.tripleView).on('rdf-editor-error', function(e) {
+      $(self).trigger('rdf-editor-error', d);
+    }).on('rdf-editor-success', function(e, d) {
+      $(self).trigger('rdf-editor-success', d);
     });
-  };
-
-  doc.listProperties(function (pl) {
-    console.log('Found existing predicates: ', pl);
-    doc.store.graph(doc.graph, function(success, g) {
-      if(success) {
-        container.empty();
-        var $list = $(document.createElement('table')).addClass('table');
-        container.append($list);
-
-        // add index to triples for identification
-        var triples = g.toArray();
-        for(var i = 0; i < triples.length; i+=1)
-          triples[i].id = i;
-        // remember last index for triple adding
-        $list.data('maxindex', i);
-
-        $list.bootstrapTable({
-          striped:true,
-          sortName:'s',
-          pagination:true,
-          search:true,
-          searchAlign: 'left',
-          showHeader: true,
-          editable: true,
-          data: triples,
-          dataSetter: tripleEditorDataSetter,
-          columns: [{
-            field: 'subject',
-            title: 'Subject',
-            aligh: 'left',
-            sortable: true,
-            editable: function(triple) {
-              return {
-                mode: "inline",
-                type: "rdfnode",
-                rdfnode: {
-                  type: 'http://www.w3.org/1999/02/22-rdf-syntax-ns#Resource'
-                },
-                value: triple.subject
-              }
-            },
-            formatter: RDFE.Editor.prototype.nodeFormatter
-          }, {
-            field: 'predicate',
-            title: 'Predicate',
-            align: 'left',
-            sortable: true,
-            editable: {
-              mode: "inline",
-              name: 'predicate',
-              type: "typeaheadjs",
-              placement: "right",
-              typeahead: {
-                name: 'predicate',
-                local: [
-                  "http://www.w3.org/2002/07/owl#",
-                  "http://www.w3.org/2000/01/rdf-schema#",
-                  "http://xmlns.com/foaf/0.1/",
-                  "http://rdfs.org/sioc/ns#",
-                  "http://purl.org/dc/elements/1.1/",
-                ].concat(pl)
-              }
-            },
-            formatter: RDFE.Editor.prototype.nodeFormatter
-          }, {
-            field: 'object',
-            title: 'Object',
-            align: 'left',
-            sortable: true,
-            editable: function(triple) {
-              return {
-                mode: "inline",
-                type: "rdfnode",
-                value: triple.object
-              };
-            },
-            formatter: RDFE.Editor.prototype.nodeFormatter
-          }, {
-            field: 'actions',
-            title: 'Actions',
-            align: 'center',
-            valign: 'middle',
-            clickToSelect: false,
-            editable: false,
-            formatter: function(value, row, index) {
-              return [
-                '<a class="remove ml10" href="javascript:void(0)" title="Remove">',
-                '<i class="glyphicon glyphicon-remove"></i>',
-                '</a>'
-              ].join('');
-            },
-            events: {
-              'click .remove': function (e, value, row, index) {
-                var triple = row;
-                self.doc.deleteTriple(triple, function() {
-                  $list.bootstrapTable('remove', {
-                    field: 'id',
-                    values: [row.id]
-                  });
-                }, function() {
-                  $(self).trigger('rdf-editor-error', { "type": 'triple-delete-failed', "message": 'Failed to delete triple.' });
-                });
-              }
-            }
-          }]
-        });
-
-        self.tripleTable = $list;
-
-        if (callback)
-          callback();
-      } else {
-        // FIXME: error handling.
-        console.log('Failed to query triples in doc.');
-      }
-    });
-  });
+  }
+  this.tripleView.render(container, callback);
 };
 
 RDFE.Editor.prototype.createNewStatementEditor = function(container) {
@@ -337,10 +191,8 @@ RDFE.Editor.prototype.createNewEntityEditor = function(container, manager) {
     self.doc.addTriple(t, function() {
       container.empty();
 
-      if (self.entityTable) {
-        var i = self.entityTable.data('maxindex');
-        self.entityTable.bootstrapTable('append', {"uri": s, "label": s, "id": i});
-        self.entityTable.data('maxindex', i+1);
+      if (self.entityView) {
+        self.entityView.addEntity({"uri": s, "label": s});
       }
     }, function() {
       $(self).trigger('rdf-editor-error', {
@@ -351,162 +203,15 @@ RDFE.Editor.prototype.createNewEntityEditor = function(container, manager) {
   });
 };
 
-RDFE.Editor.prototype.entityListActionsFormatter = function(value, row, index) {
-  return [
-    '<a class="edit ml10" href="javascript:void(0)" title="Edit">',
-    '  <i class="glyphicon glyphicon-edit"></i>',
-    '</a>',
-    '<a class="remove ml10" href="javascript:void(0)" title="Remove">',
-    '  <i class="glyphicon glyphicon-remove"></i>',
-    '</a>'
-  ].join('');
-};
-
-RDFE.Editor.prototype.createEntityList = function(doc, container, callback) {
+RDFE.Editor.prototype.createEntityList = function(container, callback) {
   var self = this;
-  this.doc = doc;
-
-  doc.store.execute("select distinct ?s ?sl ?spl where { graph <" + self.doc.graph + "> { ?s ?p ?o . } . optional { graph <" + self.doc.graph + "> { ?s rdfs:label ?sl } } . optional { graph <" + self.doc.graph + "> { ?s skos:prefLabel ?spl } } } order by ?s ?t", function(success, r) {
-    if (success) {
-      self.entityTable = null;
-      container.empty();
-
-      var $list = $(document.createElement('table')).addClass('table');
-      container.append($list);
-
-      // create entries
-      var entityData = [];
-      for (var i = 0; i < r.length; i++) {
-        var uri = r[i].s.value;
-        var label = uri;
-        if (r[i].spl)
-          label = r[i].spl.value;
-        else if (r[i].sl)
-          label = r[i].sl.value;
-        else
-          label = label.split(/[/#]/).pop();
-        entityData.push({
-          'label': label,
-          'uri': uri,
-          'id': i
-        });
-      }
-      $list.data('maxindex', i);
-
-      var editFct = function(uri) {
-        // open the editor and once its done re-create the entity list
-        self.showEditor(container, uri, function() {
-          self.createEntityList(doc, container);
-        });
-      };
-      var deleteFct = function(uri) {
-        self.doc.deleteEntity(uri, function() {
-          $list.bootstrapTable('remove', {
-            field: 'uri',
-            values: [uri]
-          });
-          $(self).trigger('rdf-editor-success', {
-            "type": 'entity-delete-done',
-            "uri": uri,
-            "message": "Successfully deleted entity " + uri + "."
-          });
-        }, function(msg) {
-          $(self).trigger('rdf-editor-error', {
-            "type": 'entity-delete-failed',
-            "message": msg
-          });
-        });
-      };
-
-      $list.bootstrapTable({
-        striped: true,
-        sortName: 'label',
-        pagination: true,
-        search: true,
-        searchAlign: 'left',
-        showHeader: true,
-        data: entityData,
-        idField: 'uri',
-        columns: [{
-          field: 'label',
-          title: 'Entity Name',
-          aligh: 'left',
-          sortable: true
-        }, {
-          field: 'actions',
-          title: 'Actions',
-          align: 'center',
-          valign: 'middle',
-          clickToSelect: false,
-          formatter: RDFE.Editor.prototype.entityListActionsFormatter,
-          events: {
-            'click .edit': function(e, value, row, index) {
-              editFct(row.uri);
-            },
-            'click .remove': function(e, value, row, index) {
-              deleteFct(row.uri);
-            }
-          }
-        }]
-      });
-      self.entityTable = $list;
-
-      if (callback)
-        callback();
-    } else {
-      // FIXME: error handling.
-      console.log('Failed to query entities in doc.');
-    }
-  });
-};
-
-RDFE.Editor.prototype.showEditor = function(container, url, closeCb) {
-  var self = this;
-  var model = new RDFE.Document.Model();
-  model.setEntity(this.doc, url);
-  model.docToModel(this.ontologyManager, function() {
-    var form = new Backbone.Form({
-      "model": model
+  if(!self.entityView) {
+    self.entityView = new RDFE.EntityView(this.doc, this.ontologyManager);
+    $(self.entityView).on('rdf-editor-error', function(e) {
+      $(self).trigger('rdf-editor-error', d);
+    }).on('rdf-editor-success', function(e, d) {
+      $(self).trigger('rdf-editor-success', d);
     });
-    form.render();
-
-    container.empty();
-
-    // add a header to the form using the entity's label
-    container.append('<h4>Editing <a href="' + url + '"><span class="entity-label">' + url.split(/[/#]/).pop() + '<span></a></h4><hr/>');
-    self.doc.getEntityLabel(url, function(label) {
-      container.find('h4 span').text(label);
-    });
-
-    // add the newly created form to the container
-    container.append(form.el);
-
-    // create buttons for the form
-    var cancelBtn = $(document.createElement('button'));
-    var saveBtn = $(document.createElement('button'));
-    cancelBtn.addClass('btn').addClass('btn-default').addClass('pull-right').text('Cancel');
-    saveBtn.addClass('btn').addClass('btn-primary').addClass('pull-right').text('OK');
-    cancelBtn.click(function() {
-      closeCb();
-    });
-    saveBtn.click(function() {
-      form.commit();
-      model.modelToDoc(function() {
-        closeCb();
-      }, function(msg) {
-        $(self).trigger('rdf-editor-error', {
-          "type": 'editor-form-save-failed',
-          "message": msg
-        });
-      });
-    });
-
-    // add the buttons to the container
-    container.find('h4').append(saveBtn).append(cancelBtn);
-  }, function(msg) {
-    $(self).trigger('rdf-editor-error', {
-      "type": 'editor-form-creation-failed',
-      "message": msg
-    });
-  });
+  }
+  self.entityView.render(container, callback);
 };
