@@ -51,6 +51,7 @@ RDFE.Document.Model = Backbone.Model.extend({
     if(self.isAggregateProperty(cTypes, p)) {
       item.type = "NestedModel";
       item.model = RDFE.Document.Model;
+      item.editorAttrs.style = "height:auto;"; //FIXME: use editorClass instead
     }
     else {
       item.type = "List";
