@@ -1,0 +1,18 @@
+# Check if branch master does exist
+git show-ref --verify --quiet refs/heads/master
+if test "$?" = "0"; then
+  # Get the number of commits since master, which is the latest stable
+  GIT_V=`git rev-list --no-merges master..HEAD|wc -l`
+else
+  GIT_V="0"
+fi
+
+# The base version as stored in vad_version
+V=`cat vad_version`
+
+# If we are not in a git clone GIT_V will be empty. In that case we use the hard-coded version from vad_version
+if test "X$GIT_V" != "X0"; then
+  V="${V}_git${GIT_V}"
+fi
+
+echo $V
