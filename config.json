@@ -5,12 +5,12 @@
     "fresnelFormats": true,
     "fresnelGroups": true,
     "preloadOntologies": [
-      "http://trueg.selfhost.eu:8899/rdf-editor/test/foaf-restrictions.ttl",
-      "http://trueg.selfhost.eu:8899/rdf-editor/test/BCE-Domain-v0.8.owl.ttl",
-      "http://trueg.selfhost.eu:8899/rdf-editor/test/bce-restrictions.ttl"
+      "test/foaf-restrictions.ttl",
+      "test/BCE-Domain-v0.8.owl.ttl",
+      "test/bce-restrictions.ttl"
     ],
     "preloadFresnels": [
-      "http://trueg.selfhost.eu:8899/rdf-editor/test/bce-tmpl.ttl"
+      "test/bce-tmpl.ttl"
     ]
   },
   "bookmarks": [
