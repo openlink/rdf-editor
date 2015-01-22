@@ -2,21 +2,21 @@ var buildify = require('buildify');
 
 // the main sources of the RDF Editor
 var jsRdfe = [
-  "js/rdfe/rdfnode.js",
-  "js/rdfe/backbone-forms-rdfnode.js",
-  "js/rdfe/ontology.js",
-  "js/rdfe/editor.js",
-  "js/rdfe/jquery.rdfnodeinput.js",
-  "js/rdfe/io.js",
-  "js/rdfe/jquery.ontobox.js",
-  "js/rdfe/document_backbone_bridge.js",
-  "js/rdfe/entityview.js",
   "js/rdfe/rdf_store_ext.js",
+  "js/rdfe/io.js",
   "js/rdfe/config.js",
-  "js/rdfe/editable-rdfnode.js",
-  "js/rdfe/entityeditor.js",
-  "js/rdfe/tripleview.js",
+  "js/rdfe/rdfnode.js",
+  "js/rdfe/ontology.js",
   "js/rdfe/document.js",
+  "js/rdfe/jquery.rdfnodeinput.js",
+  "js/rdfe/editable-rdfnode.js",
+  "js/rdfe/jquery.ontobox.js",
+  "js/rdfe/entityeditor.js",
+  "js/rdfe/entityview.js",
+  "js/rdfe/tripleview.js",
+  "js/rdfe/document_backbone_bridge.js",
+  "js/rdfe/backbone-forms-rdfnode.js",
+  "js/rdfe/editor.js",
 ];
 
 // Third-party libs which we modified in one way or another
