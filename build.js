@@ -85,3 +85,7 @@ buildify()
   .concat(cssDeps)
   .cssmin()
   .save('distribution/rdfe-standalone.min.css');
+
+for(var i = 0; i < jsRdfe.length; i++) {
+  buildify().load(jsRdfe[i]).uglify().save("distribution/rdfe/" + jsRdfe[i].split("/").pop().replace(".js", ".min.js"));
+}
