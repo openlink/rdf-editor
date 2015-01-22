@@ -39,6 +39,7 @@ var jsDeps = [
   "js/bootstrap-table-editable.js",
   "js/bootstrap-toggle.min.js",
   "js/bootstrap-growl.min.js",
+  "js/dummy.js", // growl does not end in a ";" which breaks the parsing
   "js/underscore-min.js",
   "js/backbone-min.js",
   "js/backbone-forms.js",
