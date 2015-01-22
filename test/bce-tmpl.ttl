@@ -37,4 +37,7 @@ lens:UseCaseLens a fresnel:Lens;
       fresnel:allProperties
       bce:prio
       bce:useCaseSequence
+    ) ;
+    fresnel:hideProperties (
+      rdf:type
     ) .

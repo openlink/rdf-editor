@@ -123,8 +123,9 @@ RDFE.Document.Model = Backbone.Model.extend({
 
         if(!lens) {
           for (var i = 0, l = r.length; i < l; i++) {
-            if(!self.fields[r[i].p.value])
-              self.fields.push(r[i].p.value);
+            var p = r[i].p.value;
+            if(!_.contains(self.fields, p))
+              self.fields.push(p);
           }
         }
         else {
@@ -133,8 +134,9 @@ RDFE.Document.Model = Backbone.Model.extend({
           if(j >= 0) {
             var mp = [];
             for (var i = 0, l = r.length; i < l; i++) {
-              if(self.fields.indexOf(r[i].p.value) < 0)
-                mp.push(r[i].p.value);
+              var p = r[i].p.value;
+              if(!_.contains(self.fields, p) && !_.contains(lens.hideProperties, p))
+                mp.push(p);
             }
             self.fields.splice.apply(self.fields, [j, 1].concat(mp));
           }

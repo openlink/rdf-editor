@@ -1390,6 +1390,8 @@ RDFE.FresnelLens = function(ontologyManager, graph, URI, options) {
 
   this.manager = ontologyManager;
   this.manager.fresnelLenses[URI] = this;
+  this.showProperties = [];
+  this.hideProperties = [];
 
   this.parse(graph, options);
 }
