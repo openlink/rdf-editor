@@ -135,6 +135,40 @@ String.prototype.format = function() {
       self.retrieve(graph, params, true);
     }
 
+    c.prototype.retrieveURIToStore = function(host, store, graph, params) {
+      var self = this;
+      var acceptType = (params && params.acceptType) ? params.acceptType : 'text/n3; q=1, text/turtle; q=0.8, application/rdf+xml; q=0.6';
+      var __loaded = (function(URI, params) {
+        return function(data, status, xhr) {
+          var contentType = (xhr.getResponseHeader('content-type') || '').split(';')[0];
+          var loadResultFct = function(success, results) {
+            if (!success) {
+              console.error('URI load error =>', graph, results);
+              return;
+            }
+            if (params && params.success) {
+              params.success();
+            }
+          };
+          if(contentType.indexOf('turtle') > 0)
+            store.loadTurtle(data, URI, loadResultFct);
+          else
+            store.load(contentType, data, URI, loadResultFct);
+        }
+      })(graph, params);
+      jQuery.ajax({
+        url: host,
+        type: 'GET',
+        crossDomain: true,
+        dataType: 'text',
+        success: __loaded,
+        error: params.error,
+        beforeSend: function(xhr) {
+          xhr.setRequestHeader("Accept", acceptType);
+        }
+      });
+    }
+
     c.prototype.insert = function(graph, s, p, o, params) {
       var self = this;
       params = extendParams(params, self.options);
