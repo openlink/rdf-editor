@@ -35,6 +35,7 @@
 </ddls>
 <resources>
   <file source_uri="demo.html" target_uri="rdf-editor/" />
+  <file source_uri="data/*.html" target_uri="rdf-editor/" />
   <file source_uri="config.json" target_uri="rdf-editor/" />
   <file source_uri="css/*.css" target_uri="rdf-editor/" />
   <file source_uri="js/**/*.js" target_uri="rdf-editor/" />
