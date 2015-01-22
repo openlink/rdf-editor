@@ -121,11 +121,22 @@ RDFE.Document.Model = Backbone.Model.extend({
           self.fields = lens.showProperties;
         }
 
-        // FIXME: replace fresnel:allProperties with the missing properties, rather than appending them
-        if(!lens || self.fields.indexOf(RDFE.uriDenormalize('fresnel:allProperties')) >= 0) {
+        if(!lens) {
           for (var i = 0, l = r.length; i < l; i++) {
             if(!self.fields[r[i].p.value])
               self.fields.push(r[i].p.value);
+          }
+        }
+        else {
+          // replace fresnel:allProperties with the missing properties, rather than appending them
+          var j = self.fields.indexOf(RDFE.uriDenormalize('fresnel:allProperties'));
+          if(j >= 0) {
+            var mp = [];
+            for (var i = 0, l = r.length; i < l; i++) {
+              if(self.fields.indexOf(r[i].p.value) < 0)
+                mp.push(r[i].p.value);
+            }
+            self.fields.splice.apply(self.fields, [j, 1].concat(mp));
           }
         }
 
