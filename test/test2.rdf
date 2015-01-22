@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<rdf:RDF
+	xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+	xmlns:rdfs="http://www.w3.org/2000/01/rdf-schema#"
+	xmlns:owl="http://www.w3.org/2002/07/owl#"
+	xmlns:vs="http://www.w3.org/2003/06/sw-vocab-status/ns#"
+	xmlns:foaf="http://xmlns.com/foaf/0.1/"
+	xmlns:wot="http://xmlns.com/wot/0.1/"
+	xmlns:dc="http://purl.org/dc/elements/1.1/">
+<!-- Here we describe general characteristics of the FOAF vocabulary ('ontology'). -->
+  <owl:Ontology rdf:about="http://xmlns.com/foaf/0.1/" dc:title="Friend of a Friend (FOAF) vocabulary" dc:description="The Friend of a Friend (FOAF) RDF vocabulary, described using W3C RDF Schema and the Web Ontology Language." />
+
+  <rdf:Property rdf:about="http://xmlns.com/foaf/0.1/status" vs:term_status="unstable" rdfs:label="status" rdfs:comment="A string expressing what the user is happy for the general public (normally) to know about their current activity.">
+    <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#DatatypeProperty"/>
+    <rdfs:domain>
+      <owl:Class>
+        <owl:unionOf rdf:parseType="Collection">
+          <rdf:Description rdf:about="http://xmlns.com/foaf/0.1/Person"/>
+        </owl:unionOf>
+      </owl:Class>
+    </rdfs:domain>
+    <rdfs:isDefinedBy rdf:resource="http://xmlns.com/foaf/0.1/"/>
+  </rdf:Property>
+
+  <rdf:Property rdf:about="http://xmlns.com/foaf/0.1/status2" vs:term_status="unstable" rdfs:label="status" rdfs:comment="A string expressing what the user is happy for the general public (normally) to know about their current activity.">
+    <rdf:type rdf:resource="http://www.w3.org/2002/07/owl#DatatypeProperty"/>
+    <rdfs:domain>
+      <owl:Class>
+        <owl:unionOf rdf:parseType="Collection">
+          <rdf:Description rdf:about="http://xmlns.com/foaf/0.1/Person2"/>
+        </owl:unionOf>
+      </owl:Class>
+    </rdfs:domain>
+    <rdfs:isDefinedBy rdf:resource="http://xmlns.com/foaf/0.1/"/>
+  </rdf:Property>
+
+</rdf:RDF>

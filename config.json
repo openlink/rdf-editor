@@ -1,0 +1,58 @@
+{
+  "ontology": {
+    "proxy": false,
+    "fresnelLenses": true,
+    "fresnelFormats": true,
+    "fresnelGroups": true,
+    "preloadOntologies": [
+      "http://trueg.selfhost.eu:8899/rdf-editor/test/foaf-restrictions.ttl",
+      "http://trueg.selfhost.eu:8899/rdf-editor/test/BCE-Domain-v0.8.owl.ttl",
+      "http://trueg.selfhost.eu:8899/rdf-editor/test/bce-restrictions.ttl"
+    ],
+    "preloadFresnels": [
+      "http://trueg.selfhost.eu:8899/rdf-editor/test/bce-tmpl.ttl"
+    ]
+  },
+  "bookmarks": [
+    {
+      "label": "Test Foo Data",
+      "uri": "urn:foo",
+      "type": "sparql"
+    },
+    {
+      "label": "Daimler VDF Data",
+      "uri": "urn:daimler:vdf:import",
+      "type": "sparql"
+    },
+    {
+      "label": "Daimler BCE Data",
+      "uri": "http://ldp.e.corpintra.net/graph/bce",
+      "type": "sparql"
+    },
+    {
+      "label": "Daimler BCE Filter",
+      "uri": "http://ldp.e.corpintra.net/graph/bceui",
+      "type": "sparql"
+    },
+    {
+      "label": "Daimler BCE Use Cases",
+      "uri": "http://ldp.e.corpintra.net/graph/bceuc",
+      "type": "sparql"
+    }
+  ],
+  "templates": [
+    {
+      "label": "Person",
+      "uri": "foaf:Person"
+    }
+  ],
+  "actions": [
+      "new", "open", "save", "saveas", "bookmarks", "entities", "triples"
+  ],
+  "defaultView": "entities",
+  "labelProps": [
+    "http://www.w3.org/2004/02/skos/core#prefLabel",
+    "http://www.w3.org/2000/01/rdf-schema#",
+    "http://xmlns.com/foaf/0.1/name"
+  ]
+}

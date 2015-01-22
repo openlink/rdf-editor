@@ -1,0 +1,315 @@
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="">
+    <meta name="author" content="">
+    <title>RDF Editor I/O demo</title>
+    <link href="css/bootstrap.min.css" rel="stylesheet">
+    <link href="css/bootstrap-fixes.css" rel="stylesheet">
+    <style type="text/css">
+      body {
+        padding-top: 70px;
+      }
+    </style>
+    <script src="js/jquery-1.11.1.min.js"></script>
+    <script src="js/bootstrap.min.js"></script>
+    <script src="js/jquery-deparam.min.js"></script>
+    <script src="js/jquery.cookie.js"></script>
+    <script src="js/rdf_store.js"></script>
+    <script src="js/val.js"></script>
+    <script src="js/rdfe/io.js"></script>
+    <script>
+      var myAjaxError = function() {
+        console.log('Sparql Request Failed');
+      };
+      var myAjaxSuccess = function() {
+        console.log('Sparql Request Success');
+      };
+
+      var mySuccess = function(data, textStatus) {
+        alert(data);
+      };
+
+      // SPARQL I/O
+      var url = document.location.protocol + '//' + document.location.host;
+      var IO_SPARQL_HOST = url + '/sparql';
+      var IO_SPARQL_GRAPH = 'http://example.org/io';
+      var io_rdfe = new RDFE.IO({"host": IO_SPARQL_HOST, "ajaxError": myAjaxError, "ajaxSuccess": myAjaxSuccess});
+
+      // SPARQL GSP
+      var GSP_SPARQL_HOST = url + '/sparql-graph-crud';
+      var GSP_SPARQL_GRAPH = 'http://example.org/gsp';
+      var gsp_rdfe = new RDFE.GSP({"host": GSP_SPARQL_HOST, "ajaxError": myAjaxError, "ajaxSuccess": myAjaxSuccess});
+
+      // SPARQL LDP
+      var ldp_rdfe = new RDFE.LDP({"ajaxError": myAjaxError, "ajaxSuccess": myAjaxSuccess});
+
+      // Get File Content
+      var reader;
+      var readerResult;
+      var fileReaderText = function(callback) {
+        readerResult = reader.result;
+        callback();
+      }
+      function fileReaderContent(obj, callback)
+      {
+        if (window.File && window.FileReader && window.FileList) {
+          var fld = document.forms['rdfe'].elements[obj];
+          if (!fld.files[0]) {
+            alert('Please select a file!');
+          } else {
+            reader = new FileReader();
+            reader.onload = function (){fileReaderText(callback);};
+            reader.readAsText(fld.files[0]);
+          }
+        } else {
+          alert('The File APIs are not fully supported by your browser.');
+        }
+      }
+      function graphTest(store, graph)
+      {
+        store.graph(graph, function(s, g) {
+          alert('Graph <{0}> has {1} items.'.format(graph, g.length));
+        });
+      }
+
+      var TEST_SPARQL_GRAPH = 'http://data.daimler.com/oranges';
+      var rdfeStore = rdfstore.create();
+      var q = '{0}?default-graph-uri={1}&query=construct+%7B+%3Fs+%3Fp+%3Fo+%7D++WHERE+%7B%3Fs+%3Fp+%3Fo%7D&format=text%2Fturtle'.format(IO_SPARQL_HOST, encodeURIComponent(TEST_SPARQL_GRAPH));
+      rdfeStore.load('remote', q, TEST_SPARQL_GRAPH, function (s){graphTest(rdfeStore, TEST_SPARQL_GRAPH);});
+
+      $(document).ready(function() {
+        // SPARQL I/O
+        $('#io_g').val(IO_SPARQL_GRAPH);
+        $("#io_retrieve").on("click", function(e) {
+            io_rdfe.retrieve($('#io_g').val(), {"format": 'text/n3', "success": mySuccess});
+          }
+        );
+        $("#io_insert").on("click", function(e) {
+            io_rdfe.insert($('#io_g').val(), $('#io_s').val(), $('#io_p').val(), $('#io_o').val());
+          }
+        );
+        $("#io_delete").on("click", function(e) {
+            io_rdfe.delete($('#io_g').val(), $('#io_s').val(), $('#io_p').val(), $('#io_o').val());
+          }
+        );
+        $("#io_insertStore").on("click", function(e) {
+            io_rdfe.insertFromStore($('#io_g').val(), rdfeStore, TEST_SPARQL_GRAPH);
+          }
+        );
+        $("#io_retrieveStore").on("click", function(e) {
+            io_rdfe.retrieveToStore($('#io_g').val(), rdfeStore, TEST_SPARQL_GRAPH, {"format": 'text/n3', "success": mySuccess});
+          }
+        );
+
+        // SPARQL GSP
+        $('#gsp_g').val(GSP_SPARQL_GRAPH);
+        $("#gsp_retrieve").on("click", function(e) {
+            gsp_rdfe.retrieve($('#gsp_g').val(), {"host": IO_SPARQL_HOST, "format": 'text/n3', "success": mySuccess});
+          }
+        );
+        $("#gsp_insert").on("click", function(e) {
+            fileReaderContent('gsp_f', function(){gsp_rdfe.insert($('#gsp_g').val(), readerResult);});
+          }
+        );
+        $("#gsp_update").on("click", function(e) {
+            fileReaderContent('gsp_f', function(){gsp_rdfe.update($('#gsp_g').val(), readerResult);});
+          }
+        );
+        $("#gsp_delete").on("click", function(e) {
+            gsp_rdfe.delete($('#gsp_g').val());
+          }
+        );
+        $("#gsp_insertStore").on("click", function(e) {
+            gsp_rdfe.insertFromStore($('#gsp_g').val(), rdfeStore, TEST_SPARQL_GRAPH);
+          }
+        );
+        $("#gsp_retrieveStore").on("click", function(e) {
+            gsp_rdfe.retrieveToStore($('#gsp_g').val(), rdfeStore, TEST_SPARQL_GRAPH, {"host": IO_SPARQL_HOST, "format": 'text/n3', "success": mySuccess});
+          }
+        );
+
+        // SPARQL LDP
+        $('#ldp_p').val(url + '/DAV/home/demo/Public/LDP/1.ttl');
+        $("#ldp_retrieve").on("click", function(e) {
+            ldp_rdfe.retrieve($('#ldp_p').val(), {"success": mySuccess});
+          }
+        );
+        $("#ldp_insert").on("click", function(e) {
+            fileReaderContent('ldp_f', function(){ldp_rdfe.insert($('#ldp_p').val(), readerResult);});
+          }
+        );
+        $("#ldp_delete").on("click", function(e) {
+            ldp_rdfe.delete($('#ldp_p').val());
+          }
+        );
+        $("#ldp_insertStore").on("click", function(e) {
+            ldp_rdfe.insertFromStore($('#ldp_p').val(), rdfeStore, TEST_SPARQL_GRAPH);
+          }
+        );
+        $("#ldp_retrieveStore").on("click", function(e) {
+            ldp_rdfe.retrieveToStore($('#ldp_p').val(), rdfeStore, TEST_SPARQL_GRAPH, {"success": mySuccess});
+          }
+        );
+      });
+    </script>
+  </head>
+  <body>
+    <nav class="navbar navbar-default navbar-fixed-top" role="navigation">
+      <div class="container-fluid">
+        <div class="navbar-header">
+          <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#rdfe-navbar-collapse">
+            <span class="sr-only">Toggle navigation</span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </button>
+          <a class="navbar-brand" style="padding: 5px 15px" href=""><img src="img/oplogo_std_100x40.png" alt="OpenLink Software RDF Editor" /></a></li>
+        </div>
+
+        <div class="collapse navbar-collapse" id="rdfe-navbar-collapse">
+          <p id="userLoginInfo" class="navbar-text navbar-right">
+          </p>
+          <ul class="nav navbar-nav navbar-right">
+            <li><a id="loginoutLink" href="">Login</a></li>
+          </ul>
+        </div>
+      </div>
+    </nav>
+
+    <div class="container">
+      <form name="rdfe" class="form-horizontal">
+        <div class="panel panel-default">
+          <div class="panel-heading">
+            <h3 class="panel-title">I/O API - SPARQL IUD example</h3>
+          </div>
+          <div class="panel-body">
+            <div class="form-group">
+              <label for="io_g" class="col-sm-2 control-label">Graph</label>
+              <div class="col-sm-10">
+                <input type="text" id="io_g" name="io_g" class="form-control" />
+              </div>
+            </div>
+            <div class="form-group">
+              <label for="io_s" class="col-sm-2 control-label">Subject</label>
+              <div class="col-sm-10">
+                <input type="text" id="io_s" name="io_s" class="form-control" />
+              </div>
+            </div>
+            <div class="form-group">
+              <label for="io_p" class="col-sm-2 control-label">Predicate</label>
+              <div class="col-sm-10">
+                <input type="text" id="io_p" name="io_p" class="form-control" />
+              </div>
+            </div>
+            <div class="form-group">
+              <label for="io_o" class="col-sm-2 control-label">Object</label>
+              <div class="col-sm-10">
+                <input type="text" id="io_o" name="io_o" class="form-control" />
+              </div>
+            </div>
+          </div>
+          <div class="panel-footer">
+            <div class="btn-group" role="group" aria-label="...">
+              <button id="io_retrieve" type="button" class="btn btn-default">Retrieve</button>
+            </div>
+            <div class="btn-group" role="group" aria-label="...">
+              <button id="io_insert" type="button" class="btn btn-default">Insert</button>
+              <button id="io_delete" type="button" class="btn btn-default btn-danger">Delete</button>
+            </div>
+            <div class="btn-group" role="group" aria-label="...">
+              <button id="io_insertStore" type="button" class="btn btn-default">Insert (From Store)</button>
+              <button id="io_retrieveStore" type="button" class="btn btn-default">Retrieve (To Store)</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="panel panel-default">
+          <div class="panel-heading">
+            <h3 class="panel-title">SPARQL Graph Store HTTP Protocol</h3>
+          </div>
+          <div class="panel-body">
+            <div class="form-group">
+              <label for="gsp_g" class="col-sm-2 control-label">Graph</label>
+              <div class="col-sm-10">
+                <input type="text" id="gsp_g" name="gsp_g" class="form-control" />
+              </div>
+            </div>
+            <div class="form-group">
+              <label for="gsp_f" class="col-sm-2 control-label">TTL Content</label>
+              <div class="col-sm-10">
+                <input type="file" id="gsp_f" name="gsp_f" />
+              </div>
+            </div>
+          </div>
+          <div class="panel-footer">
+            <div class="btn-group" role="group" aria-label="...">
+              <button id="gsp_retrieve" type="button" class="btn btn-default">Retrieve</button>
+            </div>
+            <div class="btn-group" role="group" aria-label="...">
+              <button id="gsp_insert" type="button" class="btn btn-default">Insert</button>
+              <button id="gsp_update" type="button" class="btn btn-default">Update</button>
+              <button id="gsp_delete" type="button" class="btn btn-default btn-danger">Delete</button>
+            </div>
+            <div class="btn-group" role="group" aria-label="...">
+              <button id="gsp_insertStore" type="button" class="btn btn-default">Insert (From Store)</button>
+              <button id="gsp_retrieveStore" type="button" class="btn btn-default">Retrieve (To Store)</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="panel panel-default">
+          <div class="panel-heading">
+            <h3 class="panel-title">SPARQL LDP Protocol</h3>
+          </div>
+          <div class="panel-body">
+            <div class="form-group">
+              <label for="ldp_p" class="col-sm-2 control-label">Path</label>
+              <div class="col-sm-10">
+                <input type="text" id="ldp_p" name="ldp_p" class="form-control" />
+              </div>
+            </div>
+            <div class="form-group">
+              <label for="ldp_f" class="col-sm-2 control-label">TTL Content</label>
+              <div class="col-sm-10">
+                <input type="file" id="ldp_f" name="ldp_f" />
+              </div>
+            </div>
+          </div>
+          <div class="panel-footer">
+            <div class="btn-group" role="group" aria-label="...">
+              <button id="ldp_retrieve" type="button" class="btn btn-default">Retrieve</button>
+            </div>
+            <div class="btn-group" role="group" aria-label="...">
+              <button id="ldp_insert" type="button" class="btn btn-default">Insert</button>
+              <!-- button id="ldp_update" type="button" class="btn btn-default">Update</button -->
+              <button id="ldp_delete" type="button" class="btn btn-default btn-danger">Delete</button>
+            </div>
+            <div class="btn-group" role="group" aria-label="...">
+              <button id="ldp_insertStore" type="button" class="btn btn-default">Insert (From Store)</button>
+              <button id="ldp_retrieveStore" type="button" class="btn btn-default">Retrieve (To Store)</button>
+            </div>
+          </div>
+        </div>
+      </form>
+    </div>
+
+    <script>
+      var val = new VAL();
+
+      val.profile(function (success, data) {
+        var $uli = $('#userLoginInfo'),
+            $lil = $('#loginoutLink');
+        if (success) {
+          $uli.html('Logged in as <a class="navbar-link" href="' + data.uri + '">' + (data.name ? data.name : (data.nick ? data.nick : data.uri)) + "</a>");
+          $lil.attr('href', '/val/logout.vsp?returnto=' + encodeURIComponent(window.location.href)).text('Logout');
+        }
+        else {
+          $uli.text("Not logged in");
+          $lil.attr('href', val.config.loginLink + '?returnto=' + encodeURIComponent(window.location.href)).text('Login');
+        }
+      });
+    </script>
+  </body>
+</html>
