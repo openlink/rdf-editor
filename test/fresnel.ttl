@@ -1,0 +1,83 @@
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>.
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#>.
+@prefix owl: <http://www.w3.org/2002/07/owl#>.
+@prefix rdfg: <http://www.w3.org/2004/03/trix/rdfg-1/>.
+@prefix foaf: <http://xmlns.com/foaf/0.1/>.
+@prefix fresnel: <http://www.w3.org/2004/09/fresnel#>.
+@prefix ordf: <http://purl.org/NET/ordf/>.
+@prefix foaflens: <http://river.styx.org/ww/2010/11/fresnel/foaf#>.
+@prefix google: <http://rdf.data-vocabulary.org/#>.
+
+<http://river.styx.org/ww/2010/11/fresnel/foaf> a rdfg:Graph;
+     rdfs:label "FOAF Lens";
+     ordf:lens <http://ordf.org/lens/fresnel>;
+     ordf:lensList ( foaflens:Person ). 
+
+ foaflens:imageFormat a fresnel:Format;
+     fresnel:group foaflens:foafGroup;
+     fresnel:label fresnel:none;
+     fresnel:propertyFormatDomain foaf:depiction;
+     fresnel:propertyStyle "nolabel"^^<http://www.w3.org/2004/09/fresnel#styleClass>;
+     fresnel:value fresnel:image. 
+
+ foaflens:labelFormat a fresnel:Format;
+     fresnel:group foaflens:foafGroup;
+     fresnel:label fresnel:none;
+     fresnel:propertyFormatDomain rdfs:label;
+     fresnel:propertyStyle "h2_container"^^<http://www.w3.org/2004/09/fresnel#styleClass>;
+     fresnel:valueStyle "h2"^^<http://www.w3.org/2004/09/fresnel#styleClass>. 
+
+ foaflens:linkFormat a fresnel:Format;
+     fresnel:group foaflens:foafGroup;
+     fresnel:propertyFormatDomain rdfs:seeAlso,
+         foaf:currentProject,
+         foaf:homepage,
+         foaf:page;
+     fresnel:value fresnel:externalLink. 
+
+ foaflens:nolabelFormat a fresnel:Format;
+     fresnel:group foaflens:foafGroup;
+     fresnel:label fresnel:none;
+     fresnel:propertyFormatDomain foaf:name;
+     fresnel:propertyStyle "nolabel"^^<http://www.w3.org/2004/09/fresnel#styleClass>. 
+
+ foaflens:hiddenFormat a fresnel:Format;
+     fresnel:group foaflens:foafGroup;
+     fresnel:propertyFormatDomain google:name, google:nickname, google:url, rdf:type;
+     fresnel:propertyStyle "hidden"^^<http://www.w3.org/2004/09/fresnel#styleClass>.
+
+ foaflens:Person a fresnel:Lens;
+     fresnel:classLensDomain foaf:Person;
+     fresnel:group foaflens:foafGroup;
+     fresnel:purpose fresnel:defaultLens;
+     fresnel:showProperties (
+         foaf:depiction
+         foaf:name
+         owl:sameAs
+         foaf:firstName
+         foaf:lastName
+         foaf:nick
+         foaf:status
+         foaf:plan
+         foaf:mbox
+         foaf:phone
+         foaf:homepage
+         foaf:workplaceHomepage
+         foaf:page
+         foaf:interest
+         foaf:currentProject
+         foaf:pastProject
+         foaf:openid
+         foaf:account
+         foaf:basedNear
+         [ a fresnel:PropertyDescription;
+           fresnel:property foaf:knows;
+           fresnel:sublens foaflens:Person ]
+         fresnel:allProperties
+     );
+     fresnel:hideProperties (
+         foaf:mbox_sha1sum
+     ).
+
+ foaflens:foafGroup a fresnel:Group;
+     fresnel:stylesheetLink <http://river.styx.org/ww/2010/11/fresnel/fresnel.css>. 

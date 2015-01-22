@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="ASCII"?>
+<!DOCTYPE sticker SYSTEM "vad_sticker.dtd">
+<sticker version="1.0.010505A" xml:lang="en-UK">
+<caption>
+  <name package="rdf-editor">
+    <prop name="Title" value="OpenLink Virtuoso RDF Editor Demo"/>
+    <prop name="Developer" value="OpenLink Software"/>
+    <prop name="Copyright" value="(C) 2015 OpenLink Software"/>
+    <prop name="Download" value="http://www.openlinksw.com/virtuoso"/>
+    <prop name="Download" value="http://www.openlinksw.co.uk/virtuoso"/>
+  </name>
+  <version package="$VERSION$">
+    <prop name="Release Date" value="$PACKDATE$"/>
+    <prop name="Build" value="Release, optimized"/>
+  </version>
+</caption>
+<dependencies/>
+<procedures uninstallation="supported">
+  <sql purpose="pre-install"></sql>
+  <sql purpose="post-install">
+    <![CDATA[
+      vhost_remove (lpath=>'/rdf-editor');
+      vhost_define (
+        lpath=>'/rdf-editor',
+        ppath=>'/DAV/VAD/rdf-editor/',
+        is_dav=>1
+      );
+    ]]>
+  </sql>
+</procedures>
+<ddls>
+  <sql purpose="pre-install"></sql>
+  <sql purpose="post-install"></sql>
+  <sql purpose="pre-uninstall"></sql>
+</ddls>
+<resources>
+  <file source_uri="demo.html" target_uri="rdf-editor/" />
+  <file source_uri="config.json" target_uri="rdf-editor/" />
+  <file source_uri="css/*.css" target_uri="rdf-editor/" />
+  <file source_uri="js/**/*.js" target_uri="rdf-editor/" />
+  <file source_uri="fonts/*" target_uri="rdf-editor/" />
+  <file source_uri="img/*.gif" target_uri="rdf-editor/" />
+  <file source_uri="img/*.png" target_uri="rdf-editor/" />
+  <file source_uri="test/*.ttl" target_uri="rdf-editor/" />
+</resources>
+<registry>
+</registry>
+</sticker>
