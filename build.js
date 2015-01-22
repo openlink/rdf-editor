@@ -54,6 +54,23 @@ var jsDeps = [
   "js/n3-browser.min.js"
 ];
 
+var cssRdfe = [
+  "css/jquery.rdfnodeinput.css",
+  "css/bootstrap-fixes.css"
+];
+
+var cssDeps = [
+  "css/bootstrap.css",
+  "css/bootstrap-datetimepicker.min.css",
+  "css/bootstrap-editable.css",
+  "css/bootstrap-theme.css",
+  "css/bootstrap-table.min.css",
+  "css/bootstrap-toggle.min.css",
+  "css/backbone-forms-bootstrap3.css",
+  "css/selectize.bootstrap3.css",
+  "css/typeahead.js-bootstrap.css"
+];
+
 buildify()
   .concat(jsDeps)
   .concat(jsCustomDeps)
@@ -61,3 +78,9 @@ buildify()
   .save('distribution/rdfe-standalone.js')
   .uglify()
   .save('distribution/rdfe-standalone.min.js');
+
+buildify()
+  .concat(cssRdfe)
+  .concat(cssDeps)
+  .cssmin()
+  .save('distribution/rdfe-standalone.min.css');
