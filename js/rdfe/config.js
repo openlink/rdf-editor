@@ -52,6 +52,9 @@ RDFE.Config.defaults = {
   // configuration related to the ontology manager
   ontology: {
     proxy: false,
+    fresnelLenses: true,
+    fresnelFormats: true,
+    fresnelGroups: true,
     forceLoad: false,
     preloadOnly: false
   },
