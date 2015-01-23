@@ -5,6 +5,8 @@
     "fresnelFormats": true,
     "fresnelGroups": true,
     "preloadOntologies": [
+      "test/skos.rdf",
+      "test/skos-ext.ttl",
       "test/foaf-restrictions.ttl",
       "test/BCE-Domain-v0.8.owl.ttl",
       "test/bce-restrictions.ttl"
