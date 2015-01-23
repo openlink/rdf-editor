@@ -2,6 +2,7 @@ var buildify = require('buildify');
 
 // the main sources of the RDF Editor
 var jsRdfe = [
+  "js/rdfe/utils.js",
   "js/rdfe/rdf_store_ext.js",
   "js/rdfe/io.js",
   "js/rdfe/config.js",
