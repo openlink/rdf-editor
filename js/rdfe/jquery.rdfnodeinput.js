@@ -1,41 +1,33 @@
 (function ($) {
-  "use strict";
-
   var defaults = {
     type: null,
     showLangSelect: true,
     selectize: false,
     create: true
-  },
+  };
 
-  intVerify = function(v, includeZero, includeNeg, includePos, maxi, mini) {
+  var intVerify = function(v, includeZero, includeNeg, includePos, maxi, mini) {
     var i = parseInt(v, 10);
-    if(isNaN(i)) {
+    if(isNaN(i))
       return false;
-    }
-    if(!includeZero && i === 0) {
+    if(!includeZero && i == 0)
       return false;
-    }
-    if(!includeNeg && i < 0) {
+    if(!includeNeg && i < 0)
       return false;
-    }
-    if(!includePos && i > 0) {
+    if(!includePos && i > 0)
       return false;
-    }
-    if(maxi !== undefined && i > maxi) {
+    if(maxi != undefined && i > maxi)
       return false;
-    }
-    if(mini !== undefined && i < mini) {
+    if(mini != undefined && i < mini)
       return false;
-    }
     return true;
-  },
+  };
 
-  decimalCheck = function(v) {
+  var decimalCheck = function(v) {
     return $.isNumeric(v);
-  },
+  };
 
-  nodeTypes = {
+  var nodeTypes = {
     'http://www.w3.org/2000/01/rdf-schema#Literal': {
       label: 'Plain Literal'
     },
@@ -136,18 +128,16 @@
       label: 'Boolean',
       setup: function(elem, remove) {
         if(remove) {
-          if(elem.bootstrapToggle) {
+          if(elem.bootstrapToggle)
             elem.bootstrapToggle('destroy');
-          }
           elem.attr('type', 'text');
         }
         else {
-          if(elem.bootstrapToggle) {
+          if(elem.bootstrapToggle)
             elem.bootstrapToggle({
               on: 'True',
               off: 'False'
             });
-          }
           elem.attr('type', 'checkbox');
         }
       },
@@ -155,12 +145,10 @@
         return (elem.is(":checked") ? "true" : "false");
       },
       setValue: function(elem, val) {
-        if(parseInt(val) == 1 || (typeof val == "string" && val.toLowerCase() == 'true')) {
+        if(parseInt(val) == 1 || (typeof val == "string" && val.toLowerCase() == 'true'))
           elem.attr('checked', 'checked');
-        }
-        else {
+        else
           elem.removeAttr('checked');
-        }
       }
     },
     "http://www.w3.org/2001/XMLSchema#string": {
@@ -169,34 +157,30 @@
     "http://www.w3.org/2001/XMLSchema#dateTime": {
       label: 'Datetime',
       setup: function(input, remove) {
-        if(remove) {
+        if(remove)
           input.datetimepicker('remove');
-        }
-        else {
+        else
           input.datetimepicker({
             format: "yyyy-mm-ddThh:ii:ssZ",
             weekStart: 1
           });
-        }
       }
     },
     "http://www.w3.org/2001/XMLSchema#date": {
       label: 'Date',
       setup: function(input, remove) {
-        if(remove) {
+        if(remove)
           input.datetimepicker('remove');
-        }
-        else {
+        else
           input.datetimepicker({
             format: "yyyy-mm-dd",
             weekStart: 1
           });
-        }
       }
     }
-  },
+  };
 
-  RdfNodeEditor = function(elem, options) {
+  var RdfNodeEditor = function(elem, options) {
     var self = this;
 
     self.mainElem = elem;
