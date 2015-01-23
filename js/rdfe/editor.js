@@ -108,7 +108,8 @@ RDFE.Editor.prototype.createNewEntityEditor = function(container, manager) {
     return items;
   };
 
-  var classesList = function (URI) {
+  var classesList = function (e) {
+    var ontoBox = e.currentTarget;
     var ontology;
     var classItems = function() {
       var items = [];
@@ -123,23 +124,9 @@ RDFE.Editor.prototype.createNewEntityEditor = function(container, manager) {
 
     classesSelect.clearOptions();
     classesSelect.addOption([]);
-    if (URI) {
-      ontology = manager.ontologyByURI(URI);
-      if (ontology) {
-        classesSelect.addOption(classItems());
-      } else {
-        var parsed = function(URI) {
-          ontology = manager.ontologyByURI(URI);
-          if (ontology) {
-            classesSelect.addOption(classItems());
-          }
-          console.log(URI);
-        };
-        manager.ontologyParse(URI, {success: (function (URI) {
-            return function () {parsed(URI);};
-          })(URI)})
-        ;
-      }
+    ontology = manager.ontologyByURI(ontoBox.selectedOntologyURI());
+    if (ontology) {
+      classesSelect.addOption(classItems());
     }
   };
 
@@ -175,16 +162,8 @@ RDFE.Editor.prototype.createNewEntityEditor = function(container, manager) {
     '  </div> ' +
     '</div>\n');
 
-  $ontologiesSelect = $('#ontology').selectize({
-    create: true,
-    valueField: 'uri',
-    labelField: 'uri',
-    options: ontologiesList(),
-    onChange: function(value) {
-      classesList(value);
-    }
-  });
-  ontologiesSelect = $ontologiesSelect[0].selectize;
+  ontologiesSelect = $('#ontology').ontoBox({ "ontoManager": manager });
+  ontologiesSelect.on('changed', classesList);
 
   $classesSelect = $('#class').selectize({
     create: true,

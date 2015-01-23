@@ -33,6 +33,9 @@ String.prototype.format = function() {
     else if (t == 'ldp' || t == "webdav" || t == "dav")
       return new RDFE.IO.LDP(o);
 
+    else if (t == 'http')
+      return new RDFE.IO.HTTP(o);
+
     throw "Unsupport IO type: " + t;
   };
 
@@ -133,40 +136,6 @@ String.prototype.format = function() {
       params["__success"] = params["success"];
       params["success"] = __success;
       self.retrieve(graph, params, true);
-    }
-
-    c.prototype.retrieveURIToStore = function(host, store, graph, params) {
-      var self = this;
-      var acceptType = (params && params.acceptType) ? params.acceptType : 'text/n3; q=1, text/turtle; q=0.8, application/rdf+xml; q=0.6';
-      var __loaded = (function(URI, params) {
-        return function(data, status, xhr) {
-          var contentType = (xhr.getResponseHeader('content-type') || '').split(';')[0];
-          var loadResultFct = function(success, results) {
-            if (!success) {
-              console.error('URI load error =>', graph, results);
-              return;
-            }
-            if (params && params.success) {
-              params.success();
-            }
-          };
-          if(contentType.indexOf('turtle') > 0)
-            store.loadTurtle(data, URI, loadResultFct);
-          else
-            store.load(contentType, data, URI, loadResultFct);
-        }
-      })(graph, params);
-      jQuery.ajax({
-        url: host,
-        type: 'GET',
-        crossDomain: true,
-        dataType: 'text',
-        success: __loaded,
-        error: params.error,
-        beforeSend: function(xhr) {
-          xhr.setRequestHeader("Accept", acceptType);
-        }
-      });
     }
 
     c.prototype.insert = function(graph, s, p, o, params) {
@@ -484,6 +453,72 @@ String.prototype.format = function() {
         processData: false,
         data: content,
         dataType: params.dataType
+      });
+    }
+
+    return c;
+  })();
+
+  /*
+  *
+  * HTTP mode
+  *
+  */
+  RDFE.IO.HTTP = (function() {
+
+    var c = RDFE.IO.Base.inherit(function(options) {
+      var self = this;
+
+      // call super-constructor
+      self.constructor.super.call(this);
+
+      var defaults = {
+        "dataType": 'text',
+        "httpTemplate": '{0}',
+        "httpProxyTemplate": document.location.protocol + '//' + document.location.host + '/proxy?url={0}&output-format=turtle&force=rdf'
+      };
+
+      self.options = $.extend({}, defaults, options);
+      if (!self.options.httpTemplate || self.options.httpTemplate.length == 0) {
+        self.options.httpTemplate = defaults.httpTemplate;
+      }
+      if (!self.options.httpProxyTemplate || self.options.httpProxyTemplate.length == 0) {
+        self.options.httpProxyTemplate = defaults.httpProxyTemplate;
+      }
+    });
+
+    c.prototype.retrieveToStore = function(URI, store, graph, params) {
+      var self = this;
+      var host = (params.proxy) ? self.options.httpProxyTemplate.format(encodeURIComponent(URI)) : self.options.httpTemplate.format(URI);
+      var acceptType = (params && params.acceptType) ? params.acceptType : 'text/n3; q=1, text/turtle; q=0.8, application/rdf+xml; q=0.6';
+      var __loaded = (function(URI, params) {
+        return function(data, status, xhr) {
+          var contentType = (xhr.getResponseHeader('content-type') || '').split(';')[0];
+          var loadResultFct = function(success, results) {
+            if (!success) {
+              console.error('URI load error =>', graph, results);
+              return;
+            }
+            if (params && params.success) {
+              params.success();
+            }
+          };
+          if(contentType.indexOf('turtle') > 0)
+            store.loadTurtle(data, URI, loadResultFct);
+          else
+            store.load(contentType, data, URI, loadResultFct);
+        }
+      })(graph, params);
+      jQuery.ajax({
+        url: host,
+        type: 'GET',
+        crossDomain: true,
+        dataType: 'text',
+        success: __loaded,
+        error: params.error,
+        beforeSend: function(xhr) {
+          xhr.setRequestHeader("Accept", acceptType);
+        }
       });
     }
 

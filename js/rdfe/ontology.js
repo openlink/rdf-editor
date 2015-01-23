@@ -8,12 +8,6 @@ if (typeof String.prototype.startsWith != 'function') {
 if(!window.RDFE)
   window.RDFE = {};
 
-RDFE.OM_LOAD_TEMPLATE =
-  '{0}';
-
-RDFE.OM_LOAD_PROXY_TEMPLATE =
-  document.location.protocol + '//' + document.location.host + '/proxy?url={0}&output-format=turtle&force=rdf';
-
 RDFE.OM_PREFIX_TEMPLATE =
   'http://prefix.cc/{0}.file.json';
 
@@ -469,8 +463,9 @@ RDFE.OntologyManager.prototype.graphClear = function(graph) {
 }
 
 RDFE.OntologyManager.prototype.Ontology = function(graph, URI, options) {
-  if(!URI)
+  if (!URI || RDFE.isBlankNode(URI)) {
     return null;
+  }
   var self = this;
   var ontology = self.ontologyByURI(URI);
   if (ontology) {
@@ -548,10 +543,9 @@ RDFE.OntologyManager.prototype.individualByURI = function(URI) {
 
 RDFE.OntologyManager.prototype.load = function(URI, params) {
   var self = this;
-  var host = (self.options.proxy) ? RDFE.OM_LOAD_PROXY_TEMPLATE.format(encodeURIComponent(URI)) : RDFE.OM_LOAD_TEMPLATE.format(URI);
-  var IO = RDFE.IO.createIO('sparql');
-  IO.type = 'sparql';
-  IO.retrieveURIToStore(host, self.store, URI, params);
+  var IO = RDFE.IO.createIO('http');
+  IO.type = 'http';
+  IO.retrieveToStore(URI, self.store, URI, $.extend({"proxy": self.options.proxy}, params));
 }
 
 RDFE.OntologyManager.prototype.ontologyParse = function(URI, params) {
@@ -674,63 +668,59 @@ RDFE.OntologyManager.prototype.ontologyRestrictionsParse = function(graph, ontol
   var self = this;
   for (var i = 0, l = ontologyClasses.length; i < l; i++) {
     var ontologyClass = ontologyClasses[i];
-    for (var j = 0, m = ontologyClass.subClassOf.length; j < m; j++) {
-      if (RDFE.isBlankNode(ontologyClass.subClassOf[j])) { // FIXME: why does it have to be a blank node??? Just query all restrictions in one go, at least per class.
-        var RDFE_TEMPLATE =
-        '\n SELECT distinct ?v1 ?v2 ?v3 ' +
-        '\n  FROM <{0}>' +
-        '\n WHERE { ' +
-        '\n         <{1}> rdfs:subClassOf ' +
-        '\n         [ ' +
-        '\n           owl:onProperty ?v1; ' +
-        '\n           ?v2 ?v3 ' +
-        '\n         ]. ' +
-        '\n       } ' +
-        '\n ORDER BY ?v1 ?v2 ';
-        var sparql = RDFE_TEMPLATE.format(graph, ontologyClass.URI);
-        self.store.execute(sparql, function(success, results) {
-          if (success) {
-            var property;
-            var propertyURI = '',
-                cardinalityURI = '',
-                cardinalityValue = '';
-            for (var i = 0, l = results.length; i < l; i++) {
-              var v1 = RDFE.sparqlValue(results[i]['v1']);
-              var v2 = RDFE.sparqlValue(results[i]['v2']);
-              var v3 = RDFE.sparqlValue(results[i]['v3']);
+    if (ontologyClass.hasRestrictions) {
+      var RDFE_TEMPLATE =
+      '\n SELECT distinct ?v1 ?v2 ?v3 ' +
+      '\n  FROM <{0}>' +
+      '\n WHERE { ' +
+      '\n         <{1}> rdfs:subClassOf ' +
+      '\n         [ ' +
+      '\n           owl:onProperty ?v1; ' +
+      '\n           ?v2 ?v3 ' +
+      '\n         ]. ' +
+      '\n       } ' +
+      '\n ORDER BY ?v1 ?v2 ';
+      var sparql = RDFE_TEMPLATE.format(graph, ontologyClass.URI);
+      self.store.execute(sparql, function(success, results) {
+        if (success) {
+          var property;
+          var propertyURI = '',
+              cardinalityURI = '',
+              cardinalityValue = '';
+          for (var i = 0, l = results.length; i < l; i++) {
+            var v1 = RDFE.sparqlValue(results[i]['v1']);
+            var v2 = RDFE.sparqlValue(results[i]['v2']);
+            var v3 = RDFE.sparqlValue(results[i]['v3']);
 
-              propertyURI = v1;
+            propertyURI = v1;
 
-              if (RDFE.uriDenormalize('rdf:type') == v2 && v3 == 'http://www.openlinksw.com/ontology/oplowl#AggregateRestriction') {
-                console.log('Adding ', v3, 'for', propertyURI);
-                property = ontologyClass.properties[propertyURI];
-                if(!property)
-                  property = _.clone(self.OntologyProperty(graph, propertyURI));
-                property.isAggregate = true;
-                ontologyClass.properties[propertyURI] = property;
-              }
+            if (RDFE.uriDenormalize('rdf:type') == v2 && v3 == 'http://www.openlinksw.com/ontology/oplowl#AggregateRestriction') {
+              console.log('Adding ', v3, 'for', propertyURI);
+              property = ontologyClass.properties[propertyURI];
+              if(!property)
+                property = _.clone(self.OntologyProperty(graph, propertyURI));
+              property.isAggregate = true;
+              ontologyClass.properties[propertyURI] = property;
+            }
 
-              else if (
-                  (RDFE.uriDenormalize('owl:minCardinality') == v2) ||
-                  (RDFE.uriDenormalize('owl:maxCardinality') == v2) ||
-                  (RDFE.uriDenormalize('owl:cardinality') == v2)
-                 )
-              {
-                console.log('Adding ', v2, 'for', propertyURI);
-                cardinalityURI = v2;
-                cardinalityValue = v3;
-                property = ontologyClass.properties[propertyURI];
-                if(!property)
-                  property = _.clone(self.OntologyProperty(graph, propertyURI));
-                property[RDFE.uriLabel(cardinalityURI)] = parseInt(cardinalityValue);
-                ontologyClass.properties[propertyURI] = property;
-              }
+            else if (
+                (RDFE.uriDenormalize('owl:minCardinality') == v2) ||
+                (RDFE.uriDenormalize('owl:maxCardinality') == v2) ||
+                (RDFE.uriDenormalize('owl:cardinality') == v2)
+               )
+            {
+              console.log('Adding ', v2, 'for', propertyURI);
+              cardinalityURI = v2;
+              cardinalityValue = v3;
+              property = ontologyClass.properties[propertyURI];
+              if(!property)
+                property = _.clone(self.OntologyProperty(graph, propertyURI));
+              property[RDFE.uriLabel(cardinalityURI)] = parseInt(cardinalityValue);
+              ontologyClass.properties[propertyURI] = property;
             }
           }
-        });
-        ontologyClass.subClassOf.splice(j, 1);
-        break;
-      }
+        }
+      });
     }
   }
 }
@@ -1129,9 +1119,13 @@ RDFE.OntologyClass.prototype.parse = function(graph, options) {
       else if (p == RDFE.uriDenormalize('dc:description'))
         self.description = RDFE.coalesce(self.description, o);
 
-      else if (p == RDFE.uriDenormalize('rdfs:subClassOf'))
-        self.subClassOf.push(self.manager.OntologyClass(graph, o, options));
-
+      else if (p == RDFE.uriDenormalize('rdfs:subClassOf')) {
+        if (RDFE.isBlankNode(o)) {
+          self.hasRestrictions = true;
+        } else {
+          self.subClassOf.push(self.manager.OntologyClass(graph, o, options));
+        }
+      }
       else if (p == RDFE.uriDenormalize('owl:disjointWith'))
         self.disjointWith.push(o);
     }
