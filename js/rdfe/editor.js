@@ -97,6 +97,7 @@ RDFE.Editor.prototype.createNewStatementEditor = function(container) {
 
 RDFE.Editor.prototype.createNewEntityEditor = function(container, manager) {
   var self = this;
+  var $ontologiesSelect, ontologiesSelect;
   var $classesSelect, classesSelect;
   var ontologiesList = function () {
     var items = [];
@@ -107,17 +108,39 @@ RDFE.Editor.prototype.createNewEntityEditor = function(container, manager) {
     return items;
   };
 
-  var classesList = function (ontology) {
-    var items = [];
+  var classesList = function (URI) {
+    var ontology;
+    var classItems = function() {
+      var items = [];
+      if (ontology) {
+        var clases = ontology.classesAsArray();
+        for (var i = 0, l = clases.length; i < l; i++) {
+          items.push({"uri": clases[i].URI});
+        }
+      }
+      return items;
+    }
 
     classesSelect.clearOptions();
-    if (ontology) {
-      var clases = ontology.classesAsArray();
-      for (var i = 0, l = clases.length; i < l; i++) {
-        items.push({"uri": clases[i].URI});
+    classesSelect.addOption([]);
+    if (URI) {
+      ontology = manager.ontologyByURI(URI);
+      if (ontology) {
+        classesSelect.addOption(classItems());
+      } else {
+        var parsed = function(URI) {
+          ontology = manager.ontologyByURI(URI);
+          if (ontology) {
+            classesSelect.addOption(classItems());
+          }
+          console.log(URI);
+        };
+        manager.ontologyParse(URI, {success: (function (URI) {
+            return function () {parsed(URI);};
+          })(URI)})
+        ;
       }
     }
-    classesSelect.addOption(items);
   };
 
   if (!this.doc) {
@@ -152,23 +175,16 @@ RDFE.Editor.prototype.createNewEntityEditor = function(container, manager) {
     '  </div> ' +
     '</div>\n');
 
-  $('#ontology').selectize({
+  $ontologiesSelect = $('#ontology').selectize({
     create: true,
     valueField: 'uri',
     labelField: 'uri',
     options: ontologiesList(),
     onChange: function(value) {
-      if (!value.length) {
-        classesList();
-      } else {
-        manager.ontologyParse(value, {
-          "success": function (ontology) {
-            classesList(ontology);
-          }
-        });
-      }
+      classesList(value);
     }
   });
+  ontologiesSelect = $ontologiesSelect[0].selectize;
 
   $classesSelect = $('#class').selectize({
     create: true,
