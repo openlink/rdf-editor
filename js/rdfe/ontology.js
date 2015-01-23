@@ -547,7 +547,7 @@ RDFE.OntologyManager.prototype.load = function(URI, params) {
   var self = this;
   var IO = RDFE.IO.createIO('http');
   IO.type = 'http';
-  IO.retrieve(URI, self.store, URI, $.extend({"proxy": self.options.proxy}, params));
+  IO.retrieveToStore(URI, self.store, URI, $.extend({"proxy": self.options.proxy}, params));
 }
 
 RDFE.OntologyManager.prototype.ontologyParse = function(URI, params) {
