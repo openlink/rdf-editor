@@ -95,14 +95,20 @@ rdfstore.Store.prototype.loadTurtle = function(data, graph, callback) {
         callback(false, error);
     }
     if (triple == null) {
-      self.insert(self.rdf.createGraph(triples), graph, function() {});
+      if(triples.length)
+        self.insert(self.rdf.createGraph(triples), graph, function() {});
+
       // exec success function
       if (callback) {
         callback(true, cnt);
       }
     }
     else {
-      triples.push(convertTriple(triple));
+      var t = convertTriple(triple);
+      if(t.subject.interfaceName == 'BlankNode' || t.object.interfaceName == "BlankNode")
+        triples.push(t);
+      else
+        self.insert(self.rdf.createGraph([t]), graph, function() {});
       cnt++;
     }
   });
