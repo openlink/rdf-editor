@@ -53,7 +53,9 @@ RDFE.Editor.prototype.createNewStatementEditor = function(container) {
     return false;
 
   container.html(' \
-      <div class="form-horizontal"> \
+      <div class="panel panel-default"> \
+      <div class="panel-heading"><h3 class="panel-title">Add new Triple</h3></div> \
+      <div class="panel-body"><div class="form-horizontal"> \
       <div class="form-group"><label for="subject" class="col-sm-2 control-label">Subject</label> \
       <div class="col-sm-10"><input name="subject" class="form-control" /></div></div> \
       <div class="form-group"><label for="predicate" class="col-sm-2 control-label">Predicate</label> \
@@ -62,7 +64,7 @@ RDFE.Editor.prototype.createNewStatementEditor = function(container) {
       <div class="col-sm-10"><input name="object" class="form-control" /></div></div> \
       <div class="form-group"><div class="col-sm-10 col-sm-offset-2"><a href="#" class="btn btn-default triple-action triple-action-new-cancel">Cancel</a> \
         <a href="#" class="btn btn-primary triple-action triple-action-new-save">Save</a></div></div> \
-      </form>\n');
+      </form></div></div>\n');
 
   container.find('a.triple-action-new-cancel').click(function(e) {
     container.empty();
@@ -135,7 +137,9 @@ RDFE.Editor.prototype.createNewEntityEditor = function(container, manager) {
   }
 
   container.html(
-    '<div class="form-horizontal"> ' +
+    '<div class="panel panel-default">' +
+    '<div class="panel-heading"><h3 class="panel-title">Add new Entity</h3></div>' +
+    '<div class="panel-body"><div class="form-horizontal"> ' +
     '  <div class="form-group"> ' +
     '    <label for="ontology" class="col-sm-2 control-label">Ontology</label> ' +
     '    <div class="col-sm-10"> ' +
@@ -143,13 +147,13 @@ RDFE.Editor.prototype.createNewEntityEditor = function(container, manager) {
     '    </div> ' +
     '  </div> ' +
     '  <div class="form-group"> ' +
-    '    <label for="class" class="col-sm-2 control-label">Class</label> ' +
+    '    <label for="class" class="col-sm-2 control-label">Type</label> ' +
     '    <div class="col-sm-10"> ' +
     '      <select name="class" id="class" class="form-control" /> ' +
     '    </div> ' +
     '  </div> ' +
     '  <div class="form-group"> ' +
-    '     <label for="subject" class="col-sm-2 control-label">Subject</label> ' +
+    '     <label for="subject" class="col-sm-2 control-label">Entity URI</label> ' +
     '     <div class="col-sm-10"> ' +
     '       <input name="subject" id="subject" class="form-control" /> ' +
     '     </div> ' +
@@ -160,7 +164,7 @@ RDFE.Editor.prototype.createNewEntityEditor = function(container, manager) {
     '      <a href="#" class="btn btn-primary triple-action triple-action-new-save">Save</a> ' +
     '    </div> ' +
     '  </div> ' +
-    '</div>\n');
+    '</div></div></div>\n');
 
   ontologiesSelect = $('#ontology').ontoBox({ "ontoManager": manager });
   ontologiesSelect.on('changed', classesList);
