@@ -1,0 +1,24 @@
+Changes to third-party libraries:
+=================================
+
+rdf-store:
+----------
+Maintained in https://github.com/trueg/rdfstore-js
+
+1. Fixed handling of quotes in literals, both for SPARQL parsing and literal encoding.
+
+
+backbone-forms-list:
+--------------------
+Maintained in https://github.com/trueg/backbone-forms
+
+1. Added support for maxCardinality in the "list" editor.
+
+
+
+Create minified js and css:
+===========================
+1. Initialize node:
+   $ npm install
+2. Run the buildify script:
+   $ node build.js
