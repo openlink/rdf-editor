@@ -175,13 +175,13 @@ RDFE.Document.prototype.updateTriple = function(oldTr, newTr, success, fail) {
       self.store.insert(self.store.rdf.createGraph([newTr]), self.graph, function(s) {
         self.setChanged();
         if (s && fail)
-          fail();
+          fail('Adding new triple failed');
         else if(success)
           success();
       });
     }
     else if(fail)
-      fail();
+      fail('Deleting triple failed');
   });
 };
 
