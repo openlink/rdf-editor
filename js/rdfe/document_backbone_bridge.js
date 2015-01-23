@@ -40,8 +40,10 @@ RDFE.Document.Model = Backbone.Model.extend({
     var self = this;
     var property = self.ontologyManager.ontologyProperties[p] || { URI: p };
 
+    var label = RDFE.Utils.createTitle(property.label || property.title || property.URI.split(/[/#]/).pop())
     var item = {
-      title: property.label || property.title || property.URI.split(/[/#]/).pop(),
+      titleHTML: '<span title="{0}">{1}</span>'.format(RDFE.Utils.escapeXml(p), label),
+      title: label,
       maxCardinality: self.maxCardinalityForProperty(cTypes, p),
       editorAttrs: {
         "title": RDFE.coalesce(property.comment, property.description)
