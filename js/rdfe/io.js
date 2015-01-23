@@ -487,7 +487,7 @@ String.prototype.format = function() {
       }
     });
 
-    c.prototype.retrieve = function(URI, store, graph, params) {
+    c.prototype.retrieveToStore = function(URI, store, graph, params) {
       var self = this;
       var host = (params.proxy) ? self.options.httpProxyTemplate.format(encodeURIComponent(URI)) : self.options.httpTemplate.format(URI);
       var acceptType = (params && params.acceptType) ? params.acceptType : 'text/n3; q=1, text/turtle; q=0.8, application/rdf+xml; q=0.6';
