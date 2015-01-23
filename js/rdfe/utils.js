@@ -13,7 +13,7 @@ RDFE.Utils.createTitle = function (str) {
 
     // strip leading spaces
     var out = str.replace(/^\s*/, "");
-    out = out.replace(/^[a-z]|[^\s][A-Z]/g, function(str, offset) {
+    out = out.replace(/^[a-z]|[^\sA-Z][A-Z]/g, function(str, offset) {
       if (offset == 0) {
         return(str.toUpperCase());
       } else {
