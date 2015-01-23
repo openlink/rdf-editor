@@ -1,17 +1,16 @@
-(function($) {
-  "use strict";
+var VAL = function(config) {
+  this.config = jQuery.extend(
+    {
+      "host": window.location.protocol + '//' + window.location.host,
+      "valApi": "/val/api",
+      "loginLink": "/val/authenticate.vsp",
+      "logoutLink": "/val/logout.vsp"
+    },
+    config
+  );
+};
 
-  window.VAL = function(config) {
-    this.config = $.extend(
-      {
-        "host": window.location.protocol + '//' + window.location.host,
-        "valApi": "/val/api",
-        "loginLink": "/val/authenticate.vsp",
-        "logoutLink": "/val/logout.vsp"
-      },
-      config
-    );
-  };
+(function($) {
 
   /**
    * Get the user profile. The only parameter is a callback function which
@@ -22,7 +21,7 @@
    * The profile object contains at least the personal "uri" and optionally
    * the "nick" nickname, the "name" and an "image" url.
    */
-  window.VAL.prototype.profile = function(cb) {
+  VAL.prototype.profile = function(cb) {
     $.get(this.config.host + this.config.valApi + "/profile").done(function(data) {
       var s = new rdfstore.Store();
       s.registerDefaultProfileNamespaces();
@@ -35,15 +34,12 @@
                 var p = {
                   "uri": result[0].uri.value
                 };
-                if(result[0].name) {
+                if(result[0].name)
                   p.name = result[0].name.value;
-                }
-                if(result[0].img) {
+                if(result[0].img)
                   p.image = result[0].img.value;
-                }
-                if(result[0].nick) {
+                if(result[0].nick)
                   p.nick = result[0].nick.value;
-                }
 
                 cb(true, p);
               }
@@ -60,6 +56,6 @@
     }).fail(function() {
       cb(false);
     });
-  };
+  }
 
 })(jQuery);
