@@ -551,35 +551,9 @@ RDFE.OntologyManager.prototype.individualByURI = function(URI) {
 RDFE.OntologyManager.prototype.load = function(URI, params) {
   var self = this;
   var host = (self.options.proxy) ? RDFE.OM_LOAD_PROXY_TEMPLATE.format(encodeURIComponent(URI)) : RDFE.OM_LOAD_TEMPLATE.format(URI);
-  var acceptType = (params && params.acceptType) ? params.acceptType : 'text/n3; q=1, text/turtle; q=0.8, application/rdf+xml; q=0.6';
-  var __ontologyLoaded = (function(URI, params) {
-    return function(data, status, xhr) {
-      var contentType = (xhr.getResponseHeader('content-type') || '').split(';')[0];
-      var loadResultFct = function(success, results) {
-        if (!success) {
-          console.error('ontology load =>', results);
-          return;
-        }
-        if (params && params.success) {
-          params.success();
-        }
-      };
-      if(contentType.indexOf('turtle') > 0)
-        self.store.loadTurtle(data, URI, loadResultFct);
-      else
-        self.store.load(contentType, data, URI, loadResultFct);
-    }
-  })(URI, params);
-  jQuery.ajax({
-    "url": host,
-    "type": 'GET',
-    "crossDomain": true,
-    "dataType": 'text',
-    "success": __ontologyLoaded,
-    "beforeSend": function(xhr) {
-      xhr.setRequestHeader("Accept", acceptType);
-    }
-  });
+  var IO = RDFE.IO.createIO('sparql');
+  IO.type = 'sparql';
+  IO.retrieveURIToStore(host, self.store, URI, params);
 }
 
 RDFE.OntologyManager.prototype.ontologyParse = function(URI, params) {
