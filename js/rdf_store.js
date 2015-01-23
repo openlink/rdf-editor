@@ -24713,8 +24713,7 @@ var TabulatorRDFXMLParser = function() {
                 },
 
                 /** Add a collection node to this frame */
-                'addCollection': function(dom) {
-                    console.log("Add collection:", dom);
+                'addCollection': function() {
                     this.nodeType = this.NODE
                     this.node = this.store.collection()
                     this.collection = true
@@ -24994,7 +24993,7 @@ var TabulatorRDFXMLParser = function() {
                             } else if (nv == "Collection") {
                                 frame = this.buildFrame(frame, frame.element)
                                 frame.parent.element = null
-                                frame.addCollection(dom)
+                                frame.addCollection()
                             }
                             dom.removeAttributeNode(parsetype)
                         }
