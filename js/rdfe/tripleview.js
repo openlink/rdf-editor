@@ -45,8 +45,8 @@
         newTriple[field] = newNode;
         self.doc.updateTriple(triple, newTriple, function(success) {
           // do nothing
-        }, function() {
-          $(self).trigger('rdf-editor-error', 'Failed to update triple in document.');
+        }, function(msg) {
+          $(self).trigger('rdf-editor-error', { message: 'Failed to update triple in document: ' + msg });
         });
       };
 
