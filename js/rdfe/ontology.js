@@ -421,8 +421,6 @@ RDFE.OntologyManager = function(store, config) {
   if (!store) {
     store = rdfstore.create();
   }
-  // RDF/XML parser
-  store.registerParser("application/rdf+xml", RDFXMLParser.parser);
 
   // set default namespaces
   store.registerDefaultNamespace('rdf', 'http://www.w3.org/1999/02/22-rdf-syntax-ns#');
