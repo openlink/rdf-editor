@@ -8,12 +8,6 @@ if (typeof String.prototype.startsWith != 'function') {
 if(!window.RDFE)
   window.RDFE = {};
 
-RDFE.OM_LOAD_TEMPLATE =
-  '{0}';
-
-RDFE.OM_LOAD_PROXY_TEMPLATE =
-  document.location.protocol + '//' + document.location.host + '/proxy?url={0}&output-format=turtle&force=rdf';
-
 RDFE.OM_PREFIX_TEMPLATE =
   'http://prefix.cc/{0}.file.json';
 
@@ -550,10 +544,9 @@ RDFE.OntologyManager.prototype.individualByURI = function(URI) {
 
 RDFE.OntologyManager.prototype.load = function(URI, params) {
   var self = this;
-  var host = (self.options.proxy) ? RDFE.OM_LOAD_PROXY_TEMPLATE.format(encodeURIComponent(URI)) : RDFE.OM_LOAD_TEMPLATE.format(URI);
-  var IO = RDFE.IO.createIO('sparql');
-  IO.type = 'sparql';
-  IO.retrieveURIToStore(host, self.store, URI, params);
+  var IO = RDFE.IO.createIO('http');
+  IO.type = 'http';
+  IO.retrieve(URI, self.store, URI, $.extend({"proxy": self.options.proxy}, params));
 }
 
 RDFE.OntologyManager.prototype.ontologyParse = function(URI, params) {
