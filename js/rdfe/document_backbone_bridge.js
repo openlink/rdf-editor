@@ -61,10 +61,10 @@ RDFE.Document.Model = Backbone.Model.extend({
       item.rdfnode = {};
 
       // TODO: eventually we should support range inheritence
-      if (property.class == RDFE.uriDenormalize('owl:DatatypeProperty')) {
+      if (property.class == self.ontologyManager.uriDenormalize('owl:DatatypeProperty')) {
         item.rdfnode.type = property.range;
       }
-      else if (property.class == RDFE.uriDenormalize('owl:ObjectProperty')) {
+      else if (property.class == self.ontologyManager.uriDenormalize('owl:ObjectProperty')) {
         item.rdfnode.type = "http://www.w3.org/1999/02/22-rdf-syntax-ns#Resource";
         item.rdfnode.choices = function(callback) { self.getIndividuals(property.range, callback); };
         item.rdfnode.create = true; //FIXME: make this configurable
@@ -104,7 +104,7 @@ RDFE.Document.Model = Backbone.Model.extend({
         self.fields = [];
         var lens = null;
         for (var i = 0, l = r.length; i < l; i++) {
-          if (r[i].p.value == RDFE.uriDenormalize('rdf:type')) {
+          if (r[i].p.value == self.ontologyManager.uriDenormalize('rdf:type')) {
             if(!lens) {
               lens = ontologyManager.findFresnelLens(r[i].o.value);
               if(lens && lens.showProperties.length == 0) {
@@ -132,7 +132,7 @@ RDFE.Document.Model = Backbone.Model.extend({
         }
         else {
           // replace fresnel:allProperties with the missing properties, rather than appending them
-          var j = self.fields.indexOf(RDFE.uriDenormalize('fresnel:allProperties'));
+          var j = self.fields.indexOf(self.ontologyManager.uriDenormalize('fresnel:allProperties'));
           if(j >= 0) {
             var mp = [];
             for (var i = 0, l = r.length; i < l; i++) {
