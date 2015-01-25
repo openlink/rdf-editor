@@ -917,6 +917,17 @@ RDFE.OntologyManager.prototype.individualsByClassURI = function(classURI) {
   return items;
 }
 
+RDFE.OntologyManager.prototype.allProperties = function(domain) {
+  var pl = [];
+  for(uri in this.ontologyProperties) {
+    var p = this.ontologyProperties[uri];
+    // FIXME: include super-classes for domain-check
+    if(!domain || p.domain.indexOf(domain))
+      pl.push(p);
+  }
+  return pl;
+};
+
 /*
  *
  * Ontology
@@ -992,6 +1003,17 @@ RDFE.Ontology.prototype.ontologyClassByURI = function(classURI) {
 RDFE.Ontology.prototype.propertyByURI = function(propertyURI) {
   return this.properties[URI];
 }
+
+RDFE.Ontology.prototype.allProperties = function(domain) {
+  var pl = [];
+  for(uri in this.properties) {
+    var p = this.properties[uri];
+    // FIXME: include super-classes for domain-check
+    if(!domain || p.domain.indexOf(domain))
+      pl.push(p);
+  }
+  return pl;
+};
 
 /*
  *
