@@ -910,54 +910,6 @@ RDFE.OntologyManager.prototype.findFresnelGroup = function(groupURI) {
   return null;
 }
 
-RDFE.OntologyManager.prototype.templateParse = function(URI, params, callback) {
-  // console.log(URI);
-  var self = this;
-  new RDFE.Template(self, URI, params, callback);
-}
-
-RDFE.OntologyManager.prototype.templatesParse = function(templates, params, callback) {
-  var self = this;
-  if (templates) {
-    for (var i = 0, l = templates.length; i < l; i++) {
-      self.templateParse(templates[i], params, callback);
-    }
-  }
-}
-
-RDFE.OntologyManager.prototype.templateByURI = function(URI) {
-  var self = this;
-  for (var i = 0, l = self.templates.length; i < l; i++) {
-    if (self.templates[i].URI == URI)
-      return self.templates[i];
-  }
-}
-
-RDFE.OntologyManager.prototype.templateRemove = function(URI) {
-  var self = this;
-  for (var i = 0, l = self.templates.length; i < l; i++) {
-    if (self.templates[i].URI == URI) {
-      self.templates.splice(i, 1);
-      return;
-    }
-  }
-}
-
-RDFE.OntologyManager.prototype.templateForClass = function(URI, params, callback) {
-  var self = this;
-  var template = self.templateByURI(URI);
-  if (template) {
-    callback(template);
-  } else {
-    new RDFE.Template(self, URI, params, callback);
-  }
-}
-
-RDFE.OntologyManager.prototype.templateForProperty = function(URI, params, callback) {
-  var self = this;
-  new RDFE.Template(self, URI, params, callback);
-}
-
 RDFE.OntologyManager.prototype.ontologyDetermine = function(URI) {
   var self = this;
   var ontology;
