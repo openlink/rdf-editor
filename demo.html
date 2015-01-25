@@ -112,6 +112,8 @@
             <div class="panel-body">
               <select id="ontologySelection">
               </select>
+              <select id="propertySelection">
+              </select>
             </div>
           </div>
         </div>
@@ -217,6 +219,7 @@
     <script src="js/selectize.min.js"></script>
     <script src="js/bootbox.min.js"></script>
     <script src="js/rdfe/jquery.ontobox.js"></script>
+    <script src="js/rdfe/jquery.propertybox.js"></script>
 
     <script>
       var val = new VAL();
@@ -462,7 +465,10 @@
               $("#io_spq").val($.jStorage.get("editor-sparql-endpoint", config.options.sparqlEndpoint));
               $("#gspEndpoint").val($.jStorage.get("editor-sparql-graph-endpoint", config.options.gspEndpoint));
 
-              $('#ontologySelection').ontoBox({ "ontoManager": ontologyManager });
+              $('#propertySelection').propertyBox({ "ontoManager": ontologyManager });
+              $('#ontologySelection').ontoBox({ "ontoManager": ontologyManager }).on('changed', function(e, o) {
+                $('#propertySelection').propertyBox().setOntology(o);
+              });
             }
           );
 
