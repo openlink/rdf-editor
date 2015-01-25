@@ -287,8 +287,12 @@
             $.jStorage.set("editor-document-url", url);
             $.jStorage.set("editor-document-io-type", type);
         }, function() {
-            // FIXME: error handling!!!
-            console.log('Failed to load document');
+            $.growl({
+              message: 'Failed to load document',
+              icon: "glyphicon glyphicon-fire"
+            }, {
+              type: 'danger'
+            });
             toggleSpinner(false);
         });
       }
