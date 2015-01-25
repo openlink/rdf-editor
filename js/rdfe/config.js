@@ -88,5 +88,8 @@ RDFE.Config.defaults = {
 
   sparqlEndpoint: window.location.protocol + '//' + window.location.host + '/sparql',
 
-  gspEndpoint: window.location.protocol + '//' + window.location.host + '/sparql-graph-crud'
+  gspEndpoint: window.location.protocol + '//' + window.location.host + '/sparql-graph-crud',
+
+  prefixes: {
+  }
 };
