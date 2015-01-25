@@ -87,6 +87,23 @@ rdfstore.Store.prototype.loadTurtle = function(data, graph, callback) {
     return self.rdf.createTriple(convertNode(triple.subject), convertNode(triple.predicate), convertNode(triple.object));
   };
 
+  var addTriples(triples) {
+    if(triples.length) {
+      try {
+        self.insert(self.rdf.createGraph(triples), graph, function(s, r) {
+          if(!s) {
+            if(callback)
+              callback(false, 'Failed to add new triple to store: ' + r.toString());
+          }
+        });
+      }
+      catch(e) {
+        if(callback)
+          callback(false, 'Failed to add new triple to store: ' + e.toString());
+      }
+    }
+  };
+
   var cnt = 0;
   var triples = [];
   parser.parse(data, function(error, triple, prefixes) {
@@ -95,8 +112,7 @@ rdfstore.Store.prototype.loadTurtle = function(data, graph, callback) {
         callback(false, error);
     }
     if (triple == null) {
-      if(triples.length)
-        self.insert(self.rdf.createGraph(triples), graph, function() {});
+      addTriples(triples);
 
       // exec success function
       if (callback) {
