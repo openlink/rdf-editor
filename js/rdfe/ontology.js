@@ -408,7 +408,7 @@ RDFE.OntologyManager = function(store, config) {
 
   this.reset();
 
-  this.prefixes = RDFE.prefixes;
+  this.prefixes = $.extend({}, RDFE.prefixes, config.prefixes);
 }
 
 RDFE.OntologyManager.prototype.init = function(options) {
