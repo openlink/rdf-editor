@@ -12,6 +12,7 @@ var jsRdfe = [
   "js/rdfe/jquery.rdfnodeinput.js",
   "js/rdfe/editable-rdfnode.js",
   "js/rdfe/jquery.ontobox.js",
+  "js/rdfe/jquery.propertybox.js",
   "js/rdfe/entityeditor.js",
   "js/rdfe/entityview.js",
   "js/rdfe/tripleview.js",
