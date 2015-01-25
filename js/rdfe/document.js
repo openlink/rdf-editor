@@ -31,7 +31,7 @@ RDFE.Document.prototype.load = function(url, io, success, fail) {
     };
     io.retrieveToStore(url, self.store, self.graph, {
       'success': successFct,
-      'error', fail
+      'error': fail
     });
 };
 
@@ -71,7 +71,7 @@ RDFE.Document.prototype.save = function(url, io, success, fail) {
       };
       myIo.insertFromStore(myUrl, self.store, self.graph, {
         "success": __success,
-        "error", myFail
+        "error": myFail
       });
     }
 };
