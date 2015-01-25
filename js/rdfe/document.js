@@ -69,7 +69,6 @@ RDFE.Document.prototype.save = function(url, io, success, fail) {
         if(mySuccess)
           mySuccess();
       };
-      // FIXME: add error handling
       myIo.insertFromStore(myUrl, self.store, self.graph, {
         "success": __success,
         "error", myFail
