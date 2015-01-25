@@ -29,7 +29,10 @@ RDFE.Document.prototype.load = function(url, io, success, fail) {
         if (success)
             success();
     };
-    io.retrieveToStore(url, self.store, self.graph, {'success': successFct });
+    io.retrieveToStore(url, self.store, self.graph, {
+      'success': successFct,
+      'error', fail
+    });
 };
 
 RDFE.Document.prototype.save = function(url, io, success, fail) {
@@ -66,8 +69,10 @@ RDFE.Document.prototype.save = function(url, io, success, fail) {
         if(mySuccess)
           mySuccess();
       };
-      // FIXME: add error handling
-      myIo.insertFromStore(myUrl, self.store, self.graph, {"success": __success});
+      myIo.insertFromStore(myUrl, self.store, self.graph, {
+        "success": __success,
+        "error", myFail
+      });
     }
 };
 
