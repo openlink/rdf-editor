@@ -530,6 +530,11 @@ RDFE.OntologyManager.prototype.ontologyParse = function(URI, params) {
   var __ontologyLoaded = (function(params) {
     return function() {
       // ontology classes & properties parse
+      var ontologyClasses = self.ontologyClassesParse(URI, params);
+      self.ontologyPropertiesParse(URI, params);
+      self.ontologyRestrictionsParse(URI, ontologyClasses, params);
+
+      // Check if we have details for the ontology itself
       var sparql = RDFE.OM_ONTOLOGY_TEMPLATE.format(URI);
       self.store.execute(sparql, function(success, results) {
         if (!success) {
@@ -544,13 +549,19 @@ RDFE.OntologyManager.prototype.ontologyParse = function(URI, params) {
             if ((graph.charAt(graph.length - 1) == '#') && (graph.substring(0, graph.length - 1) == ontologyURI)) {
               ontologyURI = graph;
             }
-            self.Ontology(graph, ontologyURI, params);
+            if(self.ontologies[ontologyURI + '#']) {
+              ontologyURI += '#';
+            }
+            else if(self.ontologies[ontologyURI + '/']) {
+              ontologyURI += '/';
+            }
+
+            self.Ontology(graph, ontologyURI, params).parse(graph, {
+              ontoUri: results[i]["o"].value
+            });
           }
         }
       });
-      var ontologyClasses = self.ontologyClassesParse(URI, params);
-      self.ontologyPropertiesParse(URI, params);
-      self.ontologyRestrictionsParse(URI, ontologyClasses, params);
 
       // clear graph after parse
       self.graphClear(URI);
@@ -930,13 +941,14 @@ RDFE.Ontology = function(ontologyManager, graph, URI, options) {
 
 RDFE.Ontology.prototype.parse = function(graph, options) {
   var self = this;
+  options = options || {};
   if (!graph) {
     return;
   }
   if (self.sources.indexOf(graph) == -1) {
     self.sources.push(graph);
   }
-  self.manager.store.node(self.URI, graph, function(success, results) {
+  self.manager.store.node(options.ontoUri || self.URI, graph, function(success, results) {
     if (!success) {
       console.error('ontology =>', results);
       return;
