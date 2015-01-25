@@ -185,7 +185,7 @@ RDFE.Editor.prototype.createNewEntityEditor = function(container, manager) {
     var o = $('#ontology')[0].selectize.getValue();
     var c = $('#class')[0].selectize.getValue();
     var s = container.find('input[name="subject"]').val();
-    var t = self.makeTriple(s, RDFE.uriDenormalize('rdf:type'), c);
+    var t = self.makeTriple(s, self.ontologyManager.uriDenormalize('rdf:type'), c);
     self.doc.addTriple(t, function() {
       container.empty();
 
