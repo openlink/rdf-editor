@@ -426,7 +426,7 @@
           $("#openDocIoType").val($.jStorage.get("editor-document-io-type") || "sparql");
 
           rdfeConfig = new RDFE.Config('config.json', function(config) {
-              ontologyManager = new RDFE.OntologyManager(null, config.options.ontology);
+              ontologyManager = new RDFE.OntologyManager(null, config.options);
 
               ontologyManager.init();
 

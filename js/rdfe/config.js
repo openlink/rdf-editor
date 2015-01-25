@@ -38,6 +38,8 @@ RDFE.Config = function(source, callback) {
           if(data.defaultView)
             self.options.defaultView = data.defaultView;
 
+          self.options.prefixes = $.extend(self.options.prefixes, data.prefixes);
+
           if (callback) callback(self);
         };
       })(callback),
