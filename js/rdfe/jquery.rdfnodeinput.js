@@ -253,9 +253,9 @@
     }
 
     // create language input
-    self.langElem = $(document.createElement('input')).addClass('form-control');
+    self.langElem = $(document.createElement('input')).addClass('form-control').attr('placeholder', 'Language');
     self.langContainer = $(document.createElement('div')).addClass('rdfNodeLangContainer');
-    self.langContainer.append($(document.createElement('div')).addClass("input-group").append($(document.createElement('span')).addClass("input-group-addon").text('Lang')).append(self.langElem));
+    self.langContainer.append(self.langElem);
     self.container.append(self.langContainer);
     if(self.currentType != 'http://www.w3.org/2000/01/rdf-schema#Literal')
       self.langContainer.hide();
@@ -306,9 +306,10 @@
   RdfNodeEditor.prototype.updateEditor = function() {
     // always show the type selection field if the type differs
     // typed string and plain literal without lang should be treated as similar
-    if(this.options.type != this.currentType &&
-       this.options.type != 'http://www.w3.org/2000/01/rdf-schema#Literal' &&
-       this.currentType != 'http://www.w3.org/2001/XMLSchema#string')
+    if(!this.options.type ||
+        (this.options.type != this.currentType &&
+        this.options.type != 'http://www.w3.org/2000/01/rdf-schema#Literal' &&
+        this.currentType != 'http://www.w3.org/2001/XMLSchema#string'))
       this.typeContainer.css('display', 'table-cell');
     else
       this.typeContainer.hide();
@@ -384,6 +385,10 @@
       self.mainElem.removeClass('has-error');
     else
       self.mainElem.addClass('has-error');
+  };
+
+  RdfNodeEditor.prototype.isLiteralType = function(uri) {
+    return nodeTypes.hasOwnProperty(uri) && uri != 'http://www.w3.org/1999/02/22-rdf-syntax-ns#Resource';
   };
 
   RdfNodeEditor.prototype.setEditFocus = function() {
