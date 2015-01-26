@@ -221,7 +221,10 @@ RDFE.Editor.prototype.createNewEntityEditor = function(container, manager) {
       container.empty();
 
       if (self.entityView) {
-        self.entityView.addEntity({"uri": uri, "label": uri});
+        self.entityView.addEntity({
+          "uri": uri,
+          "label": name
+        });
       }
 
       $(self).trigger('rdf-editor-success', {
