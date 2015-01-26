@@ -620,7 +620,7 @@ RDFE.OntologyManager.prototype.ontologyClassesParse = function(graph, params) {
           for (var j = 0, m = results.length; j < m; j++) {
             var c = results[j]["i"].value;
             if (!RDFE.isBlankNode(c)) {
-              self.individuals.push(new RDFE.OntologyIndividual(self, graph, c, params));
+              new RDFE.OntologyIndividual(self, graph, c, ontologyClass, params);
             }
           }
         });
@@ -1255,7 +1255,7 @@ RDFE.OntologyProperty.prototype.hasDomain = function(domain) {
  * Ontology Individual
  *
  */
-RDFE.OntologyIndividual = function(ontologyManager, graph, URI, options) {
+RDFE.OntologyIndividual = function(ontologyManager, graph, URI, individualClass, options) {
   // console.log('individual =>', URI);
   var self = this;
 
@@ -1267,7 +1267,9 @@ RDFE.OntologyIndividual = function(ontologyManager, graph, URI, options) {
 
   this.manager = ontologyManager;
   this.manager.individuals[URI] = this;
-
+  if (individualClass) {
+    individualClass.individuals[URI] = this;
+  }
   this.parse(graph, options);
 }
 
@@ -1302,7 +1304,7 @@ RDFE.OntologyIndividual.prototype.parse = function(graph, options) {
         self.description = RDFE.coalesce(self.description, o);
 
       else if (p == self.manager.uriDenormalize('rdf:type'))
-        self.class = self.manager.OntologyClass(graph, o. options);
+        self.class = self.manager.OntologyClass(graph, o, options);
     }
   });
 }
