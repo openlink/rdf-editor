@@ -35,7 +35,7 @@
         }
         else if (field != 'object' ||
           triple.object.interfaceName == 'NamedNode') {
-          newNode = self.doc.store.rdf.createNamedNode(RDFE.Editor.io_strip_URL_quoting(newValue));
+          newNode = self.doc.store.rdf.createNamedNode(newValue);
         }
         else if (triple.object.datatype == 'http://www.w3.org/2001/XMLSchema#dateTime') {
           var d = new Date(newValue);
