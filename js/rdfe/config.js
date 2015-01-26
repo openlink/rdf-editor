@@ -17,28 +17,12 @@ RDFE.Config = function(source, callback) {
       dataType: 'json',
       success: (function(callback) {
         return function(data) {
-          self.options.ontology = $.extend(self.options.ontology, data.ontology);
+          self.options = $.extend(self.options, data);
 
-          // Templates options
-          self.options.templates = $.extend(self.options.templates, data.templates);
+          self.options.ontology = $.extend(RDFE.Config.defaults.ontology, data.ontology);
 
-          // Bookmarks options
-          self.options.bookmarks = $.extend(self.options.bookmarks, data.bookmarks);
-
-          // Editor options
-          if (data.actions)
-            self.options.actions = data.actions;
-
-          if(data.labelProps)
-            self.options.labelProps = data.labelProps;
-
-          if(!data.labelProps || data.labelProps.length == 0)
-            data.labelProps = RDFE.Config.defaults.labelProps;
-
-          if(data.defaultView)
-            self.options.defaultView = data.defaultView;
-
-          self.options.prefixes = $.extend(self.options.prefixes, data.prefixes);
+          if(!self.options.labelProps || self.options.labelProps.length == 0)
+            self.options.labelProps = RDFE.Config.defaults.labelProps;
 
           if (callback) callback(self);
         };
@@ -59,10 +43,6 @@ RDFE.Config.defaults = {
     fresnelGroups: true,
     forceLoad: false,
     preloadOnly: false
-  },
-
-  // configuration related to the class templates
-  templates: {
   },
 
   // a set of bookmarks which can be loaded from the "bookmarks" action
@@ -93,5 +73,15 @@ RDFE.Config.defaults = {
   gspEndpoint: window.location.protocol + '//' + window.location.host + '/sparql-graph-crud',
 
   prefixes: {
-  }
+  },
+
+  // the template used to create new entity uris. This can contain two variables:
+  // - {NAME} which is replaced with the entity name/label
+  // - {DOC-URI} which is replaced with the document URI
+  // If no variable is included then the entity name will be appended as a fragment
+  //
+  // Examples:
+  // - {DOC-URI}#{NAME}
+  // - urn:test:{NAME}
+  entityUriTmpl: undefined
 };

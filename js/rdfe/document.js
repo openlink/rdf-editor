@@ -146,9 +146,9 @@ RDFE.Document.prototype.deleteEntity = function(uri, success, fail) {
   });
 };
 
-RDFE.Document.prototype.addTriple = function(triple, success, fail) {
+RDFE.Document.prototype.addTriples = function(triples, success, fail) {
   var self = this;
-  self.store.insert(self.store.rdf.createGraph([triple]), self.graph, function(s) {
+  self.store.insert(self.store.rdf.createGraph(triples), self.graph, function(s) {
     if(s) {
       self.setChanged();
       if(success)

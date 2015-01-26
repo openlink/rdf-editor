@@ -443,7 +443,7 @@
                 loadBookmarks(config);
 
               mainDoc = new RDFE.Document(config);
-              editor = new RDFE.Editor(mainDoc, ontologyManager);
+              editor = new RDFE.Editor(mainDoc, ontologyManager, config);
 
               // subscribe to editor events
               $(editor).on('rdf-editor-success', function(e, d) {
