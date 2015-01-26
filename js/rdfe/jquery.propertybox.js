@@ -101,6 +101,7 @@
 
   PropertyBox.prototype.on = function(e, cb) {
     $(this).on(e, cb);
+    return this;
   };
 
   $.fn.propertyBox = function(methodOrOptions) {

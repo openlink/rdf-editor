@@ -15,13 +15,9 @@ RDFE.Editor = function(doc, ontoMan, params) {
   this.ontologyManager = ontoMan;
 };
 
-RDFE.Editor.io_strip_URL_quoting = function(str) {
-  return (str.replace(RegExp('^<(.*)>$'), '$1'));
-};
-
 RDFE.Editor.prototype.makeTriple = function(s, p, o) {
-  ss = this.doc.store.rdf.createNamedNode(RDFE.Editor.io_strip_URL_quoting(s));
-  pp = this.doc.store.rdf.createNamedNode(RDFE.Editor.io_strip_URL_quoting(p));
+  ss = this.doc.store.rdf.createNamedNode(s);
+  pp = this.doc.store.rdf.createNamedNode(p);
   // let's be dumb about this for now
   o = RDFE.Editor.io_strip_URL_quoting(o);
   if (o.startsWith("http") || o.startsWith("urn")) {
@@ -59,35 +55,50 @@ RDFE.Editor.prototype.createNewStatementEditor = function(container) {
       <div class="form-group"><label for="subject" class="col-sm-2 control-label">Subject</label> \
       <div class="col-sm-10"><input name="subject" class="form-control" /></div></div> \
       <div class="form-group"><label for="predicate" class="col-sm-2 control-label">Predicate</label> \
-      <div class="col-sm-10"><input name="predicate" class="form-control" /></div></div> \
+      <div class="col-sm-10"><select name="predicate" class="form-control"></select></div></div> \
       <div class="form-group"><label for="object" class="col-sm-2 control-label">Object</label> \
       <div class="col-sm-10"><input name="object" class="form-control" /></div></div> \
       <div class="form-group"><div class="col-sm-10 col-sm-offset-2"><a href="#" class="btn btn-default triple-action triple-action-new-cancel">Cancel</a> \
         <a href="#" class="btn btn-primary triple-action triple-action-new-save">Save</a></div></div> \
       </form></div></div>\n');
 
+  var objEd = container.find('input[name="object"]').rdfNodeEditor();
+  var propEd = container.find('select[name="predicate"]').propertyBox({
+    ontoManager: self.ontologyManager
+  }).on('changed', function(e, p) {
+    console.log('changed', p)
+    var cn = objEd.getValue(), n;
+    if(objEd.isLiteralType(p.range)) {
+      n = new RDFE.RdfNode('literal', cn.value, p.range, cn.language);
+    }
+    else if(self.ontologyManager.ontologyClassByURI(p.range)) {
+      n = new RDFE.RdfNode('uri', cn.value);
+    }
+    else {
+      n = new RDFE.RdfNode('literal', cn.value, null, '');
+    }
+    objEd.setValue(n);
+  });
+
   container.find('a.triple-action-new-cancel').click(function(e) {
     container.empty();
   });
 
   container.find('a.triple-action-new-save').click(function(e) {
-    // FIXME: use the same editors we use in the tables
-    // FIXME: get the range of the property and convert the object accordingly
     var s = container.find('input[name="subject"]').val();
-    var p = container.find('input[name="predicate"]').val();
-    var o = container.find('input[name="object"]').val();
-    var t = self.makeTriple(s, p, o);
+    var p = propEd.selectedURI();
+    var o = objEd.getValue();
+    var t = self.doc.store.rdf.createTriple(self.doc.store.rdf.createNamedNode(s), self.doc.store.rdf.createNamedNode(p), o.toStoreNode(self.doc.store));
     self.doc.addTriple(t, function() {
       container.empty();
 
-      if (self.tripleTable) {
-        var i = self.tripleTable.data('maxindex');
-        i += 1;
-        self.tripleTable.bootstrapTable('append', $.extend(t, {
-          id: i
-        }));
-        self.tripleTable.data('maxindex', i);
+      if (self.tripleView) {
+        self.tripleView.addTriple(t);
       }
+      $(self).trigger('rdf-editor-success', {
+        "type": "triple-insert-success",
+        "message": "Successfully added new triple."
+      });
     }, function() {
       $(self).trigger('rdf-editor-error', {
         "type": 'triple-insert-failed',
