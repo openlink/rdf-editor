@@ -306,9 +306,10 @@
   RdfNodeEditor.prototype.updateEditor = function() {
     // always show the type selection field if the type differs
     // typed string and plain literal without lang should be treated as similar
-    if(this.options.type != this.currentType &&
-       this.options.type != 'http://www.w3.org/2000/01/rdf-schema#Literal' &&
-       this.currentType != 'http://www.w3.org/2001/XMLSchema#string')
+    if(!this.options.type ||
+        (this.options.type != this.currentType &&
+        this.options.type != 'http://www.w3.org/2000/01/rdf-schema#Literal' &&
+        this.currentType != 'http://www.w3.org/2001/XMLSchema#string'))
       this.typeContainer.css('display', 'table-cell');
     else
       this.typeContainer.hide();
