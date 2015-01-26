@@ -278,7 +278,7 @@ RDFE.Editor.prototype.buildEntityUriFromTemplate = function(name) {
   var nuri = uri,
       self = this;
   var uq = function(i) {
-    self.doc.store.node(nuri, function(s, r) {
+    self.doc.store.node(nuri, self.doc.graph, function(s, r) {
       if(s && r.length) {
         nuri = uri + i;
         uq(i+1);
