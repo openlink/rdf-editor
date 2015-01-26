@@ -193,16 +193,23 @@ RDFE.Editor.prototype.createNewEntityEditor = function(container, manager) {
   });
 
   container.find('a.triple-action-new-save').click(function(e) {
-    var o = $('#ontology')[0].selectize.getValue();
-    var c = $('#class')[0].selectize.getValue();
-    var s = container.find('input[name="subject"]').val();
-    var t = self.makeTriple(s, self.ontologyManager.uriDenormalize('rdf:type'), c);
+    var uri = container.find('input[name="subject"]').val();
+    var o = self.doc.store.rdf.createNamedNode(container.find('#class')[0].selectize.getValue()),
+        p = self.doc.store.rdf.createNamedNode(self.ontologyManager.uriDenormalize('rdf:type')),
+        s = self.doc.store.rdf.createNamedNode(uri);
+    var t = self.doc.store.rdf.createTriple(s, p, o);
+
     self.doc.addTriple(t, function() {
       container.empty();
 
       if (self.entityView) {
-        self.entityView.addEntity({"uri": s, "label": s});
+        self.entityView.addEntity({"uri": uri, "label": uri});
       }
+
+      $(self).trigger('rdf-editor-success', {
+        "type": "entity-insert-success",
+        "message": "Successfully created new entity."
+      });
     }, function() {
       $(self).trigger('rdf-editor-error', {
         "type": 'triple-insert-failed',
