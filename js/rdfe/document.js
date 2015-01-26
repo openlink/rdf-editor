@@ -89,19 +89,20 @@ RDFE.Document.prototype.new = function(success, fail) {
 };
 
 RDFE.Document.prototype.deleteTriples = function(s, p, o, success, fail) {
+  var self = this;
   var t = '';
   if(s)
-    t += s.toN3();
+    t += s.toNT();
   else
     t += '?s';
   t += ' ';
   if(p)
-    t += p.toN3();
+    t += p.toNT();
   else
     t += '?p';
   t += ' ';
   if(o)
-    t += o.toN3();
+    t += o.toNT();
   else
     t += '?o';
 

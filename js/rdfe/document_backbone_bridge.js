@@ -180,7 +180,7 @@ RDFE.Document.Model = Backbone.Model.extend({
     var self = this;
 
     // first delete then copy the data back to the store
-    self.doc.deleteTriples(this.uri, null, null, function() {
+    self.doc.deleteTriples(self.doc.store.rdf.createNamedNode(this.uri), null, null, function() {
       var triples = [];
       for (var i = 0; i < self.fields.length; i++) {
         prop = self.fields[i];
