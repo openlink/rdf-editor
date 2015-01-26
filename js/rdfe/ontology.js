@@ -921,6 +921,14 @@ RDFE.OntologyManager.prototype.individualsByClassURI = function(classURI) {
   return items;
 }
 
+RDFE.OntologyManager.prototype.allClasses = function() {
+  var classes = [];
+  for (v in this.ontologyClasses) {
+    classes.push(this.ontologyClasses[v]);
+  }
+  return classes;
+};
+
 RDFE.OntologyManager.prototype.allProperties = function(domain) {
   var pl = [];
   for(uri in this.ontologyProperties) {
