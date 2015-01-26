@@ -87,7 +87,7 @@ rdfstore.Store.prototype.loadTurtle = function(data, graph, callback) {
     return self.rdf.createTriple(convertNode(triple.subject), convertNode(triple.predicate), convertNode(triple.object));
   };
 
-  var addTriples(triples) {
+  var addTriples = function(triples) {
     if(triples.length) {
       try {
         self.insert(self.rdf.createGraph(triples), graph, function(s, r) {

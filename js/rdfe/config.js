@@ -38,6 +38,8 @@ RDFE.Config = function(source, callback) {
           if(data.defaultView)
             self.options.defaultView = data.defaultView;
 
+          self.options.prefixes = $.extend(self.options.prefixes, data.prefixes);
+
           if (callback) callback(self);
         };
       })(callback),
@@ -88,5 +90,8 @@ RDFE.Config.defaults = {
 
   sparqlEndpoint: window.location.protocol + '//' + window.location.host + '/sparql',
 
-  gspEndpoint: window.location.protocol + '//' + window.location.host + '/sparql-graph-crud'
+  gspEndpoint: window.location.protocol + '//' + window.location.host + '/sparql-graph-crud',
+
+  prefixes: {
+  }
 };
