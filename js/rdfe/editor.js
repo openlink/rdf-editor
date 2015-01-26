@@ -15,19 +15,6 @@ RDFE.Editor = function(doc, ontoMan, params) {
   this.ontologyManager = ontoMan;
 };
 
-RDFE.Editor.prototype.makeTriple = function(s, p, o) {
-  ss = this.doc.store.rdf.createNamedNode(s);
-  pp = this.doc.store.rdf.createNamedNode(p);
-  // let's be dumb about this for now
-  o = RDFE.Editor.io_strip_URL_quoting(o);
-  if (o.startsWith("http") || o.startsWith("urn")) {
-    oo = this.doc.store.rdf.createNamedNode(o);
-  } else {
-    oo = this.doc.store.rdf.createLiteral(o, null, null);
-  }
-  return (this.doc.store.rdf.createTriple(ss, pp, oo));
-};
-
 RDFE.Editor.prototype.createTripleList = function(container, callback) {
   var self = this;
 
