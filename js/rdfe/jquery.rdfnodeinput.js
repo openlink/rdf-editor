@@ -253,9 +253,9 @@
     }
 
     // create language input
-    self.langElem = $(document.createElement('input')).addClass('form-control');
+    self.langElem = $(document.createElement('input')).addClass('form-control').attr('placeholder', 'Language');
     self.langContainer = $(document.createElement('div')).addClass('rdfNodeLangContainer');
-    self.langContainer.append($(document.createElement('div')).addClass("input-group").append($(document.createElement('span')).addClass("input-group-addon").text('Lang')).append(self.langElem));
+    self.langContainer.append(self.langElem);
     self.container.append(self.langContainer);
     if(self.currentType != 'http://www.w3.org/2000/01/rdf-schema#Literal')
       self.langContainer.hide();
