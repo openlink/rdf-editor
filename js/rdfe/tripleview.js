@@ -5,8 +5,9 @@
 
   RDFE.TripleView = (function() {
     // constructor
-    var c = function(doc) {
+    var c = function(doc, ontoMan) {
       this.doc = doc;
+      this.ontologyManager = ontoMan;
     };
 
     var nodeFormatter = function(value) {
@@ -26,6 +27,9 @@
       var tripleEditorDataSetter = function(triple, field, newValue) {
         var newNode = newValue;
 
+        if (field === 'predicate') {
+          newNode = self.doc.store.rdf.createNamedNode(newValue);
+        }
         if (newValue.toStoreNode) {
           newNode = newValue.toStoreNode(self.doc.store);
         }
@@ -41,7 +45,7 @@
           newNode = self.doc.store.rdf.createLiteral(newValue, triple.object.language, triple.object.datatype);
         }
 
-        var newTriple = triple;
+        var newTriple = self.doc.store.rdf.createTriple(triple.subject, triple.predicate, triple.object);
         newTriple[field] = newNode;
         self.doc.updateTriple(triple, newTriple, function(success) {
           // do nothing
@@ -96,21 +100,15 @@
                 title: 'Predicate',
                 align: 'left',
                 sortable: true,
-                editable: {
-                  mode: "inline",
-                  name: 'predicate',
-                  type: "typeaheadjs",
-                  placement: "right",
-                  typeahead: {
-                    name: 'predicate',
-                    local: [
-                      "http://www.w3.org/2002/07/owl#",
-                      "http://www.w3.org/2000/01/rdf-schema#",
-                      "http://xmlns.com/foaf/0.1/",
-                      "http://rdfs.org/sioc/ns#",
-                      "http://purl.org/dc/elements/1.1/",
-                    ].concat(pl)
-                  }
+                editable: function(triple) {
+                  return {
+                    mode: "inline",
+                    type: "propertyBox",
+                    propertyBox: {
+                      ontoManager: self.ontologyManager
+                    },
+                    value: triple.predicate.nominalValue
+                  };
                 },
                 formatter: nodeFormatter
               }, {

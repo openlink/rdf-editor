@@ -36,7 +36,7 @@ RDFE.Editor.prototype.createTripleList = function(container, callback) {
   var self = this;
 
   if(!this.tripleView) {
-    this.tripleView = new RDFE.TripleView(this.doc);
+    this.tripleView = new RDFE.TripleView(this.doc, this.ontologyManager);
     $(self.tripleView).on('rdf-editor-error', function(e, d) {
       $(self).trigger('rdf-editor-error', d);
     }).on('rdf-editor-success', function(e, d) {
