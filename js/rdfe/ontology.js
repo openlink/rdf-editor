@@ -527,57 +527,61 @@ RDFE.OntologyManager.prototype.ontologyParse = function(URI, params) {
     return;
   }
 
-  var __ontologyLoaded = (function(params) {
-    return function() {
-      // ontology classes & properties parse
-      var ontologyClasses = self.ontologyClassesParse(URI, params);
-      self.ontologyPropertiesParse(URI, params);
-      self.ontologyRestrictionsParse(URI, ontologyClasses, params);
+  var __ontologyLoaded = function() {
+    // ontology classes & properties parse
+    var ontologyClasses = self.ontologyClassesParse(URI, options);
+    self.ontologyPropertiesParse(URI, options);
+    self.ontologyRestrictionsParse(URI, ontologyClasses, options);
 
-      // Check if we have details for the ontology itself
-      var sparql = RDFE.OM_ONTOLOGY_TEMPLATE.format(URI);
-      self.store.execute(sparql, function(success, results) {
-        if (!success) {
-          console.error('ontology =>', results);
-          return;
+    // Check if we have details for the ontology itself
+    var sparql = RDFE.OM_ONTOLOGY_TEMPLATE.format(URI);
+    self.store.execute(sparql, function(success, results) {
+      if (!success) {
+        console.error('ontology =>', results);
+        if(options.error) {
+          options.error();
         }
-        if (results.length) {
-          var graph = URI;
-          for (var i = 0; i < results.length; i++) {
-            var ontologyURI = results[i]["o"].value;
-            // Fix for some ontlogies
-            if ((graph.charAt(graph.length - 1) == '#') && (graph.substring(0, graph.length - 1) == ontologyURI)) {
-              ontologyURI = graph;
-            }
-            if(self.ontologies[ontologyURI + '#']) {
-              ontologyURI += '#';
-            }
-            else if(self.ontologies[ontologyURI + '/']) {
-              ontologyURI += '/';
-            }
-
-            self.Ontology(graph, ontologyURI, params).parse(graph, {
-              ontoUri: results[i]["o"].value
-            });
-          }
-        }
-      });
-
-      // clear graph after parse
-      self.graphClear(URI);
-
-      if (params && params.success) {
-        params.success(ontology); // FIXME: ontology is not defined
+        return;
       }
+      if (results.length) {
+        var graph = URI;
+        for (var i = 0; i < results.length; i++) {
+          var ontologyURI = results[i]["o"].value;
+          console.log('Found owl:Ontology:', ontologyURI);
+          // Fix for some ontlogies
+          if ((graph.charAt(graph.length - 1) == '#') && (graph.substring(0, graph.length - 1) == ontologyURI)) {
+            console.log('replacing onto uri', ontologyURI, 'with', graph);
+            ontologyURI = graph;
+          }
+          if(self.ontologies[ontologyURI + '#']) {
+            ontologyURI += '#';
+          }
+          else if(self.ontologies[ontologyURI + '/']) {
+            ontologyURI += '/';
+          }
 
-      $self.trigger('changed', [ self ]);
+          self.Ontology(graph, ontologyURI, options).parse(graph, {
+            ontoUri: results[i]["o"].value
+          });
+        }
+      }
+    });
+
+    // clear graph after parse
+    self.graphClear(URI);
+
+    if (options.success) {
+      options.success(ontology); // FIXME: ontology is not defined
     }
-  })(params);
+
+    $self.trigger('changed', [ self ]);
+  };
 
   $self.trigger('loadingOntology', [ self, URI ]);
 
   self.load(URI, {
-    "success": __ontologyLoaded
+    "success": __ontologyLoaded,
+    "error": options.error
   });
 }
 
