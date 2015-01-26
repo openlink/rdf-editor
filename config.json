@@ -5,6 +5,8 @@
     "fresnelFormats": true,
     "fresnelGroups": true,
     "preloadOntologies": [
+      "test/rdf.ttl",
+      "test/rdfs.ttl",
       "test/skos.rdf",
       "test/skos-ext.ttl",
       "test/foaf-restrictions.ttl",
