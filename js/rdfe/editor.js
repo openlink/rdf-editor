@@ -8,11 +8,12 @@ if (typeof String.prototype.startsWith != 'function') {
 if(!window.RDFE)
   window.RDFE = {};
 
-RDFE.Editor = function(doc, ontoMan, params) {
+RDFE.Editor = function(doc, ontoMan, config) {
   var self = this;
 
   this.doc = doc;
   this.ontologyManager = ontoMan;
+  this.config = config;
 };
 
 RDFE.Editor.prototype.createTripleList = function(container, callback) {
@@ -76,7 +77,7 @@ RDFE.Editor.prototype.createNewStatementEditor = function(container) {
     var p = propEd.selectedURI();
     var o = objEd.getValue();
     var t = self.doc.store.rdf.createTriple(self.doc.store.rdf.createNamedNode(s), self.doc.store.rdf.createNamedNode(p), o.toStoreNode(self.doc.store));
-    self.doc.addTriple(t, function() {
+    self.doc.addTriples([t], function() {
       container.empty();
 
       if (self.tripleView) {
@@ -99,35 +100,11 @@ RDFE.Editor.prototype.createNewEntityEditor = function(container, manager) {
   var self = this;
   var $ontologiesSelect, ontologiesSelect;
   var $classesSelect, classesSelect;
-  var ontologiesList = function () {
-    var items = [];
-    var ontologies = manager.ontologiesAsArray();
-    for (var i = 0, l = ontologies.length; i < l; i++) {
-      items.push({"uri": ontologies[i].URI});
-    }
-    return items;
-  };
 
   var classesList = function (e) {
-    var ontoBox = e.currentTarget;
-    var ontology;
-    var classItems = function() {
-      var items = [];
-      if (ontology) {
-        var clases = ontology.classesAsArray();
-        for (var i = 0, l = clases.length; i < l; i++) {
-          items.push({"uri": clases[i].URI});
-        }
-      }
-      return items;
-    }
-
+    var ontology = manager.ontologyByURI(e.currentTarget.selectedOntologyURI());
     classesSelect.clearOptions();
-    classesSelect.addOption([]);
-    ontology = manager.ontologyByURI(ontoBox.selectedOntologyURI());
-    if (ontology) {
-      classesSelect.addOption(classItems());
-    }
+    classesSelect.addOption(ontology ? ontology.classesAsArray() : self.ontologyManager.allClasses());
   };
 
   if (!this.doc) {
@@ -164,14 +141,48 @@ RDFE.Editor.prototype.createNewEntityEditor = function(container, manager) {
     '  </div> ' +
     '</div></div></div>\n');
 
+  // if we have an entity uri template we ask the user to provide a nem instead of the uri
+  if(this.config.options.entityUriTmpl) {
+    container.find('label[for="subject"]').text('Entity Name');
+  }
+
   ontologiesSelect = $('#ontology').ontoBox({ "ontoManager": manager });
   ontologiesSelect.on('changed', classesList);
 
+  // FIXME: this is all pretty much the same as in the PropertyBox
   $classesSelect = $('#class').selectize({
     create: true,
-    valueField: 'uri',
-    labelField: 'uri',
-    options: []
+    valueField: 'URI',
+    labelField: 'URI',
+    searchField: [ "title", "label", "prefix", "URI" ],
+    sortField: [ "prefix", "URI" ],
+    options: self.ontologyManager.allClasses(),
+    create: function(input, cb) {
+      // search for and optionally create a new class
+      cb(self.options.ontoManager.OntologyClass(null, self.options.ontoManager.uriDenormalize(input)));
+    },
+    render: {
+      item: function(item, escape) {
+        var x = item.title || item.label || name.curi || item.name;
+        if(item.curi && item.curi != x) {
+          x = escape(x) + ' <small>(' + escape(item.curi) + ')</small>';
+        }
+        else {
+          x = escape(x);
+        }
+        return '<div>' + x + '</div>';
+      },
+      option: function(item, escape) {
+        return '<div>' + escape(item.title || item.label || name.curi || item.name) + '<br/><small>(' + escape(item.URI) + ')</small></div>';
+      },
+      'option_create': function(data, escape) {
+        var url = self.options.ontoManager.uriDenormalize(data.input);
+        if (url != data.input)
+          return '<div class="create">Add <strong>' + escape(data.input) + '</strong> <small>(' + escape(url) + ')</small>&hellip;</div>';
+        else
+          return '<div class="create">Add <strong>' + escape(url) + '</strong>&hellip;</div>';
+      }
+    }
   });
   classesSelect = $classesSelect[0].selectize;
 
@@ -180,17 +191,40 @@ RDFE.Editor.prototype.createNewEntityEditor = function(container, manager) {
   });
 
   container.find('a.triple-action-new-save').click(function(e) {
-    var uri = container.find('input[name="subject"]').val();
-    var o = self.doc.store.rdf.createNamedNode(container.find('#class')[0].selectize.getValue()),
-        p = self.doc.store.rdf.createNamedNode(self.ontologyManager.uriDenormalize('rdf:type')),
-        s = self.doc.store.rdf.createNamedNode(uri);
-    var t = self.doc.store.rdf.createTriple(s, p, o);
+    var uri = container.find('input[name="subject"]').val(),
+        name = null
 
-    self.doc.addTriple(t, function() {
+    if(self.config.options.entityUriTmpl) {
+      name = uri;
+      uri = self.buildEntityUriFromTemplate(name);
+    }
+
+    var t = [
+      self.doc.store.rdf.createTriple(
+        self.doc.store.rdf.createNamedNode(uri),
+        self.doc.store.rdf.createNamedNode(self.ontologyManager.uriDenormalize('rdf:type')),
+        self.doc.store.rdf.createNamedNode(container.find('#class')[0].selectize.getValue())
+      )
+    ];
+
+    if(name) {
+      // RDFE.Config makes sure the labelProps array is never empty
+      var lp = self.ontologyManager.uriDenormalize(self.config.options.labelProps[0]);
+      t.push(self.doc.store.rdf.createTriple(
+        self.doc.store.rdf.createNamedNode(uri),
+        self.doc.store.rdf.createNamedNode(lp),
+        self.doc.store.rdf.createLiteral(name)
+      ));
+    }
+
+    self.doc.addTriples(t, function() {
       container.empty();
 
       if (self.entityView) {
-        self.entityView.addEntity({"uri": uri, "label": uri});
+        self.entityView.addEntity({
+          "uri": uri,
+          "label": name
+        });
       }
 
       $(self).trigger('rdf-editor-success', {
@@ -217,4 +251,41 @@ RDFE.Editor.prototype.createEntityList = function(container, callback) {
     });
   }
   self.entityView.render(container, callback);
+};
+
+RDFE.Editor.prototype.buildEntityUriFromTemplate = function(name) {
+  var uri = this.config.options.entityUriTmpl;
+
+  if(!uri) {
+    return null;
+  }
+
+  // we use a dummy uri in case there is no open doc
+  uri = uri.replace('{DOC-URI}', this.doc.url || 'urn:entities:');
+
+  var i = uri.indexOf('{NAME}');
+  if(i >= 0) {
+    uri = uri.replace('{NAME}', encodeURIComponent(name));
+  }
+  else {
+    if(uri[uri.length-1] != '#' && uri[uri.length-1] != '/' && uri[uri.length-1] != ':') {
+      uri += '#';
+    }
+    uri += encodeURIComponent(name);
+  }
+
+  // make the URI unique in the loaded document
+  var nuri = uri,
+      self = this;
+  var uq = function(i) {
+    self.doc.store.node(nuri, self.doc.graph, function(s, r) {
+      if(s && r.length) {
+        nuri = uri + i;
+        uq(i+1);
+      }
+    });
+  };
+  uq(1);
+
+  return nuri;
 };
