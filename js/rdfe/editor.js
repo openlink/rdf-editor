@@ -99,35 +99,11 @@ RDFE.Editor.prototype.createNewEntityEditor = function(container, manager) {
   var self = this;
   var $ontologiesSelect, ontologiesSelect;
   var $classesSelect, classesSelect;
-  var ontologiesList = function () {
-    var items = [];
-    var ontologies = manager.ontologiesAsArray();
-    for (var i = 0, l = ontologies.length; i < l; i++) {
-      items.push({"uri": ontologies[i].URI});
-    }
-    return items;
-  };
 
   var classesList = function (e) {
-    var ontoBox = e.currentTarget;
-    var ontology;
-    var classItems = function() {
-      var items = [];
-      if (ontology) {
-        var clases = ontology.classesAsArray();
-        for (var i = 0, l = clases.length; i < l; i++) {
-          items.push({"uri": clases[i].URI});
-        }
-      }
-      return items;
-    }
-
+    var ontology = manager.ontologyByURI(e.currentTarget.selectedOntologyURI());
     classesSelect.clearOptions();
-    classesSelect.addOption([]);
-    ontology = manager.ontologyByURI(ontoBox.selectedOntologyURI());
-    if (ontology) {
-      classesSelect.addOption(classItems());
-    }
+    classesSelect.addOption(ontology ? ontology.classesAsArray() : self.ontologyManager.allClasses());
   };
 
   if (!this.doc) {
@@ -167,11 +143,40 @@ RDFE.Editor.prototype.createNewEntityEditor = function(container, manager) {
   ontologiesSelect = $('#ontology').ontoBox({ "ontoManager": manager });
   ontologiesSelect.on('changed', classesList);
 
+  // FIXME: this is all pretty much the same as in the PropertyBox
   $classesSelect = $('#class').selectize({
     create: true,
-    valueField: 'uri',
-    labelField: 'uri',
-    options: []
+    valueField: 'URI',
+    labelField: 'URI',
+    searchField: [ "title", "label", "prefix", "URI" ],
+    sortField: [ "prefix", "URI" ],
+    options: self.ontologyManager.allClasses(),
+    create: function(input, cb) {
+      // search for and optionally create a new class
+      cb(self.options.ontoManager.OntologyClass(null, self.options.ontoManager.uriDenormalize(input)));
+    },
+    render: {
+      item: function(item, escape) {
+        var x = item.title || item.label || name.curi || item.name;
+        if(item.curi && item.curi != x) {
+          x = escape(x) + ' <small>(' + escape(item.curi) + ')</small>';
+        }
+        else {
+          x = escape(x);
+        }
+        return '<div>' + x + '</div>';
+      },
+      option: function(item, escape) {
+        return '<div>' + escape(item.title || item.label || name.curi || item.name) + '<br/><small>(' + escape(item.URI) + ')</small></div>';
+      },
+      'option_create': function(data, escape) {
+        var url = self.options.ontoManager.uriDenormalize(data.input);
+        if (url != data.input)
+          return '<div class="create">Add <strong>' + escape(data.input) + '</strong> <small>(' + escape(url) + ')</small>&hellip;</div>';
+        else
+          return '<div class="create">Add <strong>' + escape(url) + '</strong>&hellip;</div>';
+      }
+    }
   });
   classesSelect = $classesSelect[0].selectize;
 
