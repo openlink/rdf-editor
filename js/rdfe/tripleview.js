@@ -165,6 +165,15 @@
       });
     };
 
+    c.prototype.addTriple = function(t) {
+      var i = this.tripleTable.data('maxindex');
+      i += 1;
+      this.tripleTable.bootstrapTable('append', $.extend(t, {
+        id: i
+      }));
+      this.tripleTable.data('maxindex', i);
+    };
+
     return c;
   })();
 })(jQuery);

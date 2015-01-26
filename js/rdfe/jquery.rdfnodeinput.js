@@ -386,6 +386,10 @@
       self.mainElem.addClass('has-error');
   };
 
+  RdfNodeEditor.prototype.isLiteralType = function(uri) {
+    return nodeTypes.hasOwnProperty(uri) && uri != 'http://www.w3.org/1999/02/22-rdf-syntax-ns#Resource';
+  };
+
   RdfNodeEditor.prototype.setEditFocus = function() {
     this.mainElem.focus();
   };
