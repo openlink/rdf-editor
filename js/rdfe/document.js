@@ -293,3 +293,41 @@ RDFE.Document.prototype.listEntities = function(type, callback, errorCb) {
     cb(sl);
   });
 };
+
+RDFE.Document.prototype.buildEntityUriFromTemplate = function(name) {
+  var uri = this.config.options.entityUriTmpl;
+
+  if(!uri) {
+    return null;
+  }
+
+  // we use a dummy uri in case there is no open doc
+  uri = uri.replace('{DOC-URI}', this.url || 'urn:entities:');
+
+  var i = uri.indexOf('{NAME}');
+  if(i >= 0) {
+    uri = uri.replace('{NAME}', encodeURIComponent(name));
+  }
+  else {
+    if(uri[uri.length-1] != '#' && uri[uri.length-1] != '/' && uri[uri.length-1] != ':') {
+      uri += '#';
+    }
+    uri += encodeURIComponent(name);
+  }
+
+  // make the URI unique in the loaded document
+  var nuri = uri,
+      self = this;
+  var uq = function(i) {
+    self.store.node(nuri, self.graph, function(s, r) {
+      console.log(s,r)
+      if(s && r.length) {
+        nuri = uri + i;
+        uq(i+1);
+      }
+    });
+  };
+  uq(1);
+
+  return nuri;
+};

@@ -196,7 +196,7 @@ RDFE.Editor.prototype.createNewEntityEditor = function(container, manager) {
 
     if(self.config.options.entityUriTmpl) {
       name = uri;
-      uri = self.buildEntityUriFromTemplate(name);
+      uri = self.doc.buildEntityUriFromTemplate(name);
     }
 
     var t = [
@@ -251,41 +251,4 @@ RDFE.Editor.prototype.createEntityList = function(container, callback) {
     });
   }
   self.entityView.render(container, callback);
-};
-
-RDFE.Editor.prototype.buildEntityUriFromTemplate = function(name) {
-  var uri = this.config.options.entityUriTmpl;
-
-  if(!uri) {
-    return null;
-  }
-
-  // we use a dummy uri in case there is no open doc
-  uri = uri.replace('{DOC-URI}', this.doc.url || 'urn:entities:');
-
-  var i = uri.indexOf('{NAME}');
-  if(i >= 0) {
-    uri = uri.replace('{NAME}', encodeURIComponent(name));
-  }
-  else {
-    if(uri[uri.length-1] != '#' && uri[uri.length-1] != '/' && uri[uri.length-1] != ':') {
-      uri += '#';
-    }
-    uri += encodeURIComponent(name);
-  }
-
-  // make the URI unique in the loaded document
-  var nuri = uri,
-      self = this;
-  var uq = function(i) {
-    self.doc.store.node(nuri, self.doc.graph, function(s, r) {
-      if(s && r.length) {
-        nuri = uri + i;
-        uq(i+1);
-      }
-    });
-  };
-  uq(1);
-
-  return nuri;
 };
