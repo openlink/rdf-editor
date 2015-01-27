@@ -272,6 +272,7 @@ RDFE.Document.Model = Backbone.Model.extend({
             node = self.doc.store.rdf.createNamedNode(subVal.uri);
 
             // add the sub-model triples. FIXME: use recursion to support more nesting depth, and protect against loops!
+            self.doc.deleteTriples(node, null, null);
             for(subP in subVal.values) {
               var sv = subVal.values[subP];
               for(var k = 0; k < sv.length; k++) {
