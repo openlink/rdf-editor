@@ -344,10 +344,10 @@
             }, {
               type: 'success'
             });
-          }, function(msg) {
+          }, function(err) {
             toggleSpinner(false);
             $.growl({
-              message: msg,
+              message: err.message,
               icon: "glyphicon glyphicon-fire"
             }, {
               type: 'danger'
@@ -494,9 +494,9 @@
                 }, {
                   type: 'success'
                 });
-              }, function(msg) {
+              }, function(err) {
                 $.growl({
-                  message: msg,
+                  message: err.message,
                   icon: "glyphicon glyphicon-fire"
                 }, {
                   type: 'danger'
