@@ -98,7 +98,7 @@ String.prototype.format = function() {
             if (params && params.error) {
               var state = {
                 "httpCode": data.status,
-                "httpMessage": data.statusText
+                "message": data.statusText
               }
               params.error(state, data, status, xhr);
             }
