@@ -122,7 +122,7 @@ RDFE.Document.Model = Backbone.Model.extend({
           }
         }
         if(lens) {
-          self.fields = lens.showProperties;
+          self.fields = _.clone(lens.showProperties);
         }
 
         if(!lens) {
