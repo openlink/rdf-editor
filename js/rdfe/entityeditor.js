@@ -43,7 +43,7 @@
             .append(cnclBtn);
 
           ps = ps.propertyBox({
-            "ontoManager": self.options.ontologyManager
+            "ontoManager": self.model.doc.ontologyManager
           });
 
           cnclBtn.click(function(e) {
@@ -89,10 +89,9 @@
       var self = this;
       var model = new RDFE.Document.Model();
       model.setEntity(this.doc, url);
-      model.docToModel(this.ontologyManager, function() {
+      model.docToModel(function() {
         var form = new EntityForm({
-          "model": model,
-          "ontologyManager": self.ontologyManager
+          "model": model
         });
         form.render();
 
