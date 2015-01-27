@@ -192,39 +192,18 @@ RDFE.Editor.prototype.createNewEntityEditor = function(container, manager) {
 
   container.find('a.triple-action-new-save').click(function(e) {
     var uri = container.find('input[name="subject"]').val(),
-        name = null
+        name = null,
+        type = container.find('#class')[0].selectize.getValue();
 
     if(self.config.options.entityUriTmpl) {
       name = uri;
-      uri = self.doc.buildEntityUriFromTemplate(name);
+      uri = null;
     }
 
-    var t = [
-      self.doc.store.rdf.createTriple(
-        self.doc.store.rdf.createNamedNode(uri),
-        self.doc.store.rdf.createNamedNode(self.ontologyManager.uriDenormalize('rdf:type')),
-        self.doc.store.rdf.createNamedNode(container.find('#class')[0].selectize.getValue())
-      )
-    ];
-
-    if(name) {
-      // RDFE.Config makes sure the labelProps array is never empty
-      var lp = self.ontologyManager.uriDenormalize(self.config.options.labelProps[0]);
-      t.push(self.doc.store.rdf.createTriple(
-        self.doc.store.rdf.createNamedNode(uri),
-        self.doc.store.rdf.createNamedNode(lp),
-        self.doc.store.rdf.createLiteral(name)
-      ));
-    }
-
-    self.doc.addTriples(t, function() {
+    self.doc.addEntity(uri, name, type, function(ent) {
       container.empty();
-
       if (self.entityView) {
-        self.entityView.addEntity({
-          "uri": uri,
-          "label": name
-        });
+        self.entityView.addEntity(ent);
       }
 
       $(self).trigger('rdf-editor-success', {
