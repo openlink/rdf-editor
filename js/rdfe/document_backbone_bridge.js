@@ -7,10 +7,10 @@ RDFE.Document.Model = Backbone.Model.extend({
     this.uri = uri;
   },
 
-  addTriple: function(triple) {
-    var d = this.get(triple.p.value) || [];
-    d.push(RDFE.RdfNode.fromStoreNode(triple.o));
-    this.set(triple.p.value, d);
+  addValue: function(p, val) {
+    var d = this.get(p) || [];
+    d.push(val);
+    this.set(p, d);
   },
 
   getIndividuals: function(range, callback) {
@@ -19,38 +19,38 @@ RDFE.Document.Model = Backbone.Model.extend({
     callback(items);
   },
 
-  maxCardinalityForProperty: function(cTypes, p) {
-    for(var i = 0; i < cTypes.length; i++) {
-      var c = cTypes[i].maxCardinalityForProperty(p);
+  maxCardinalityForProperty: function(p) {
+    for(var i = 0; i < this.types.length; i++) {
+      var c = this.types[i].maxCardinalityForProperty(p);
       if(c)
         return c;
     }
     return null;
   },
 
-  isAggregateProperty: function(cTypes, p) {
-    for(var i = 0; i < cTypes.length; i++) {
-      if(cTypes[i].isAggregateProperty(p))
+  isAggregateProperty: function(p) {
+    for(var i = 0; i < this.types.length; i++) {
+      if(this.types[i].isAggregateProperty(p))
         return true;
     }
     return false;
   },
 
-  createSchemaEntryForProperty: function(cTypes, p) {
+  addSchemaEntryForProperty: function(p) {
     var self = this;
-    var property = self.ontologyManager.ontologyProperties[p] || { URI: p };
+    var property = (p.URI ? p : (self.ontologyManager.ontologyProperties[p] || { URI: p }));
 
     var label = RDFE.Utils.createTitle(property.label || property.title || property.URI.split(/[/#]/).pop())
     var item = {
-      titleHTML: '<span title="{0}">{1}</span>'.format(RDFE.Utils.escapeXml(p), label),
+      titleHTML: '<span title="{0}">{1}</span>'.format(RDFE.Utils.escapeXml(property.URI), label),
       title: label,
-      maxCardinality: self.maxCardinalityForProperty(cTypes, p),
+      maxCardinality: self.maxCardinalityForProperty(property.URI),
       editorAttrs: {
         "title": RDFE.coalesce(property.comment, property.description)
       }
     };
 
-    if(self.isAggregateProperty(cTypes, p)) {
+    if(self.isAggregateProperty(property.URI)) {
       item.type = "NestedModel";
       item.model = RDFE.Document.Model;
       item.editorAttrs.style = "height:auto;"; //FIXME: use editorClass instead
@@ -82,7 +82,7 @@ RDFE.Document.Model = Backbone.Model.extend({
       }
     }
 
-    return item;
+    self.schema[property.URI] = item;
   },
 
   /// read the properties of this.uri from the store and put them into the model
@@ -94,13 +94,14 @@ RDFE.Document.Model = Backbone.Model.extend({
 
     this.doc.store.execute('select ?p ?o from <' + self.doc.graph + '> where { <' + self.uri + '> ?p ?o } order by ?p', function(s, r) {
       if (!s) {
-        if (fail)
+        if (fail) {
           fail();
+        }
       } else {
         //
         // Get the list of properties (fresnel lens vs. existing properties)
         //
-        var types = [];
+        self.types = [];
         self.fields = [];
         var lens = null;
         for (var i = 0, l = r.length; i < l; i++) {
@@ -112,11 +113,12 @@ RDFE.Document.Model = Backbone.Model.extend({
                 lens = null;
               }
             }
-            // TODO: optionally load the ontologies for cTypes. Ideally through a function in the ontology manager, something like getClass()
+            // TODO: optionally load the ontologies for this.types. Ideally through a function in the ontology manager, something like getClass()
             //       however, to avoid async code here, it might be better to load the ontologies once the document has been loaded.
             var oc = ontologyManager.ontologyClassByURI(r[i].o.value);
-            if(oc)
-              types.push(oc);
+            if(oc) {
+              self.types.push(oc);
+            }
           }
         }
         if(lens) {
@@ -148,14 +150,14 @@ RDFE.Document.Model = Backbone.Model.extend({
         // Build the schema from the list of properties
         //
         for(var i = 0; i < self.fields.length; i++) {
-          self.schema[self.fields[i]] = self.createSchemaEntryForProperty(types, self.fields[i]);
+          self.addSchemaEntryForProperty(self.fields[i]);
         }
 
         //
         // Add the data to the model
         //
-        for (var i = 0; i < l; i++) {
-          if(self.isAggregateProperty(types, r[i].p.value)) {
+        for (var i = 0, l = r.length; i < l; i++) {
+          if(self.isAggregateProperty(r[i].p.value)) {
             var v = r[i];
             var subm = new RDFE.Document.Model();
             subm.setEntity (self.doc, v.o.value);
@@ -165,7 +167,7 @@ RDFE.Document.Model = Backbone.Model.extend({
             });
           }
           else {
-            self.addTriple(r[i]);
+            self.addValue(r[i].p.value, RDFE.RdfNode.fromStoreNode(r[i].o));
           }
         }
 
