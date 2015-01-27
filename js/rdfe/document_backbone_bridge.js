@@ -51,9 +51,31 @@ RDFE.Document.Model = Backbone.Model.extend({
     };
 
     if(self.isAggregateProperty(property.URI)) {
-      item.type = "NestedModel";
-      item.model = RDFE.Document.Model;
-      item.editorAttrs.style = "height:auto;"; //FIXME: use editorClass instead
+      var range = self.doc.ontologyManager.ontologyClassByURI(property.range);
+      if(range) {
+        item.type = "List";
+        item.itemType = "NestedRdf";
+        item.model = RDFE.Document.Model.extend({
+          defaults: {
+            'http://www.w3.org/1999/02/22-rdf-syntax-ns#type': [ property.range ]
+          },
+          initialize: function(options) {
+            RDFE.Document.Model.prototype.initialize.call(this, options);
+            this.doc = self.doc;
+            this.buildSchemaFromTypes([range]);
+          }
+        });
+        item.editorAttrs.style = "height:auto;"; //FIXME: use editorClass instead
+      }
+      else {
+        console.log('Caution: invalid range on aggregate: ', property);
+        item.type = "List";
+        item.itemType = "Rdfnode";
+        item.rdfnode = {
+          "type": "http://www.w3.org/1999/02/22-rdf-syntax-ns#Resource",
+          "create": true //FIXME: make this configurable
+        };
+      }
     }
     else {
       item.type = "List";
@@ -83,6 +105,41 @@ RDFE.Document.Model = Backbone.Model.extend({
     }
 
     self.schema[property.URI] = item;
+  },
+
+  buildSchemaFromTypes: function(cTypes) {
+    //
+    // Get the list of properties (fresnel lens vs. existing properties)
+    //
+    var self = this;
+    self.schema = {};
+    self.fields = [];
+    self.lens = null;
+    self.types = cTypes;
+
+    for (var i = 0, l = cTypes.length; i < l; i++) {
+      var lens = self.doc.ontologyManager.findFresnelLens(cTypes[i].URI);
+      if(lens && lens.showProperties.length) {
+        self.lens = lens;
+        break;
+      }
+    }
+
+    if(lens) {
+      // get the fields from the lens, drop the fresnel special since this is only used for empty models
+      self.fields = _.without(lens.showProperties, self.doc.ontologyManager.uriDenormalize('fresnel:allProperties'));
+    }
+    else {
+      // no lens - at least show the type
+      self.fields = [ self.doc.ontologyManager.uriDenormalize('rdf:type') ];
+    }
+
+    //
+    // Build the schema from the list of properties
+    //
+    for(var i = 0; i < self.fields.length; i++) {
+      self.addSchemaEntryForProperty(self.fields[i]);
+    }
   },
 
   /// read the properties of this.uri from the store and put them into the model
@@ -197,17 +254,47 @@ RDFE.Document.Model = Backbone.Model.extend({
         }
 
         for (var j = 0; j < val.length; j++) {
-          if(val[j].toStoreNode) {
-            var node = val[j].toStoreNode(self.doc.store);
-            if(node.nominalValue.length > 0) {
-              triples.push(self.doc.store.rdf.createTriple(
-                self.doc.store.rdf.createNamedNode(self.uri),
-                self.doc.store.rdf.createNamedNode(prop),
-                node));
+          var node;
+          if(val[j].values) {
+            console.log('Need to save sub-model', val[j])
+            var subVal = val[j];
+            if(!subVal.uri) {
+              // find a label
+              var name = null;
+              for(var i = 0, l = self.doc.config.options.labelProps.length; i < l; i++) {
+                if(subVal.values[self.doc.config.options.labelProps[i]]) {
+                  name = subVal.values[self.doc.config.options.labelProps[i]];
+                  break;
+                }
+              }
+              subVal.uri = self.doc.buildEntityUri(name);
+            }
+            node = self.doc.store.rdf.createNamedNode(subVal.uri);
+
+            // add the sub-model triples. FIXME: use recursion to support more nesting depth, and protect against loops!
+            for(subP in subVal.values) {
+              var sv = subVal.values[subP];
+              for(var k = 0; k < sv.length; k++) {
+                triples.push(self.doc.store.rdf.createTriple(
+                  node,
+                  self.doc.store.rdf.createNamedNode(subP),
+                  sv[k].toStoreNode(self.doc.store)));
+              }
             }
           }
           else {
-            console.log('Need to save sub-model', val[j])
+            node = val[j].toStoreNode(self.doc.store);
+          }
+
+          // add the main triple
+          if(node.nominalValue.length > 0) {
+            triples.push(self.doc.store.rdf.createTriple(
+              self.doc.store.rdf.createNamedNode(self.uri),
+              self.doc.store.rdf.createNamedNode(prop),
+              node));
+          }
+          else {
+            console.log('Empty value in', node)
           }
         }
       }
