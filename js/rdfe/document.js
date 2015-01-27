@@ -203,7 +203,7 @@ RDFE.Document.prototype.getEntityLabel = function(url, success) {
       success(url.split(/[/#]/).pop());
     else
       self.store.execute('select ?l from <' + self.graph + '> where { <' + url + '> <' + lps[i] + '> ?l . }', function(s, r) {
-        if(s && r.length > 0) {
+        if(s && r.length > 0 && r[0].l.value.length > 0) {
           success(r[0].l.value);
         }
         else {
