@@ -1,9 +1,10 @@
 if(!window.RDFE)
   window.RDFE = {};
 
-RDFE.Document = function(config) {
+RDFE.Document = function(ontoMan, config) {
   var self = this;
 
+  self.ontologyManager = ontoMan;
   self.config = config;
   self.store = rdfstore.create();
   self.store.registerDefaultNamespace('skos', 'http://www.w3.org/2004/02/skos/core#');
@@ -291,5 +292,81 @@ RDFE.Document.prototype.listEntities = function(type, callback, errorCb) {
       errorCb(r);
 
     cb(sl);
+  });
+};
+
+RDFE.Document.prototype.buildEntityUri = function(name) {
+  var uri = this.config.options.entityUriTmpl;
+  if(!uri || uri.length == 0) {
+    uri = 'urn:entities:{NAME}';
+  }
+
+  // we use a dummy uri in case there is no open doc
+  uri = uri.replace('{DOC-URI}', this.url || 'urn:entities:');
+
+  var n = name || "entity";
+  var i = uri.indexOf('{NAME}');
+  if(i >= 0) {
+    uri = uri.replace('{NAME}', encodeURIComponent(n));
+  }
+  else {
+    if(uri[uri.length-1] != '#' && uri[uri.length-1] != '/' && uri[uri.length-1] != ':') {
+      uri += '#';
+    }
+    uri += encodeURIComponent(n);
+  }
+
+  // make the URI unique in the loaded document
+  var nuri = uri,
+      self = this;
+  var uq = function(i) {
+    self.store.node(nuri, self.graph, function(s, r) {
+      console.log(s,r)
+      if(s && r.length) {
+        nuri = uri + i;
+        uq(i+1);
+      }
+    });
+  };
+  uq(1);
+
+  return nuri;
+};
+
+RDFE.Document.prototype.addEntity = function(uri, name, type, cb, failCb) {
+  var self = this;
+  if(!uri || uri.length == 0) {
+    uri = self.buildEntityUri(name);
+  }
+
+  var t = [
+    self.store.rdf.createTriple(
+      self.store.rdf.createNamedNode(uri),
+      self.store.rdf.createNamedNode('http://www.w3.org/1999/02/22-rdf-syntax-ns#type'),
+      self.store.rdf.createNamedNode(type)
+    )
+  ];
+
+  if(name && name.length > 0) {
+    // RDFE.Config makes sure the labelProps array is never empty
+    var lp = self.ontologyManager.uriDenormalize(self.config.options.labelProps[0]);
+    t.push(self.store.rdf.createTriple(
+      self.store.rdf.createNamedNode(uri),
+      self.store.rdf.createNamedNode(lp),
+      self.store.rdf.createLiteral(name)
+    ));
+  }
+
+  self.addTriples(t, function() {
+    if(cb) {
+      cb({
+        "uri": uri,
+        "label": name
+      });
+    }
+  }, function() {
+    if(failCb) {
+      failCb();
+    }
   });
 };
