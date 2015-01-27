@@ -9,7 +9,7 @@ RDFE.Document.Model = Backbone.Model.extend({
 
   addTriple: function(triple) {
     var d = this.get(triple.p.value) || [];
-    d.push(triple.o);
+    d.push(RDFE.RdfNode.fromStoreNode(triple.o));
     this.set(triple.p.value, d);
   },
 
@@ -182,26 +182,29 @@ RDFE.Document.Model = Backbone.Model.extend({
     // first delete then copy the data back to the store
     self.doc.deleteTriples(self.doc.store.rdf.createNamedNode(this.uri), null, null, function() {
       var triples = [];
-      for (var i = 0; i < self.fields.length; i++) {
-        prop = self.fields[i];
-        if (!self.attributes[prop])
-          continue;
-
+      for (prop in self.attributes) {
         var val = self.get(prop);
-        if (!val)
+        if (!val) {
           continue;
+        }
 
-
-        if (val.constructor !== Array)
+        if (val.constructor !== Array) {
           val = [val];
+        }
 
         for (var j = 0; j < val.length; j++) {
-          var node = val[j].toStoreNode(self.doc.store);
-          if(node.nominalValue.length > 0)
-            triples.push(self.doc.store.rdf.createTriple(
-              self.doc.store.rdf.createNamedNode(self.uri),
-              self.doc.store.rdf.createNamedNode(prop),
-              node));
+          if(val[j].toStoreNode) {
+            var node = val[j].toStoreNode(self.doc.store);
+            if(node.nominalValue.length > 0) {
+              triples.push(self.doc.store.rdf.createTriple(
+                self.doc.store.rdf.createNamedNode(self.uri),
+                self.doc.store.rdf.createNamedNode(prop),
+                node));
+            }
+          }
+          else {
+            console.log('Need to save sub-model', val[j])
+          }
         }
       }
 
