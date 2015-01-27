@@ -7,53 +7,75 @@ RDFE.Document.Model = Backbone.Model.extend({
     this.uri = uri;
   },
 
-  addTriple: function(triple) {
-    var d = this.get(triple.p.value) || [];
-    d.push(triple.o);
-    this.set(triple.p.value, d);
+  addValue: function(p, val) {
+    var d = this.get(p) || [];
+    d.push(val);
+    this.set(p, d);
   },
 
   getIndividuals: function(range, callback) {
-    var items = self.ontologyManager.individualsByClassURI(range);
+    var items = this.doc.ontologyManager.individualsByClassURI(range);
     $.merge(items, RDFE.individuals(this.doc, range));
     callback(items);
   },
 
-  maxCardinalityForProperty: function(cTypes, p) {
-    for(var i = 0; i < cTypes.length; i++) {
-      var c = cTypes[i].maxCardinalityForProperty(p);
+  maxCardinalityForProperty: function(p) {
+    for(var i = 0; i < this.types.length; i++) {
+      var c = this.types[i].maxCardinalityForProperty(p);
       if(c)
         return c;
     }
     return null;
   },
 
-  isAggregateProperty: function(cTypes, p) {
-    for(var i = 0; i < cTypes.length; i++) {
-      if(cTypes[i].isAggregateProperty(p))
+  isAggregateProperty: function(p) {
+    for(var i = 0; i < this.types.length; i++) {
+      if(this.types[i].isAggregateProperty(p))
         return true;
     }
     return false;
   },
 
-  createSchemaEntryForProperty: function(cTypes, p) {
+  addSchemaEntryForProperty: function(p) {
     var self = this;
-    var property = self.ontologyManager.ontologyProperties[p] || { URI: p };
+    var property = (p.URI ? p : (self.doc.ontologyManager.ontologyProperties[p] || { URI: p }));
 
     var label = RDFE.Utils.createTitle(property.label || property.title || property.URI.split(/[/#]/).pop())
     var item = {
-      titleHTML: '<span title="{0}">{1}</span>'.format(RDFE.Utils.escapeXml(p), label),
+      titleHTML: '<span title="{0}">{1}</span>'.format(RDFE.Utils.escapeXml(property.URI), label),
       title: label,
-      maxCardinality: self.maxCardinalityForProperty(cTypes, p),
+      maxCardinality: self.maxCardinalityForProperty(property.URI),
       editorAttrs: {
         "title": RDFE.coalesce(property.comment, property.description)
       }
     };
 
-    if(self.isAggregateProperty(cTypes, p)) {
-      item.type = "NestedModel";
-      item.model = RDFE.Document.Model;
-      item.editorAttrs.style = "height:auto;"; //FIXME: use editorClass instead
+    if(self.isAggregateProperty(property.URI)) {
+      var range = self.doc.ontologyManager.ontologyClassByURI(property.range);
+      if(range) {
+        item.type = "List";
+        item.itemType = "NestedRdf";
+        item.model = RDFE.Document.Model.extend({
+          defaults: {
+            'http://www.w3.org/1999/02/22-rdf-syntax-ns#type': [ property.range ]
+          },
+          initialize: function(options) {
+            RDFE.Document.Model.prototype.initialize.call(this, options);
+            this.doc = self.doc;
+            this.buildSchemaFromTypes([range]);
+          }
+        });
+        item.editorAttrs.style = "height:auto;"; //FIXME: use editorClass instead
+      }
+      else {
+        console.log('Caution: invalid range on aggregate: ', property);
+        item.type = "List";
+        item.itemType = "Rdfnode";
+        item.rdfnode = {
+          "type": "http://www.w3.org/1999/02/22-rdf-syntax-ns#Resource",
+          "create": true //FIXME: make this configurable
+        };
+      }
     }
     else {
       item.type = "List";
@@ -61,10 +83,10 @@ RDFE.Document.Model = Backbone.Model.extend({
       item.rdfnode = {};
 
       // TODO: eventually we should support range inheritence
-      if (property.class == self.ontologyManager.uriDenormalize('owl:DatatypeProperty')) {
+      if (property.class == self.doc.ontologyManager.uriDenormalize('owl:DatatypeProperty')) {
         item.rdfnode.type = property.range;
       }
-      else if (property.class == self.ontologyManager.uriDenormalize('owl:ObjectProperty')) {
+      else if (property.class == self.doc.ontologyManager.uriDenormalize('owl:ObjectProperty')) {
         item.rdfnode.type = "http://www.w3.org/1999/02/22-rdf-syntax-ns#Resource";
         item.rdfnode.choices = function(callback) { self.getIndividuals(property.range, callback); };
         item.rdfnode.create = true; //FIXME: make this configurable
@@ -82,11 +104,46 @@ RDFE.Document.Model = Backbone.Model.extend({
       }
     }
 
-    return item;
+    self.schema[property.URI] = item;
+  },
+
+  buildSchemaFromTypes: function(cTypes) {
+    //
+    // Get the list of properties (fresnel lens vs. existing properties)
+    //
+    var self = this;
+    self.schema = {};
+    self.fields = [];
+    self.lens = null;
+    self.types = cTypes;
+
+    for (var i = 0, l = cTypes.length; i < l; i++) {
+      var lens = self.doc.ontologyManager.findFresnelLens(cTypes[i].URI);
+      if(lens && lens.showProperties.length) {
+        self.lens = lens;
+        break;
+      }
+    }
+
+    if(lens) {
+      // get the fields from the lens, drop the fresnel special since this is only used for empty models
+      self.fields = _.without(lens.showProperties, self.doc.ontologyManager.uriDenormalize('fresnel:allProperties'));
+    }
+    else {
+      // no lens - at least show the type
+      self.fields = [ self.doc.ontologyManager.uriDenormalize('rdf:type') ];
+    }
+
+    //
+    // Build the schema from the list of properties
+    //
+    for(var i = 0; i < self.fields.length; i++) {
+      self.addSchemaEntryForProperty(self.fields[i]);
+    }
   },
 
   /// read the properties of this.uri from the store and put them into the model
-  docToModel: function(ontologyManager, success, fail) {
+  docToModel: function(success, fail) {
     var self = this;
     self.schema = {};
     self.fields = [];
@@ -94,40 +151,44 @@ RDFE.Document.Model = Backbone.Model.extend({
 
     this.doc.store.execute('select ?p ?o from <' + self.doc.graph + '> where { <' + self.uri + '> ?p ?o } order by ?p', function(s, r) {
       if (!s) {
-        if (fail)
+        if (fail) {
           fail();
+        }
       } else {
         //
         // Get the list of properties (fresnel lens vs. existing properties)
         //
-        var types = [];
+        self.types = [];
         self.fields = [];
         var lens = null;
         for (var i = 0, l = r.length; i < l; i++) {
-          if (r[i].p.value == self.ontologyManager.uriDenormalize('rdf:type')) {
+          if (r[i].p.value == self.doc.ontologyManager.uriDenormalize('rdf:type')) {
             if(!lens) {
-              lens = ontologyManager.findFresnelLens(r[i].o.value);
+              lens = self.doc.ontologyManager.findFresnelLens(r[i].o.value);
               if(lens && lens.showProperties.length == 0) {
                 console.log('Empty fresnel lens. Ignoring...');
                 lens = null;
               }
             }
-            // TODO: optionally load the ontologies for cTypes. Ideally through a function in the ontology manager, something like getClass()
+            // TODO: optionally load the ontologies for this.types. Ideally through a function in the ontology manager, something like getClass()
             //       however, to avoid async code here, it might be better to load the ontologies once the document has been loaded.
-            var oc = ontologyManager.ontologyClassByURI(r[i].o.value);
-            if(oc)
-              types.push(oc);
+            var oc = self.doc.ontologyManager.ontologyClassByURI(r[i].o.value);
+            if(oc) {
+              self.types.push(oc);
+            }
           }
         }
         if(lens) {
-          self.fields = lens.showProperties;
+          self.fields = _.clone(lens.showProperties);
         }
 
         if(!lens) {
+          // build the list of fields from the existing triples.
           for (var i = 0, l = r.length; i < l; i++) {
             var p = r[i].p.value;
-            if(!_.contains(self.fields, p))
-              self.fields.push(p);
+            if(!_.contains(self.fields, p)) {
+              p === 'http://www.w3.org/1999/02/22-rdf-syntax-ns#type' ? self.fields.unshift(p) : self.fields.push(p);
+            }
           }
         }
         else {
@@ -148,24 +209,24 @@ RDFE.Document.Model = Backbone.Model.extend({
         // Build the schema from the list of properties
         //
         for(var i = 0; i < self.fields.length; i++) {
-          self.schema[self.fields[i]] = self.createSchemaEntryForProperty(types, self.fields[i]);
+          self.addSchemaEntryForProperty(self.fields[i]);
         }
 
         //
         // Add the data to the model
         //
-        for (var i = 0; i < l; i++) {
-          if(self.isAggregateProperty(types, r[i].p.value)) {
+        for (var i = 0, l = r.length; i < l; i++) {
+          if(self.isAggregateProperty(r[i].p.value)) {
             var v = r[i];
             var subm = new RDFE.Document.Model();
             subm.setEntity (self.doc, v.o.value);
-            subm.docToModel(ontologyManager, function() {
+            subm.docToModel(function() {
               self.fields.push(v.p.value);
-              self.set(v.p.value, subm);
+              self.addValue(v.p.value, subm);
             });
           }
           else {
-            self.addTriple(r[i]);
+            self.addValue(r[i].p.value, RDFE.RdfNode.fromStoreNode(r[i].o));
           }
         }
 
@@ -182,26 +243,60 @@ RDFE.Document.Model = Backbone.Model.extend({
     // first delete then copy the data back to the store
     self.doc.deleteTriples(self.doc.store.rdf.createNamedNode(this.uri), null, null, function() {
       var triples = [];
-      for (var i = 0; i < self.fields.length; i++) {
-        prop = self.fields[i];
-        if (!self.attributes[prop])
-          continue;
-
+      for (prop in self.attributes) {
         var val = self.get(prop);
-        if (!val)
+        if (!val) {
           continue;
+        }
 
-
-        if (val.constructor !== Array)
+        if (val.constructor !== Array) {
           val = [val];
+        }
 
         for (var j = 0; j < val.length; j++) {
-          var node = val[j].toStoreNode(self.doc.store);
-          if(node.nominalValue.length > 0)
+          var node;
+          if(val[j].values) {
+            console.log('Need to save sub-model', val[j])
+            var subVal = val[j];
+            if(!subVal.uri) {
+              // find a label
+              var name = null;
+              for(var i = 0, l = self.doc.config.options.labelProps.length; i < l; i++) {
+                if(subVal.values[self.doc.config.options.labelProps[i]]) {
+                  name = subVal.values[self.doc.config.options.labelProps[i]];
+                  break;
+                }
+              }
+              subVal.uri = self.doc.buildEntityUri(name);
+            }
+            node = self.doc.store.rdf.createNamedNode(subVal.uri);
+
+            // add the sub-model triples. FIXME: use recursion to support more nesting depth, and protect against loops!
+            self.doc.deleteTriples(node, null, null);
+            for(subP in subVal.values) {
+              var sv = subVal.values[subP];
+              for(var k = 0; k < sv.length; k++) {
+                triples.push(self.doc.store.rdf.createTriple(
+                  node,
+                  self.doc.store.rdf.createNamedNode(subP),
+                  sv[k].toStoreNode(self.doc.store)));
+              }
+            }
+          }
+          else {
+            node = val[j].toStoreNode(self.doc.store);
+          }
+
+          // add the main triple
+          if(node.nominalValue.length > 0) {
             triples.push(self.doc.store.rdf.createTriple(
               self.doc.store.rdf.createNamedNode(self.uri),
               self.doc.store.rdf.createNamedNode(prop),
               node));
+          }
+          else {
+            console.log('Empty value in', node)
+          }
         }
       }
 
