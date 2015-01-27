@@ -159,7 +159,7 @@ RDFE.Editor.prototype.createNewEntityEditor = function(container, manager) {
     options: self.ontologyManager.allClasses(),
     create: function(input, cb) {
       // search for and optionally create a new class
-      cb(self.options.ontoManager.OntologyClass(null, self.options.ontoManager.uriDenormalize(input)));
+      cb(self.ontologyManager.OntologyClass(null, self.ontologyManager.uriDenormalize(input)));
     },
     render: {
       item: function(item, escape) {
@@ -176,7 +176,7 @@ RDFE.Editor.prototype.createNewEntityEditor = function(container, manager) {
         return '<div>' + escape(item.title || item.label || name.curi || item.name) + '<br/><small>(' + escape(item.URI) + ')</small></div>';
       },
       'option_create': function(data, escape) {
-        var url = self.options.ontoManager.uriDenormalize(data.input);
+        var url = self.ontologyManager.uriDenormalize(data.input);
         if (url != data.input)
           return '<div class="create">Add <strong>' + escape(data.input) + '</strong> <small>(' + escape(url) + ')</small>&hellip;</div>';
         else
