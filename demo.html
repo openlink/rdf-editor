@@ -347,7 +347,7 @@
           }, function(msg) {
             toggleSpinner(false);
             $.growl({
-              message: msg,
+              message: msg.httpMessage,
               icon: "glyphicon glyphicon-fire"
             }, {
               type: 'danger'
@@ -496,7 +496,7 @@
                 });
               }, function(msg) {
                 $.growl({
-                  message: msg,
+                  message: msg.httpMessage,
                   icon: "glyphicon glyphicon-fire"
                 }, {
                   type: 'danger'

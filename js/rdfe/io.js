@@ -78,6 +78,39 @@ String.prototype.format = function() {
       return cls;
     };
 
+    c.prototype.baseExec = function(ajaxParams, params) {
+      var self = this;
+      $(document).ajaxError(params.ajaxError);
+      $(document).ajaxSuccess(params.ajaxSuccess);
+
+      var __success =
+        (function(params) {
+          return function(data, status, xhr) {
+            if (params && params.success) {
+              params.success(data, status, xhr);
+            }
+          };
+        })(params);
+
+      var __error =
+        (function(params) {
+          return function(data, status, xhr) {
+            if (params && params.error) {
+              var state = {
+                "httpCode": data.status,
+                "httpMessage": data.statusText
+              }
+              params.error(state, data, status, xhr);
+            }
+          };
+        })(params);
+
+      ajaxParams.success = __success;
+      ajaxParams.error = __error;
+      $.ajax(ajaxParams);
+    }
+
+
     return c;
   })();
 
@@ -203,20 +236,16 @@ String.prototype.format = function() {
 
     c.prototype.exec = function(q, params) {
       var self = this;
-      $(document).ajaxError(params.ajaxError);
-      $(document).ajaxSuccess(params.ajaxSuccess);
-
-      $.ajax({
+      var ajaxParams = {
         url: params.sparqlEndpoint,
-        success: params.success,
-        error: params.error,
         type: params.method || 'GET',
         data: {
           "query": q,
           "format": params.format
         },
         dataType: 'text'
-      });
+      };
+      return self.baseExec(ajaxParams, params);
     }
 
     return c;
@@ -325,20 +354,17 @@ String.prototype.format = function() {
     c.prototype.clear = c.prototype.delete;
 
     c.prototype.exec = function(method, graph, content, params) {
-      $(document).ajaxError(params.ajaxError);
-      $(document).ajaxSuccess(params.ajaxSuccess);
-
+      var self = this;
       var host = params.gspEndpoint + '?graph=' + encodeURIComponent(graph);
-      $.ajax({
+      var ajaxParams = {
         url: host,
-        success: params.success,
-        error: params.error,
         type: method,
         contentType: params.contentType,
         processData: params.processData,
         data: content,
         dataType: 'text'
-      });
+      };
+      return self.baseExec(ajaxParams, params);
     }
 
     return c;
@@ -371,9 +397,12 @@ String.prototype.format = function() {
         params["ajaxError"] = null;
         params["ajaxSuccess"] = null;
       }
-      var headers = {
-        "Accept": 'text/turtle, */*;q=0.1'
-      };
+      var headers;
+      if (this.type != 'webdav') {
+        headers = {
+          "Accept": 'text/turtle, */*;q=0.1'
+        };
+      }
       this.exec('GET', path, headers, null, params);
     }
 
@@ -397,11 +426,19 @@ String.prototype.format = function() {
 
     c.prototype.insert = function(path, content, params) {
       params = extendParams(params, this.options);
-      var headers = {
-        "Content-Type": 'text/turtle',
-        "Slug": getFn(path)
-      };
-      this.exec('POST', getFParent(path), headers, content, params);
+      var headers;
+      var method;
+      if (this.type != 'webdav') {
+        method = 'POST';
+        headers = {
+          "Content-Type": 'text/turtle',
+          "Slug": getFn(path)
+        };
+        path = getFParent(path);
+      } else {
+        method = 'PUT';
+      }
+      this.exec(method, path, headers, content, params);
     }
 
     c.prototype.insertFromStore = function(path, store, storeGraph, params) {
@@ -440,20 +477,16 @@ String.prototype.format = function() {
 
     c.prototype.exec = function(method, path, headers, content, params) {
       var self = this;
-      $(document).ajaxError(params.ajaxError);
-      $(document).ajaxSuccess(params.ajaxSuccess);
-
-      $.ajax({
+      var ajaxParams = {
         url: path,
-        success: params.success,
-        error: params.error,
         type: method,
         headers: headers,
         contentType: 'application/octet-stream',
         processData: false,
         data: content,
         dataType: params.dataType
-      });
+      };
+      return self.baseExec(ajaxParams, params);
     }
 
     return c;
@@ -489,9 +522,8 @@ String.prototype.format = function() {
 
     c.prototype.retrieveToStore = function(URI, store, graph, params) {
       var self = this;
-      var host = (params.proxy) ? self.options.httpProxyTemplate.format(encodeURIComponent(URI)) : self.options.httpTemplate.format(URI);
-      var acceptType = (params && params.acceptType) ? params.acceptType : 'text/n3; q=1, text/turtle; q=0.8, application/rdf+xml; q=0.6';
-      var __loaded = (function(URI, params) {
+      params.__success = params.success;
+      params.success = (function(URI, params) {
         return function(data, status, xhr) {
           var contentType = (xhr.getResponseHeader('content-type') || '').split(';')[0];
           var loadResultFct = function(success, results) {
@@ -499,8 +531,8 @@ String.prototype.format = function() {
               console.error('URI load error =>', graph, results);
               return;
             }
-            if (params && params.success) {
-              params.success();
+            if (params && params.__success) {
+              params.__success();
             }
           };
           if(contentType.indexOf('turtle') > 0)
@@ -509,17 +541,19 @@ String.prototype.format = function() {
             store.load(contentType, data, URI, loadResultFct);
         }
       })(graph, params);
-      jQuery.ajax({
+
+      var host = (params.proxy) ? self.options.httpProxyTemplate.format(encodeURIComponent(URI)) : self.options.httpTemplate.format(URI);
+      var acceptType = (params && params.acceptType) ? params.acceptType : 'text/n3; q=1, text/turtle; q=0.8, application/rdf+xml; q=0.6';
+      var ajaxParams = {
         url: host,
         type: 'GET',
         crossDomain: true,
         dataType: 'text',
-        success: __loaded,
-        error: params.error,
         beforeSend: function(xhr) {
           xhr.setRequestHeader("Accept", acceptType);
         }
-      });
+      };
+      return self.baseExec(ajaxParams, params);
     }
 
     return c;
