@@ -442,7 +442,7 @@
               if($.inArray("bookmarks", config.options.actions) >= 0)
                 loadBookmarks(config);
 
-              mainDoc = new RDFE.Document(config);
+              mainDoc = new RDFE.Document(ontologyManager, config);
               editor = new RDFE.Editor(mainDoc, ontologyManager, config);
 
               // subscribe to editor events
