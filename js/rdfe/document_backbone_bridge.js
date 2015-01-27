@@ -14,7 +14,7 @@ RDFE.Document.Model = Backbone.Model.extend({
   },
 
   getIndividuals: function(range, callback) {
-    var items = self.ontologyManager.individualsByClassURI(range);
+    var items = this.doc.ontologyManager.individualsByClassURI(range);
     $.merge(items, RDFE.individuals(this.doc, range));
     callback(items);
   },
@@ -38,7 +38,7 @@ RDFE.Document.Model = Backbone.Model.extend({
 
   addSchemaEntryForProperty: function(p) {
     var self = this;
-    var property = (p.URI ? p : (self.ontologyManager.ontologyProperties[p] || { URI: p }));
+    var property = (p.URI ? p : (self.doc.ontologyManager.ontologyProperties[p] || { URI: p }));
 
     var label = RDFE.Utils.createTitle(property.label || property.title || property.URI.split(/[/#]/).pop())
     var item = {
@@ -61,10 +61,10 @@ RDFE.Document.Model = Backbone.Model.extend({
       item.rdfnode = {};
 
       // TODO: eventually we should support range inheritence
-      if (property.class == self.ontologyManager.uriDenormalize('owl:DatatypeProperty')) {
+      if (property.class == self.doc.ontologyManager.uriDenormalize('owl:DatatypeProperty')) {
         item.rdfnode.type = property.range;
       }
-      else if (property.class == self.ontologyManager.uriDenormalize('owl:ObjectProperty')) {
+      else if (property.class == self.doc.ontologyManager.uriDenormalize('owl:ObjectProperty')) {
         item.rdfnode.type = "http://www.w3.org/1999/02/22-rdf-syntax-ns#Resource";
         item.rdfnode.choices = function(callback) { self.getIndividuals(property.range, callback); };
         item.rdfnode.create = true; //FIXME: make this configurable
@@ -86,7 +86,7 @@ RDFE.Document.Model = Backbone.Model.extend({
   },
 
   /// read the properties of this.uri from the store and put them into the model
-  docToModel: function(ontologyManager, success, fail) {
+  docToModel: function(success, fail) {
     var self = this;
     self.schema = {};
     self.fields = [];
@@ -105,9 +105,9 @@ RDFE.Document.Model = Backbone.Model.extend({
         self.fields = [];
         var lens = null;
         for (var i = 0, l = r.length; i < l; i++) {
-          if (r[i].p.value == self.ontologyManager.uriDenormalize('rdf:type')) {
+          if (r[i].p.value == self.doc.ontologyManager.uriDenormalize('rdf:type')) {
             if(!lens) {
-              lens = ontologyManager.findFresnelLens(r[i].o.value);
+              lens = self.doc.ontologyManager.findFresnelLens(r[i].o.value);
               if(lens && lens.showProperties.length == 0) {
                 console.log('Empty fresnel lens. Ignoring...');
                 lens = null;
@@ -115,7 +115,7 @@ RDFE.Document.Model = Backbone.Model.extend({
             }
             // TODO: optionally load the ontologies for this.types. Ideally through a function in the ontology manager, something like getClass()
             //       however, to avoid async code here, it might be better to load the ontologies once the document has been loaded.
-            var oc = ontologyManager.ontologyClassByURI(r[i].o.value);
+            var oc = self.doc.ontologyManager.ontologyClassByURI(r[i].o.value);
             if(oc) {
               self.types.push(oc);
             }
@@ -161,9 +161,9 @@ RDFE.Document.Model = Backbone.Model.extend({
             var v = r[i];
             var subm = new RDFE.Document.Model();
             subm.setEntity (self.doc, v.o.value);
-            subm.docToModel(ontologyManager, function() {
+            subm.docToModel(function() {
               self.fields.push(v.p.value);
-              self.set(v.p.value, subm);
+              self.addValue(v.p.value, subm);
             });
           }
           else {
