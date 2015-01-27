@@ -126,10 +126,12 @@ RDFE.Document.Model = Backbone.Model.extend({
         }
 
         if(!lens) {
+          // build the list of fields from the existing triples.
           for (var i = 0, l = r.length; i < l; i++) {
             var p = r[i].p.value;
-            if(!_.contains(self.fields, p))
-              self.fields.push(p);
+            if(!_.contains(self.fields, p)) {
+              p === 'http://www.w3.org/1999/02/22-rdf-syntax-ns#type' ? self.fields.unshift(p) : self.fields.push(p);
+            }
           }
         }
         else {
