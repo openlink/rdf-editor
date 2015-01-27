@@ -304,15 +304,16 @@ RDFE.Document.prototype.buildEntityUri = function(name) {
   // we use a dummy uri in case there is no open doc
   uri = uri.replace('{DOC-URI}', this.url || 'urn:entities:');
 
+  var n = name || "entity";
   var i = uri.indexOf('{NAME}');
   if(i >= 0) {
-    uri = uri.replace('{NAME}', encodeURIComponent(name));
+    uri = uri.replace('{NAME}', encodeURIComponent(n));
   }
   else {
     if(uri[uri.length-1] != '#' && uri[uri.length-1] != '/' && uri[uri.length-1] != ':') {
       uri += '#';
     }
-    uri += encodeURIComponent(name);
+    uri += encodeURIComponent(n);
   }
 
   // make the URI unique in the loaded document
