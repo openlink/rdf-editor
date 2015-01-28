@@ -1171,6 +1171,7 @@ RDFE.OntologyProperty = function(ontologyManager, graph, URI, options) {
   this.curi = ontologyManager.uriNormalize(URI);
   this.name = URI.split(/[/#]/).pop();
   this.sources = [];
+  this.subPropertyOf = [];
 
   this.manager = ontologyManager;
   this.manager.ontologyProperties[URI] = self;
@@ -1224,7 +1225,7 @@ RDFE.OntologyProperty.prototype.parse = function(graph, options) {
         self.description = RDFE.coalesce(self.description, o);
 
       else if (p == self.manager.uriDenormalize('rdfs:subPropertyOf'))
-        self.subPropertyOf = RDFE.coalesce(self.subPropertyOf, o);
+        self.subPropertyOf.push(o);
 
       else if (p == self.manager.uriDenormalize('rdfs:range'))
         self.range = RDFE.coalesce(self.range, o); // TODO: would be nice if this was an actual Class object rather than a string. Again, if it does not exist, an empty one can be created.
