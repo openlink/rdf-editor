@@ -8,12 +8,6 @@ if (typeof String.prototype.startsWith != 'function') {
 if(!window.RDFE)
   window.RDFE = {};
 
-RDFE.OM_LOAD_TEMPLATE =
-  '{0}';
-
-RDFE.OM_LOAD_PROXY_TEMPLATE =
-  document.location.protocol + '//' + document.location.host + '/proxy?url={0}&output-format=turtle&force=rdf';
-
 RDFE.OM_PREFIX_TEMPLATE =
   'http://prefix.cc/{0}.file.json';
 
@@ -246,43 +240,6 @@ RDFE.uriOntology = function(v) {
 
 /*
  *
- * Denormalize URI
- *     foaf:Person => http://xmlns.com/foaf/0.1/Person
- *
- */
-RDFE.uriDenormalize = function(v) {
-  var prefix = RDFE.uriPrefix(v);
-  if (prefix) {
-    if (!RDFE.prefixes[prefix]) {
-      RDFE.ontologyByPrefix(prefix);
-    }
-    if (RDFE.prefixes[prefix]) {
-      return RDFE.prefixes[prefix] + v.substring(prefix.length + 1);
-    }
-  }
-  return v;
-}
-
-/*
- *
- * Normalize URI
- *    http://xmlns.com/foaf/0.1/Person => foaf:Person
- *
- */
-RDFE.uriNormalize = function(v) {
-  var ontology = RDFE.uriOntology(v);
-  if (ontology) {
-    for (var prefix in RDFE.prefixes) {
-      if (RDFE.prefixes[prefix] == ontology) {
-        return prefix + ':' + v.substring(ontology.length);
-      }
-    }
-  }
-  return v;
-}
-
-/*
- *
  * Check for blank node - starting with '_:...'
  *
  */
@@ -311,47 +268,6 @@ RDFE.ontologyByPrefix = function(prefix) {
     RDFE.prefixes[prefix] = data[prefix];
   });
   return RDFE.prefixes[prefix];
-}
-
-RDFE.prefixByOntology = function(url) {
-  for (prefix in RDFE.prefixes)
-    if(RDFE.prefixes[prefix] == url)
-      return prefix;
-
-  return null;
-}
-
-/*
- *
- * Return all triplets related to the subject
- *   - example: RDFE.nodeQuery(ontologyManager.store, 'http://mitko.dnsalias.net:8005/DAV/home/demo/Public/test.ttl', '_:40')
- *
- */
-RDFE.nodeQuery = function(store, graph, subject, properties, callback) {
-  store.node(subject, graph, function(success, results) {
-    if (success) {
-      var returns = {};
-      for (var i = 0, l = results.length; i < l; i++) {
-        var p = results.triples[i].predicate.valueOf();
-        var o = results.triples[i].object.valueOf();
-        if (properties) {
-          for (var j = 0; j < properties.length; j++) {
-            if (p == RDFE.uriDenormalize(properties[j])) {
-              if (!returns[properties[j]]) {
-                returns[properties[j]] = o;
-              }
-            }
-          }
-        } else {
-          returns[RDFE.uriNormalize(p)] = o;
-        }
-      }
-      results = returns;
-    }
-    if (callback) {
-      callback(success, results);
-    }
-  });
 }
 
 /*
@@ -421,8 +337,6 @@ RDFE.OntologyManager = function(store, config) {
   if (!store) {
     store = rdfstore.create();
   }
-  // RDF/XML parser
-  store.registerParser("application/rdf+xml", RDFXMLParser.parser);
 
   // set default namespaces
   store.registerDefaultNamespace('rdf', 'http://www.w3.org/1999/02/22-rdf-syntax-ns#');
@@ -431,11 +345,11 @@ RDFE.OntologyManager = function(store, config) {
   store.registerDefaultNamespace('fresnel', 'http://www.w3.org/2004/09/fresnel#');
 
   this.store = store;
-  this.options = $.extend(RDFE.Config.defaults.ontology, config);
+  this.options = $.extend(RDFE.Config.defaults.ontology, config.ontology);
 
   this.reset();
 
-  this.prefixes = RDFE.prefixes;
+  this.prefixes = $.extend({}, RDFE.prefixes, config.prefixes);
 }
 
 RDFE.OntologyManager.prototype.init = function(options) {
@@ -465,14 +379,61 @@ RDFE.OntologyManager.prototype.reset = function(options) {
   this.templates = [];
 }
 
+RDFE.OntologyManager.prototype.prefixByOntology = function(url) {
+  for (prefix in this.prefixes)
+    if(this.prefixes[prefix] == url)
+      return prefix;
+
+  return null;
+}
+
+/*
+ *
+ * Denormalize URI
+ *     foaf:Person => http://xmlns.com/foaf/0.1/Person
+ *
+ */
+RDFE.OntologyManager.prototype.uriDenormalize = function(v) {
+  var prefix = RDFE.uriPrefix(v);
+  if (prefix) {
+    if (!this.prefixes[prefix]) {
+      RDFE.ontologyByPrefix(prefix);
+    }
+    if (this.prefixes[prefix]) {
+      return this.prefixes[prefix] + v.substring(prefix.length + 1);
+    }
+  }
+  return v;
+}
+
+/*
+ *
+ * Normalize URI
+ *    http://xmlns.com/foaf/0.1/Person => foaf:Person
+ *
+ */
+RDFE.OntologyManager.prototype.uriNormalize = function(v, fb) {
+  var ontology = RDFE.uriOntology(v);
+  if (ontology) {
+    for (var prefix in this.prefixes) {
+      if (this.prefixes[prefix] == ontology) {
+        return prefix + ':' + v.substring(ontology.length);
+      }
+    }
+  }
+  // nothing found, return the fallback, undefined by default
+  return fb;
+}
+
 RDFE.OntologyManager.prototype.graphClear = function(graph) {
   var self = this;
   self.store.clear(graph, function() {});
 }
 
 RDFE.OntologyManager.prototype.Ontology = function(graph, URI, options) {
-  if(!URI)
+  if (!URI || RDFE.isBlankNode(URI)) {
     return null;
+  }
   var self = this;
   var ontology = self.ontologyByURI(URI);
   if (ontology) {
@@ -550,36 +511,9 @@ RDFE.OntologyManager.prototype.individualByURI = function(URI) {
 
 RDFE.OntologyManager.prototype.load = function(URI, params) {
   var self = this;
-  var host = (self.options.proxy) ? RDFE.OM_LOAD_PROXY_TEMPLATE.format(encodeURIComponent(URI)) : RDFE.OM_LOAD_TEMPLATE.format(URI);
-  var acceptType = (params && params.acceptType) ? params.acceptType : 'text/n3; q=1, text/turtle; q=0.8, application/rdf+xml; q=0.6';
-  var __ontologyLoaded = (function(URI, params) {
-    return function(data, status, xhr) {
-      var contentType = (xhr.getResponseHeader('content-type') || '').split(';')[0];
-      var loadResultFct = function(success, results) {
-        if (!success) {
-          console.error('ontology load =>', results);
-          return;
-        }
-        if (params && params.success) {
-          params.success();
-        }
-      };
-      if(contentType.indexOf('turtle') > 0)
-        self.store.loadTurtle(data, URI, loadResultFct);
-      else
-        self.store.load(contentType, data, URI, loadResultFct);
-    }
-  })(URI, params);
-  jQuery.ajax({
-    "url": host,
-    "type": 'GET',
-    "crossDomain": true,
-    "dataType": 'text',
-    "success": __ontologyLoaded,
-    "beforeSend": function(xhr) {
-      xhr.setRequestHeader("Accept", acceptType);
-    }
-  });
+  var IO = RDFE.IO.createIO('http');
+  IO.type = 'http';
+  IO.retrieveToStore(URI, self.store, URI, $.extend({"proxy": self.options.proxy}, params));
 }
 
 RDFE.OntologyManager.prototype.ontologyParse = function(URI, params) {
@@ -593,46 +527,61 @@ RDFE.OntologyManager.prototype.ontologyParse = function(URI, params) {
     return;
   }
 
-  var __ontologyLoaded = (function(params) {
-    return function() {
-      // ontology classes & properties parse
-      var sparql = RDFE.OM_ONTOLOGY_TEMPLATE.format(URI);
-      self.store.execute(sparql, function(success, results) {
-        if (!success) {
-          console.error('ontology =>', results);
-          return;
-        }
-        if (results.length) {
-          var graph = URI;
-          for (var i = 0; i < results.length; i++) {
-            var ontologyURI = results[i]["o"].value;
-            // Fix for some ontlogies
-            if ((graph.charAt(graph.length - 1) == '#') && (graph.substring(0, graph.length - 1) == ontologyURI)) {
-              ontologyURI = graph;
-            }
-            self.Ontology(graph, ontologyURI, params);
-          }
-        }
-      });
-      var ontologyClasses = self.ontologyClassesParse(URI, params);
-      self.ontologyPropertiesParse(URI, params);
-      self.ontologyRestrictionsParse(URI, ontologyClasses, params);
+  var __ontologyLoaded = function() {
+    // ontology classes & properties parse
+    var ontologyClasses = self.ontologyClassesParse(URI, options);
+    self.ontologyPropertiesParse(URI, options);
+    self.ontologyRestrictionsParse(URI, ontologyClasses, options);
 
-      // clear graph after parse
-      self.graphClear(URI);
-
-      if (params && params.success) {
-        params.success(ontology); // FIXME: ontology is not defined
+    // Check if we have details for the ontology itself
+    var sparql = RDFE.OM_ONTOLOGY_TEMPLATE.format(URI);
+    self.store.execute(sparql, function(success, results) {
+      if (!success) {
+        console.error('ontology =>', results);
+        if(options.error) {
+          options.error();
+        }
+        return;
       }
+      if (results.length) {
+        var graph = URI;
+        for (var i = 0; i < results.length; i++) {
+          var ontologyURI = results[i]["o"].value;
+          console.log('Found owl:Ontology:', ontologyURI);
+          // Fix for some ontlogies
+          if ((graph.charAt(graph.length - 1) == '#') && (graph.substring(0, graph.length - 1) == ontologyURI)) {
+            console.log('replacing onto uri', ontologyURI, 'with', graph);
+            ontologyURI = graph;
+          }
+          if(self.ontologies[ontologyURI + '#']) {
+            ontologyURI += '#';
+          }
+          else if(self.ontologies[ontologyURI + '/']) {
+            ontologyURI += '/';
+          }
 
-      $self.trigger('changed', [ self ]);
+          self.Ontology(graph, ontologyURI, options).parse(graph, {
+            ontoUri: results[i]["o"].value
+          });
+        }
+      }
+    });
+
+    // clear graph after parse
+    self.graphClear(URI);
+
+    if (options.success) {
+      options.success(ontology); // FIXME: ontology is not defined
     }
-  })(params);
+
+    $self.trigger('changed', [ self ]);
+  };
 
   $self.trigger('loadingOntology', [ self, URI ]);
 
   self.load(URI, {
-    "success": __ontologyLoaded
+    "success": __ontologyLoaded,
+    "error": options.error
   });
 }
 
@@ -657,7 +606,7 @@ RDFE.OntologyManager.prototype.ontologyClassesParse = function(graph, params) {
     }
     for (var i = 0, l = results.length; i < l; i++) {
       var c = results[i]["c"].value;
-      if (!RDFE.isBlankNode(c) && (c != RDFE.uriDenormalize('rdfs:Class')) && (c != RDFE.uriDenormalize('owl:Class'))) {
+      if (!RDFE.isBlankNode(c) && (c != self.uriDenormalize('rdfs:Class')) && (c != self.uriDenormalize('owl:Class'))) {
         var ontologyClass = self.OntologyClass(graph, c, params);
         ontologyClasses.push(ontologyClass);
 
@@ -671,7 +620,7 @@ RDFE.OntologyManager.prototype.ontologyClassesParse = function(graph, params) {
           for (var j = 0, m = results.length; j < m; j++) {
             var c = results[j]["i"].value;
             if (!RDFE.isBlankNode(c)) {
-              self.individuals.push(new RDFE.OntologyIndividual(self, graph, c, params));
+              new RDFE.OntologyIndividual(self, graph, c, ontologyClass, params);
             }
           }
         });
@@ -702,63 +651,53 @@ RDFE.OntologyManager.prototype.ontologyRestrictionsParse = function(graph, ontol
   var self = this;
   for (var i = 0, l = ontologyClasses.length; i < l; i++) {
     var ontologyClass = ontologyClasses[i];
-    for (var j = 0, m = ontologyClass.subClassOf.length; j < m; j++) {
-      if (RDFE.isBlankNode(ontologyClass.subClassOf[j])) { // FIXME: why does it have to be a blank node??? Just query all restrictions in one go, at least per class.
-        var RDFE_TEMPLATE =
-        '\n SELECT distinct ?v1 ?v2 ?v3 ' +
-        '\n  FROM <{0}>' +
-        '\n WHERE { ' +
-        '\n         <{1}> rdfs:subClassOf ' +
-        '\n         [ ' +
-        '\n           owl:onProperty ?v1; ' +
-        '\n           ?v2 ?v3 ' +
-        '\n         ]. ' +
-        '\n       } ' +
-        '\n ORDER BY ?v1 ?v2 ';
-        var sparql = RDFE_TEMPLATE.format(graph, ontologyClass.URI);
-        self.store.execute(sparql, function(success, results) {
-          if (success) {
-            var property;
-            var propertyURI = '',
-                cardinalityURI = '',
-                cardinalityValue = '';
-            for (var i = 0, l = results.length; i < l; i++) {
-              var v1 = RDFE.sparqlValue(results[i]['v1']);
-              var v2 = RDFE.sparqlValue(results[i]['v2']);
-              var v3 = RDFE.sparqlValue(results[i]['v3']);
+    if (ontologyClass.hasRestrictions) {
+      var RDFE_TEMPLATE =
+      '\n SELECT distinct ?v1 ?v2 ?v3 ' +
+      '\n  FROM <{0}>' +
+      '\n WHERE { ' +
+      '\n         <{1}> rdfs:subClassOf ' +
+      '\n         [ ' +
+      '\n           owl:onProperty ?v1; ' +
+      '\n           ?v2 ?v3 ' +
+      '\n         ]. ' +
+      '\n       } ' +
+      '\n ORDER BY ?v1 ?v2 ';
+      var sparql = RDFE_TEMPLATE.format(graph, ontologyClass.URI);
+      self.store.execute(sparql, function(success, results) {
+        if (success) {
+          var property;
+          var propertyURI = '',
+              cardinalityURI = '',
+              cardinalityValue = '';
+          for (var i = 0, l = results.length; i < l; i++) {
+            var v1 = RDFE.sparqlValue(results[i]['v1']);
+            var v2 = RDFE.sparqlValue(results[i]['v2']);
+            var v3 = RDFE.sparqlValue(results[i]['v3']);
 
-              propertyURI = v1;
+            propertyURI = v1;
 
-              if (RDFE.uriDenormalize('rdf:type') == v2 && v3 == 'http://www.openlinksw.com/ontology/oplowl#AggregateRestriction') {
-                console.log('Adding ', v3, 'for', propertyURI);
-                property = ontologyClass.properties[propertyURI];
-                if(!property)
-                  property = _.clone(self.OntologyProperty(graph, propertyURI));
-                property.isAggregate = true;
-                ontologyClass.properties[propertyURI] = property;
-              }
+            if (self.uriDenormalize('rdf:type') == v2 && v3 == 'http://www.openlinksw.com/ontology/oplowl#AggregateRestriction') {
+              console.log('Adding ', v3, 'for', propertyURI);
+              ontologyClass.restrictions[propertyURI] = $.extend(ontologyClass.restrictions[propertyURI], { isAggregate: true });
+            }
 
-              else if (
-                  (RDFE.uriDenormalize('owl:minCardinality') == v2) ||
-                  (RDFE.uriDenormalize('owl:maxCardinality') == v2) ||
-                  (RDFE.uriDenormalize('owl:cardinality') == v2)
-                 )
-              {
-                console.log('Adding ', v2, 'for', propertyURI);
-                cardinalityURI = v2;
-                cardinalityValue = v3;
-                property = ontologyClass.properties[propertyURI];
-                if(!property)
-                  property = _.clone(self.OntologyProperty(graph, propertyURI));
-                property[RDFE.uriLabel(cardinalityURI)] = parseInt(cardinalityValue);
-                ontologyClass.properties[propertyURI] = property;
-              }
+            else if (
+                (self.uriDenormalize('owl:minCardinality') == v2) ||
+                (self.uriDenormalize('owl:maxCardinality') == v2) ||
+                (self.uriDenormalize('owl:cardinality') == v2)
+               )
+            {
+              console.log('Adding ', v2, 'for', propertyURI);
+              cardinalityURI = v2;
+              cardinalityValue = v3;
+              property = ontologyClass.properties[propertyURI];
+              ontologyClass.restrictions[propertyURI] = ontologyClass.restrictions[propertyURI] || {};
+              ontologyClass.restrictions[propertyURI][RDFE.uriLabel(cardinalityURI)] = parseInt(cardinalityValue);
             }
           }
-        });
-        ontologyClass.subClassOf.splice(j, 1);
-        break;
-      }
+        }
+      });
     }
   }
 }
@@ -948,58 +887,10 @@ RDFE.OntologyManager.prototype.findFresnelGroup = function(groupURI) {
   return null;
 }
 
-RDFE.OntologyManager.prototype.templateParse = function(URI, params, callback) {
-  // console.log(URI);
-  var self = this;
-  new RDFE.Template(self, URI, params, callback);
-}
-
-RDFE.OntologyManager.prototype.templatesParse = function(templates, params, callback) {
-  var self = this;
-  if (templates) {
-    for (var i = 0, l = templates.length; i < l; i++) {
-      self.templateParse(templates[i], params, callback);
-    }
-  }
-}
-
-RDFE.OntologyManager.prototype.templateByURI = function(URI) {
-  var self = this;
-  for (var i = 0, l = self.templates.length; i < l; i++) {
-    if (self.templates[i].URI == URI)
-      return self.templates[i];
-  }
-}
-
-RDFE.OntologyManager.prototype.templateRemove = function(URI) {
-  var self = this;
-  for (var i = 0, l = self.templates.length; i < l; i++) {
-    if (self.templates[i].URI == URI) {
-      self.templates.splice(i, 1);
-      return;
-    }
-  }
-}
-
-RDFE.OntologyManager.prototype.templateForClass = function(URI, params, callback) {
-  var self = this;
-  var template = self.templateByURI(URI);
-  if (template) {
-    callback(template);
-  } else {
-    new RDFE.Template(self, URI, params, callback);
-  }
-}
-
-RDFE.OntologyManager.prototype.templateForProperty = function(URI, params, callback) {
-  var self = this;
-  new RDFE.Template(self, URI, params, callback);
-}
-
 RDFE.OntologyManager.prototype.ontologyDetermine = function(URI) {
   var self = this;
   var ontology;
-  var prefix = RDFE.uriPrefix(URI);
+  var prefix = this.uriPrefix(URI);
   if (prefix) {
     ontology = self.ontologyByPrefix(prefix);
     if (ontology) {
@@ -1024,6 +915,25 @@ RDFE.OntologyManager.prototype.individualsByClassURI = function(classURI) {
   return items;
 }
 
+RDFE.OntologyManager.prototype.allClasses = function() {
+  var classes = [];
+  for (v in this.ontologyClasses) {
+    classes.push(this.ontologyClasses[v]);
+  }
+  return classes;
+};
+
+RDFE.OntologyManager.prototype.allProperties = function(domain) {
+  var pl = [];
+  for(uri in this.ontologyProperties) {
+    var p = this.ontologyProperties[uri];
+    // FIXME: include super-classes for domain-check
+    if(!domain || p.domain.indexOf(domain))
+      pl.push(p);
+  }
+  return pl;
+};
+
 /*
  *
  * Ontology
@@ -1035,7 +945,7 @@ RDFE.Ontology = function(ontologyManager, graph, URI, options) {
 
   this.options = $.extend({}, options);
   this.URI = URI;
-  this.prefix = RDFE.prefixByOntology(URI);
+  this.prefix = ontologyManager.prefixByOntology(URI);
   this.sources = [];
   this.classes = {};
   this.properties = {};
@@ -1048,13 +958,14 @@ RDFE.Ontology = function(ontologyManager, graph, URI, options) {
 
 RDFE.Ontology.prototype.parse = function(graph, options) {
   var self = this;
+  options = options || {};
   if (!graph) {
     return;
   }
   if (self.sources.indexOf(graph) == -1) {
     self.sources.push(graph);
   }
-  self.manager.store.node(self.URI, graph, function(success, results) {
+  self.manager.store.node(options.ontoUri || self.URI, graph, function(success, results) {
     if (!success) {
       console.error('ontology =>', results);
       return;
@@ -1064,19 +975,19 @@ RDFE.Ontology.prototype.parse = function(graph, options) {
       var p = results.triples[i].predicate.valueOf();
       var o = results.triples[i].object.valueOf();
       // console.log('ontology =>', p, o);
-      if (p == RDFE.uriDenormalize('rdfs:label'))
+      if (p == self.manager.uriDenormalize('rdfs:label'))
         self.label = RDFE.coalesce(self.label, o);
 
-      else if (p == RDFE.uriDenormalize('rdfs:comment'))
+      else if (p == self.manager.uriDenormalize('rdfs:comment'))
         self.comment = RDFE.coalesce(self.comment, o);
 
-      else if (p == RDFE.uriDenormalize('dc:title'))
+      else if (p == self.manager.uriDenormalize('dc:title'))
         self.title = RDFE.coalesce(self.title, o);
 
-      else if (p == RDFE.uriDenormalize('dc:description'))
+      else if (p == self.manager.uriDenormalize('dc:description'))
         self.description = RDFE.coalesce(self.description, o);
 
-      else if (p == RDFE.uriDenormalize('dc:description'))
+      else if (p == self.manager.uriDenormalize('dc:description'))
         self.comment = RDFE.coalesce(self.comment, o);
     }
   });
@@ -1099,6 +1010,17 @@ RDFE.Ontology.prototype.propertyByURI = function(propertyURI) {
   return this.properties[URI];
 }
 
+RDFE.Ontology.prototype.allProperties = function(domain) {
+  var pl = [];
+  for(uri in this.properties) {
+    var p = this.properties[uri];
+    // FIXME: include super-classes for domain-check
+    if(!domain || p.domain.indexOf(domain))
+      pl.push(p);
+  }
+  return pl;
+};
+
 /*
  *
  * Ontology Class
@@ -1110,11 +1032,14 @@ RDFE.OntologyClass = function(ontologyManager, graph, URI, options) {
 
   this.options = $.extend({}, options);
   this.URI = URI;
+  this.curi = ontologyManager.uriNormalize(URI);
+  this.name = URI.split(/[/#]/).pop();
   this.sources = [];
   this.subClassOf = [];
   this.disjointWith = [];
   this.properties = {};
   this.individuals = {};
+  this.restrictions = {};
 
   this.manager = ontologyManager;
   this.manager.ontologyClasses[URI] = self;
@@ -1145,22 +1070,26 @@ RDFE.OntologyClass.prototype.parse = function(graph, options) {
       var p = results.triples[i].predicate.valueOf();
       var o = results.triples[i].object.valueOf();
       // console.log('class =>', p, o);
-      if (p == RDFE.uriDenormalize('rdfs:label'))
+      if (p == self.manager.uriDenormalize('rdfs:label'))
         self.label = RDFE.coalesce(self.label, o);
 
-      else if (p == RDFE.uriDenormalize('rdfs:comment'))
+      else if (p == self.manager.uriDenormalize('rdfs:comment'))
         self.comment = RDFE.coalesce(self.comment, o);
 
-      else if (p == RDFE.uriDenormalize('dc:title'))
+      else if (p == self.manager.uriDenormalize('dc:title'))
         self.title = RDFE.coalesce(self.title, o);
 
-      else if (p == RDFE.uriDenormalize('dc:description'))
+      else if (p == self.manager.uriDenormalize('dc:description'))
         self.description = RDFE.coalesce(self.description, o);
 
-      else if (p == RDFE.uriDenormalize('rdfs:subClassOf'))
-        self.subClassOf.push(self.manager.OntologyClass(graph, o, options));
-
-      else if (p == RDFE.uriDenormalize('owl:disjointWith'))
+      else if (p == self.manager.uriDenormalize('rdfs:subClassOf')) {
+        if (RDFE.isBlankNode(o)) {
+          self.hasRestrictions = true;
+        } else {
+          self.subClassOf.push(self.manager.OntologyClass(graph, o, options));
+        }
+      }
+      else if (p == self.manager.uriDenormalize('owl:disjointWith'))
         self.disjointWith.push(o);
     }
   });
@@ -1176,7 +1105,7 @@ RDFE.OntologyClass.prototype.propertiesAsArray = function() {
 }
 
 RDFE.OntologyClass.prototype.maxCardinalityForProperty = function(p, cc) {
-  var prop = this.properties[p],
+  var prop = this.restrictions[p],
       c = null;
 
   // check if this class has a cardinality itself
@@ -1204,7 +1133,7 @@ RDFE.OntologyClass.prototype.maxCardinalityForProperty = function(p, cc) {
 };
 
 RDFE.OntologyClass.prototype.isAggregateProperty = function(p, cc) {
-  var prop = this.properties[p];
+  var prop = this.restrictions[p];
 
   // check if this class has a cardinality itself
   if(prop) {
@@ -1239,6 +1168,8 @@ RDFE.OntologyProperty = function(ontologyManager, graph, URI, options) {
 
   this.options = $.extend({}, options);
   this.URI = URI;
+  this.curi = ontologyManager.uriNormalize(URI);
+  this.name = URI.split(/[/#]/).pop();
   this.sources = [];
 
   this.manager = ontologyManager;
@@ -1269,36 +1200,36 @@ RDFE.OntologyProperty.prototype.parse = function(graph, options) {
       var p = results.triples[i].predicate.valueOf();
       var o = results.triples[i].object.valueOf();
       // console.log('property =>', p, o);
-      if (p == RDFE.uriDenormalize('rdf:type')) {
-        if      (o == RDFE.uriDenormalize('rdf:Property'))
+      if (p == self.manager.uriDenormalize('rdf:type')) {
+        if      (o == self.manager.uriDenormalize('rdf:Property'))
           self.class = RDFE.coalesce(self.class, o);
 
-        else if (o == RDFE.uriDenormalize('owl:ObjectProperty'))
+        else if (o == self.manager.uriDenormalize('owl:ObjectProperty'))
           self.class = o;
 
-        else if (o == RDFE.uriDenormalize('owl:DatatypeProperty'))
+        else if (o == self.manager.uriDenormalize('owl:DatatypeProperty'))
           self.class = o;
 
       }
-      else if (p == RDFE.uriDenormalize('rdfs:label'))
+      else if (p == self.manager.uriDenormalize('rdfs:label'))
         self.label = RDFE.coalesce(self.label, o);
 
-      else if (p == RDFE.uriDenormalize('rdfs:comment'))
+      else if (p == self.manager.uriDenormalize('rdfs:comment'))
         self.comment = RDFE.coalesce(self.comment, o);
 
-      else if (p == RDFE.uriDenormalize('dc:title'))
+      else if (p == self.manager.uriDenormalize('dc:title'))
         self.title = RDFE.coalesce(self.title, o);
 
-      else if (p == RDFE.uriDenormalize('dc:description'))
+      else if (p == self.manager.uriDenormalize('dc:description'))
         self.description = RDFE.coalesce(self.description, o);
 
-      else if (p == RDFE.uriDenormalize('rdfs:subPropertyOf'))
+      else if (p == self.manager.uriDenormalize('rdfs:subPropertyOf'))
         self.subPropertyOf = RDFE.coalesce(self.subPropertyOf, o);
 
-      else if (p == RDFE.uriDenormalize('rdfs:range'))
+      else if (p == self.manager.uriDenormalize('rdfs:range'))
         self.range = RDFE.coalesce(self.range, o); // TODO: would be nice if this was an actual Class object rather than a string. Again, if it does not exist, an empty one can be created.
 
-      else if (!self.domain && (p == RDFE.uriDenormalize('rdfs:domain'))) {
+      else if (!self.domain && (p == self.manager.uriDenormalize('rdfs:domain'))) {
         self.domain = RDFE.collectionQuery(self.manager.store, graph, self.URI, 'rdfs:domain', o);
         for (var j = 0, m = self.domain.length; j < m; j++) {
           var ontologyClass = self.manager.OntologyClass(graph, self.domain[j]);
@@ -1327,17 +1258,21 @@ RDFE.OntologyProperty.prototype.hasDomain = function(domain) {
  * Ontology Individual
  *
  */
-RDFE.OntologyIndividual = function(ontologyManager, graph, URI, options) {
+RDFE.OntologyIndividual = function(ontologyManager, graph, URI, individualClass, options) {
   // console.log('individual =>', URI);
   var self = this;
 
   this.options = $.extend({}, options);
   this.URI = URI;
+  this.curi = ontologyManager.uriNormalize(URI);
+  this.name = URI.split(/[/#]/).pop();
   this.sources = [];
 
   this.manager = ontologyManager;
   this.manager.individuals[URI] = this;
-
+  if (individualClass) {
+    individualClass.individuals[URI] = this;
+  }
   this.parse(graph, options);
 }
 
@@ -1359,20 +1294,20 @@ RDFE.OntologyIndividual.prototype.parse = function(graph, options) {
       var p = results.triples[i].predicate.valueOf();
       var o = results.triples[i].object.valueOf();
       // console.log('individual =>', RDFE.uriNormalize(p), o);
-      if (p == RDFE.uriDenormalize('rdfs:label'))
+      if (p == self.manager.uriDenormalize('rdfs:label'))
         self.label = RDFE.coalesce(self.label, o);
 
-      else if (p == RDFE.uriDenormalize('rdfs:comment'))
+      else if (p == self.manager.uriDenormalize('rdfs:comment'))
         self.comment = RDFE.coalesce(self.comment, o);
 
-      else if (p == RDFE.uriDenormalize('dc:title'))
+      else if (p == self.manager.uriDenormalize('dc:title'))
         self.title = RDFE.coalesce(self.title, o);
 
-      else if (p == RDFE.uriDenormalize('dc:description'))
+      else if (p == self.manager.uriDenormalize('dc:description'))
         self.description = RDFE.coalesce(self.description, o);
 
-      else if (p == RDFE.uriDenormalize('rdf:type'))
-        self.class = self.manager.OntologyClass(graph, o. options);
+      else if (p == self.manager.uriDenormalize('rdf:type'))
+        self.class = self.manager.OntologyClass(graph, o, options);
     }
   });
 }
@@ -1390,6 +1325,8 @@ RDFE.FresnelLens = function(ontologyManager, graph, URI, options) {
 
   this.manager = ontologyManager;
   this.manager.fresnelLenses[URI] = this;
+  this.showProperties = [];
+  this.hideProperties = [];
 
   this.parse(graph, options);
 }
@@ -1412,22 +1349,22 @@ RDFE.FresnelLens.prototype.parse = function(graph, options) {
       var p = results.triples[i].predicate.valueOf();
       var o = results.triples[i].object.valueOf();
       // console.log('lens =>', RDFE.uriNormalize(p), o);
-      if (p == RDFE.uriDenormalize('fresnel:classLensDomain'))
+      if (p == self.manager.uriDenormalize('fresnel:classLensDomain'))
         self.classLensDomain = RDFE.coalesce(self.classLensDomain, o);
 
-      else if (p == RDFE.uriDenormalize('fresnel:instanceFormatDomain'))
+      else if (p == self.manager.uriDenormalize('fresnel:instanceFormatDomain'))
         self.instanceFormatDomain = RDFE.coalesce(self.instanceFormatDomain, o);
 
-      else if (p == RDFE.uriDenormalize('fresnel:group'))
+      else if (p == self.manager.uriDenormalize('fresnel:group'))
         self.group = RDFE.coalesce(self.group, o);
 
-      else if (p == RDFE.uriDenormalize('fresnel:purpose'))
+      else if (p == self.manager.uriDenormalize('fresnel:purpose'))
         self.purpose = RDFE.coalesce(self.purpose, o);
 
-      else if (p == RDFE.uriDenormalize('fresnel:showProperties'))
+      else if (p == self.manager.uriDenormalize('fresnel:showProperties'))
         self.showProperties = RDFE.collectionQuery(self.manager.store, graph, self.URI, 'fresnel:showProperties', o, 'fresnel');
 
-      else if (p == RDFE.uriDenormalize('fresnel:hideProperties'))
+      else if (p == self.manager.uriDenormalize('fresnel:hideProperties'))
         self.hideProperties = RDFE.collectionQuery(self.manager.store, graph, self.URI, 'fresnel:hideProperties', o, 'fresnel');
     }
   });
@@ -1470,28 +1407,28 @@ RDFE.FresnelFormat.prototype.parse = function(graph, options) {
       var p = results.triples[i].predicate.valueOf();
       var o = results.triples[i].object.valueOf();
       // console.log('format =>', RDFE.uriNormalize(p), o);
-      if (p == RDFE.uriDenormalize('fresnel:label'))
+      if (p == self.manager.uriDenormalize('fresnel:label'))
         self.label = RDFE.coalesce(self.label, o);
 
-      else if (p == RDFE.uriDenormalize('fresnel:group'))
+      else if (p == self.manager.uriDenormalize('fresnel:group'))
         self.group = RDFE.coalesce(self.group, o);
 
-      else if (p == RDFE.uriDenormalize('fresnel:value'))
+      else if (p == self.manager.uriDenormalize('fresnel:value'))
         self.value = RDFE.coalesce(self.value, o);
 
-      else if (p == RDFE.uriDenormalize('fresnel:propertyStyle'))
+      else if (p == self.manager.uriDenormalize('fresnel:propertyStyle'))
         self.propertyStyle = RDFE.coalesce(self.propertyStyle, o);
 
-      else if (p == RDFE.uriDenormalize('fresnel:resourceStyle'))
+      else if (p == self.manager.uriDenormalize('fresnel:resourceStyle'))
         self.resourceStyle = RDFE.coalesce(self.resourceStyle, o);
 
-      else if (p == RDFE.uriDenormalize('fresnel:valueStyle'))
+      else if (p == self.manager.uriDenormalize('fresnel:valueStyle'))
         self.valueStyle = RDFE.coalesce(self.valueStyle, o);
 
-      else if (p == RDFE.uriDenormalize('fresnel:labelStyle'))
+      else if (p == self.manager.uriDenormalize('fresnel:labelStyle'))
         self.labelStyle = RDFE.coalesce(self.labelStyle, o);
 
-      else if (p == RDFE.uriDenormalize('fresnel:propertyFormatDomain'))
+      else if (p == self.manager.uriDenormalize('fresnel:propertyFormatDomain'))
         self.propertyFormatDomain.push(o);
     }
   });
@@ -1532,10 +1469,10 @@ RDFE.FresnelGroup.prototype.parse = function(graph, options) {
       var p = results.triples[i].predicate.valueOf();
       var o = results.triples[i].object.valueOf();
       // console.log('group =>', RDFE.uriNormalize(p), o);
-      if (p == RDFE.uriDenormalize('fresnel:stylesheetLink'))
+      if (p == self.manager.uriDenormalize('fresnel:stylesheetLink'))
         self.stylesheetLink = RDFE.coalesce(self.stylesheetLink, o);
 
-      else if (p == RDFE.uriDenormalize('fresnel:containerStyle'))
+      else if (p == self.manager.uriDenormalize('fresnel:containerStyle'))
         self.containerStyle = RDFE.coalesce(self.containerStyle, o);
     }
   });

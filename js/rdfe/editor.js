@@ -8,36 +8,20 @@ if (typeof String.prototype.startsWith != 'function') {
 if(!window.RDFE)
   window.RDFE = {};
 
-RDFE.Editor = function(doc, ontoMan, params) {
+RDFE.Editor = function(doc, ontoMan, config) {
   var self = this;
 
   this.doc = doc;
   this.ontologyManager = ontoMan;
-};
-
-RDFE.Editor.io_strip_URL_quoting = function(str) {
-  return (str.replace(RegExp('^<(.*)>$'), '$1'));
-};
-
-RDFE.Editor.prototype.makeTriple = function(s, p, o) {
-  ss = this.doc.store.rdf.createNamedNode(RDFE.Editor.io_strip_URL_quoting(s));
-  pp = this.doc.store.rdf.createNamedNode(RDFE.Editor.io_strip_URL_quoting(p));
-  // let's be dumb about this for now
-  o = RDFE.Editor.io_strip_URL_quoting(o);
-  if (o.startsWith("http") || o.startsWith("urn")) {
-    oo = this.doc.store.rdf.createNamedNode(o);
-  } else {
-    oo = this.doc.store.rdf.createLiteral(o, null, null);
-  }
-  return (this.doc.store.rdf.createTriple(ss, pp, oo));
+  this.config = config;
 };
 
 RDFE.Editor.prototype.createTripleList = function(container, callback) {
   var self = this;
 
   if(!this.tripleView) {
-    this.tripleView = new RDFE.TripleView(this.doc);
-    $(self.tripleView).on('rdf-editor-error', function(e) {
+    this.tripleView = new RDFE.TripleView(this.doc, this.ontologyManager);
+    $(self.tripleView).on('rdf-editor-error', function(e, d) {
       $(self).trigger('rdf-editor-error', d);
     }).on('rdf-editor-success', function(e, d) {
       $(self).trigger('rdf-editor-success', d);
@@ -53,39 +37,56 @@ RDFE.Editor.prototype.createNewStatementEditor = function(container) {
     return false;
 
   container.html(' \
-      <div class="form-horizontal"> \
+      <div class="panel panel-default"> \
+      <div class="panel-heading"><h3 class="panel-title">Add new Triple</h3></div> \
+      <div class="panel-body"><div class="form-horizontal"> \
       <div class="form-group"><label for="subject" class="col-sm-2 control-label">Subject</label> \
       <div class="col-sm-10"><input name="subject" class="form-control" /></div></div> \
       <div class="form-group"><label for="predicate" class="col-sm-2 control-label">Predicate</label> \
-      <div class="col-sm-10"><input name="predicate" class="form-control" /></div></div> \
+      <div class="col-sm-10"><select name="predicate" class="form-control"></select></div></div> \
       <div class="form-group"><label for="object" class="col-sm-2 control-label">Object</label> \
       <div class="col-sm-10"><input name="object" class="form-control" /></div></div> \
       <div class="form-group"><div class="col-sm-10 col-sm-offset-2"><a href="#" class="btn btn-default triple-action triple-action-new-cancel">Cancel</a> \
         <a href="#" class="btn btn-primary triple-action triple-action-new-save">Save</a></div></div> \
-      </form>\n');
+      </form></div></div>\n');
+
+  var objEd = container.find('input[name="object"]').rdfNodeEditor();
+  var propEd = container.find('select[name="predicate"]').propertyBox({
+    ontoManager: self.ontologyManager
+  }).on('changed', function(e, p) {
+    console.log('changed', p)
+    var cn = objEd.getValue(), n;
+    if(objEd.isLiteralType(p.range)) {
+      n = new RDFE.RdfNode('literal', cn.value, p.range, cn.language);
+    }
+    else if(self.ontologyManager.ontologyClassByURI(p.range)) {
+      n = new RDFE.RdfNode('uri', cn.value);
+    }
+    else {
+      n = new RDFE.RdfNode('literal', cn.value, null, '');
+    }
+    objEd.setValue(n);
+  });
 
   container.find('a.triple-action-new-cancel').click(function(e) {
     container.empty();
   });
 
   container.find('a.triple-action-new-save').click(function(e) {
-    // FIXME: use the same editors we use in the tables
-    // FIXME: get the range of the property and convert the object accordingly
     var s = container.find('input[name="subject"]').val();
-    var p = container.find('input[name="predicate"]').val();
-    var o = container.find('input[name="object"]').val();
-    var t = self.makeTriple(s, p, o);
-    self.doc.addTriple(t, function() {
+    var p = propEd.selectedURI();
+    var o = objEd.getValue();
+    var t = self.doc.store.rdf.createTriple(self.doc.store.rdf.createNamedNode(s), self.doc.store.rdf.createNamedNode(p), o.toStoreNode(self.doc.store));
+    self.doc.addTriples([t], function() {
       container.empty();
 
-      if (self.tripleTable) {
-        var i = self.tripleTable.data('maxindex');
-        i += 1;
-        self.tripleTable.bootstrapTable('append', $.extend(t, {
-          id: i
-        }));
-        self.tripleTable.data('maxindex', i);
+      if (self.tripleView) {
+        self.tripleView.addTriple(t);
       }
+      $(self).trigger('rdf-editor-success', {
+        "type": "triple-insert-success",
+        "message": "Successfully added new triple."
+      });
     }, function() {
       $(self).trigger('rdf-editor-error', {
         "type": 'triple-insert-failed',
@@ -97,27 +98,13 @@ RDFE.Editor.prototype.createNewStatementEditor = function(container) {
 
 RDFE.Editor.prototype.createNewEntityEditor = function(container, manager) {
   var self = this;
+  var $ontologiesSelect, ontologiesSelect;
   var $classesSelect, classesSelect;
-  var ontologiesList = function () {
-    var items = [];
-    var ontologies = manager.ontologiesAsArray();
-    for (var i = 0, l = ontologies.length; i < l; i++) {
-      items.push({"uri": ontologies[i].URI});
-    }
-    return items;
-  };
 
-  var classesList = function (ontology) {
-    var items = [];
-
+  var classesList = function (e) {
+    var ontology = manager.ontologyByURI(e.currentTarget.selectedOntologyURI());
     classesSelect.clearOptions();
-    if (ontology) {
-      var clases = ontology.classesAsArray();
-      for (var i = 0, l = clases.length; i < l; i++) {
-        items.push({"uri": clases[i].URI});
-      }
-    }
-    classesSelect.addOption(items);
+    classesSelect.addOption(ontology ? ontology.classesAsArray() : self.ontologyManager.allClasses());
   };
 
   if (!this.doc) {
@@ -125,7 +112,9 @@ RDFE.Editor.prototype.createNewEntityEditor = function(container, manager) {
   }
 
   container.html(
-    '<div class="form-horizontal"> ' +
+    '<div class="panel panel-default">' +
+    '<div class="panel-heading"><h3 class="panel-title">Add new Entity</h3></div>' +
+    '<div class="panel-body"><div class="form-horizontal"> ' +
     '  <div class="form-group"> ' +
     '    <label for="ontology" class="col-sm-2 control-label">Ontology</label> ' +
     '    <div class="col-sm-10"> ' +
@@ -133,13 +122,13 @@ RDFE.Editor.prototype.createNewEntityEditor = function(container, manager) {
     '    </div> ' +
     '  </div> ' +
     '  <div class="form-group"> ' +
-    '    <label for="class" class="col-sm-2 control-label">Class</label> ' +
+    '    <label for="class" class="col-sm-2 control-label">Type</label> ' +
     '    <div class="col-sm-10"> ' +
     '      <select name="class" id="class" class="form-control" /> ' +
     '    </div> ' +
     '  </div> ' +
     '  <div class="form-group"> ' +
-    '     <label for="subject" class="col-sm-2 control-label">Subject</label> ' +
+    '     <label for="subject" class="col-sm-2 control-label">Entity URI</label> ' +
     '     <div class="col-sm-10"> ' +
     '       <input name="subject" id="subject" class="form-control" /> ' +
     '     </div> ' +
@@ -150,31 +139,50 @@ RDFE.Editor.prototype.createNewEntityEditor = function(container, manager) {
     '      <a href="#" class="btn btn-primary triple-action triple-action-new-save">Save</a> ' +
     '    </div> ' +
     '  </div> ' +
-    '</div>\n');
+    '</div></div></div>\n');
 
-  $('#ontology').selectize({
-    create: true,
-    valueField: 'uri',
-    labelField: 'uri',
-    options: ontologiesList(),
-    onChange: function(value) {
-      if (!value.length) {
-        classesList();
-      } else {
-        manager.ontologyParse(value, {
-          "success": function (ontology) {
-            classesList(ontology);
-          }
-        });
-      }
-    }
-  });
+  // if we have an entity uri template we ask the user to provide a nem instead of the uri
+  if(this.config.options.entityUriTmpl) {
+    container.find('label[for="subject"]').text('Entity Name');
+  }
 
+  ontologiesSelect = $('#ontology').ontoBox({ "ontoManager": manager });
+  ontologiesSelect.on('changed', classesList);
+
+  // FIXME: this is all pretty much the same as in the PropertyBox
   $classesSelect = $('#class').selectize({
     create: true,
-    valueField: 'uri',
-    labelField: 'uri',
-    options: []
+    valueField: 'URI',
+    labelField: 'URI',
+    searchField: [ "title", "label", "prefix", "URI" ],
+    sortField: [ "prefix", "URI" ],
+    options: self.ontologyManager.allClasses(),
+    create: function(input, cb) {
+      // search for and optionally create a new class
+      cb(self.ontologyManager.OntologyClass(null, self.ontologyManager.uriDenormalize(input)));
+    },
+    render: {
+      item: function(item, escape) {
+        var x = item.title || item.label || name.curi || item.name;
+        if(item.curi && item.curi != x) {
+          x = escape(x) + ' <small>(' + escape(item.curi) + ')</small>';
+        }
+        else {
+          x = escape(x);
+        }
+        return '<div>' + x + '</div>';
+      },
+      option: function(item, escape) {
+        return '<div>' + escape(item.title || item.label || name.curi || item.name) + '<br/><small>(' + escape(item.URI) + ')</small></div>';
+      },
+      'option_create': function(data, escape) {
+        var url = self.ontologyManager.uriDenormalize(data.input);
+        if (url != data.input)
+          return '<div class="create">Add <strong>' + escape(data.input) + '</strong> <small>(' + escape(url) + ')</small>&hellip;</div>';
+        else
+          return '<div class="create">Add <strong>' + escape(url) + '</strong>&hellip;</div>';
+      }
+    }
   });
   classesSelect = $classesSelect[0].selectize;
 
@@ -183,16 +191,25 @@ RDFE.Editor.prototype.createNewEntityEditor = function(container, manager) {
   });
 
   container.find('a.triple-action-new-save').click(function(e) {
-    var o = $('#ontology')[0].selectize.getValue();
-    var c = $('#class')[0].selectize.getValue();
-    var s = container.find('input[name="subject"]').val();
-    var t = self.makeTriple(s, RDFE.uriDenormalize('rdf:type'), c);
-    self.doc.addTriple(t, function() {
-      container.empty();
+    var uri = container.find('input[name="subject"]').val(),
+        name = null,
+        type = container.find('#class')[0].selectize.getValue();
 
+    if(self.config.options.entityUriTmpl) {
+      name = uri;
+      uri = null;
+    }
+
+    self.doc.addEntity(uri, name, type, function(ent) {
+      container.empty();
       if (self.entityView) {
-        self.entityView.addEntity({"uri": s, "label": s});
+        self.entityView.addEntity(ent);
       }
+
+      $(self).trigger('rdf-editor-success', {
+        "type": "entity-insert-success",
+        "message": "Successfully created new entity."
+      });
     }, function() {
       $(self).trigger('rdf-editor-error', {
         "type": 'triple-insert-failed',

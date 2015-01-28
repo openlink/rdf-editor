@@ -112,6 +112,8 @@
             <div class="panel-body">
               <select id="ontologySelection">
               </select>
+              <select id="propertySelection">
+              </select>
             </div>
           </div>
         </div>
@@ -186,7 +188,6 @@
 
     <script src="js/n3-browser.min.js"></script>
     <script src="js/rdf_store.js"></script>
-    <script src="js/rdfxml_parser.js"></script>
 
     <script src="js/val.js"></script>
 
@@ -199,13 +200,14 @@
     <script src="js/jstorage.js"></script>
 
     <script src="js/rdfe/io.js"></script>
+    <script src="js/rdfe/utils.js"></script>
     <script src="js/rdfe/rdfnode.js"></script>
     <script src="js/rdfe/config.js"></script>
     <script src="js/rdfe/ontology.js"></script>
 
     <script src="js/rdfe/rdf_store_ext.js"></script>
     <script src="js/rdfe/document.js"></script>
-    <script src="js/rdfe/document_backbone_bridge.js"></script>
+    <script src="js/rdfe/entitymodel.js"></script>
     <script src="js/rdfe/tripleview.js"></script>
     <script src="js/rdfe/entityeditor.js"></script>
     <script src="js/rdfe/entityview.js"></script>
@@ -213,10 +215,13 @@
     <script src="js/rdfe/jquery.rdfnodeinput.js"></script>
     <script src="js/rdfe/editable-rdfnode.js"></script>
     <script src="js/rdfe/backbone-forms-rdfnode.js"></script>
+    <script src="js/rdfe/backbone-forms-nestedrdf.js"></script>
     <script src="js/bootstrap-toggle.min.js"></script>
     <script src="js/selectize.min.js"></script>
     <script src="js/bootbox.min.js"></script>
     <script src="js/rdfe/jquery.ontobox.js"></script>
+    <script src="js/rdfe/jquery.propertybox.js"></script>
+    <script src="js/rdfe/editable-propertybox.js"></script>
 
     <script>
       var val = new VAL();
@@ -287,8 +292,12 @@
             $.jStorage.set("editor-document-url", url);
             $.jStorage.set("editor-document-io-type", type);
         }, function() {
-            // FIXME: error handling!!!
-            console.log('Failed to load document');
+            $.growl({
+              message: 'Failed to load document',
+              icon: "glyphicon glyphicon-fire"
+            }, {
+              type: 'danger'
+            });
             toggleSpinner(false);
         });
       }
@@ -336,10 +345,10 @@
             }, {
               type: 'success'
             });
-          }, function(msg) {
+          }, function(err) {
             toggleSpinner(false);
             $.growl({
-              message: msg,
+              message: err.message,
               icon: "glyphicon glyphicon-fire"
             }, {
               type: 'danger'
@@ -422,7 +431,7 @@
           $("#openDocIoType").val($.jStorage.get("editor-document-io-type") || "sparql");
 
           rdfeConfig = new RDFE.Config('config.json', function(config) {
-              ontologyManager = new RDFE.OntologyManager(null, config.options.ontology);
+              ontologyManager = new RDFE.OntologyManager(null, config.options);
 
               ontologyManager.init();
 
@@ -434,8 +443,8 @@
               if($.inArray("bookmarks", config.options.actions) >= 0)
                 loadBookmarks(config);
 
-              mainDoc = new RDFE.Document(config);
-              editor = new RDFE.Editor(mainDoc, ontologyManager);
+              mainDoc = new RDFE.Document(ontologyManager, config);
+              editor = new RDFE.Editor(mainDoc, ontologyManager, config);
 
               // subscribe to editor events
               $(editor).on('rdf-editor-success', function(e, d) {
@@ -458,7 +467,10 @@
               $("#io_spq").val($.jStorage.get("editor-sparql-endpoint", config.options.sparqlEndpoint));
               $("#gspEndpoint").val($.jStorage.get("editor-sparql-graph-endpoint", config.options.gspEndpoint));
 
-              $('#ontologySelection').ontoBox({ "ontoManager": ontologyManager });
+              $('#propertySelection').propertyBox({ "ontoManager": ontologyManager });
+              $('#ontologySelection').ontoBox({ "ontoManager": ontologyManager }).on('changed', function(e, o) {
+                $('#propertySelection').propertyBox().setOntology(o);
+              });
             }
           );
 
@@ -483,9 +495,9 @@
                 }, {
                   type: 'success'
                 });
-              }, function(msg) {
+              }, function(err) {
                 $.growl({
-                  message: msg,
+                  message: err.message,
                   icon: "glyphicon glyphicon-fire"
                 }, {
                   type: 'danger'
