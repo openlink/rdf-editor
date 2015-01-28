@@ -1256,6 +1256,33 @@ RDFE.OntologyProperty.prototype.hasDomain = function(domain) {
     }
   }
   return false;
+};
+
+RDFE.OntologyProperty.prototype.getRange = function(pp) {
+  // check if this property has a range itself
+  var r = this.range;
+  if(r) {
+    return r;
+  }
+
+  // check super-properties (with loop-protection)
+  for(var i = 0; i < this.subPropertyOf.length; i++) {
+    var sp = this.subPropertyOf[i];
+    if($.inArray(sp, pp) < 0) {
+      pp = pp || [];
+      pp.push(sp);
+      console.log('Checking sub-property', sp, sp.range)
+      r = this.manager.ontologyPropertyByURI(sp).getRange(pp);
+      if(r) {
+        return r;
+      }
+    }
+    else {
+      console.log('CAUTION: Found sub-property loop in ', pp);
+    }
+  }
+
+  return undefined;
 }
 
 /*
