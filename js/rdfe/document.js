@@ -56,7 +56,7 @@ RDFE.Document.prototype.verifyData = function(callback, fail) {
   var emptyUriCb = function(s,r) {
     if(s) {
       if(r.length > 0) {
-        callback(false, "Found empty URI node.");
+        callback(false, "The document is not valid. It contains empty URI nodes.");
         return false;
       }
       else {
