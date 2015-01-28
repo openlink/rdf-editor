@@ -18,6 +18,7 @@ var jsRdfe = [
   "js/rdfe/tripleview.js",
   "js/rdfe/document_backbone_bridge.js",
   "js/rdfe/backbone-forms-rdfnode.js",
+  "js/rdfe/backbone-forms-nextedrdf.js",
   "js/rdfe/editor.js",
 ];
 
