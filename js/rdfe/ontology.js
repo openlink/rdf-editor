@@ -679,11 +679,7 @@ RDFE.OntologyManager.prototype.ontologyRestrictionsParse = function(graph, ontol
 
             if (self.uriDenormalize('rdf:type') == v2 && v3 == 'http://www.openlinksw.com/ontology/oplowl#AggregateRestriction') {
               console.log('Adding ', v3, 'for', propertyURI);
-              property = ontologyClass.properties[propertyURI];
-              if(!property)
-                property = _.clone(self.OntologyProperty(graph, propertyURI));
-              property.isAggregate = true;
-              ontologyClass.properties[propertyURI] = property;
+              ontologyClass.restrictions[propertyURI] = $.extend(ontologyClass.restrictions[propertyURI], { isAggregate: true });
             }
 
             else if (
@@ -696,10 +692,8 @@ RDFE.OntologyManager.prototype.ontologyRestrictionsParse = function(graph, ontol
               cardinalityURI = v2;
               cardinalityValue = v3;
               property = ontologyClass.properties[propertyURI];
-              if(!property)
-                property = _.clone(self.OntologyProperty(graph, propertyURI));
-              property[RDFE.uriLabel(cardinalityURI)] = parseInt(cardinalityValue);
-              ontologyClass.properties[propertyURI] = property;
+              ontologyClass.restrictions[propertyURI] = ontologyClass.restrictions[propertyURI] || {};
+              ontologyClass.restrictions[propertyURI][RDFE.uriLabel(cardinalityURI)] = parseInt(cardinalityValue);
             }
           }
         }
@@ -1045,6 +1039,7 @@ RDFE.OntologyClass = function(ontologyManager, graph, URI, options) {
   this.disjointWith = [];
   this.properties = {};
   this.individuals = {};
+  this.restrictions = {};
 
   this.manager = ontologyManager;
   this.manager.ontologyClasses[URI] = self;
@@ -1110,7 +1105,7 @@ RDFE.OntologyClass.prototype.propertiesAsArray = function() {
 }
 
 RDFE.OntologyClass.prototype.maxCardinalityForProperty = function(p, cc) {
-  var prop = this.properties[p],
+  var prop = this.restrictions[p],
       c = null;
 
   // check if this class has a cardinality itself
@@ -1138,7 +1133,7 @@ RDFE.OntologyClass.prototype.maxCardinalityForProperty = function(p, cc) {
 };
 
 RDFE.OntologyClass.prototype.isAggregateProperty = function(p, cc) {
-  var prop = this.properties[p];
+  var prop = this.restrictions[p];
 
   // check if this class has a cardinality itself
   if(prop) {
