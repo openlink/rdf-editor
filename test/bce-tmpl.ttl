@@ -24,6 +24,7 @@ lens:TouchPointLens a fresnel:Lens;
       bce:reach
       bce:broader
       bce:legacyId
+      fresnel:allProperties
     ) .
 
 lens:UseCaseLens a fresnel:Lens;
@@ -33,6 +34,10 @@ lens:UseCaseLens a fresnel:Lens;
       skos:prefLabel
       skos:definition
       bce:tooltip
+      fresnel:allProperties
       bce:prio
       bce:useCaseSequence
+    ) ;
+    fresnel:hideProperties (
+      rdf:type
     ) .

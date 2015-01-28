@@ -26,10 +26,16 @@ bce:UseCase a owl:Class ;
     owl:cardinality "1"^^xsd:nonNegativeInteger
   ] , [
     a owl:Restriction , oplowl:AggregateRestriction ;
-    owl:onProperty bce:prio ;
-    owl:cardinality "1"^^xsd:nonNegativeInteger
+    owl:onProperty bce:prio
   ] , [
     a owl:Restriction , oplowl:AggregateRestriction ;
     owl:onProperty bce:useCaseSequence ;
+    owl:cardinality "1"^^xsd:nonNegativeInteger
+  ] .
+
+bce:MilieuSpecific a owl:Class ;
+  rdfs:subClassOf [
+    a owl:Restriction ;
+    owl:onProperty bce:milieu ;
     owl:cardinality "1"^^xsd:nonNegativeInteger
   ] .

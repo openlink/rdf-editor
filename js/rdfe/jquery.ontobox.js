@@ -25,6 +25,9 @@
         self.options.ontoManager.ontologyParse(url, {
           "success": function(onto) {
             cb(onto);
+          },
+          "error": function() {
+            cb(null);
           }
         });
       },
@@ -53,7 +56,7 @@
   };
 
   OntoBox.prototype.selectedOntology = function() {
-    return this.sel.getItem(this.selectedOntologyURI());
+    return this.sel.options[this.selectedOntologyURI()];
   };
 
   OntoBox.prototype.on = function(e, cb) {

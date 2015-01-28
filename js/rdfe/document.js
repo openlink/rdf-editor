@@ -1,9 +1,10 @@
 if(!window.RDFE)
   window.RDFE = {};
 
-RDFE.Document = function(config) {
+RDFE.Document = function(ontoMan, config) {
   var self = this;
 
+  self.ontologyManager = ontoMan;
   self.config = config;
   self.store = rdfstore.create();
   self.store.registerDefaultNamespace('skos', 'http://www.w3.org/2004/02/skos/core#');
@@ -29,7 +30,10 @@ RDFE.Document.prototype.load = function(url, io, success, fail) {
         if (success)
             success();
     };
-    io.retrieveToStore(url, self.store, self.graph, {'success': successFct });
+    io.retrieveToStore(url, self.store, self.graph, {
+      'success': successFct,
+      'error': fail
+    });
 };
 
 RDFE.Document.prototype.save = function(url, io, success, fail) {
@@ -66,8 +70,10 @@ RDFE.Document.prototype.save = function(url, io, success, fail) {
         if(mySuccess)
           mySuccess();
       };
-      // FIXME: add error handling
-      myIo.insertFromStore(myUrl, self.store, self.graph, {"success": __success});
+      myIo.insertFromStore(myUrl, self.store, self.graph, {
+        "success": __success,
+        "error": myFail
+      });
     }
 };
 
@@ -84,19 +90,20 @@ RDFE.Document.prototype.new = function(success, fail) {
 };
 
 RDFE.Document.prototype.deleteTriples = function(s, p, o, success, fail) {
+  var self = this;
   var t = '';
   if(s)
-    t += s.toN3();
+    t += s.toNT();
   else
     t += '?s';
   t += ' ';
   if(p)
-    t += p.toN3();
+    t += p.toNT();
   else
     t += '?p';
   t += ' ';
   if(o)
-    t += o.toN3();
+    t += o.toNT();
   else
     t += '?o';
 
@@ -140,9 +147,9 @@ RDFE.Document.prototype.deleteEntity = function(uri, success, fail) {
   });
 };
 
-RDFE.Document.prototype.addTriple = function(triple, success, fail) {
+RDFE.Document.prototype.addTriples = function(triples, success, fail) {
   var self = this;
-  self.store.insert(self.store.rdf.createGraph([triple]), self.graph, function(s) {
+  self.store.insert(self.store.rdf.createGraph(triples), self.graph, function(s) {
     if(s) {
       self.setChanged();
       if(success)
@@ -174,14 +181,14 @@ RDFE.Document.prototype.updateTriple = function(oldTr, newTr, success, fail) {
     if (s) {
       self.store.insert(self.store.rdf.createGraph([newTr]), self.graph, function(s) {
         self.setChanged();
-        if (s && fail)
-          fail();
+        if (!s && fail)
+          fail('Adding new triple failed');
         else if(success)
           success();
       });
     }
     else if(fail)
-      fail();
+      fail('Deleting triple failed');
   });
 };
 
@@ -197,7 +204,7 @@ RDFE.Document.prototype.getEntityLabel = function(url, success) {
       success(url.split(/[/#]/).pop());
     else
       self.store.execute('select ?l from <' + self.graph + '> where { <' + url + '> <' + lps[i] + '> ?l . }', function(s, r) {
-        if(s && r.length > 0) {
+        if(s && r.length > 0 && r[0].l.value.length > 0) {
           success(r[0].l.value);
         }
         else {
@@ -285,5 +292,81 @@ RDFE.Document.prototype.listEntities = function(type, callback, errorCb) {
       errorCb(r);
 
     cb(sl);
+  });
+};
+
+RDFE.Document.prototype.buildEntityUri = function(name) {
+  var uri = this.config.options.entityUriTmpl;
+  if(!uri || uri.length == 0) {
+    uri = 'urn:entities:{NAME}';
+  }
+
+  // we use a dummy uri in case there is no open doc
+  uri = uri.replace('{DOC-URI}', this.url || 'urn:entities:');
+
+  var n = name || "entity";
+  var i = uri.indexOf('{NAME}');
+  if(i >= 0) {
+    uri = uri.replace('{NAME}', encodeURIComponent(n));
+  }
+  else {
+    if(uri[uri.length-1] != '#' && uri[uri.length-1] != '/' && uri[uri.length-1] != ':') {
+      uri += '#';
+    }
+    uri += encodeURIComponent(n);
+  }
+
+  // make the URI unique in the loaded document
+  var nuri = uri,
+      self = this;
+  var uq = function(i) {
+    self.store.node(nuri, self.graph, function(s, r) {
+      console.log(s,r)
+      if(s && r.length) {
+        nuri = uri + i;
+        uq(i+1);
+      }
+    });
+  };
+  uq(1);
+
+  return nuri;
+};
+
+RDFE.Document.prototype.addEntity = function(uri, name, type, cb, failCb) {
+  var self = this;
+  if(!uri || uri.length == 0) {
+    uri = self.buildEntityUri(name);
+  }
+
+  var t = [
+    self.store.rdf.createTriple(
+      self.store.rdf.createNamedNode(uri),
+      self.store.rdf.createNamedNode('http://www.w3.org/1999/02/22-rdf-syntax-ns#type'),
+      self.store.rdf.createNamedNode(type)
+    )
+  ];
+
+  if(name && name.length > 0) {
+    // RDFE.Config makes sure the labelProps array is never empty
+    var lp = self.ontologyManager.uriDenormalize(self.config.options.labelProps[0]);
+    t.push(self.store.rdf.createTriple(
+      self.store.rdf.createNamedNode(uri),
+      self.store.rdf.createNamedNode(lp),
+      self.store.rdf.createLiteral(name)
+    ));
+  }
+
+  self.addTriples(t, function() {
+    if(cb) {
+      cb({
+        "uri": uri,
+        "label": name
+      });
+    }
+  }, function() {
+    if(failCb) {
+      failCb();
+    }
   });
 };

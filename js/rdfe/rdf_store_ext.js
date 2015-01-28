@@ -51,11 +51,7 @@ rdfstore.Store.prototype.termToNode = function(term) {
     return this.rdf.createNamedNode(term.value); // FIXME: blank nodes are so much trouble. We need to find a way to handle them properly
 };
 
-rdfstore.Store.prototype.rdf.api.NamedNode.prototype.localeCompare = function(compareNode, locales, options) {
-    return this.toString().localeCompare(compareNode.toString(), locales, options);
-};
-
-rdfstore.Store.prototype.rdf.api.Literal.prototype.localeCompare = function(compareNode, locales, options) {
+rdfstore.Store.prototype.rdf.api.RDFNode.prototype.localeCompare = function(compareNode, locales, options) {
     return this.toString().localeCompare(compareNode.toString(), locales, options);
 };
 
@@ -91,6 +87,23 @@ rdfstore.Store.prototype.loadTurtle = function(data, graph, callback) {
     return self.rdf.createTriple(convertNode(triple.subject), convertNode(triple.predicate), convertNode(triple.object));
   };
 
+  var addTriples = function(triples) {
+    if(triples.length) {
+      try {
+        self.insert(self.rdf.createGraph(triples), graph, function(s, r) {
+          if(!s) {
+            if(callback)
+              callback(false, 'Failed to add new triple to store: ' + r.toString());
+          }
+        });
+      }
+      catch(e) {
+        if(callback)
+          callback(false, 'Failed to add new triple to store: ' + e.toString());
+      }
+    }
+  };
+
   var cnt = 0;
   var triples = [];
   parser.parse(data, function(error, triple, prefixes) {
@@ -99,14 +112,19 @@ rdfstore.Store.prototype.loadTurtle = function(data, graph, callback) {
         callback(false, error);
     }
     if (triple == null) {
-      self.insert(self.rdf.createGraph(triples), graph, function() {});
+      addTriples(triples);
+
       // exec success function
       if (callback) {
         callback(true, cnt);
       }
     }
     else {
-      triples.push(convertTriple(triple));
+      var t = convertTriple(triple);
+      if(t.subject.interfaceName == 'BlankNode' || t.object.interfaceName == "BlankNode")
+        triples.push(t);
+      else
+        self.insert(self.rdf.createGraph([t]), graph, function() {});
       cnt++;
     }
   });
