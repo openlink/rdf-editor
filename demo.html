@@ -430,7 +430,9 @@
           $("#openDocLocation").val($.jStorage.get("editor-document-url"));
           $("#openDocIoType").val($.jStorage.get("editor-document-io-type") || "sparql");
 
-          rdfeConfig = new RDFE.Config('config.json', function(config) {
+          var urlParams = RDFE.Utils.uriParams();
+          var configSource = (urlParams['config'])? urlParams['config']: 'config.json';
+          rdfeConfig = new RDFE.Config(configSource, function(config) {
               ontologyManager = new RDFE.OntologyManager(null, config.options);
 
               ontologyManager.init();
