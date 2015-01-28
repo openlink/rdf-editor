@@ -24,6 +24,7 @@
     c.prototype.render = function(container, callback) {
       var self = this;
 
+      // FIXME: use config.labelProps!
       self.doc.store.execute("select distinct ?s ?sl ?spl where { graph <" + self.doc.graph + "> { ?s ?p ?o . } . optional { graph <" + self.doc.graph + "> { ?s rdfs:label ?sl } } . optional { graph <" + self.doc.graph + "> { ?s skos:prefLabel ?spl } } } order by ?s ?t", function(success, r) {
         if (success) {
           self.entityTable = null;
@@ -37,9 +38,9 @@
           for (var i = 0; i < r.length; i++) {
             var uri = r[i].s.value;
             var label = uri;
-            if (r[i].spl)
+            if (r[i].spl && r[i].spl.value.length)
               label = r[i].spl.value;
-            else if (r[i].sl)
+            else if (r[i].sl && r[i].sl.value.length)
               label = r[i].sl.value;
             else
               label = label.split(/[/#]/).pop();
