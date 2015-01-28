@@ -322,7 +322,7 @@
           from: "top",
           align: "center"
         },
-        "z-index": 1050,
+        "z_index": 1050,
         template: '<div data-growl="container" class="alert" role="alert"> \
           <button type="button" class="close" data-growl="dismiss"> \
             <span aria-hidden="true">×</span> \
@@ -348,7 +348,7 @@
           }, function(err) {
             toggleSpinner(false);
             $.growl({
-              message: err.message,
+              message: (err ? err.message || err : "An unknown error occured"),
               icon: "glyphicon glyphicon-fire"
             }, {
               type: 'danger'
@@ -486,9 +486,11 @@
           $('#saveAsDialog #saveAsBtn').click(function() {
             var url = $('#saveAsDialog input[name="saveAsLocation"]').val(),
                 ioType = $('#saveAsIoType').val();
+            $('#saveAsDialog').modal('hide');
+            toggleSpinner(true);
             mainDoc.save(url, getIO(ioType),
               function() {
-                $('#saveAsDialog').modal('hide');
+                toggleSpinner(false);
                 $('#docUrl').text(url);
                 $.jStorage.set("editor-document-url", url);
                 $.growl({
@@ -498,8 +500,9 @@
                   type: 'success'
                 });
               }, function(err) {
+                toggleSpinner(false);
                 $.growl({
-                  message: err.message,
+                  message: (err ? err.message || err : "An unknown error occured"),
                   icon: "glyphicon glyphicon-fire"
                 }, {
                   type: 'danger'
