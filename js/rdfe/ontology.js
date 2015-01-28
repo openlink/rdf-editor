@@ -1083,7 +1083,7 @@ RDFE.OntologyClass.prototype.parse = function(graph, options) {
         self.description = RDFE.coalesce(self.description, o);
 
       else if (p == self.manager.uriDenormalize('rdfs:subClassOf')) {
-        if (RDFE.isBlankNode(o)) {
+        if (RDFE.isBlankNode(o)) { // FIXME: this sounds like an assumption one could easily break!
           self.hasRestrictions = true;
         } else {
           self.subClassOf.push(self.manager.OntologyClass(graph, o, options));
@@ -1118,11 +1118,13 @@ RDFE.OntologyClass.prototype.maxCardinalityForProperty = function(p, cc) {
   // check super-classes (with loop-protection)
   for(var i = 0; i < this.subClassOf; i++) {
     var sc = this.subClassOf[i];
-    if($.inArray(sc.URI, cc) < 0) {
-      cc.push(sc.URI);
-      c = this.subClassOf[i].maxCardinalityForProperty(p, cc);
-      if(c)
+    if($.inArray(sc, cc) < 0) {
+      cc = cc || [];
+      cc.push(sc);
+      c = this.manager.ontologyClassByURI(sc).maxCardinalityForProperty(p, cc);
+      if(c) {
         return c;
+      }
     }
     else {
       console.log('CAUTION: Found sub-class loop in ', cc);
@@ -1144,10 +1146,12 @@ RDFE.OntologyClass.prototype.isAggregateProperty = function(p, cc) {
   // check super-classes (with loop-protection)
   for(var i = 0; i < this.subClassOf; i++) {
     var sc = this.subClassOf[i];
-    if($.inArray(sc.URI, cc) < 0) {
-      cc.push(sc.URI);
-      if(this.subClassOf[i].isAggregate(p, cc))
+    if($.inArray(sc, cc) < 0) {
+      cc = cc || [];
+      cc.push(sc);
+      if(this.manager.ontologyClassByURI(sc).isAggregate(p, cc)) {
         return true;
+      }
     }
     else {
       console.log('CAUTION: Found sub-class loop in ', cc);
@@ -1171,6 +1175,7 @@ RDFE.OntologyProperty = function(ontologyManager, graph, URI, options) {
   this.curi = ontologyManager.uriNormalize(URI);
   this.name = URI.split(/[/#]/).pop();
   this.sources = [];
+  this.subPropertyOf = [];
 
   this.manager = ontologyManager;
   this.manager.ontologyProperties[URI] = self;
@@ -1224,7 +1229,7 @@ RDFE.OntologyProperty.prototype.parse = function(graph, options) {
         self.description = RDFE.coalesce(self.description, o);
 
       else if (p == self.manager.uriDenormalize('rdfs:subPropertyOf'))
-        self.subPropertyOf = RDFE.coalesce(self.subPropertyOf, o);
+        self.subPropertyOf.push(o);
 
       else if (p == self.manager.uriDenormalize('rdfs:range'))
         self.range = RDFE.coalesce(self.range, o); // TODO: would be nice if this was an actual Class object rather than a string. Again, if it does not exist, an empty one can be created.
@@ -1251,6 +1256,33 @@ RDFE.OntologyProperty.prototype.hasDomain = function(domain) {
     }
   }
   return false;
+};
+
+RDFE.OntologyProperty.prototype.getRange = function(pp) {
+  // check if this property has a range itself
+  var r = this.range;
+  if(r) {
+    return r;
+  }
+
+  // check super-properties (with loop-protection)
+  for(var i = 0; i < this.subPropertyOf.length; i++) {
+    var sp = this.subPropertyOf[i];
+    if($.inArray(sp, pp) < 0) {
+      pp = pp || [];
+      pp.push(sp);
+      console.log('Checking sub-property', sp, sp.range)
+      r = this.manager.ontologyPropertyByURI(sp).getRange(pp);
+      if(r) {
+        return r;
+      }
+    }
+    else {
+      console.log('CAUTION: Found sub-property loop in ', pp);
+    }
+  }
+
+  return undefined;
 }
 
 /*

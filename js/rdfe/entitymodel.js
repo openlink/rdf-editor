@@ -51,13 +51,13 @@ RDFE.EntityModel = Backbone.Model.extend({
     };
 
     if(self.isAggregateProperty(property.URI)) {
-      var range = self.doc.ontologyManager.ontologyClassByURI(property.range);
+      var range = self.doc.ontologyManager.ontologyClassByURI(property.getRange());
       if(range) {
         item.type = "List";
         item.itemType = "NestedRdf";
         item.model = RDFE.EntityModel.extend({
           defaults: {
-            'http://www.w3.org/1999/02/22-rdf-syntax-ns#type': [ property.range ]
+            'http://www.w3.org/1999/02/22-rdf-syntax-ns#type': [ property.getRange() ]
           },
           initialize: function(options) {
             RDFE.EntityModel.prototype.initialize.call(this, options);
@@ -82,23 +82,25 @@ RDFE.EntityModel = Backbone.Model.extend({
       item.itemType = "Rdfnode";
       item.rdfnode = {};
 
+      var pRange = _.result(property, "getRange");
+
       // TODO: eventually we should support range inheritence
       if (property.class == self.doc.ontologyManager.uriDenormalize('owl:DatatypeProperty')) {
-        item.rdfnode.type = property.range;
+        item.rdfnode.type = pRange;
       }
       else if (property.class == self.doc.ontologyManager.uriDenormalize('owl:ObjectProperty')) {
         item.rdfnode.type = "http://www.w3.org/1999/02/22-rdf-syntax-ns#Resource";
-        item.rdfnode.choices = function(callback) { self.getIndividuals(property.range, callback); };
+        item.rdfnode.choices = function(callback) { self.getIndividuals(pRange, callback); };
         item.rdfnode.create = true; //FIXME: make this configurable
       }
-      else if (property.range) {
-        if (property.range == "http://www.w3.org/2000/01/rdf-schema#Literal" ||
-            property.range.startsWith('http://www.w3.org/2001/XMLSchema#')) {
-          item.rdfnode.type = property.range;
+      else if (pRange) {
+        if (pRange == "http://www.w3.org/2000/01/rdf-schema#Literal" ||
+            pRange.startsWith('http://www.w3.org/2001/XMLSchema#')) {
+          item.rdfnode.type = pRange;
         }
         else {
           item.rdfnode.type = "http://www.w3.org/1999/02/22-rdf-syntax-ns#Resource";
-          item.rdfnode.choices = function(callback) { self.getIndividuals(property.range, callback); };
+          item.rdfnode.choices = function(callback) { self.getIndividuals(pRange, callback); };
           item.rdfnode.create = true; //FIXME: make this configurable
         }
       }

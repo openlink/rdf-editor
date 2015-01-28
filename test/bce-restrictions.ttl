@@ -39,3 +39,6 @@ bce:MilieuSpecific a owl:Class ;
     owl:onProperty bce:milieu ;
     owl:cardinality "1"^^xsd:nonNegativeInteger
   ] .
+
+skos:note a rdf:Property ;
+  rdfs:range rdfs:Literal .

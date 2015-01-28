@@ -36,6 +36,51 @@ RDFE.Document.prototype.load = function(url, io, success, fail) {
     });
 };
 
+/**
+ * Verify the integrity of the data in the document.
+ *
+ * For now the verification will only check for invalid nodes.
+ * An invalid node is a uri node with an empty value.
+ *
+ * @param callback A callback function which takes two parameters:
+ * A boolean value indicating whether the doc is valid or not and
+ * a message indicating the problem if the doc is not valid.
+ * @param fail A callback function which is called in case something
+ * goes wrong. This does not include an invalid document but errors
+ * like a failed query or the like.
+ */
+RDFE.Document.prototype.verifyData = function(callback, fail) {
+  var self = this;
+
+  // check if there are any invalid uris in the document
+  var emptyUriCb = function(s,r) {
+    if(s) {
+      if(r.length > 0) {
+        callback(false, "Found empty URI node.");
+        return false;
+      }
+      else {
+        callback(true);
+        return true;
+      }
+    }
+    else {
+      if(fail) {
+        fail();
+      }
+      return false;
+    }
+  };
+
+  self.store.execute("select * from <" + self.graph + "> where { <> ?p ?o }", function(s,r) {
+    if(emptyUriCb(s,r)) {
+      self.store.execute("select * from <" + self.graph + "> where { ?s ?p <> }", function(s,r) {
+        emptyUriCb(s,r);
+      });
+    }
+  });
+};
+
 RDFE.Document.prototype.save = function(url, io, success, fail) {
     var self = this;
     var myUrl = url,
@@ -63,17 +108,24 @@ RDFE.Document.prototype.save = function(url, io, success, fail) {
         myFail("No document loaded");
     }
     else {
-      var __success = function() {
-        self.url = myUrl;
-        self.setChanged(false);
+      self.verifyData(function(s, m) {
+        if(s) {
+          var __success = function() {
+            self.url = myUrl;
+            self.setChanged(false);
 
-        if(mySuccess)
-          mySuccess();
-      };
-      myIo.insertFromStore(myUrl, self.store, self.graph, {
-        "success": __success,
-        "error": myFail
-      });
+            if(mySuccess)
+              mySuccess();
+          };
+          myIo.insertFromStore(myUrl, self.store, self.graph, {
+            "success": __success,
+            "error": myFail
+          });
+        }
+        else {
+          fail(m);
+        }
+      }, fail);
     }
 };
 

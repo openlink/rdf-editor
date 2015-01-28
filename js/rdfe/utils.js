@@ -36,3 +36,42 @@ RDFE.Utils.escapeXml = function (str) {
     }
   });
 }
+
+RDFE.Utils.uriParams = function() {
+  var result = {};
+  var s = location.search;
+  if (s.length > 1) {
+    s = s.substring(1);
+  }
+  if (s) {
+    var parts = s.split("&");
+    for (var i=0; i < parts.length; i++) {
+      var part = parts[i];
+      if (part) {
+        var index = part.indexOf("=");
+        if (index == -1) {
+          /* not a pair */
+          result[decodeURIComponent(part)] = "";
+        } else {
+          var key = part.substring(0,index);
+          var val = part.substring(index+1);
+          key = decodeURIComponent(key);
+          val = decodeURIComponent(val.replace(/\+/g,  " "));
+
+          var r = false;
+          if ((r = key.match(/(.*)\[\]$/))) {
+            key = r[1];
+            if (key in result) {
+              result[key].push(val);
+            } else {
+              result[key] = [val];
+            }
+          } else {
+            result[key] = val;
+          }
+        }
+      }
+    }
+  }
+  return result;
+}
