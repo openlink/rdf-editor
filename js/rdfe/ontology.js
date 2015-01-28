@@ -1118,11 +1118,13 @@ RDFE.OntologyClass.prototype.maxCardinalityForProperty = function(p, cc) {
   // check super-classes (with loop-protection)
   for(var i = 0; i < this.subClassOf; i++) {
     var sc = this.subClassOf[i];
-    if($.inArray(sc.URI, cc) < 0) {
-      cc.push(sc.URI);
-      c = this.subClassOf[i].maxCardinalityForProperty(p, cc);
-      if(c)
+    if($.inArray(sc, cc) < 0) {
+      cc = cc || [];
+      cc.push(sc);
+      c = this.manager.ontologyClassByURI(sc).maxCardinalityForProperty(p, cc);
+      if(c) {
         return c;
+      }
     }
     else {
       console.log('CAUTION: Found sub-class loop in ', cc);
@@ -1144,10 +1146,12 @@ RDFE.OntologyClass.prototype.isAggregateProperty = function(p, cc) {
   // check super-classes (with loop-protection)
   for(var i = 0; i < this.subClassOf; i++) {
     var sc = this.subClassOf[i];
-    if($.inArray(sc.URI, cc) < 0) {
-      cc.push(sc.URI);
-      if(this.subClassOf[i].isAggregate(p, cc))
+    if($.inArray(sc, cc) < 0) {
+      cc = cc || [];
+      cc.push(sc);
+      if(this.manager.ontologyClassByURI(sc).isAggregate(p, cc)) {
         return true;
+      }
     }
     else {
       console.log('CAUTION: Found sub-class loop in ', cc);
