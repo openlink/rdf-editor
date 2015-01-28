@@ -341,7 +341,7 @@ String.prototype.format = function() {
       self.exec('POST', graph, content, params);
     }
 
-    self.delete = function(graph, params, silent) {
+    c.prototype.delete = function(graph, params, silent) {
       var self = this;
       params = extendParams(params, self.options);
       if (silent) {
