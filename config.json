@@ -11,6 +11,7 @@
       "test/skos-ext.ttl",
       "test/foaf-restrictions.ttl",
       "test/BCE-Domain-v0.8.owl.ttl",
+      "test/BCE-JourneyConfigurator-v0.8.owl.ttl",
       "test/bce-restrictions.ttl"
     ],
     "preloadFresnels": [
