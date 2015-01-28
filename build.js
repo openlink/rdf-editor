@@ -13,12 +13,12 @@ var jsRdfe = [
   "js/rdfe/editable-rdfnode.js",
   "js/rdfe/jquery.ontobox.js",
   "js/rdfe/jquery.propertybox.js",
-  "js/rdfe/entityeditor.js",
-  "js/rdfe/entityview.js",
   "js/rdfe/tripleview.js",
-  "js/rdfe/document_backbone_bridge.js",
   "js/rdfe/backbone-forms-rdfnode.js",
   "js/rdfe/backbone-forms-nextedrdf.js",
+  "js/rdfe/entitymodel.js",
+  "js/rdfe/entityeditor.js",
+  "js/rdfe/entityview.js",
   "js/rdfe/editor.js",
 ];
 

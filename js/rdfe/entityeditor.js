@@ -87,7 +87,7 @@
 
     c.prototype.render = function(container, url, closeCb) {
       var self = this;
-      var model = new RDFE.Document.Model();
+      var model = new RDFE.EntityModel();
       model.setEntity(this.doc, url);
       model.docToModel(function() {
         var form = new EntityForm({

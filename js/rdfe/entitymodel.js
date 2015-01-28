@@ -1,7 +1,7 @@
 if(!window.RDFE)
   window.RDFE = {};
 
-RDFE.Document.Model = Backbone.Model.extend({
+RDFE.EntityModel = Backbone.Model.extend({
   setEntity: function(doc, uri) {
     this.doc = doc;
     this.uri = uri;
@@ -55,12 +55,12 @@ RDFE.Document.Model = Backbone.Model.extend({
       if(range) {
         item.type = "List";
         item.itemType = "NestedRdf";
-        item.model = RDFE.Document.Model.extend({
+        item.model = RDFE.EntityModel.extend({
           defaults: {
             'http://www.w3.org/1999/02/22-rdf-syntax-ns#type': [ property.range ]
           },
           initialize: function(options) {
-            RDFE.Document.Model.prototype.initialize.call(this, options);
+            RDFE.EntityModel.prototype.initialize.call(this, options);
             this.doc = self.doc;
             this.buildSchemaFromTypes([range]);
           }
@@ -218,7 +218,7 @@ RDFE.Document.Model = Backbone.Model.extend({
         for (var i = 0, l = r.length; i < l; i++) {
           if(self.isAggregateProperty(r[i].p.value)) {
             var v = r[i];
-            var subm = new RDFE.Document.Model();
+            var subm = new RDFE.EntityModel();
             subm.setEntity (self.doc, v.o.value);
             subm.docToModel(function() {
               self.fields.push(v.p.value);
