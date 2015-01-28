@@ -56,10 +56,11 @@ RDFE.Editor.prototype.createNewStatementEditor = function(container) {
   }).on('changed', function(e, p) {
     console.log('changed', p)
     var cn = objEd.getValue(), n;
-    if(objEd.isLiteralType(p.range)) {
-      n = new RDFE.RdfNode('literal', cn.value, p.range, cn.language);
+    var range = p.getRange();
+    if(objEd.isLiteralType(range)) {
+      n = new RDFE.RdfNode('literal', cn.value, range, cn.language);
     }
-    else if(self.ontologyManager.ontologyClassByURI(p.range)) {
+    else if(self.ontologyManager.ontologyClassByURI(range)) {
       n = new RDFE.RdfNode('uri', cn.value);
     }
     else {
