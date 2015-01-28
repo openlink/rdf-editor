@@ -1083,7 +1083,7 @@ RDFE.OntologyClass.prototype.parse = function(graph, options) {
         self.description = RDFE.coalesce(self.description, o);
 
       else if (p == self.manager.uriDenormalize('rdfs:subClassOf')) {
-        if (RDFE.isBlankNode(o)) {
+        if (RDFE.isBlankNode(o)) { // FIXME: this sounds like an assumption one could easily break!
           self.hasRestrictions = true;
         } else {
           self.subClassOf.push(self.manager.OntologyClass(graph, o, options));
