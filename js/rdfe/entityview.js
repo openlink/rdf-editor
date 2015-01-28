@@ -24,8 +24,17 @@
     c.prototype.render = function(container, callback) {
       var self = this;
 
-      // FIXME: use config.labelProps!
-      self.doc.store.execute("select distinct ?s ?sl ?spl where { graph <" + self.doc.graph + "> { ?s ?p ?o . } . optional { graph <" + self.doc.graph + "> { ?s rdfs:label ?sl } } . optional { graph <" + self.doc.graph + "> { ?s skos:prefLabel ?spl } } } order by ?s ?t", function(success, r) {
+      // use config.labelProps to get the proper label
+      var q = "select distinct ?s ";
+      for(var i = 0, l = self.doc.config.options.labelProps.length; i < l; i++) {
+        q += " ?l" + i;
+      }
+      q += " from <" + self.doc.graph + "> where { ?s ?p ?o . ";
+      for(var i = 0, l = self.doc.config.options.labelProps.length; i < l; i++) {
+        q += " optional { ?s <" + self.doc.config.options.labelProps[i] + "> ?l" + i + " } . ";
+      }
+      q += "}";
+      self.doc.store.execute(q, function(success, r) {
         if (success) {
           self.entityTable = null;
           container.empty();
@@ -37,13 +46,16 @@
           var entityData = [];
           for (var i = 0; i < r.length; i++) {
             var uri = r[i].s.value;
-            var label = uri;
-            if (r[i].spl && r[i].spl.value.length)
-              label = r[i].spl.value;
-            else if (r[i].sl && r[i].sl.value.length)
-              label = r[i].sl.value;
-            else
-              label = label.split(/[/#]/).pop();
+            var label = uri.split(/[/#]/).pop();
+
+            // select first label which has a value
+            for(var j = 0, l = self.doc.config.options.labelProps.length; j < l; j++) {
+              if (r[i]["l"+j] && r[i]["l"+j].value.length) {
+                label = r[i]["l"+j].value;
+                break;
+              }
+            }
+
             entityData.push({
               'label': label,
               'uri': uri,
