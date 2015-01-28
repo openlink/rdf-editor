@@ -1,3 +1,11 @@
+0.9
+  * Aggregate handling in the editor
+  * Error handling
+  * Improved property selection in triple view
+  * Add property action in entity view
+  * URI template for entity creation
+  * Ontology mangement fixes
+
 0.8.1
   * Several fixes and improvements.
 
