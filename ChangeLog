@@ -1,3 +1,10 @@
+0.10
+  * Small design improvements in the entity editor
+  * subPropertyOf handling for ranges in the ontology manger
+  * Honor config.labelProps in entity view
+  * Document data verification before saving
+  * Custom config loading via URL parameters
+
 0.9
   * Aggregate handling in the editor
   * Error handling
