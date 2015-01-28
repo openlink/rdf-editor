@@ -392,14 +392,8 @@
       }
 
       function loadBookmarks(config) {
-        var $bmEl = $('#openDocDialog #openDocBookmarks');
-        $bmEl.empty();
-
         var bm = config.options.bookmarks;
         if(bm) {
-          for(var i = 0; i < bm.length; i+=1) {
-            $bmEl.append('<li><a class="bookmark" href="' + bm[i].uri + '" data-io-type="' + bm[i].type + '">' + bm[i].label + '</a></li>');
-          }
           if(bm.length > 0) {
             var $bmMenu = $('#bookmarks');
             $bmMenu.closest('div.btn-group').show();
@@ -412,7 +406,6 @@
         $('a.bookmark').click(function(e) {
           e.preventDefault();
           ioRetrieve($(this).attr('href'), $(this).attr('data-io-type'));
-          $('#openDocDialog').modal('hide');
         });
       }
 
