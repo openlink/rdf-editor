@@ -15,11 +15,11 @@
       // Add a "new property" button to the default Backbone-Forms form
       template: _.template('\
         <form class="form-horizontal clearfix" role="form">\
+          <a href="#" class="btn btn-default pull-right addProp">Add Property</a>\
           <div data-fieldsets></div>\
           <% if (submitButton) { %>\
             <button type="submit" class="btn"><%= submitButton %></button>\
           <% } %>\
-          <a href="#" class="btn btn-default pull-right addProp">Add Property</a>\
         </form>\
       '),
 
@@ -81,7 +81,7 @@
             }
           });
 
-          self.$el.append(c);
+          self.$el.prepend(c);
         });
 
         return this;
