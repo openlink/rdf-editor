@@ -52,5 +52,15 @@ bce:Phase a owl:Class ;
     owl:cardinality "1"^^xsd:nonNegativeInteger
   ] .
 
+olo:OrderedList a owl:Class ;
+  rdfs:subClassOf [
+    a owl:Restriction , oplowl:AggregateRestriction ;
+    owl:onProperty olo:slot
+  ] .
+
 skos:note a rdf:Property ;
   rdfs:range rdfs:Literal .
+
+# In BCE we use olo:OrderedLists in a specific way which allows to use rdf:Resource as range for olo:item
+olo:item a rdf:Property ;
+  rdfs:range rdf:Resource .
