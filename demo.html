@@ -426,10 +426,6 @@
           var urlParams = RDFE.Utils.uriParams();
           var configSource = (urlParams['config'])? urlParams['config']: 'config.json';
           rdfeConfig = new RDFE.Config(configSource, function(config) {
-              ontologyManager = new RDFE.OntologyManager(null, config.options);
-
-              ontologyManager.init();
-
               var configActions = config.options.actions;
               for (var i = 0; i < configActions.length; i++) {
                 $('#action-'+configActions[i]).show();
@@ -438,8 +434,9 @@
               if($.inArray("bookmarks", config.options.actions) >= 0)
                 loadBookmarks(config);
 
-              mainDoc = new RDFE.Document(ontologyManager, config);
-              editor = new RDFE.Editor(mainDoc, ontologyManager, config);
+              editor = new RDFE.Editor(config);
+              mainDoc = editor.doc;
+              ontologyManager = editor.ontologyManager;
 
               // subscribe to editor events
               $(editor).on('rdf-editor-success', function(e, d) {

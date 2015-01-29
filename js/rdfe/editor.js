@@ -8,11 +8,17 @@ if (typeof String.prototype.startsWith != 'function') {
 if(!window.RDFE)
   window.RDFE = {};
 
-RDFE.Editor = function(doc, ontoMan, config) {
+RDFE.Editor = function(config) {
   var self = this;
 
-  this.doc = doc;
-  this.ontologyManager = ontoMan;
+  // initialize our ontology manager
+  this.ontologyManager = new RDFE.OntologyManager(null, config.options);
+  this.ontologyManager.init();
+
+  // create our main document
+  this.doc = new RDFE.Document(this.ontologyManager, config);
+
+  // store the config for future access
   this.config = config;
 };
 
