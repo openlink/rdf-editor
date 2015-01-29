@@ -1415,7 +1415,7 @@ RDFE.OntologyIndividual.prototype.parse = function(graph, options) {
       var p = results.triples[i].predicate.valueOf();
       var o = results.triples[i].object.valueOf();
       // console.log('individual =>', RDFE.uriNormalize(p), o);
-      if (p == self.manager.uriDenormalize('rdfs:label'))
+      if ($.inArray(p, self.manager.config.labelProps) >= 0)
         self.label = RDFE.coalesce(self.label, o);
 
       else if (p == self.manager.uriDenormalize('rdfs:comment'))
