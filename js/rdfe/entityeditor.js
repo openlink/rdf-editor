@@ -55,6 +55,9 @@
             if(ps.selectedURI()) {
               console.log('Adding new property', ps.selectedURI(), 'to form', self);
 
+              // commit the changes to the model
+              self.commit();
+
               // add the new property
               self.model.addSchemaEntryForProperty(ps.selectedProperty());
               self.model.fields.push(ps.selectedURI());
