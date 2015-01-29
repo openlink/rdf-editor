@@ -51,7 +51,7 @@ RDFE.EntityModel = Backbone.Model.extend({
     };
 
     if(self.isAggregateProperty(property.URI)) {
-      var range = self.doc.ontologyManager.ontologyClassByURI(property.getRange());
+      var range = (property.getRange ? self.doc.ontologyManager.ontologyClassByURI(property.getRange()) : null);
       if(range) {
         item.type = "List";
         item.itemType = "NestedRdf";
@@ -157,21 +157,16 @@ RDFE.EntityModel = Backbone.Model.extend({
           fail();
         }
       } else {
-        //
-        // Get the list of properties (fresnel lens vs. existing properties)
-        //
         self.types = [];
         self.fields = [];
-        var lens = null;
+        self.lens = null;
+        var domainTypes = [];
+
+        //
+        // Get the types of the resource
+        //
         for (var i = 0, l = r.length; i < l; i++) {
           if (r[i].p.value == self.doc.ontologyManager.uriDenormalize('rdf:type')) {
-            if(!lens) {
-              lens = self.doc.ontologyManager.findFresnelLens(r[i].o.value);
-              if(lens && lens.showProperties.length == 0) {
-                console.log('Empty fresnel lens. Ignoring...');
-                lens = null;
-              }
-            }
             // TODO: optionally load the ontologies for this.types. Ideally through a function in the ontology manager, something like getClass()
             //       however, to avoid async code here, it might be better to load the ontologies once the document has been loaded.
             var oc = self.doc.ontologyManager.ontologyClassByURI(r[i].o.value);
@@ -179,7 +174,33 @@ RDFE.EntityModel = Backbone.Model.extend({
               self.types.push(oc);
             }
           }
+          else {
+            var p = self.doc.ontologyManager.ontologyPropertyByURI(r[i].p.value);
+            if(p && p.domain) {
+              domainTypes = _.union(domainTypes, p.domain);
+            }
+          }
         }
+
+        //
+        // poor-man's inference: if no type is specified, get the types via property domains
+        //
+        if(self.types.length === 0) {
+          self.types = _.compact(domainTypes);
+        }
+
+
+        //
+        // Get the list of properties (fresnel lens vs. existing properties)
+        //
+        for (var i = 0, l = self.types.length; i < l; i++) {
+          var lens = self.doc.ontologyManager.findFresnelLens(self.types[i].URI);
+          if(lens && lens.showProperties.length > 0) {
+            self.lens = lens;
+            break;
+          }
+        }
+
         if(lens) {
           self.fields = _.clone(lens.showProperties);
         }
