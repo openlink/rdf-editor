@@ -50,5 +50,5 @@
   "prefixes": {
     "bce": "http://ldp.e.corpintra.net/ontology/bce#"
   },
-  "entityUriTmpl": "{DOC-URI}#{NAME}"
+  "entityUriTmpl": "http://ldp.e.corpintra.net/resources/bce/{NAME}"
 }
