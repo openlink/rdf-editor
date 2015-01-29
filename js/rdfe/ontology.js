@@ -537,23 +537,25 @@ RDFE.OntologyManager.prototype.individualByURI = function(URI) {
 
 RDFE.OntologyManager.prototype.load = function(URI, params) {
   var self = this;
-  var IO = RDFE.IO.createIO('http');
-  IO.type = 'http';
+  var ioType = (params.ioType)? params.ioType: 'http';
+  var IO = RDFE.IO.createIO(ioType);
+  IO.type = ioType;
   IO.retrieveToStore(URI, self.store, URI, $.extend({"proxy": self.options.proxy}, params));
 }
 
-RDFE.OntologyManager.prototype.ontologyParse = function(URI, params) {
+RDFE.OntologyManager.prototype.ontologyParse = function(URI, callParams) {
   var self = this;
   var $self = $(self);
+  var params = $.extend({}, callParams);
   var options = $.extend(self.options, params);
   if (options.preloadOnly == true) {
-    if (params && params.success) {
+    if (params.success) {
       params.success();
     }
     return;
   }
 
-  var __ontologyLoaded = function() {
+  var __success = function() {
     // ontology classes & properties parse
     var ontologyClasses = self.ontologyClassesParse(URI, options);
     self.ontologyPropertiesParse(URI, options);
@@ -605,10 +607,12 @@ RDFE.OntologyManager.prototype.ontologyParse = function(URI, params) {
 
   $self.trigger('loadingOntology', [ self, URI ]);
 
-  self.load(URI, {
-    "success": __ontologyLoaded,
-    "error": options.error
-  });
+  var loadParams = {
+    "ioType": params.ioType,
+    "success": __success,
+    "error": params.error
+  };
+  self.load(URI, loadParams);
 }
 
 RDFE.OntologyManager.prototype.ontologiesParse = function(ontologies, params) {
@@ -782,18 +786,19 @@ RDFE.OntologyManager.prototype.fresnelGroupByURI = function(URI) {
   return this.fresnelGroups[URI];
 }
 
-RDFE.OntologyManager.prototype.fresnelParse = function(URI, params) {
+RDFE.OntologyManager.prototype.fresnelParse = function(URI, callParams) {
   // console.log(URI);
   var self = this;
+  var params = $.extend({}, callParams);
   var $self = $(self);
   if (self.options.preloadOnly == true) {
-    if (params && params.success) {
+    if (params.success) {
       params.success();
     }
     return;
   }
 
-  var __fresnelLoaded = (function(params) {
+  var __success = (function(params) {
     return function() {
       // fresnel lenses, formats & groups parse
       self.fresnelLensesParse(URI, params);
@@ -803,16 +808,20 @@ RDFE.OntologyManager.prototype.fresnelParse = function(URI, params) {
       // clear graph after parse
       self.graphClear(URI);
 
-      if (params && params.success) {
+      if (params.success) {
         params.success();
       }
 
       $self.trigger('changed', [ self ]);
     }
   })(params);
-  self.load(URI, {
-    "success": __fresnelLoaded
-  });
+
+  var loadParams = {
+    "ioType": params.ioType,
+    "success": __success,
+    "error": params.error
+  };
+  self.load(URI, loadParams);
 }
 
 RDFE.OntologyManager.prototype.fresnelsParse = function(fresnels, params) {
@@ -960,18 +969,19 @@ RDFE.OntologyManager.prototype.allProperties = function(domain) {
   return pl;
 };
 
-RDFE.OntologyManager.prototype.individualParse = function(URI, params) {
+RDFE.OntologyManager.prototype.individualParse = function(URI, callParams) {
   // console.log(URI);
   var self = this;
+  var params = $.extend({}, callParams);
   var $self = $(self);
   if (self.options.preloadOnly == true) {
-    if (params && params.success) {
+    if (params.success) {
       params.success();
     }
     return;
   }
 
-  var __individualLoaded = (function(params) {
+  var __success = (function(params) {
     return function() {
       // individuals parse
 
@@ -994,16 +1004,20 @@ RDFE.OntologyManager.prototype.individualParse = function(URI, params) {
       // clear graph after parse
       self.graphClear(URI);
 
-      if (params && params.success) {
+      if (params.success) {
         params.success();
       }
 
       $self.trigger('changed', [ self ]);
     }
   })(params);
-  self.load(URI, {
-    "success": __individualLoaded
-  });
+
+  var loadParams = {
+    "ioType": params.ioType,
+    "success": __success,
+    "error": params.error
+  };
+  self.load(URI, loadParams);
 }
 
 RDFE.OntologyManager.prototype.individualsParse = function(individuals, params) {
