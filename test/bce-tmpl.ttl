@@ -12,7 +12,7 @@
 @prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
 
 lens:TouchPointLens a fresnel:Lens;
-    fresnel:classLensDomain bce:TouchPoint;
+    fresnel:classLensDomain bce:Touchpoint;
     fresnel:purpose fresnel:defaultLens;
     fresnel:showProperties (
       skos:prefLabel
