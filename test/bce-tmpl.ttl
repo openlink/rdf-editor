@@ -9,7 +9,9 @@
 @prefix google: <http://rdf.data-vocabulary.org/#>.
 @prefix skos: <http://www.w3.org/2004/02/skos/core#> .
 @prefix bce: <http://ldp.e.corpintra.net/ontology/bce#> .
+@prefix bceui: <http://ldp.e.corpintra.net/ontology/bceui#> .
 @prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+@prefix olo: <http://purl.org/ontology/olo/core#> .
 
 lens:TouchPointLens a fresnel:Lens;
     fresnel:classLensDomain bce:Touchpoint;
@@ -22,9 +24,11 @@ lens:TouchPointLens a fresnel:Lens;
       bce:prio
       bce:mediaControl
       bce:reach
-      bce:broader
       bce:legacyId
       fresnel:allProperties
+    ) ;
+    fresnel:hideProperties (
+      rdf:type
     ) .
 
 lens:UseCaseLens a fresnel:Lens;
@@ -33,11 +37,39 @@ lens:UseCaseLens a fresnel:Lens;
     fresnel:showProperties (
       skos:prefLabel
       skos:definition
-      bce:tooltip
+      bceui:tooltip
       fresnel:allProperties
       bce:prio
       bce:useCaseSequence
     ) ;
     fresnel:hideProperties (
       rdf:type
+    ) .
+
+lens:PhaseLens a fresnel:Lens ;
+    fresnel:classLensDomain bce:Phase;
+    fresnel:purpose fresnel:defaultLens;
+    fresnel:showProperties (
+      skos:prefLabel
+      skos:definition
+      bce:legacyId
+      bceui:tooltip
+      bce:phaseGroup
+      bceui:phaseOrder
+    ) .
+
+lens:OrderedListLens a fresnel:Lens ;
+    fresnel:classLensDomain olo:OrderedList;
+    fresnel:purpose fresnel:defaultLens;
+    fresnel:showProperties (
+      olo:slot
+      olo:length
+    ) .
+
+lens:OloSlotLens a fresnel:Lens ;
+    fresnel:classLensDomain olo:Slot;
+    fresnel:purpose fresnel:defaultLens;
+    fresnel:showProperties (
+      olo:index
+      olo:item
     ) .

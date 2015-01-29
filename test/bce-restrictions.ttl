@@ -11,6 +11,7 @@
 @prefix bce: <http://ldp.e.corpintra.net/ontology/bce#> .
 @prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
 @prefix oplowl: <http://www.openlinksw.com/ontology/oplowl#> .
+@prefix olo: <http://purl.org/ontology/olo/core#> .
 
 bce:Touchpoint a owl:Class ;
   rdfs:subClassOf [
@@ -37,6 +38,17 @@ bce:MilieuSpecific a owl:Class ;
   rdfs:subClassOf [
     a owl:Restriction ;
     owl:onProperty bce:milieu ;
+    owl:cardinality "1"^^xsd:nonNegativeInteger
+  ] .
+
+bce:Phase a owl:Class ;
+  rdfs:subClassOf [
+    a owl:Restriction ;
+    owl:onProperty skos:prefLabel , skos:definition, bce:tooltip , bce:phaseGroup ;
+    owl:cardinality "1"^^xsd:nonNegativeInteger
+  ] , [
+    a owl:Restriction , oplowl:AggregateRestriction ;
+    owl:onProperty bce:phaseOrder ;
     owl:cardinality "1"^^xsd:nonNegativeInteger
   ] .
 
