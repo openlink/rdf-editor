@@ -186,7 +186,7 @@ RDFE.EntityModel = Backbone.Model.extend({
         // poor-man's inference: if no type is specified, get the types via property domains
         //
         if(self.types.length === 0) {
-          self.types = _.compact(_.map(domainTypes, self.doc.ontologyManager.ontologyClassByURI));
+          self.types = _.compact(domainTypes);
         }
 
 
