@@ -1117,6 +1117,7 @@ RDFE.OntologyClass = function(ontologyManager, graph, URI, options) {
   this.name = URI.split(/[/#]/).pop();
   this.sources = [];
   this.subClassOf = [];
+  this.superClassOf = [];
   this.disjointWith = [];
   this.properties = {};
   this.individuals = {};
@@ -1167,7 +1168,9 @@ RDFE.OntologyClass.prototype.parse = function(graph, options) {
         if (RDFE.isBlankNode(o)) { // FIXME: this sounds like an assumption one could easily break!
           self.hasRestrictions = true;
         } else {
-          self.subClassOf.push(self.manager.OntologyClass(graph, o, options));
+          var sc = self.manager.OntologyClass(graph, o, options);
+          self.subClassOf.push(sc);
+          sc.superClassOf.push(self);
         }
       }
       else if (p == self.manager.uriDenormalize('owl:disjointWith'))
