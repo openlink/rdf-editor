@@ -353,6 +353,7 @@ RDFE.OntologyManager = function(store, config) {
   store.registerDefaultNamespace('fresnel', 'http://www.w3.org/2004/09/fresnel#');
 
   this.store = store;
+  this.config = config;
   this.options = $.extend(RDFE.Config.defaults.ontology, config.ontology);
 
   this.reset();
@@ -930,17 +931,6 @@ RDFE.OntologyManager.prototype.ontologyDetermine = function(URI) {
   return ontology;
 }
 
-RDFE.OntologyManager.prototype.individualsByClassURI = function(classURI) {
-  var self = this;
-  var items = [];
-  for (var i = 0, l = self.individuals.length; i < l; i++) {
-    if (self.individuals[i].class == classURI) {
-      items.push(self.individuals[i].URI);
-    }
-  }
-  return items;
-}
-
 RDFE.OntologyManager.prototype.allClasses = function() {
   var classes = [];
   for (v in this.ontologyClasses) {
@@ -1117,6 +1107,7 @@ RDFE.OntologyClass = function(ontologyManager, graph, URI, options) {
   this.name = URI.split(/[/#]/).pop();
   this.sources = [];
   this.subClassOf = [];
+  this.superClassOf = [];
   this.disjointWith = [];
   this.properties = {};
   this.individuals = {};
@@ -1167,7 +1158,9 @@ RDFE.OntologyClass.prototype.parse = function(graph, options) {
         if (RDFE.isBlankNode(o)) { // FIXME: this sounds like an assumption one could easily break!
           self.hasRestrictions = true;
         } else {
-          self.subClassOf.push(self.manager.OntologyClass(graph, o, options));
+          var sc = self.manager.OntologyClass(graph, o, options);
+          self.subClassOf.push(sc);
+          sc.superClassOf.push(self);
         }
       }
       else if (p == self.manager.uriDenormalize('owl:disjointWith'))
@@ -1240,6 +1233,21 @@ RDFE.OntologyClass.prototype.isAggregateProperty = function(p, cc) {
   }
 
   return false;
+};
+
+RDFE.OntologyClass.prototype.getIndividuals = function(includeSuper, cc) {
+  var iv = this.individuals;
+  if(includeSuper) {
+    for(var i = 0; i < this.superClassOf.length; i++) {
+      var sc = this.superClassOf[i];
+      if($.inArray(sc.URI, cc) < 0) {
+        cc = cc || [];
+        cc.push(sc.URI);
+        iv = _.union(iv, this.superClassOf[i].getIndividuals(true, cc));
+      }
+    }
+  }
+  return iv;
 };
 
 /*
@@ -1407,7 +1415,7 @@ RDFE.OntologyIndividual.prototype.parse = function(graph, options) {
       var p = results.triples[i].predicate.valueOf();
       var o = results.triples[i].object.valueOf();
       // console.log('individual =>', RDFE.uriNormalize(p), o);
-      if (p == self.manager.uriDenormalize('rdfs:label'))
+      if ($.inArray(p, self.manager.config.labelProps) >= 0)
         self.label = RDFE.coalesce(self.label, o);
 
       else if (p == self.manager.uriDenormalize('rdfs:comment'))
