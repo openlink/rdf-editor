@@ -353,6 +353,7 @@ RDFE.OntologyManager = function(store, config) {
   store.registerDefaultNamespace('fresnel', 'http://www.w3.org/2004/09/fresnel#');
 
   this.store = store;
+  this.config = config;
   this.options = $.extend(RDFE.Config.defaults.ontology, config.ontology);
 
   this.reset();
@@ -930,17 +931,6 @@ RDFE.OntologyManager.prototype.ontologyDetermine = function(URI) {
   return ontology;
 }
 
-RDFE.OntologyManager.prototype.individualsByClassURI = function(classURI) {
-  var self = this;
-  var items = [];
-  for (var i = 0, l = self.individuals.length; i < l; i++) {
-    if (self.individuals[i].class == classURI) {
-      items.push(self.individuals[i].URI);
-    }
-  }
-  return items;
-}
-
 RDFE.OntologyManager.prototype.allClasses = function() {
   var classes = [];
   for (v in this.ontologyClasses) {
@@ -1243,6 +1233,21 @@ RDFE.OntologyClass.prototype.isAggregateProperty = function(p, cc) {
   }
 
   return false;
+};
+
+RDFE.OntologyClass.prototype.getIndividuals = function(includeSuper, cc) {
+  var iv = this.individuals;
+  if(includeSuper) {
+    for(var i = 0; i < this.superClassOf.length; i++) {
+      var sc = this.superClassOf[i];
+      if($.inArray(sc.URI, cc) < 0) {
+        cc = cc || [];
+        cc.push(sc.URI);
+        iv = _.union(iv, this.superClassOf[i].getIndividuals(true, cc));
+      }
+    }
+  }
+  return iv;
 };
 
 /*

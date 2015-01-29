@@ -14,7 +14,21 @@ RDFE.EntityModel = Backbone.Model.extend({
   },
 
   getIndividuals: function(range, callback) {
-    var items = this.doc.ontologyManager.individualsByClassURI(range);
+    var items = [];
+    if(range === 'http://www.w3.org/1999/02/22-rdf-syntax-ns#Resource') {
+      items = _.map(_.values(this.doc.ontologyManager.individuals), function(cl) {
+        var n = new RDFE.RdfNode('uri', cl.URI);
+        // FIXME: honor config.labelProps
+        n.label = cl.label;
+        return n;
+      });
+    }
+    else {
+      var rc = this.doc.ontologyManager.ontologyClassByURI(range);
+      if(rc) {
+        items = rc.getIndividuals(true);
+      }
+    }
     $.merge(items, RDFE.individuals(this.doc, range));
     callback(items);
   },
