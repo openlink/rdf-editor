@@ -88,6 +88,14 @@ RDFE.OM_FRESNEL_GROUPS_TEMPLATE =
   '\n        } ' +
   '\n  ORDER BY ?x';
 
+RDFE.OM_INDIVIDUALS_TEMPLATE =
+  '\n SELECT distinct ?i ?c' +
+  '\n   FROM <{0}> ' +
+  '\n  WHERE { ' +
+  '\n          ?i a ?c . ' +
+  '\n        } ' +
+  '\n  ORDER BY ?i';
+
 RDFE.prefixes = {};
 RDFE.prefixes['annotation'] = 'http://www.w3.org/2000/10/annotation-ns#';
 RDFE.prefixes['atom'] = 'http://atomowl.org/ontologies/atomrdf#';
@@ -360,6 +368,8 @@ RDFE.OntologyManager.prototype.init = function(options) {
   this.ontologiesParse(self.options.preloadOntologies);
   // fresnels init
   this.fresnelsParse(self.options.preloadFresnels);
+  // individuals init
+  this.individualsParse(self.options.preloadIndividuals);
 }
 
 RDFE.OntologyManager.prototype.reset = function(options) {
@@ -474,6 +484,22 @@ RDFE.OntologyManager.prototype.OntologyProperty = function(graph, URI, options) 
   }
 
   return ontologyProperty;
+}
+
+RDFE.OntologyManager.prototype.OntologyIndividual = function(graph, URI, individualClass, options) {
+  var self = this;
+  var individual = self.individualByURI(URI);
+  if (individual) {
+    if (graph && individual.sources.indexOf(graph) === -1) {
+      individual.parse(graph, options);
+    } else {
+      individualClass.individuals[URI] = individual;
+    }
+  } else {
+    individual = new RDFE.OntologyIndividual(self, graph, URI, individualClass, options);
+  }
+
+  return individual;
 }
 
 RDFE.OntologyManager.prototype.ontologiesAsArray = function() {
@@ -619,8 +645,8 @@ RDFE.OntologyManager.prototype.ontologyClassesParse = function(graph, params) {
           }
           for (var j = 0, m = results.length; j < m; j++) {
             var c = results[j]["i"].value;
-            if (!RDFE.isBlankNode(c)) {
-              new RDFE.OntologyIndividual(self, graph, c, ontologyClass, params);
+            if (!_.isEmpty(c) && !RDFE.isBlankNode(c)) {
+              self.OntologyIndividual(graph, c, ontologyClass, params);
             }
           }
         });
@@ -933,6 +959,61 @@ RDFE.OntologyManager.prototype.allProperties = function(domain) {
   }
   return pl;
 };
+
+RDFE.OntologyManager.prototype.individualParse = function(URI, params) {
+  // console.log(URI);
+  var self = this;
+  var $self = $(self);
+  if (self.options.preloadOnly == true) {
+    if (params && params.success) {
+      params.success();
+    }
+    return;
+  }
+
+  var __individualLoaded = (function(params) {
+    return function() {
+      // individuals parse
+
+      // add property to classes
+      var sparql = RDFE.OM_INDIVIDUALS_TEMPLATE.format(URI);
+      self.store.execute(sparql, function(success, results) {
+        if (!success) {
+          console.error('ontology individuals =>', results);
+          return;
+        }
+        for (var j = 0, m = results.length; j < m; j++) {
+          var i = results[j]["i"].value;
+          var c = self.OntologyClass(URI, results[j]["c"].value, params);
+          if (!_.isEmpty(i) && !RDFE.isBlankNode(i) && !RDFE.isBlankNode(c)) {
+            self.OntologyIndividual(URI, i, c, params);
+          }
+        }
+      });
+
+      // clear graph after parse
+      self.graphClear(URI);
+
+      if (params && params.success) {
+        params.success();
+      }
+
+      $self.trigger('changed', [ self ]);
+    }
+  })(params);
+  self.load(URI, {
+    "success": __individualLoaded
+  });
+}
+
+RDFE.OntologyManager.prototype.individualsParse = function(individuals, params) {
+  var self = this;
+  if (individuals) {
+    for (var i = 0, l = individuals.length; i < l; i++) {
+      self.individualParse(individuals[i], params);
+    }
+  }
+}
 
 /*
  *

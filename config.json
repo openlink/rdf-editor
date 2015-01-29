@@ -17,6 +17,8 @@
     ],
     "preloadFresnels": [
       "test/bce-tmpl.ttl"
+    ],
+    "preloadIndividuals": [
     ]
   },
   "bookmarks": [
