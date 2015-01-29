@@ -21,12 +21,12 @@
   },
   "bookmarks": [
     {
-      "label": "Daimler BCE Data",
+      "label": "Daimler BCE Touchpoints, etc.",
       "uri": "http://ldp.e.corpintra.net/graph/bce",
       "type": "gsp"
     },
     {
-      "label": "Daimler BCE Filter",
+      "label": "Daimler BCE UI Data",
       "uri": "http://ldp.e.corpintra.net/graph/bceui",
       "type": "gsp"
     },
