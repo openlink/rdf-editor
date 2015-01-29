@@ -51,7 +51,7 @@ RDFE.EntityModel = Backbone.Model.extend({
     };
 
     if(self.isAggregateProperty(property.URI)) {
-      var range = self.doc.ontologyManager.ontologyClassByURI(property.getRange());
+      var range = (property.getRange ? self.doc.ontologyManager.ontologyClassByURI(property.getRange()) : null);
       if(range) {
         item.type = "List";
         item.itemType = "NestedRdf";
