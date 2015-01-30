@@ -607,7 +607,7 @@ RDFE.OntologyManager.prototype.ontologyParse = function(URI, callParams) {
     self.graphClear(URI);
 
     if (options.success) {
-      options.success(_.head(ontologies)); // FIXME: ontology is not defined
+      options.success(_.head(ontologies));
     }
 
     $self.trigger('changed', [ self ]);
