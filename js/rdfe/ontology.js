@@ -199,6 +199,9 @@ RDFE.uriPrefix = function(v) {
   if ((m != -1) && (m == v.lastIndexOf(':'))) {
     return v.substring(0, m);
   }
+  if (m == -1) {
+    return v;
+  }
   return null;
 }
 
@@ -558,6 +561,7 @@ RDFE.OntologyManager.prototype.ontologyParse = function(URI, callParams) {
 
   var __success = function() {
     // ontology classes & properties parse
+    var ontologies = [];
     var ontologyClasses = self.ontologyClassesParse(URI, options);
     self.ontologyPropertiesParse(URI, options);
     self.ontologyRestrictionsParse(URI, ontologyClasses, options);
@@ -574,6 +578,7 @@ RDFE.OntologyManager.prototype.ontologyParse = function(URI, callParams) {
       }
       if (results.length) {
         var graph = URI;
+        var ontology;
         for (var i = 0; i < results.length; i++) {
           var ontologyURI = results[i]["o"].value;
           console.log('Found owl:Ontology:', ontologyURI);
@@ -589,9 +594,11 @@ RDFE.OntologyManager.prototype.ontologyParse = function(URI, callParams) {
             ontologyURI += '/';
           }
 
-          self.Ontology(graph, ontologyURI, options).parse(graph, {
+          ontology = self.Ontology(graph, ontologyURI, options);
+          ontology.parse(graph, {
             ontoUri: results[i]["o"].value
           });
+          ontologies.push(ontology);
         }
       }
     });
@@ -600,7 +607,7 @@ RDFE.OntologyManager.prototype.ontologyParse = function(URI, callParams) {
     self.graphClear(URI);
 
     if (options.success) {
-      options.success(ontology); // FIXME: ontology is not defined
+      options.success(_.head(ontologies)); // FIXME: ontology is not defined
     }
 
     $self.trigger('changed', [ self ]);
@@ -926,7 +933,7 @@ RDFE.OntologyManager.prototype.findFresnelGroup = function(groupURI) {
 RDFE.OntologyManager.prototype.ontologyDetermine = function(URI) {
   var self = this;
   var ontology;
-  var prefix = this.uriPrefix(URI);
+  var prefix = RDFE.uriPrefix(URI);
   if (prefix) {
     ontology = self.ontologyByPrefix(prefix);
     if (ontology) {
