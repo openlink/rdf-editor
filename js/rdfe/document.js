@@ -72,12 +72,8 @@ RDFE.Document.prototype.verifyData = function(callback, fail) {
     }
   };
 
-  self.store.execute("select * from <" + self.graph + "> where { <> ?p ?o }", function(s,r) {
-    if(emptyUriCb(s,r)) {
-      self.store.execute("select * from <" + self.graph + "> where { ?s ?p <> }", function(s,r) {
-        emptyUriCb(s,r);
-      });
-    }
+  self.store.execute("select * from <" + self.graph + "> where {{ <> ?p ?o } union { ?s2 ?p2 <> }}", function(s,r) {
+    emptyUriCb(s,r);
   });
 };
 
