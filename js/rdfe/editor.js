@@ -22,18 +22,23 @@ RDFE.Editor = function(config) {
   this.config = config;
 };
 
-RDFE.Editor.prototype.render = function(container, callback) {
+RDFE.Editor.prototype.render = function(container) {
   this.container = container;
   if (this.config.options.defaultView === 'triples') {
-    this.createTripleList(callback);
+    this.createTripleList();
   }
   else {
-    this.createEntityList(callback);
+    this.createEntityList();
   }
 };
 
-RDFE.Editor.prototype.createTripleList = function(callback) {
+RDFE.Editor.prototype.createTripleList = function() {
   var self = this;
+
+  $(self).trigger('rdf-editor-start', {
+    "id": "render-triple-list",
+    "message": "Loading Triples..."
+  });
 
   if(!this.tripleView) {
     this.tripleView = new RDFE.TripleView(this.doc, this.ontologyManager);
@@ -44,17 +49,15 @@ RDFE.Editor.prototype.createTripleList = function(callback) {
     });
   }
   this.container.empty();
-  this.tripleView.render(self.container, callback);
+  this.tripleView.render(self.container, function() {
+    $(self).trigger('rdf-editor-done', { "id": "render-triple-list" });
+  });
 };
 
-// FIXME: instead of using a callback use events
-RDFE.Editor.prototype.createNewStatementEditor = function(callback) {
+RDFE.Editor.prototype.createNewStatementEditor = function() {
   var self = this;
 
   if (!this.doc) {
-    if(callback) {
-      callback(false);
-    }
     return false;
   }
 
@@ -243,8 +246,14 @@ RDFE.Editor.prototype.createNewEntityEditor = function() {
   });
 };
 
-RDFE.Editor.prototype.createEntityList = function(callback) {
+RDFE.Editor.prototype.createEntityList = function() {
   var self = this;
+
+  $(self).trigger('rdf-editor-start', {
+    "id": "render-entity-list",
+    "message": "Loading Entities..."
+  });
+
   if(!self.entityView) {
     self.entityView = new RDFE.EntityView(this.doc, this.ontologyManager);
     $(self.entityView).on('rdf-editor-error', function(e) {
@@ -253,6 +262,11 @@ RDFE.Editor.prototype.createEntityList = function(callback) {
       $(self).trigger('rdf-editor-success', d);
     });
   }
+
   self.container.empty();
-  self.entityView.render(self.container, callback);
+  self.entityView.render(self.container, function() {
+    $(self).trigger('rdf-editor-done', {
+      "id": "render-entity-list"
+    });
+  });
 };

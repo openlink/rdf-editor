@@ -253,9 +253,9 @@
 
       function updateViewContents(view) {
         if((view || currentView()) == "triples")
-          editor.createTripleList(function() { toggleSpinner(false); });
+          editor.createTripleList();
         else
-          editor.createEntityList(function() { toggleSpinner(false); });
+          editor.createEntityList();
       }
 
       function ioRetrieve(url, type) {
@@ -299,7 +299,7 @@
           $('#action-entities').removeClass('active').find('input').removeAttr('checked');
         }
         else {
-          editor.createEntityList(function() { toggleSpinner(false); });
+          editor.createEntityList();
           $('#panel-view-entities').show();
           $('#action-triples').removeClass('active').find('input').removeAttr('checked');
           $('#action-entities').addClass('active').find('input').attr('checked', 'checked');
@@ -435,13 +435,16 @@
                 }, {
                   type: "success"
                 });
-              });
-              $(editor).on('rdf-editor-error', function(e, d) {
+              }).on('rdf-editor-error', function(e, d) {
                 $.growl({
                   message: d.message
                 }, {
                   type: "danger"
                 });
+              }).on('rdf-editor-start', function(e, d) {
+                toggleSpinner(true);
+              }).on('rdf-editor-done', function(e, d) {
+                toggleSpinner(false);
               });
 
               toggleSpinner(true);
