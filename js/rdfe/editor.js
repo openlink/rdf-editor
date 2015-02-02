@@ -22,7 +22,17 @@ RDFE.Editor = function(config) {
   this.config = config;
 };
 
-RDFE.Editor.prototype.createTripleList = function(container, callback) {
+RDFE.Editor.prototype.render = function(container, callback) {
+  this.container = container;
+  if (this.config.options.defaultView === 'triples') {
+    this.createTripleList(callback);
+  }
+  else {
+    this.createEntityList(callback);
+  }
+};
+
+RDFE.Editor.prototype.createTripleList = function(callback) {
   var self = this;
 
   if(!this.tripleView) {
@@ -33,16 +43,22 @@ RDFE.Editor.prototype.createTripleList = function(container, callback) {
       $(self).trigger('rdf-editor-success', d);
     });
   }
-  this.tripleView.render(container, callback);
+  this.container.empty();
+  this.tripleView.render(self.container, callback);
 };
 
-RDFE.Editor.prototype.createNewStatementEditor = function(container) {
+// FIXME: instead of using a callback use events
+RDFE.Editor.prototype.createNewStatementEditor = function(callback) {
   var self = this;
 
-  if (!this.doc)
+  if (!this.doc) {
+    if(callback) {
+      callback(false);
+    }
     return false;
+  }
 
-  container.html(' \
+  self.container.html(' \
       <div class="panel panel-default"> \
       <div class="panel-heading"><h3 class="panel-title">Add new Triple</h3></div> \
       <div class="panel-body"><div class="form-horizontal"> \
@@ -56,8 +72,8 @@ RDFE.Editor.prototype.createNewStatementEditor = function(container) {
         <a href="#" class="btn btn-primary triple-action triple-action-new-save">Save</a></div></div> \
       </form></div></div>\n');
 
-  var objEd = container.find('input[name="object"]').rdfNodeEditor();
-  var propEd = container.find('select[name="predicate"]').propertyBox({
+  var objEd = self.container.find('input[name="object"]').rdfNodeEditor();
+  var propEd = self.container.find('select[name="predicate"]').propertyBox({
     ontoManager: self.ontologyManager
   }).on('changed', function(e, p) {
     console.log('changed', p)
@@ -75,18 +91,16 @@ RDFE.Editor.prototype.createNewStatementEditor = function(container) {
     objEd.setValue(n);
   });
 
-  container.find('a.triple-action-new-cancel').click(function(e) {
-    container.empty();
+  self.container.find('a.triple-action-new-cancel').click(function(e) {
+    self.createTripleList();
   });
 
-  container.find('a.triple-action-new-save').click(function(e) {
-    var s = container.find('input[name="subject"]').val();
+  self.container.find('a.triple-action-new-save').click(function(e) {
+    var s = self.container.find('input[name="subject"]').val();
     var p = propEd.selectedURI();
     var o = objEd.getValue();
     var t = self.doc.store.rdf.createTriple(self.doc.store.rdf.createNamedNode(s), self.doc.store.rdf.createNamedNode(p), o.toStoreNode(self.doc.store));
     self.doc.addTriples([t], function() {
-      container.empty();
-
       if (self.tripleView) {
         self.tripleView.addTriple(t);
       }
@@ -94,6 +108,8 @@ RDFE.Editor.prototype.createNewStatementEditor = function(container) {
         "type": "triple-insert-success",
         "message": "Successfully added new triple."
       });
+
+      self.createTripleList();
     }, function() {
       $(self).trigger('rdf-editor-error', {
         "type": 'triple-insert-failed',
@@ -103,13 +119,13 @@ RDFE.Editor.prototype.createNewStatementEditor = function(container) {
   });
 };
 
-RDFE.Editor.prototype.createNewEntityEditor = function(container, manager) {
+RDFE.Editor.prototype.createNewEntityEditor = function() {
   var self = this;
   var $ontologiesSelect, ontologiesSelect;
   var $classesSelect, classesSelect;
 
   var classesList = function (e) {
-    var ontology = manager.ontologyByURI(e.currentTarget.selectedOntologyURI());
+    var ontology = self.ontologyManager.ontologyByURI(e.currentTarget.selectedOntologyURI());
     classesSelect.clearOptions();
     classesSelect.addOption(ontology ? ontology.classesAsArray() : self.ontologyManager.allClasses());
   };
@@ -118,7 +134,7 @@ RDFE.Editor.prototype.createNewEntityEditor = function(container, manager) {
     return false;
   }
 
-  container.html(
+  self.container.html(
     '<div class="panel panel-default">' +
     '<div class="panel-heading"><h3 class="panel-title">Add new Entity</h3></div>' +
     '<div class="panel-body"><div class="form-horizontal"> ' +
@@ -150,10 +166,10 @@ RDFE.Editor.prototype.createNewEntityEditor = function(container, manager) {
 
   // if we have an entity uri template we ask the user to provide a nem instead of the uri
   if(this.config.options.entityUriTmpl) {
-    container.find('label[for="subject"]').text('Entity Name');
+    self.container.find('label[for="subject"]').text('Entity Name');
   }
 
-  ontologiesSelect = $('#ontology').ontoBox({ "ontoManager": manager });
+  ontologiesSelect = $('#ontology').ontoBox({ "ontoManager": self.ontologyManager });
   ontologiesSelect.on('changed', classesList);
 
   // FIXME: this is all pretty much the same as in the PropertyBox
@@ -193,11 +209,11 @@ RDFE.Editor.prototype.createNewEntityEditor = function(container, manager) {
   });
   classesSelect = $classesSelect[0].selectize;
 
-  container.find('a.triple-action-new-cancel').click(function(e) {
-    container.empty();
+  self.container.find('a.triple-action-new-cancel').click(function(e) {
+    self.createEntityList();
   });
 
-  container.find('a.triple-action-new-save').click(function(e) {
+  self.container.find('a.triple-action-new-save').click(function(e) {
     var uri = container.find('input[name="subject"]').val(),
         name = null,
         type = container.find('#class')[0].selectize.getValue();
@@ -208,7 +224,6 @@ RDFE.Editor.prototype.createNewEntityEditor = function(container, manager) {
     }
 
     self.doc.addEntity(uri, name, type, function(ent) {
-      container.empty();
       if (self.entityView) {
         self.entityView.addEntity(ent);
       }
@@ -217,6 +232,8 @@ RDFE.Editor.prototype.createNewEntityEditor = function(container, manager) {
         "type": "entity-insert-success",
         "message": "Successfully created new entity."
       });
+
+      self.createEntityList();
     }, function() {
       $(self).trigger('rdf-editor-error', {
         "type": 'triple-insert-failed',
@@ -226,7 +243,7 @@ RDFE.Editor.prototype.createNewEntityEditor = function(container, manager) {
   });
 };
 
-RDFE.Editor.prototype.createEntityList = function(container, callback) {
+RDFE.Editor.prototype.createEntityList = function(callback) {
   var self = this;
   if(!self.entityView) {
     self.entityView = new RDFE.EntityView(this.doc, this.ontologyManager);
@@ -236,5 +253,6 @@ RDFE.Editor.prototype.createEntityList = function(container, callback) {
       $(self).trigger('rdf-editor-success', d);
     });
   }
-  self.entityView.render(container, callback);
+  self.container.empty();
+  self.entityView.render(self.container, callback);
 };

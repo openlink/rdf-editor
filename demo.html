@@ -154,18 +154,8 @@
 
       <br/>
 
-      <div id="panel-view-entities" class="main-view-panel" style="display:none">
-        <div id="entityAddContent">
-        </div>
-        <div id="entitiesContents">
-        </div>
-      </div>
-
-
-      <div id="panel-view-triples" class="main-view-panel" style="display:none;">
-        <div id="tripleAddContent">
-        </div>
-        <div id="sparqlcontents">
+      <div id="panel-view-editor">
+        <div id="contents">
         </div>
       </div>
     </div>
@@ -263,9 +253,9 @@
 
       function updateViewContents(view) {
         if((view || currentView()) == "triples")
-          editor.createTripleList($("#sparqlcontents"), function() { toggleSpinner(false); });
+          editor.createTripleList(function() { toggleSpinner(false); });
         else
-          editor.createEntityList($("#entitiesContents"), function() { toggleSpinner(false); });
+          editor.createEntityList(function() { toggleSpinner(false); });
       }
 
       function ioRetrieve(url, type) {
@@ -309,7 +299,7 @@
           $('#action-entities').removeClass('active').find('input').removeAttr('checked');
         }
         else {
-          editor.createEntityList( $("#entitiesContents"), function() { toggleSpinner(false); });
+          editor.createEntityList(function() { toggleSpinner(false); });
           $('#panel-view-entities').show();
           $('#action-triples').removeClass('active').find('input').removeAttr('checked');
           $('#action-entities').addClass('active').find('input').attr('checked', 'checked');
@@ -454,7 +444,8 @@
                 });
               });
 
-              toggleView(config.options.defaultView);
+              toggleSpinner(true);
+              editor.render($("#contents"), function() { toggleSpinner(false); });
 
               $("#io_spq").val($.jStorage.get("editor-sparql-endpoint", config.options.sparqlEndpoint));
               $("#gspEndpoint").val($.jStorage.get("editor-sparql-graph-endpoint", config.options.gspEndpoint));
@@ -525,20 +516,20 @@
 
         $('button#action-add').click(function(e) {
           if ($('#panel-view-triples').is(":visible")) {
-            editor.createNewStatementEditor($('#tripleAddContent'));
+            editor.createNewStatementEditor();
           } else {
-            editor.createNewEntityEditor($('#entityAddContent'), ontologyManager);
+            editor.createNewEntityEditor();
           }
         });
 
         // reload the contents when the panel shows
         $(document).on('show-view-triples', function() {
           console.log('show-view-triples event');
-          editor.createTripleList($("#sparqlcontents"));
+          editor.createTripleList();
         });
         $(document).on('show-view-entities', function() {
           console.log('show-view-entities event');
-          editor.createEntityList($("#entitiesContents"));
+          editor.createEntityList();
         });
 
         function togglePanel(id) {
