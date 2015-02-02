@@ -1352,6 +1352,9 @@ RDFE.OntologyProperty.prototype.parse = function(graph, options) {
           ontologyClass.properties[self.URI] = self;
         }
       }
+
+      else if (p == self.manager.uriDenormalize('owl:inverseOf'))
+        self.inverseOf = self.manager.OntologyProperty(graph, o, options);
     }
   });
 }
