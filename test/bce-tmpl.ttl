@@ -29,12 +29,20 @@ lens:TouchPointLens a fresnel:Lens;
       bce:mediaControl
       bce:reach
       bce:toolkit
-      bce:kpi
+      bce:sampleKpi
       fresnel:allProperties
     ) ;
     fresnel:hideProperties (
       rdf:type
       bce:legacyId
+    ) .
+
+lens:MilieuSpecificLiteralLens a fresnel:Lens ;
+    fresnel:classLensDomain bce:MilieuSpecificLiteral ;
+    fresnel:showProperties (
+      skos:prefLabel
+      skos:definition
+      bce:literalForMilieuSpecific
     ) .
 
 lens:ToolkitLens a fresnel:Lens;

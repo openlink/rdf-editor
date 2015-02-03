@@ -139,6 +139,8 @@ legacy label is metaphase""" ;
            rdfs:comment "defines the filter property" ;
            
            rdfs:domain :Filter ;
+
+           rdfs:range rdf:Property ;
            
            rdfs:subPropertyOf :bceuiObjectProperty .
 
