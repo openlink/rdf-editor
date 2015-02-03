@@ -18,18 +18,48 @@ lens:TouchPointLens a fresnel:Lens;
     fresnel:purpose fresnel:defaultLens;
     fresnel:showProperties (
       skos:prefLabel
+      skos:definition
+      bceui:tooltip
+      bce:markedAs
+      bceui:forceLabel
       bce:channel
       bce:duration
       bce:financing
       bce:prio
       bce:mediaControl
       bce:reach
-      bce:legacyId
+      bce:toolkit
+      bce:kpi
       fresnel:allProperties
     ) ;
     fresnel:hideProperties (
       rdf:type
+      bce:legacyId
     ) .
+
+lens:ToolkitLens a fresnel:Lens;
+    fresnel:classLensDomain bce:Toolkit;
+    fresnel:purpose fresnel:defaultLens;
+    fresnel:showProperties (
+      skos:prefLabel
+      skos:definition
+    ) .
+
+lens:FilterLens a fresnel:Lens;
+    fresnel:classLensDomain bceui:Filter;
+    fresnel:purpose fresnel:defaultLens;
+    fresnel:showProperties (
+      rdf:type
+      skos:prefLabel
+      bceui:tooltip
+      bceui:displayPriority
+      bceui:filterType
+      bceui:filtersOn
+      bceui:optionOrder
+      bceui:prefix
+      bceui:suffix
+    ) .
+
 
 lens:UseCaseLens a fresnel:Lens;
     fresnel:classLensDomain bce:UseCase;
@@ -38,7 +68,6 @@ lens:UseCaseLens a fresnel:Lens;
       skos:prefLabel
       skos:definition
       bceui:tooltip
-      fresnel:allProperties
       bce:prio
       bce:useCaseSequence
     ) ;
