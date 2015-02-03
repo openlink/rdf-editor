@@ -43,6 +43,7 @@
   <file source_uri="img/*.gif" target_uri="rdf-editor/" />
   <file source_uri="img/*.png" target_uri="rdf-editor/" />
   <file source_uri="test/*.ttl" target_uri="rdf-editor/" />
+  <file source_uri="test/*.rdf" target_uri="rdf-editor/" />
 </resources>
 <registry>
 </registry>
