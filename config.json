@@ -24,13 +24,13 @@
   },
   "bookmarks": [
     {
-      "label": "Daimler BCE Touchpoints, etc.",
-      "uri": "http://ldp.e.corpintra.net/graph/bce",
+      "label": "Daimler BCE Touchpoints",
+      "uri": "http://ldp.e.corpintra.net/graph/bcetp",
       "type": "gsp"
     },
     {
-      "label": "Daimler BCE UI Data",
-      "uri": "http://ldp.e.corpintra.net/graph/bceui",
+      "label": "Daimler BCE Journeys, Toolkits, etc.",
+      "uri": "http://ldp.e.corpintra.net/graph/bce",
       "type": "gsp"
     },
     {
