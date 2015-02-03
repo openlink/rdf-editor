@@ -298,7 +298,7 @@ RDFE.Document.prototype.listEntities = function(type, callback, errorCb) {
   else if(typeof(t) == 'string')
     t = [t];
 
-  var q = "select distinct ?s ";
+  var q = "select distinct ?s ?t ";
   for(var i = 0; i < self.config.options.labelProps.length; i++) {
     q += "?l" + i + " ";
   }
@@ -312,12 +312,12 @@ RDFE.Document.prototype.listEntities = function(type, callback, errorCb) {
     q += ") . ";
   }
   else {
-    q += "?s ?p ?o . ";
+    q += "?s ?p ?o . optional { ?s a ?t } . ";
   }
   for(var i = 0; i < self.config.options.labelProps.length; i++) {
     q += "optional { ?s <" + self.config.options.labelProps[i] + "> ?l" + i + " . } . ";
   }
-  q += '}';
+  q += '} order by ?s';
 
   self.store.execute(q, function(success, r) {
     var sl = [];
@@ -325,15 +325,26 @@ RDFE.Document.prototype.listEntities = function(type, callback, errorCb) {
     if(success) {
       for(var i = 0; i < r.length; i += 1) {
         var n = r[i].s;
-        for(var j = 0; j < self.config.options.labelProps.length; j++) {
-          if(r[i]["l" + j]) {
-            n.label = r[i]["l" + j].value;
-            break;
-          }
+
+        // add a type to an existing entity
+        if(sl.length > 0 && sl[sl.length-1].value === n.value) {
+          sl[sl.length-1].types.push(r[i].t.value);
         }
-        if(!n.label)
-          n.label = r[i].s.value.split(/[/#]/).pop();
-        sl.push(n);
+
+        // add a new entity to the list
+        else {
+          for(var j = 0; j < self.config.options.labelProps.length; j++) {
+            if(r[i]["l" + j]) {
+              n.label = r[i]["l" + j].value;
+              break;
+            }
+          }
+          if(!n.label)
+            n.label = r[i].s.value.split(/[/#]/).pop();
+          n.types = [];
+
+          sl.push(n);
+        }
       }
     }
     else if(errorCb)
