@@ -30,9 +30,13 @@ RDFE.Document.prototype.load = function(url, io, success, fail) {
         if (success)
             success();
     };
-    io.retrieveToStore(url, self.store, self.graph, {
-      'success': successFct,
-      'error': fail
+
+    // clear the store and then load the new data
+    self.store.clear(function() {
+      io.retrieveToStore(url, self.store, self.graph, {
+        'success': successFct,
+        'error': fail
+      });
     });
 };
 
