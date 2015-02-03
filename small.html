@@ -107,11 +107,6 @@
       <div class="btn-toolbar" role="toolbar">
         <div class="btn-group" role="group">
           <div id="action-bookmarks" class="btn-group" role="group" style="display:none">
-            <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-expanded="false">
-              <span class="glyphicon glyphicon-star" aria-hidden="true"></span> Bookmarks <span class="caret"></span>
-            </button>
-            <ul id="bookmarks" class="dropdown-menu" role="menu">
-            </ul>
           </div>
         </div>
         <div class="btn-group" role="group">
@@ -228,37 +223,49 @@
       }
 
       function ioRetrieve(url, type) {
-        var io_rdfe;
-        try {
-          io_rdfe = getIO(type || "sparql");
-        }
-        catch(e) {
-          $.growl({
-            message: e
-          }, {
-            type: "danger"
-          });
-          return;
-        }
+        var n = function () {
+          var io_rdfe;
+          try {
+            io_rdfe = getIO(type || "sparql");
+          }
+          catch(e) {
+            $.growl({
+              message: e
+            }, {
+              type: "danger"
+            });
+            return;
+          }
 
-        toggleSpinner(true);
+          toggleSpinner(true);
 
-        mainDoc.load(url, io_rdfe, function() {
+          mainDoc.load(url, io_rdfe, function() {
             var view = currentView();
             updateViewContents(view);
             toggleView(view);
             $('#docUrl').text(url);
             $.jStorage.set("editor-document-url", url);
             $.jStorage.set("editor-document-io-type", type);
-        }, function() {
+          }, function() {
             $.growl({
-              message: 'Failed to load document',
-              icon: "glyphicon glyphicon-fire"
-            }, {
-              type: 'danger'
-            });
+                message: 'Failed to load document',
+                icon: "glyphicon glyphicon-fire"
+              }, {
+                type: 'danger'
+              }
+            );
             toggleSpinner(false);
-        });
+          });
+        }
+        if (mainDoc.dirty) {
+          bootbox.confirm("Your Document has unsaved changes. Do you really want to load a new document?", function(r) {
+            if(r) {
+              n();
+            }
+          });
+        } else {
+          n();
+        }
       }
 
       function toggleView(view) {
@@ -352,20 +359,19 @@
 
       function loadBookmarks(config) {
         var bm = config.options.bookmarks;
-        if(bm) {
-          if(bm.length > 0) {
-            var $bmMenu = $('#bookmarks');
-            $bmMenu.closest('div.btn-group').show();
-            for(var i = 0; i < bm.length; i+=1) {
-              $bmMenu.append('<li><a class="bookmark" href="' + bm[i].uri + '" data-io-type="' + bm[i].type + '">' + bm[i].label + '</a></li>');
+        if (bm) {
+          if (bm.length > 0) {
+            var $bmMenu = $('#action-bookmarks');
+            $bmMenu.show();
+            for (var i = 0; i < bm.length; i+=1) {
+              $bmMenu.append('<button class="btn btn-default bookmark" data-href="' + bm[i].uri + '" data-io-type="' + bm[i].type + '">' + bm[i].label + '</button>');
             }
+            $bmMenu.find('button.bookmark').click(function(e) {
+              e.preventDefault();
+              ioRetrieve($(this).attr('data-href'), $(this).attr('data-io-type'));
+            });
           }
         }
-
-        $('a.bookmark').click(function(e) {
-          e.preventDefault();
-          ioRetrieve($(this).attr('href'), $(this).attr('data-io-type'));
-        });
       }
 
       function getIO(ioType) {
