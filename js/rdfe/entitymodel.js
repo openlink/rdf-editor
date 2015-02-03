@@ -278,7 +278,7 @@ RDFE.EntityModel = Backbone.Model.extend({
     var self = this;
 
     // first delete then copy the data back to the store
-    self.doc.deleteTriples(self.doc.store.rdf.createNamedNode(this.uri), null, null, function() {
+    self.doc.deleteBySubject(this.uri, function() {
       var triples = [];
       for (prop in self.attributes) {
         var val = self.get(prop);
@@ -309,7 +309,7 @@ RDFE.EntityModel = Backbone.Model.extend({
             node = self.doc.store.rdf.createNamedNode(subVal.uri);
 
             // add the sub-model triples. FIXME: use recursion to support more nesting depth, and protect against loops!
-            self.doc.deleteTriples(node, null, null);
+            self.doc.deleteBySubject(subVal.uri);
             for(subP in subVal.values) {
               var sv = subVal.values[subP];
               for(var k = 0; k < sv.length; k++) {

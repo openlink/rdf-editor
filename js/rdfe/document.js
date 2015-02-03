@@ -137,107 +137,217 @@ RDFE.Document.prototype.new = function(success, fail) {
   });
 };
 
-RDFE.Document.prototype.deleteTriples = function(s, p, o, success, fail) {
+// delete all triplets based on subject URI
+RDFE.Document.prototype.deleteBySubject = function(uri, success, fail) {
   var self = this;
-  var t = '';
-  if(s)
-    t += s.toNT();
-  else
-    t += '?s';
-  t += ' ';
-  if(p)
-    t += p.toNT();
-  else
-    t += '?p';
-  t += ' ';
-  if(o)
-    t += o.toNT();
-  else
-    t += '?o';
-
-  var q = 'with <' + self.graph + '> delete { ' + t + ' } where { ' + t + ' }';
-  self.store.execute(q, function(s, r) {
-    if(s) {
-      self.setChanged();
-      if(success)
-        success();
+  var sparql = 'SELECT distinct ?p ?o FROM <{0}> WHERE { <{1}> ?p ?o. } '.format(self.graph, uri);
+  self.store.execute(sparql, function(s, results) {
+    if (!s) {
+      if (fail) {
+        fail(results);
+      }
+    } else {
+      var triples = [];
+      for (var i = 0, l = results.length; i < l; i++) {
+        var p = results[i]["p"];
+        var o = results[i]["o"];
+        var triple = self.store.rdf.createTriple(
+          self.store.rdf.createNamedNode(uri),
+          self.store.rdf.createNamedNode(p.value),
+          (o.token === "uri")? self.store.rdf.createNamedNode(o.value): self.store.rdf.createLiteral(o.value)
+        )
+        triples.push(triple);
+      }
+      self.deleteTriples(triples, success, fail);
     }
-    else if(fail)
-      fail();
   });
 };
 
+// delete all triplets based on object URI
+RDFE.Document.prototype.deleteByObject = function(uri, success, fail) {
+  var self = this;
+
+  var sparql = 'SELECT distinct ?s ?p FROM <{0}> WHERE { ?s ?p <{1}> . } '.format(self.graph, uri);
+  self.store.execute(sparql, function(s, results) {
+    if (!s) {
+      if (fail) {
+        fail(results);
+      }
+    } else {
+      var triples = [];
+      for (var i = 0, l = results.length; i < l; i++) {
+        var triple = self.store.rdf.createTriple(
+          self.store.rdf.createNamedNode(results[i]["s"].value),
+          self.store.rdf.createNamedNode(results[i]["p"].value),
+          self.store.rdf.createNamedNode(uri)
+        )
+        triples.push(triple);
+      }
+      self.deleteTriples(triples, success, fail);
+    }
+  });
+};
+
+// delete all triplets of entity
 RDFE.Document.prototype.deleteEntity = function(uri, success, fail) {
   var self = this;
 
-  if(!uri) {
-    if(fail)
+  if (!uri) {
+    if (fail) {
       fail('Need Entity URI for deletion.');
-    return;
+    }
+  } else {
+    self.deleteBySubject(
+      uri,
+      function () {
+        self.deleteByObject(uri, success, fail);
+      },
+      fail
+    )
   }
+};
 
-  self.store.execute('with <' + self.graph + '> delete { <' + uri + '> ?p ?o } where { <' + uri + '> ?p ?o }', function(s, r) {
-    if(s) {
-      self.setChanged();
-      self.store.execute('with <' + self.graph + '> delete { ?s ?p <' + uri + '> } where { ?s ?p <' + uri + '> }', function(s, r) {
-        if (s) {
-          if (success)
+// add triplet(s)
+RDFE.Document.prototype.addTriples = function(triple, success, fail, isInverseTripple) {
+  var self = this;
+
+  var triples = (_.isArray(triple))? triple: [triple];
+  if (_.isEmpty(triples)) {
+    if (success) {
+      success();
+    }
+  } else {
+    self.store.insert(self.store.rdf.createGraph(triples), self.graph, function(s) {
+      if (s) {
+        var inverseTriples = [];
+        if (!isInverseTripple) {
+          inverseTriples = self.inverseTriples(triples);
+        }
+        if (_.isEmpty(inverseTriples)) {
+          self.setChanged();
+          if (success) {
             success();
+          }
+        } else {
+          self.addTriples(inverseTriples, success, fail, true);
         }
-        else if(fail) {
-          fail(r);
+      } else {
+        if (fail) {
+          fail();
         }
-      });
-    }
-    else if (fail) {
-      fail(r);
-    }
-  });
+      }
+    });
+  }
 };
 
-RDFE.Document.prototype.addTriples = function(triples, success, fail) {
+RDFE.Document.prototype.addTriple = RDFE.Document.prototype.addTriples;
+
+// delete triplet(s)
+RDFE.Document.prototype.deleteTriples = function(triple, success, fail, isInverseTripple) {
   var self = this;
-  self.store.insert(self.store.rdf.createGraph(triples), self.graph, function(s) {
-    if(s) {
-      self.setChanged();
-      if(success)
-        success();
+
+  var triples = (_.isArray(triple))? triple: [triple];
+  if (_.isEmpty(triples)) {
+    if (success) {
+      success();
     }
-    else if (fail) {
-      fail();
-    }
-  });
+  } else {
+    self.store.delete(self.store.rdf.createGraph(triples), self.graph, function(s) {
+      if (s) {
+        var inverseTriples = [];
+        if (!isInverseTripple) {
+          inverseTriples = self.inverseTriples(triples);
+        }
+        if (_.isEmpty(inverseTriples)) {
+          self.setChanged();
+          if (success) {
+            success();
+          }
+        } else {
+          self.deleteTriples(inverseTriples, success, fail, true);
+        }
+      } else {
+        if (fail) {
+          fail();
+        }
+      }
+    });
+  }
 };
 
-RDFE.Document.prototype.deleteTriple = function(triple, success, fail) {
+RDFE.Document.prototype.deleteTriple = RDFE.Document.prototype.deleteTriples;
+
+RDFE.Document.prototype.updateTriple = function(oldTriple, newTriple, success, fail) {
   var self = this;
-  self.store.delete(self.store.rdf.createGraph([triple]), self.graph, function(s) {
-    if(s) {
-      self.setChanged();
-      if(success)
-        success();
+
+  self.deleteTriple(
+    oldTriple,
+    function () {
+      self.addTriple(
+        newTriple,
+        function () {
+          self.setChanged();
+          if (success) {
+            success();
+          }
+        },
+        function () {
+          if (fail) {
+            fail('Adding new triple failed');
+          }
+        }
+      );
+    },
+    function () {
+      if (fail) {
+        fail('Deleting triple failed');
+      }
     }
-    else if (fail) {
-      fail();
-    }
-  });
+  );
 };
 
-RDFE.Document.prototype.updateTriple = function(oldTr, newTr, success, fail) {
+// create single inverseOf triplet
+RDFE.Document.prototype.inverseTriple = function(triple) {
   var self = this;
-  self.store.delete(self.store.rdf.createGraph([oldTr]), self.graph, function(s) {
-    if (s) {
-      self.store.insert(self.store.rdf.createGraph([newTr]), self.graph, function(s) {
-        self.setChanged();
-        if (!s && fail)
-          fail('Adding new triple failed');
-        else if(success)
-          success();
-      });
+
+  var inverseTriple = null;
+  if (self.config.options.autoInverseOfHandling === true) {
+    var s = triple.subject;
+    var o = triple.object;
+    if ((s.interfaceName == 'NamedNode') && (o.interfaceName == 'NamedNode')) {
+      var p = triple.predicate;
+      var property = self.ontologyManager.ontologyPropertyByURI(p.nominalValue);
+      if (property) {
+        // found
+        var inverseOfProperty = property.inverseOf;
+        if (inverseOfProperty) {
+          // create inverse triple
+          var inverseTriple = self.store.rdf.createTriple(
+            self.store.rdf.createNamedNode(o.nominalValue),
+            self.store.rdf.createNamedNode(inverseOfProperty.URI),
+            self.store.rdf.createNamedNode(s.nominalValue)
+          )
+        }
+      }
     }
-    else if(fail)
-      fail('Deleting triple failed');
-  });
+  }
+  return inverseTriple;
+};
+
+// create inverseOf triplets from triplets array
+RDFE.Document.prototype.inverseTriples = function(triples) {
+  var self = this;
+
+  var inverseTriples = [];
+  if (self.config.options.autoInverseOfHandling === true) {
+    for (var i = 0, l = triples.length; i < l; i++) {
+      var inverseTriple = self.inverseTriple(triples[i]);
+      if (inverseTriple) {
+        inverseTriples.push(inverseTriple);
+      }
+    }
+  }
+  return inverseTriples;
 };
 
 /**
