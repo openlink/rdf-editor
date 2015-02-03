@@ -345,7 +345,7 @@ RDFE.Document.prototype.listEntities = function(type, callback, errorCb) {
           }
           if(!n.label)
             n.label = r[i].s.value.split(/[/#]/).pop();
-          n.types = [];
+          n.types = r[i].t ? [r[i].t.value] : [];
 
           sl.push(n);
         }
