@@ -236,7 +236,8 @@ RDFE.Editor.prototype.createNewEntityEditor = function() {
         "message": "Successfully created new entity."
       });
 
-      self.createEntityList();
+      // once the new entity is created we open the editor
+      self.editEntity(ent.uri);
     }, function() {
       $(self).trigger('rdf-editor-error', {
         "type": 'triple-insert-failed',
@@ -268,5 +269,22 @@ RDFE.Editor.prototype.createEntityList = function() {
     $(self).trigger('rdf-editor-done', {
       "id": "render-entity-list"
     });
+  });
+};
+
+RDFE.Editor.prototype.editEntity = function(uri) {
+  var self = this;
+  if(!self.entityEditor) {
+    self.entityEditor = new RDFE.EntityEditor(self.doc, self.ontologyManager);
+    $(self.entityEditor).on('rdf-editor-error', function(e) {
+      $(self).trigger('rdf-editor-error', d);
+    }).on('rdf-editor-success', function(e, d) {
+      $(self).trigger('rdf-editor-success', d);
+    });
+  }
+
+  // render the entity editor and re-create the entity list once the editor is done
+  self.entityEditor.render(self.container, uri, function() {
+    self.createEntityList();
   });
 };
