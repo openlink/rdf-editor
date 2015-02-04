@@ -108,8 +108,12 @@
         <div class="btn-group" role="group">
           <button id="action-save" type="button" class="btn btn-default" style="display:none"><span class="glyphicon glyphicon-save" aria-hidden="true"></span> Save</button>
         </div>
-        <div class="btn-group" role="group">
-          <button id="action-add" type="button" class="btn btn-default"><span class="glyphicon glyphicon-plus" aria-hidden="true"></span> Add</button>
+        <div id="action-add" class="btn-group" role="group">
+          <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-expanded="false">
+            <span class="glyphicon glyphicon-star" aria-hidden="true"></span> Add Entity <span class="caret"></span>
+          </button>
+          <ul class="dropdown-menu" role="menu">
+          </ul>
         </div>
         <div class="btn-group" role="group">
           <div id="busyspinner">
@@ -308,6 +312,21 @@
         }
       }
 
+      function loadNewEntityTypes(config) {
+        var at = config.options.newEntityTypes;
+        if(at) {
+         var $atMenu = $('#action-add ul');
+          for (var i = 0; i < at.length; i+=1) {
+            $atMenu.append('<li><a class="addEntityBtn" href="' + at[i].uri + '" data-entity-type="' + at[i].uri + '">New ' + at[i].label + '</a></li>');
+          }
+
+          $('.addEntityBtn').click(function(e) {
+            e.preventDefault();
+            editor.createNewEntityEditor($(this).attr('data-entity-type'));
+          });
+        }
+      }
+
       function getIO(ioType) {
         var io = RDFE.IO.createIO(ioType, {
           "sparqlEndpoint": $('#io_spq').val(),
@@ -329,6 +348,8 @@
 
             if($.inArray("bookmarks", config.options.actions) >= 0)
               loadBookmarks(config);
+
+            loadNewEntityTypes(config);
 
             editor = new RDFE.Editor(config);
             mainDoc = editor.doc;
@@ -360,10 +381,6 @@
 
         $('button#action-save').click(function(e) {
           save();
-        });
-
-        $('button#action-add').click(function(e) {
-          editor.createNewEntityEditor();
         });
       });
     </script>

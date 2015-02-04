@@ -51,5 +51,11 @@
   "prefixes": {
     "bce": "http://ldp.e.corpintra.net/ontology/bce#"
   },
-  "entityUriTmpl": "http://ldp.e.corpintra.net/resources/bce/{NAME}"
+  "entityUriTmpl": "http://ldp.e.corpintra.net/resources/bce/{NAME}",
+  "newEntityTypes": [
+    {
+      "uri": "http://ldp.e.corpintra.net/ontology/bce#TouchPoint",
+      "label": "Touchpoint"
+    }
+  ]
 }
