@@ -12,8 +12,8 @@
       "bce/olo.ttl",
       "bce/BCE-Domain-v0.81.owl.ttl",
       "bce/BCE-JourneyConfigurator-v0.81.owl.ttl",
-      "bce/bce-restrictions.ttl"
-      "test/foaf-restrictions.ttl",
+      "bce/bce-restrictions.ttl",
+      "test/foaf-restrictions.ttl"
     ],
     "preloadFresnels": [
       "bce/bce-tmpl.ttl"
