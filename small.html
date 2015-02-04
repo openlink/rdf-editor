@@ -25,7 +25,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="">
     <meta name="author" content="">
-    <title>RDF Editor I/O demo</title>
+    <title>BCE Admin Tool</title>
     <link href="css/bootstrap.min.css" rel="stylesheet">
     <link href="css/bootstrap-fixes.css" rel="stylesheet">
     <link href="css/bootstrap-editable.css" rel="stylesheet"/>
@@ -70,10 +70,6 @@
         </div>
 
         <div class="collapse navbar-collapse" id="rdfe-navbar-collapse">
-          <ul class="nav navbar-nav navbar-right">
-            <li><a href="#configDialog" data-toggle="modal">Configure</a></li>
-          </ul>
-
           <p id="userLoginInfo" class="navbar-text navbar-right"></p>
 
           <ul class="nav navbar-nav navbar-right">
@@ -156,8 +152,6 @@
     <script src="js/backbone-forms-list.js"></script>
     <script src="js/backbone-forms-bootstrap3.js"></script>
 
-    <script src="js/jstorage.js"></script>
-
     <script src="js/rdfe/io.js"></script>
     <script src="js/rdfe/utils.js"></script>
     <script src="js/rdfe/rdfnode.js"></script>
@@ -211,17 +205,6 @@
           $('#busyspinner').spin(false);
       }
 
-      function currentView() {
-        return 'entities';
-      }
-
-      function updateViewContents(view) {
-        if((view || currentView()) == "triples")
-          editor.createTripleList();
-        else
-          editor.createEntityList();
-      }
-
       function ioRetrieve(url, type) {
         var n = function () {
           var io_rdfe;
@@ -240,12 +223,8 @@
           toggleSpinner(true);
 
           mainDoc.load(url, io_rdfe, function() {
-            var view = currentView();
-            updateViewContents(view);
-            toggleView(view);
+            editor.createEntityList();
             $('#docUrl').text(url);
-            $.jStorage.set("editor-document-url", url);
-            $.jStorage.set("editor-document-io-type", type);
           }, function() {
             $.growl({
                 message: 'Failed to load document',
@@ -265,20 +244,6 @@
           });
         } else {
           n();
-        }
-      }
-
-      function toggleView(view) {
-        if(view == "triples") {
-          $('#panel-view-triples').show();
-          $('#action-triples').addClass('active').find('input').attr('checked', 'checked');
-          $('#action-entities').removeClass('active').find('input').removeAttr('checked');
-        }
-        else {
-          editor.createEntityList();
-          $('#panel-view-entities').show();
-          $('#action-triples').removeClass('active').find('input').removeAttr('checked');
-          $('#action-entities').addClass('active').find('input').attr('checked', 'checked');
         }
       }
 
@@ -326,37 +291,6 @@
         }
       }
 
-      function saveAs() {
-        $('#saveAsDialog').find('input[name="saveAsLocation"]').val(mainDoc.url);
-        $('#saveAsDialog').find('input[name="saveAsIoType"]').val(mainDoc.io ? mainDoc.io.type : "sparql");
-        $('#saveAsDialog').modal();
-      }
-
-      function documentNew() {
-        var n = function() {
-          mainDoc.new(function() {
-            updateViewContents();
-            $('#docUrl').text("no document loaded");
-          }, function() {
-            $.growl({
-              message: "Failed to clear Document for unknown reasons.",
-              icon: "glyphicon glyphicon-fire"
-            }, {
-              type: 'danger'
-            });
-          });
-        };
-        if(mainDoc.dirty) {
-          bootbox.confirm("Your Document has unsaved changes. Do you really want to create a new Document?", function(r) {
-            if(r)
-              n();
-          });
-        }
-        else {
-          n();
-        }
-      }
-
       function loadBookmarks(config) {
         var bm = config.options.bookmarks;
         if (bm) {
@@ -384,136 +318,52 @@
       }
 
       $(document).ready(function() {
-        $(document.createElement('div')).appendTo($("body")).load("data/dialogs.html", function() {
-          $("#openDocLocation").val($.jStorage.get("editor-document-url"));
-          $("#openDocIoType").val($.jStorage.get("editor-document-io-type") || "sparql");
+        var urlParams = RDFE.Utils.uriParams();
+        var configSource = (urlParams['config'])? urlParams['config']: 'config.json';
 
-          var urlParams = RDFE.Utils.uriParams();
-          var configSource = (urlParams['config'])? urlParams['config']: 'config.json';
-          rdfeConfig = new RDFE.Config(configSource, function(config) {
-              var configActions = config.options.actions;
-              for (var i = 0; i < configActions.length; i++) {
-                $('#action-'+configActions[i]).show();
-              }
+        rdfeConfig = new RDFE.Config(configSource, function(config) {
+            var configActions = config.options.actions;
+            for (var i = 0; i < configActions.length; i++) {
+              $('#action-'+configActions[i]).show();
+            }
 
-              if($.inArray("bookmarks", config.options.actions) >= 0)
-                loadBookmarks(config);
+            if($.inArray("bookmarks", config.options.actions) >= 0)
+              loadBookmarks(config);
 
-              editor = new RDFE.Editor(config);
-              mainDoc = editor.doc;
-              ontologyManager = editor.ontologyManager;
+            editor = new RDFE.Editor(config);
+            mainDoc = editor.doc;
+            ontologyManager = editor.ontologyManager;
 
-              // subscribe to editor events
-              $(editor).on('rdf-editor-success', function(e, d) {
-                $.growl({
-                  message: d.message
-                }, {
-                  type: "success"
-                });
-              }).on('rdf-editor-error', function(e, d) {
-                $.growl({
-                  message: d.message
-                }, {
-                  type: "danger"
-                });
-              }).on('rdf-editor-start', function(e, d) {
-                toggleSpinner(true);
-              }).on('rdf-editor-done', function(e, d) {
-                toggleSpinner(false);
+            // subscribe to editor events
+            $(editor).on('rdf-editor-success', function(e, d) {
+              $.growl({
+                message: d.message
+              }, {
+                type: "success"
               });
-
+            }).on('rdf-editor-error', function(e, d) {
+              $.growl({
+                message: d.message
+              }, {
+                type: "danger"
+              });
+            }).on('rdf-editor-start', function(e, d) {
               toggleSpinner(true);
-              editor.render($("#contents"), function() { toggleSpinner(false); });
+            }).on('rdf-editor-done', function(e, d) {
+              toggleSpinner(false);
+            });
 
-              $("#io_spq").val($.jStorage.get("editor-sparql-endpoint", config.options.sparqlEndpoint));
-              $("#gspEndpoint").val($.jStorage.get("editor-sparql-graph-endpoint", config.options.gspEndpoint));
-            }
-          );
-
-          $('#openDocDialog #openDocBtn').click(function() {
-            var url = $('#openDocDialog input[name="openDocLocation"]').val(),
-                ioType = $('#openDocDialog select[name="openDocIoType"]').val();
-            ioRetrieve(url, ioType);
-            $('#openDocDialog').modal('hide');
-          });
-
-          $('#saveAsDialog #saveAsBtn').click(function() {
-            var url = $('#saveAsDialog input[name="saveAsLocation"]').val(),
-                ioType = $('#saveAsIoType').val();
-            $('#saveAsDialog').modal('hide');
             toggleSpinner(true);
-            mainDoc.save(url, getIO(ioType),
-              function() {
-                toggleSpinner(false);
-                $('#docUrl').text(url);
-                $.jStorage.set("editor-document-url", url);
-                $.growl({
-                  message: "Successfully saved document to <code>" + url + "</code>",
-                  icon: "glyphicon glyphicon-ok"
-                }, {
-                  type: 'success'
-                });
-              }, function(err) {
-                toggleSpinner(false);
-                $.growl({
-                  message: (err ? err.message || err : "An unknown error occured"),
-                  icon: "glyphicon glyphicon-fire"
-                }, {
-                  type: 'danger'
-                });
-              });
-          });
-
-          $("#io_spq").change(
-            function() {
-              $.jStorage.set("editor-sparql-endpoint", $("#io_spq").val());
-            }
-          );
-        });
-
-        $('button#action-new').click(function(e) {
-          documentNew();
-        });
-
-        $('button#action-open').click(function(e) {
-          $('#openDocDialog').modal();
-        });
+            editor.render($("#contents"), function() { toggleSpinner(false); });
+          }
+        );
 
         $('button#action-save').click(function(e) {
           save();
         });
 
-        $('button#action-saveas').click(function(e) {
-          saveAs();
-        });
-
         $('button#action-add').click(function(e) {
-          if ($('#panel-view-triples').is(":visible")) {
-            editor.createNewStatementEditor();
-          } else {
-            editor.createNewEntityEditor();
-          }
-        });
-
-        // reload the contents when the panel shows
-        $(document).on('show-view-triples', function() {
-          console.log('show-view-triples event');
-          editor.createTripleList();
-        });
-        $(document).on('show-view-entities', function() {
-          console.log('show-view-entities event');
-          editor.createEntityList();
-        });
-
-        function togglePanel(id) {
-          console.log('togglePanel ' + id);
-          $('.main-view-panel').hide();
-          $('#panel-' + id).show();
-          $(document).trigger('show-' + id);
-        }
-
-        $('input[name="view"]').change(function(e) {
-          togglePanel(e.target.id);
+          editor.createNewEntityEditor();
         });
       });
     </script>
