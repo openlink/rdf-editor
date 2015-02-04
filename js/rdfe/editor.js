@@ -122,7 +122,7 @@ RDFE.Editor.prototype.createNewStatementEditor = function() {
   });
 };
 
-RDFE.Editor.prototype.createNewEntityEditor = function() {
+RDFE.Editor.prototype.createNewEntityEditor = function(forcedType) {
   var self = this;
   var $ontologiesSelect, ontologiesSelect;
   var $classesSelect, classesSelect;
@@ -137,89 +137,121 @@ RDFE.Editor.prototype.createNewEntityEditor = function() {
     return false;
   }
 
-  self.container.html(
-    '<div class="panel panel-default">' +
-    '<div class="panel-heading"><h3 class="panel-title">Add new Entity</h3></div>' +
-    '<div class="panel-body"><div class="form-horizontal"> ' +
-    '  <div class="form-group"> ' +
-    '    <label for="ontology" class="col-sm-2 control-label">Ontology</label> ' +
-    '    <div class="col-sm-10"> ' +
-    '      <select name="ontology" id="ontology" class="form-control" /> ' +
-    '    </div> ' +
-    '  </div> ' +
-    '  <div class="form-group"> ' +
-    '    <label for="class" class="col-sm-2 control-label">Type</label> ' +
-    '    <div class="col-sm-10"> ' +
-    '      <select name="class" id="class" class="form-control" /> ' +
-    '    </div> ' +
-    '  </div> ' +
-    '  <div class="form-group"> ' +
-    '     <label for="subject" class="col-sm-2 control-label">Entity URI</label> ' +
-    '     <div class="col-sm-10"> ' +
-    '       <input name="subject" id="subject" class="form-control" /> ' +
-    '     </div> ' +
-    '  </div> ' +
-    '  <div class="form-group"> ' +
-    '    <div class="col-sm-10 col-sm-offset-2"> ' +
-    '      <a href="#" class="btn btn-default triple-action triple-action-new-cancel">Cancel</a> ' +
-    '      <a href="#" class="btn btn-primary triple-action triple-action-new-save">OK</a> ' +
-    '    </div> ' +
-    '  </div> ' +
-    '</div></div></div>\n');
+
+
+  if (!forcedType) {
+    self.container.html(
+      '<div class="panel panel-default">' +
+      '<div class="panel-heading"><h3 class="panel-title">Add new Entity</h3></div>' +
+      '<div class="panel-body"><div class="form-horizontal"> ' +
+      '  <div class="form-group"> ' +
+      '    <label for="ontology" class="col-sm-2 control-label">Ontology</label> ' +
+      '    <div class="col-sm-10"> ' +
+      '      <select name="ontology" id="ontology" class="form-control" /> ' +
+      '    </div> ' +
+      '  </div> ' +
+      '  <div class="form-group"> ' +
+      '    <label for="class" class="col-sm-2 control-label">Type</label> ' +
+      '    <div class="col-sm-10"> ' +
+      '      <select name="class" id="class" class="form-control" /> ' +
+      '    </div> ' +
+      '  </div> ' +
+      '  <div class="form-group"> ' +
+      '     <label for="subject" class="col-sm-2 control-label">Entity URI</label> ' +
+      '     <div class="col-sm-10"> ' +
+      '       <input name="subject" id="subject" class="form-control" /> ' +
+      '     </div> ' +
+      '  </div> ' +
+      '  <div class="form-group"> ' +
+      '    <div class="col-sm-10 col-sm-offset-2"> ' +
+      '      <a href="#" class="btn btn-default triple-action triple-action-new-cancel">Cancel</a> ' +
+      '      <a href="#" class="btn btn-primary triple-action triple-action-new-save">OK</a> ' +
+      '    </div> ' +
+      '  </div> ' +
+      '</div></div></div>\n');
+
+    ontologiesSelect = $('#ontology').ontoBox({ "ontoManager": self.ontologyManager });
+    ontologiesSelect.on('changed', classesList);
+
+    // FIXME: this is all pretty much the same as in the PropertyBox, in any case it should be moved into a separate class/file
+    $classesSelect = $('#class').selectize({
+      create: true,
+      valueField: 'URI',
+      labelField: 'URI',
+      searchField: [ "title", "label", "prefix", "URI" ],
+      sortField: [ "prefix", "URI" ],
+      options: self.ontologyManager.allClasses(),
+      create: function(input, cb) {
+        // search for and optionally create a new class
+        cb(self.ontologyManager.OntologyClass(null, self.ontologyManager.uriDenormalize(input)));
+      },
+      render: {
+        item: function(item, escape) {
+          var x = item.title || item.label || name.curi || item.name;
+          if(item.curi && item.curi != x) {
+            x = escape(x) + ' <small>(' + escape(item.curi) + ')</small>';
+          }
+          else {
+            x = escape(x);
+          }
+          return '<div>' + x + '</div>';
+        },
+        option: function(item, escape) {
+          return '<div>' + escape(item.title || item.label || name.curi || item.name) + '<br/><small>(' + escape(item.URI) + ')</small></div>';
+        },
+        'option_create': function(data, escape) {
+          var url = self.ontologyManager.uriDenormalize(data.input);
+          if (url != data.input)
+            return '<div class="create">Add <strong>' + escape(data.input) + '</strong> <small>(' + escape(url) + ')</small>&hellip;</div>';
+          else
+            return '<div class="create">Add <strong>' + escape(url) + '</strong>&hellip;</div>';
+        }
+      }
+    });
+    classesSelect = $classesSelect[0].selectize;
+  }
+  else {
+    var forcedTypeRes = self.ontologyManager.ontologyClassByURI(forcedType);
+    var forcedTypeLabel = forcedTypeRes ? forcedTypeRes.label : forcedType.split(/[/#]/).pop();
+    self.container.html(
+      '<div class="panel panel-default">' +
+      '<div class="panel-heading"><h3 class="panel-title">Add new Entity</h3></div>' +
+      '<div class="panel-body"><div class="form-horizontal"> ' +
+      '  <div class="form-group"> ' +
+      '    <label for="class" class="col-sm-2 control-label">Type</label> ' +
+      '    <div class="col-sm-10"> ' +
+      '      <p class="form-control-static" title="' + forcedType + '">' + forcedTypeLabel + '</p>' +
+      '    </div> ' +
+      '  </div> ' +
+      '  <div class="form-group"> ' +
+      '     <label for="subject" class="col-sm-2 control-label">Entity URI</label> ' +
+      '     <div class="col-sm-10"> ' +
+      '       <input name="subject" id="subject" class="form-control" /> ' +
+      '     </div> ' +
+      '  </div> ' +
+      '  <div class="form-group"> ' +
+      '    <div class="col-sm-10 col-sm-offset-2"> ' +
+      '      <a href="#" class="btn btn-default triple-action triple-action-new-cancel">Cancel</a> ' +
+      '      <a href="#" class="btn btn-primary triple-action triple-action-new-save">OK</a> ' +
+      '    </div> ' +
+      '  </div> ' +
+      '</div></div></div>\n');
+    self.container.find('input#subject').focus();
+  }
 
   // if we have an entity uri template we ask the user to provide a nem instead of the uri
   if(this.config.options.entityUriTmpl) {
     self.container.find('label[for="subject"]').text('Entity Name');
   }
 
-  ontologiesSelect = $('#ontology').ontoBox({ "ontoManager": self.ontologyManager });
-  ontologiesSelect.on('changed', classesList);
-
-  // FIXME: this is all pretty much the same as in the PropertyBox
-  $classesSelect = $('#class').selectize({
-    create: true,
-    valueField: 'URI',
-    labelField: 'URI',
-    searchField: [ "title", "label", "prefix", "URI" ],
-    sortField: [ "prefix", "URI" ],
-    options: self.ontologyManager.allClasses(),
-    create: function(input, cb) {
-      // search for and optionally create a new class
-      cb(self.ontologyManager.OntologyClass(null, self.ontologyManager.uriDenormalize(input)));
-    },
-    render: {
-      item: function(item, escape) {
-        var x = item.title || item.label || name.curi || item.name;
-        if(item.curi && item.curi != x) {
-          x = escape(x) + ' <small>(' + escape(item.curi) + ')</small>';
-        }
-        else {
-          x = escape(x);
-        }
-        return '<div>' + x + '</div>';
-      },
-      option: function(item, escape) {
-        return '<div>' + escape(item.title || item.label || name.curi || item.name) + '<br/><small>(' + escape(item.URI) + ')</small></div>';
-      },
-      'option_create': function(data, escape) {
-        var url = self.ontologyManager.uriDenormalize(data.input);
-        if (url != data.input)
-          return '<div class="create">Add <strong>' + escape(data.input) + '</strong> <small>(' + escape(url) + ')</small>&hellip;</div>';
-        else
-          return '<div class="create">Add <strong>' + escape(url) + '</strong>&hellip;</div>';
-      }
-    }
-  });
-  classesSelect = $classesSelect[0].selectize;
-
   self.container.find('a.triple-action-new-cancel').click(function(e) {
     self.createEntityList();
   });
 
-  self.container.find('a.triple-action-new-save').click(function(e) {
+  var saveFct = function() {
     var uri = self.container.find('input[name="subject"]').val(),
         name = null,
-        type = self.container.find('#class')[0].selectize.getValue();
+        type = forcedType || self.container.find('#class')[0].selectize.getValue();
 
     if(self.config.options.entityUriTmpl) {
       name = uri;
@@ -244,7 +276,17 @@ RDFE.Editor.prototype.createNewEntityEditor = function() {
         "message": "Failed to add new triple to store."
       });
     });
+  };
+
+  self.container.find('a.triple-action-new-save').click(function(e) {
+    saveFct();
   });
+
+  self.container.find('input#subject').keypress(function(e) {
+    if(e.which === 13) {
+      saveFct();
+    }
+  })
 };
 
 RDFE.Editor.prototype.createEntityList = function() {
