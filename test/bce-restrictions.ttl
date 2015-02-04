@@ -22,9 +22,12 @@ bce:TouchPoint a owl:Class ;
   ] , [
     a owl:Restriction , oplowl:AggregateRestriction ;
     owl:onProperty bce:prio
-  ], [
+  ] , [
     a owl:Restriction , oplowl:AggregateRestriction ;
     owl:onProperty bce:sampleKpi
+  ] , [
+    a owl:Restriction , oplowl:UniqueIdRestriction ;
+    owl:onProperty bce:legacyId
   ] .
 
 bce:MilieuSpecificLiteral a owl:Class ;
