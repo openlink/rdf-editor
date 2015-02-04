@@ -275,4 +275,3 @@ skos:topConceptOf
     rdfs:subPropertyOf skos:inScheme ;
     owl:inverseOf skos:hasTopConcept ;
     skos:definition "Relates a concept to the concept scheme that it is a top level concept of."@en .
-
