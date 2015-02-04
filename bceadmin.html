@@ -54,6 +54,9 @@
         height: auto;
         overflow: inherit;
       }
+      #docUrl {
+        font-weight: bold;
+      }
     </style>
   </head>
   <body>
@@ -80,28 +83,10 @@
     </nav>
 
     <div class="container-fluid">
-      <div class="row">
-        <div class="col-md-12">
-          <form name="rdfe" class="form-horizontal">
-            <div class="panel panel-default">
-              <div class="panel-heading">
-                <h3 class="panel-title">Document</h3>
-              </div>
-              <div class="panel-body">
-                <div class="form-group">
-                  <label for="io_g" class="col-sm-2 control-label">Document URL</label>
-                  <div class="col-sm-10">
-                    <p id="docUrl" class="form-control-static">no document loaded</p>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </form>
-        </div>
-      </div>
 
       <div class="btn-toolbar" role="toolbar">
         <div class="btn-group" role="group">
+          <div class="btn">Editing: <span id="docUrl">No Document loaded</span></div>
           <div id="action-bookmarks" class="btn-group" role="group" style="display:none">
           </div>
         </div>
@@ -227,7 +212,6 @@
 
         mainDoc.load(url, io_rdfe, function() {
           editor.render($("#contents"));
-          $('#docUrl').text(url);
         }, function() {
           $.growl({
               message: 'Failed to load document',
@@ -291,7 +275,7 @@
             var $bmMenu = $('#action-bookmarks');
             $bmMenu.show();
             for (var i = 0; i < bm.length; i+=1) {
-              $bmMenu.append('<button class="btn btn-default bookmark" data-href="' + bm[i].cfgUri + '">' + bm[i].label + '</button>');
+              $bmMenu.append('<button class="btn btn-default bookmark" data-href="' + bm[i].cfgUri + '">Edit ' + bm[i].label + '</button>');
             }
             $bmMenu.find('button.bookmark').click(function(e) {
               e.preventDefault();
@@ -377,6 +361,7 @@
 
             toggleSpinner(true);
             if(config.options.document) {
+              $('#docUrl').text(config.options.document.label);
               ioRetrieve(config.options.document.uri, config.options.document.type);
             }
           }
