@@ -210,45 +210,34 @@
       }
 
       function ioRetrieve(url, type) {
-        var n = function () {
-          var io_rdfe;
-          try {
-            io_rdfe = getIO(type || "sparql");
-          }
-          catch(e) {
-            $.growl({
-              message: e
+        var io_rdfe;
+        try {
+          io_rdfe = getIO(type || "sparql");
+        }
+        catch(e) {
+          $.growl({
+            message: e
+          }, {
+            type: "danger"
+          });
+          return;
+        }
+
+        toggleSpinner(true);
+
+        mainDoc.load(url, io_rdfe, function() {
+          editor.render($("#contents"));
+          $('#docUrl').text(url);
+        }, function() {
+          $.growl({
+              message: 'Failed to load document',
+              icon: "glyphicon glyphicon-fire"
             }, {
-              type: "danger"
-            });
-            return;
-          }
-
-          toggleSpinner(true);
-
-          mainDoc.load(url, io_rdfe, function() {
-            editor.createEntityList();
-            $('#docUrl').text(url);
-          }, function() {
-            $.growl({
-                message: 'Failed to load document',
-                icon: "glyphicon glyphicon-fire"
-              }, {
-                type: 'danger'
-              }
-            );
-            toggleSpinner(false);
-          });
-        }
-        if (mainDoc.dirty) {
-          bootbox.confirm("Your Document has unsaved changes. Do you really want to load a new document?", function(r) {
-            if(r) {
-              n();
+              type: 'danger'
             }
-          });
-        } else {
-          n();
-        }
+          );
+          toggleSpinner(false);
+        });
       }
 
       // set defaults
@@ -302,11 +291,23 @@
             var $bmMenu = $('#action-bookmarks');
             $bmMenu.show();
             for (var i = 0; i < bm.length; i+=1) {
-              $bmMenu.append('<button class="btn btn-default bookmark" data-href="' + bm[i].uri + '" data-io-type="' + bm[i].type + '">' + bm[i].label + '</button>');
+              $bmMenu.append('<button class="btn btn-default bookmark" data-href="' + bm[i].cfgUri + '">' + bm[i].label + '</button>');
             }
             $bmMenu.find('button.bookmark').click(function(e) {
               e.preventDefault();
-              ioRetrieve($(this).attr('data-href'), $(this).attr('data-io-type'));
+              var cfgUri = $(this).attr('data-href');
+              var n = function() {
+                location.href = location.origin + location.pathname + '?config=' + encodeURIComponent(cfgUri);
+              };
+              if (mainDoc.dirty) {
+                bootbox.confirm("Your Document has unsaved changes. Do you really want to load a new document?", function(r) {
+                  if(r) {
+                    n();
+                  }
+                });
+              } else {
+                n();
+              }
             });
           }
         }
@@ -338,7 +339,7 @@
 
       $(document).ready(function() {
         var urlParams = RDFE.Utils.uriParams();
-        var configSource = (urlParams['config'])? urlParams['config']: 'config.json';
+        var configSource = (urlParams['config'])? urlParams['config']: 'bce-cfg-tp.json';
 
         rdfeConfig = new RDFE.Config(configSource, function(config) {
             var configActions = config.options.actions;
@@ -375,7 +376,9 @@
             });
 
             toggleSpinner(true);
-            editor.render($("#contents"), function() { toggleSpinner(false); });
+            if(config.options.document) {
+              ioRetrieve(config.options.document.uri, config.options.document.type);
+            }
           }
         );
 
