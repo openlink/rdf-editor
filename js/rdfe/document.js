@@ -211,33 +211,39 @@ RDFE.Document.prototype.deleteEntity = function(uri, success, fail) {
 RDFE.Document.prototype.addTriples = function(triple, success, fail, isInverseTripple) {
   var self = this;
 
-  var triples = (_.isArray(triple))? triple: [triple];
+  var triples = _.isArray(triple) ? triple : [triple];
   if (_.isEmpty(triples)) {
     if (success) {
       success();
     }
-  } else {
-    self.store.insert(self.store.rdf.createGraph(triples), self.graph, function(s) {
-      if (s) {
-        var inverseTriples = [];
-        if (!isInverseTripple) {
-          inverseTriples = self.inverseTriples(triples);
+    return;
+  }
+
+  self.store.insert(self.store.rdf.createGraph(triples), self.graph, function(s) {
+    if (s) {
+
+      if (self.config.options.autoInverseOfHandling === true && !isInverseTripple) {
+        var inverseTriples = self.inverseTriples(triples);
+        if (!_.isEmpty(inverseTriples)) {
+          self.addTriples(inverseTriples, success, fail, true);
         }
-        if (_.isEmpty(inverseTriples)) {
+        else {
           self.setChanged();
           if (success) {
             success();
           }
-        } else {
-          self.addTriples(inverseTriples, success, fail, true);
-        }
-      } else {
-        if (fail) {
-          fail();
         }
       }
-    });
-  }
+      else {
+        self.setChanged();
+        if(success) {
+          success();
+        }
+      }
+    } else if (fail) {
+      fail();
+    }
+  });
 };
 
 RDFE.Document.prototype.addTriple = RDFE.Document.prototype.addTriples;
@@ -251,28 +257,35 @@ RDFE.Document.prototype.deleteTriples = function(triple, success, fail, isInvers
     if (success) {
       success();
     }
-  } else {
-    self.store.delete(self.store.rdf.createGraph(triples), self.graph, function(s) {
-      if (s) {
-        var inverseTriples = [];
-        if (!isInverseTripple) {
-          inverseTriples = self.inverseTriples(triples);
-        }
-        if (_.isEmpty(inverseTriples)) {
-          self.setChanged();
-          if (success) {
-            success();
-          }
-        } else {
+    return;
+  }
+
+  self.store.delete(self.store.rdf.createGraph(triples), self.graph, function(s) {
+    if (s) {
+      self.setChanged();
+
+      if (self.config.options.autoInverseOfHandling === true && !isInverseTripple) {
+        var inverseTriples = self.inverseTriples(triples);
+        if (!_.isEmpty(inverseTriples)) {
           self.deleteTriples(inverseTriples, success, fail, true);
         }
-      } else {
-        if (fail) {
-          fail();
+        else {
+          self.setChanged();
+          if(success) {
+            success();
+          }
         }
       }
-    });
-  }
+      else {
+        self.setChanged();
+        if(success) {
+          success();
+        }
+      }
+    } else if (fail) {
+      fail();
+    }
+  });
 };
 
 RDFE.Document.prototype.deleteTriple = RDFE.Document.prototype.deleteTriples;
@@ -311,23 +324,21 @@ RDFE.Document.prototype.inverseTriple = function(triple) {
   var self = this;
 
   var inverseTriple = null;
-  if (self.config.options.autoInverseOfHandling === true) {
-    var s = triple.subject;
-    var o = triple.object;
-    if ((s.interfaceName == 'NamedNode') && (o.interfaceName == 'NamedNode')) {
-      var p = triple.predicate;
-      var property = self.ontologyManager.ontologyPropertyByURI(p.nominalValue);
-      if (property) {
-        // found
-        var inverseOfProperty = property.inverseOf;
-        if (inverseOfProperty) {
-          // create inverse triple
-          var inverseTriple = self.store.rdf.createTriple(
-            self.store.rdf.createNamedNode(o.nominalValue),
-            self.store.rdf.createNamedNode(inverseOfProperty.URI),
-            self.store.rdf.createNamedNode(s.nominalValue)
-          )
-        }
+  var s = triple.subject;
+  var o = triple.object;
+  if ((s.interfaceName == 'NamedNode') && (o.interfaceName == 'NamedNode')) {
+    var p = triple.predicate;
+    var property = self.ontologyManager.ontologyPropertyByURI(p.nominalValue);
+    if (property) {
+      // found
+      var inverseOfProperty = property.inverseOf;
+      if (inverseOfProperty) {
+        // create inverse triple
+        var inverseTriple = self.store.rdf.createTriple(
+          self.store.rdf.createNamedNode(o.nominalValue),
+          self.store.rdf.createNamedNode(inverseOfProperty.URI),
+          self.store.rdf.createNamedNode(s.nominalValue)
+        )
       }
     }
   }
@@ -339,12 +350,10 @@ RDFE.Document.prototype.inverseTriples = function(triples) {
   var self = this;
 
   var inverseTriples = [];
-  if (self.config.options.autoInverseOfHandling === true) {
-    for (var i = 0, l = triples.length; i < l; i++) {
-      var inverseTriple = self.inverseTriple(triples[i]);
-      if (inverseTriple) {
-        inverseTriples.push(inverseTriple);
-      }
+  for (var i = 0, l = triples.length; i < l; i++) {
+    var inverseTriple = self.inverseTriple(triples[i]);
+    if (inverseTriple) {
+      inverseTriples.push(inverseTriple);
     }
   }
   return inverseTriples;
