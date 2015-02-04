@@ -420,6 +420,20 @@ RDFE.Document.prototype.addEntity = function(uri, name, type, cb, failCb) {
     ));
   }
 
+  var ontologyClass = self.ontologyManager.ontologyClassByURI(type);
+  var uniqueRestrictions = ontologyClass.getUniqueRestrictions();
+  for (var i = 0; i < uniqueRestrictions.length; i++) {
+    var property = uniqueRestrictions[i];
+    var uniqueValue = ontologyClass.getUniqueValue(self.store, self.graph, uri, property);
+    if (uniqueValue) {
+      t.push(self.store.rdf.createTriple(
+        self.store.rdf.createNamedNode(uri),
+        self.store.rdf.createNamedNode(property.URI),
+        self.store.rdf.createLiteral(uniqueValue)
+      ));
+    }
+  }
+
   self.addTriples(t, function() {
     if(cb) {
       cb({

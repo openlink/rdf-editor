@@ -182,7 +182,7 @@ RDFE.sparqlValue = function(v) {
  */
 RDFE.coalesce = function() {
   for (i = 0; i < arguments.length; i++) {
-    if (arguments[i]) {
+    if ((typeof arguments[i] !== 'undefined') && (arguments[i] !== null)) {
       return arguments[i];
     }
   }
@@ -720,6 +720,11 @@ RDFE.OntologyManager.prototype.ontologyRestrictionsParse = function(graph, ontol
               ontologyClass.restrictions[propertyURI] = $.extend(ontologyClass.restrictions[propertyURI], { isAggregate: true });
             }
 
+            else if (self.uriDenormalize('rdf:type') == v2 && v3 == 'http://www.openlinksw.com/ontology/oplowl#UniqueIdRestriction') {
+              // console.log('Adding ', v3, 'for', propertyURI);
+              ontologyClass.restrictions[propertyURI] = $.extend(ontologyClass.restrictions[propertyURI], { uniqueIdRestriction: true });
+            }
+
             else if (
                 (self.uriDenormalize('owl:minCardinality') == v2) ||
                 (self.uriDenormalize('owl:maxCardinality') == v2) ||
@@ -1254,6 +1259,65 @@ RDFE.OntologyClass.prototype.isAggregateProperty = function(p, cc) {
   }
 
   return false;
+};
+
+RDFE.OntologyClass.prototype.getUniqueRestrictions = function() {
+  var uniqueRestrictions = [];
+  if (this.restrictions) {
+    for (var key in this.restrictions) {
+      var property = this.restrictions[key];
+      if (property.uniqueIdRestriction === true) {
+        uniqueRestrictions.push(this.manager.ontologyPropertyByURI(key));
+      }
+    }
+  }
+  return uniqueRestrictions;
+};
+
+RDFE.OntologyClass.prototype.getUniqueValue = function(store, graph, uri, property) {
+  var uniqueValue;
+  var range = property.range;
+  var stringTypes = [
+    "http://www.w3.org/2000/01/rdf-schema#Literal",
+    "http://www.w3.org/2001/XMLSchema#string"
+  ];
+  var integerTypes = [
+    "http://www.w3.org/2001/XMLSchema#integer",
+    "http://www.w3.org/2001/XMLSchema#decimal",
+    "http://www.w3.org/2001/XMLSchema#nonPositiveInteger",
+    "http://www.w3.org/2001/XMLSchema#negativeInteger",
+    "http://www.w3.org/2001/XMLSchema#long",
+    "http://www.w3.org/2001/XMLSchema#int",
+    "http://www.w3.org/2001/XMLSchema#short",
+    "http://www.w3.org/2001/XMLSchema#byte",
+    "http://www.w3.org/2001/XMLSchema#nonNegativeInteger",
+    "http://www.w3.org/2001/XMLSchema#unsignedLong",
+    "http://www.w3.org/2001/XMLSchema#unsignedInt",
+    "http://www.w3.org/2001/XMLSchema#unsignedShort",
+    "http://www.w3.org/2001/XMLSchema#unsignedByte",
+    "http://www.w3.org/2001/XMLSchema#positiveInteger"
+  ];
+  if (stringTypes.indexOf(range) !== -1) {
+    uniqueValue = uri;
+  }
+  else if (integerTypes.indexOf(range) !== -1) {
+    uniqueValue = 1;
+    var sparql = 'SELECT (MAX(?v) as ?mv) FROM <{0}> WHERE {?s <{1}> ?v}'.format(graph, property.URI);
+    store.execute(sparql, function(success, results) {
+      if (success) {
+        if (results.length !== 0) {
+          uniqueValue = parseInt(RDFE.coalesce(results[0]["mv"].value, 0));
+          if (isNaN(uniqueValue)) {
+            uniqueValue = 0;
+          }
+          uniqueValue++;
+        }
+      } else {
+        console.log(results);
+      }
+    });
+  }
+  return uniqueValue;
 };
 
 RDFE.OntologyClass.prototype.getIndividuals = function(includeSuper, cc) {
