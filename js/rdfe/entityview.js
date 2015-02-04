@@ -45,14 +45,14 @@
         for (var i = 0; i < el.length; i++) {
           entityData.push({
             'label': el[i].label,
-            'types': _.map(el[i].types, function(s) {
+            'types': _.uniq(_.map(el[i].types, function(s) {
               // merge class name with class label for the searchable entity type
               var c = self.ontologyManager.ontologyClassByURI(s);
               if(c) {
                 return c.label;
               }
               return s.split(/[/#]/).pop();
-            }).join(', '),
+            })).join(', '),
             'uri': el[i].value,
             'id': i
           });
