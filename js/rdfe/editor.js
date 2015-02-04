@@ -217,9 +217,9 @@ RDFE.Editor.prototype.createNewEntityEditor = function() {
   });
 
   self.container.find('a.triple-action-new-save').click(function(e) {
-    var uri = container.find('input[name="subject"]').val(),
+    var uri = self.container.find('input[name="subject"]').val(),
         name = null,
-        type = container.find('#class')[0].selectize.getValue();
+        type = self.container.find('#class')[0].selectize.getValue();
 
     if(self.config.options.entityUriTmpl) {
       name = uri;
