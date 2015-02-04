@@ -14,7 +14,7 @@
 @prefix olo: <http://purl.org/ontology/olo/core#> .
 
 lens:TouchPointLens a fresnel:Lens;
-    fresnel:classLensDomain bce:Touchpoint;
+    fresnel:classLensDomain bce:TouchPoint;
     fresnel:purpose fresnel:defaultLens;
     fresnel:showProperties (
       skos:prefLabel

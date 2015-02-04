@@ -117,7 +117,7 @@ Channel/BceChannel ist im Moment auch grob Orga Grenze bei BCE
          
          rdfs:range :Channel ;
          
-         rdfs:domain :Touchpoint ;
+         rdfs:domain :TouchPoint ;
          
          rdfs:subPropertyOf :touchpointObjectProperty .
 
@@ -176,7 +176,7 @@ This is milieu specific!""" ;
            
            rdfs:range :Financing ;
            
-           rdfs:domain :Touchpoint ;
+           rdfs:domain :TouchPoint ;
            
            rdfs:subPropertyOf :touchpointObjectProperty .
 
@@ -214,9 +214,9 @@ This field is for TPs like Newsletter or MB-Magazine, to group them together to 
                 
                 rdfs:isDefinedBy "http://ldp.e.corpintra.net/ontology/bce#" ;
                 
-                rdfs:domain :Touchpoint ;
+                rdfs:domain :TouchPoint ;
                 
-                rdfs:range :Touchpoint ;
+                rdfs:range :TouchPoint ;
                 
                 rdfs:subPropertyOf :bceObjectProperty .
 
@@ -251,11 +251,11 @@ phase (range) of the customer lifecycle""" ;
                     
                     rdfs:isDefinedBy "http://ldp.e.corpintra.net/ontology/bce#" ;
                     
-                    rdfs:comment "States, that a a Touchpoint is present in a Phase" ;
+                    rdfs:comment "States, that a a TouchPoint is present in a Phase" ;
                     
                     rdfs:domain :Phase ;
                     
-                    rdfs:range :Touchpoint ;
+                    rdfs:range :TouchPoint ;
                     
                     rdfs:subPropertyOf :bceObjectProperty .
 
@@ -269,12 +269,12 @@ phase (range) of the customer lifecycle""" ;
      
      rdfs:isDefinedBy "http://ldp.e.corpintra.net/ontology/bce#" ;
      
-     rdfs:comment """property to relate a some KPI to a Touchpoint.
+     rdfs:comment """property to relate a some KPI to a TouchPoint.
 specific KPI types are subproperties of this property""" ;
      
      rdfs:range :MilieuSpecificLiteral ;
      
-     rdfs:domain :Touchpoint ;
+     rdfs:domain :TouchPoint ;
      
      rdfs:subPropertyOf :milieuSpecificObjectProperty .
 
@@ -295,7 +295,7 @@ multi value""" ;
           
           rdfs:range :MilieuSpecificResource ;
           
-          rdfs:domain :Touchpoint ;
+          rdfs:domain :TouchPoint ;
           
           rdfs:subPropertyOf :milieuSpecificObjectProperty ,
                              :touchpointObjectProperty .
@@ -339,7 +339,7 @@ Cardinality = 1""" ;
               
               rdfs:range :MediaControl ;
               
-              rdfs:domain :Touchpoint ;
+              rdfs:domain :TouchPoint ;
               
               rdfs:subPropertyOf :touchpointObjectProperty .
 
@@ -411,7 +411,7 @@ onee per milieu""" ;
        
        rdfs:range :MilieuSpecificResource ;
        
-       rdfs:domain :Touchpoint ;
+       rdfs:domain :TouchPoint ;
        
        rdfs:subPropertyOf :milieuSpecificObjectProperty ,
                           :touchpointObjectProperty .
@@ -451,7 +451,7 @@ touchpoint or as path segment.
       
       rdfs:range :MilieuSpecificLiteral ;
       
-      rdfs:domain :Touchpoint ;
+      rdfs:domain :TouchPoint ;
       
       rdfs:subPropertyOf :milieuSpecificObjectProperty ,
                          :touchpointObjectProperty .
@@ -562,7 +562,7 @@ Property to relate them.""" ;
          
          rdfs:range :Toolkit ;
          
-         rdfs:domain :Touchpoint ;
+         rdfs:domain :TouchPoint ;
          
          rdfs:subPropertyOf :touchpointObjectProperty .
 
@@ -578,7 +578,7 @@ Property to relate them.""" ;
                           
                           rdfs:isDefinedBy "http://ldp.e.corpintra.net/ontology/bce#" ;
                           
-                          rdfs:domain :Touchpoint ;
+                          rdfs:domain :TouchPoint ;
                           
                           rdfs:subPropertyOf :bceObjectProperty .
 
@@ -1272,11 +1272,11 @@ Each segment is elated to a phase.""" ;
 
 
 
-###  http://ldp.e.corpintra.net/ontology/bce#Touchpoint
+###  http://ldp.e.corpintra.net/ontology/bce#TouchPoint
 
-:Touchpoint rdf:type owl:Class ;
+:TouchPoint rdf:type owl:Class ;
             
-            rdfs:label "Touchpoint" ;
+            rdfs:label "TouchPoint" ;
             
             rdfs:subClassOf :BceThing ,
                             skos:Concept ;

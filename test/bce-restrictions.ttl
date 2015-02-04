@@ -14,7 +14,7 @@
 @prefix oplowl: <http://www.openlinksw.com/ontology/oplowl#> .
 @prefix olo: <http://purl.org/ontology/olo/core#> .
 
-bce:Touchpoint a owl:Class ;
+bce:TouchPoint a owl:Class ;
   rdfs:subClassOf [
     a owl:Restriction ;
     owl:onProperty bce:channel , bce:duration , bce:prio , bceui:forceLabel , bce:mediaControl ;
