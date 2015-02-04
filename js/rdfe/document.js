@@ -429,7 +429,7 @@ RDFE.Document.prototype.addEntity = function(uri, name, type, cb, failCb) {
       t.push(self.store.rdf.createTriple(
         self.store.rdf.createNamedNode(uri),
         self.store.rdf.createNamedNode(property.URI),
-        self.store.rdf.createLiteral(uniqueValue)
+        self.store.rdf.createLiteral(uniqueValue, null, property.range)
       ));
     }
   }
