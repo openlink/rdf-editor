@@ -92,7 +92,7 @@
         <div class="panel-heading clearfix">\
           <h3 class="panel-title pull-left">Editing <a href="<%= entityUri %>"><span class="entity-label"><%= entityLabel %><span></a></h3>\
           <div class="btn-group pull-right" role="group">\
-            <button type="button" class="btn btn-primary" id="okBtn">OK</button>\
+            <button type="button" class="btn btn-primary" id="okBtn">Apply</button>\
             <button type="button" class="btn btn-default" id="cnclBtn">Cancel</button>\
           </div>\
         </div>\
@@ -124,22 +124,35 @@
         // add the newly created form to the container
         container.find('#entityFormContainer').append(form.el);
 
-        // add click handlers to our buttons
+        // add click handlers to our buttons (we have three handlers because we used to have three buttons)
         var cancelBtn = container.find('button#cnclBtn');
-        var saveBtn = container.find('button#okBtn');
+        var saveBtn = container.find('button#saveBtn');
+        var okBtn = container.find('button#okBtn');
         cancelBtn.click(function() {
           closeCb();
         });
-        saveBtn.click(function() {
+        var saveFnct = function(cb) {
           form.commit();
           model.modelToDoc(function() {
-            closeCb();
+            $(self).trigger('rdf-editor-success', {
+              "type": 'editor-form-save-done',
+              "message": "Locally saved details of " + url
+            });
+            if(cb) {
+              cb();
+            }
           }, function(msg) {
             $(self).trigger('rdf-editor-error', {
               "type": 'editor-form-save-failed',
               "message": msg
             });
           });
+        };
+        saveBtn.click(function() {
+          saveFnct();
+        });
+        okBtn.click(function() {
+          saveFnct(closeCb);
         });
       }, function(msg) {
         $(self).trigger('rdf-editor-error', {

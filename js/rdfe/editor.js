@@ -72,7 +72,7 @@ RDFE.Editor.prototype.createNewStatementEditor = function() {
       <div class="form-group"><label for="object" class="col-sm-2 control-label">Object</label> \
       <div class="col-sm-10"><input name="object" class="form-control" /></div></div> \
       <div class="form-group"><div class="col-sm-10 col-sm-offset-2"><a href="#" class="btn btn-default triple-action triple-action-new-cancel">Cancel</a> \
-        <a href="#" class="btn btn-primary triple-action triple-action-new-save">Save</a></div></div> \
+        <a href="#" class="btn btn-primary triple-action triple-action-new-save">OK</a></div></div> \
       </form></div></div>\n');
 
   var objEd = self.container.find('input[name="object"]').rdfNodeEditor();
@@ -162,7 +162,7 @@ RDFE.Editor.prototype.createNewEntityEditor = function() {
     '  <div class="form-group"> ' +
     '    <div class="col-sm-10 col-sm-offset-2"> ' +
     '      <a href="#" class="btn btn-default triple-action triple-action-new-cancel">Cancel</a> ' +
-    '      <a href="#" class="btn btn-primary triple-action triple-action-new-save">Save</a> ' +
+    '      <a href="#" class="btn btn-primary triple-action triple-action-new-save">OK</a> ' +
     '    </div> ' +
     '  </div> ' +
     '</div></div></div>\n');
