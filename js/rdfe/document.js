@@ -57,7 +57,7 @@ RDFE.Document.prototype.verifyData = function(callback, fail) {
   var self = this;
 
   // check if there are any invalid uris in the document
-  var emptyUriCb = function(s,r) {
+  self.store.execute("select * from <" + self.graph + "> where {{ <> ?p ?o } union { ?s2 ?p2 <> }}", function(s,r) {
     if(s) {
       if(r.length > 0) {
         callback(false, "The document is not valid. It contains empty URI nodes.");
@@ -74,10 +74,6 @@ RDFE.Document.prototype.verifyData = function(callback, fail) {
       }
       return false;
     }
-  };
-
-  self.store.execute("select * from <" + self.graph + "> where {{ <> ?p ?o } union { ?s2 ?p2 <> }}", function(s,r) {
-    emptyUriCb(s,r);
   });
 };
 
@@ -122,10 +118,10 @@ RDFE.Document.prototype.save = function(url, io, success, fail) {
             "error": myFail
           });
         }
-        else {
-          fail(m);
+        else if(myFail) {
+          myFail(m);
         }
-      }, fail);
+      }, myFail);
     }
 };
 
