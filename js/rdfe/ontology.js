@@ -329,14 +329,6 @@ RDFE.collectionQuery = function(store, graph, s, p, o, m) {
   return items;
 }
 
-RDFE.individuals = function(doc, type) {
-  var items = [];
-  doc.listEntities(type, function(r) {
-    items = r;
-  });
-  return items;
-};
-
 /*
  *
  * Ontology Manager
