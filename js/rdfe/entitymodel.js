@@ -320,14 +320,19 @@ RDFE.EntityModel = Backbone.Model.extend({
 
             // add the sub-model triples. FIXME: use recursion to support more nesting depth, and protect against loops!
             self.doc.deleteTriples(node, null, null);
+            var haveSubT = false;
             for(subP in subVal.values) {
               var sv = subVal.values[subP];
               for(var k = 0; k < sv.length; k++) {
+                haveSubT = true;
                 triples.push(self.doc.store.rdf.createTriple(
                   node,
                   self.doc.store.rdf.createNamedNode(subP),
                   sv[k].toStoreNode(self.doc.store)));
               }
+            }
+            if(!haveSubT) {
+              node = null;
             }
           }
           else {
@@ -335,7 +340,7 @@ RDFE.EntityModel = Backbone.Model.extend({
           }
 
           // add the main triple
-          if(node.nominalValue.length > 0) {
+          if(node && node.nominalValue.length > 0) {
             triples.push(self.doc.store.rdf.createTriple(
               self.doc.store.rdf.createNamedNode(self.uri),
               self.doc.store.rdf.createNamedNode(prop),
