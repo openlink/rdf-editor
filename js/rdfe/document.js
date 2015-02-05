@@ -424,7 +424,7 @@ RDFE.Document.prototype.addEntity = function(uri, name, type, cb, failCb) {
   var uniqueRestrictions = ontologyClass.getUniqueRestrictions();
   for (var i = 0; i < uniqueRestrictions.length; i++) {
     var property = uniqueRestrictions[i];
-    var uniqueValue = ontologyClass.getUniqueValue(self.store, self.graph, uri, property);
+    var uniqueValue = self.getUniqueValue(uri, property);
     if (uniqueValue) {
       t.push(self.store.rdf.createTriple(
         self.store.rdf.createNamedNode(uri),
@@ -447,3 +447,54 @@ RDFE.Document.prototype.addEntity = function(uri, name, type, cb, failCb) {
     }
   });
 };
+
+RDFE.Document.prototype.getUniqueValue = function() {
+  var stringTypes = [
+    "http://www.w3.org/2000/01/rdf-schema#Literal",
+    "http://www.w3.org/2001/XMLSchema#string"
+  ];
+  var integerTypes = [
+    "http://www.w3.org/2001/XMLSchema#integer",
+    "http://www.w3.org/2001/XMLSchema#decimal",
+    "http://www.w3.org/2001/XMLSchema#nonPositiveInteger",
+    "http://www.w3.org/2001/XMLSchema#negativeInteger",
+    "http://www.w3.org/2001/XMLSchema#long",
+    "http://www.w3.org/2001/XMLSchema#int",
+    "http://www.w3.org/2001/XMLSchema#short",
+    "http://www.w3.org/2001/XMLSchema#byte",
+    "http://www.w3.org/2001/XMLSchema#nonNegativeInteger",
+    "http://www.w3.org/2001/XMLSchema#unsignedLong",
+    "http://www.w3.org/2001/XMLSchema#unsignedInt",
+    "http://www.w3.org/2001/XMLSchema#unsignedShort",
+    "http://www.w3.org/2001/XMLSchema#unsignedByte",
+    "http://www.w3.org/2001/XMLSchema#positiveInteger"
+  ];
+
+  return function(uri, property) {
+    var self = this,
+        uniqueValue,
+        range = property.range;
+
+    if (stringTypes.indexOf(range) !== -1) {
+      uniqueValue = uri;
+    }
+    else if (integerTypes.indexOf(range) !== -1) {
+      uniqueValue = 1;
+      var sparql = 'SELECT (MAX(?v) as ?mv) FROM <{0}> WHERE {?s <{1}> ?v}'.format(self.graph, property.URI);
+      self.store.execute(sparql, function(success, results) {
+        if (success) {
+          if (results.length !== 0) {
+            uniqueValue = parseInt(RDFE.coalesce(results[0]["mv"].value, 0));
+            if (isNaN(uniqueValue)) {
+              uniqueValue = 0;
+            }
+            uniqueValue++;
+          }
+        } else {
+          console.log('Failed to determine unique value for ', uri, ' and ', property.URI, results);
+        }
+      });
+    }
+    return uniqueValue;
+  };
+}();
