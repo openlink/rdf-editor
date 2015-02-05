@@ -76,7 +76,7 @@ bce:Phase a owl:Class ;
     owl:cardinality "1"^^xsd:nonNegativeInteger
   ] , [
     a owl:Restriction , oplowl:AggregateRestriction ;
-    owl:onProperty bce:phaseOrder ;
+    owl:onProperty bceui:phaseOrder ;
     owl:cardinality "1"^^xsd:nonNegativeInteger
   ] , [
     a owl:Restriction , oplowl:UniqueIdRestriction ;
