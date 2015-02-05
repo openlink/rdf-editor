@@ -360,12 +360,70 @@ RDFE.OntologyManager.prototype.init = function(options) {
   var self = this;
   self.reset();
 
+  var options = $.extend({}, options);
   // ontologies init
-  this.ontologiesParse(self.options.preloadOntologies);
-  // fresnels init
-  this.fresnelsParse(self.options.preloadFresnels);
-  // individuals init
-  this.individualsParse(self.options.preloadIndividuals);
+  var __successOntologies = (function (options) {
+    return function () {
+      // fresnels init
+      var __successFresnels = (function (options) {
+        return function () {
+          // individuals init
+          var __successIndividuals = (function (options) {
+            return function () {
+              // end
+              console.log('final');
+              if (options.success) {
+                options.success();
+              }
+            }
+          })(options);
+          var params = {
+            "success":  __successIndividuals,
+            "error": options.error
+          }
+          self.individualsParse(self.options.preloadIndividuals, params);
+        }
+      })(options);
+      var params = {
+        "success":  __successFresnels,
+        "error": options.error
+      }
+      self.fresnelsParse(self.options.preloadFresnels, params);
+    }
+  })(options);
+  var params = {
+    "success":  __successOntologies,
+    "error": options.error
+  }
+  self.ontologiesParse(self.options.preloadOntologies, params);
+}
+
+RDFE.OntologyManager.prototype.synchronousParse = function(itemParse, items, options) {
+  var self = this;
+
+  var options = $.extend({}, options);
+  var items = items || [];
+  var fn = function (itemParse, items, options, fn) {
+    if (items.length > 0) {
+      var item = items[0];
+      items = _.rest(items);
+      var __success = (function (itemParse, items, options, fn) {
+        return function () {
+          fn(itemParse, items, options, fn);
+        }
+      })(itemParse, items, options, fn);
+      var params = {
+        "success":  __success,
+        "error": options.error
+      }
+      self[itemParse](item, params);
+    } else {
+      if (options.success) {
+        options.success();
+      }
+    }
+  };
+  fn(itemParse, items, options, fn);
 }
 
 RDFE.OntologyManager.prototype.reset = function(options) {
@@ -573,10 +631,10 @@ RDFE.OntologyManager.prototype.ontologyParse = function(URI, callParams) {
         var ontology;
         for (var i = 0; i < results.length; i++) {
           var ontologyURI = results[i]["o"].value;
-          console.log('Found owl:Ontology:', ontologyURI);
+          // console.log('Found owl:Ontology:', ontologyURI);
           // Fix for some ontlogies
           if ((graph.charAt(graph.length - 1) == '#') && (graph.substring(0, graph.length - 1) == ontologyURI)) {
-            console.log('replacing onto uri', ontologyURI, 'with', graph);
+            // console.log('replacing onto uri', ontologyURI, 'with', graph);
             ontologyURI = graph;
           }
           if(self.ontologies[ontologyURI + '#']) {
@@ -615,13 +673,8 @@ RDFE.OntologyManager.prototype.ontologyParse = function(URI, callParams) {
   self.load(URI, loadParams);
 }
 
-RDFE.OntologyManager.prototype.ontologiesParse = function(ontologies, params) {
-  var self = this;
-  if (ontologies) {
-    for (var i = 0, l = ontologies.length; i < l; i++) {
-      self.ontologyParse(ontologies[i], params);
-    }
-  }
+RDFE.OntologyManager.prototype.ontologiesParse = function(ontologies, options) {
+  this.synchronousParse('ontologyParse', ontologies, options);
 }
 
 // ontology classes
@@ -708,7 +761,7 @@ RDFE.OntologyManager.prototype.ontologyRestrictionsParse = function(graph, ontol
             propertyURI = v1;
 
             if (self.uriDenormalize('rdf:type') == v2 && v3 == 'http://www.openlinksw.com/ontology/oplowl#AggregateRestriction') {
-              console.log('Adding ', v3, 'for', propertyURI);
+              // console.log('Adding ', v3, 'for', propertyURI);
               ontologyClass.restrictions[propertyURI] = $.extend(ontologyClass.restrictions[propertyURI], { isAggregate: true });
             }
 
@@ -723,7 +776,7 @@ RDFE.OntologyManager.prototype.ontologyRestrictionsParse = function(graph, ontol
                      (self.uriDenormalize('owl:cardinality') == v2)
                     )
             {
-              console.log('Adding ', v2, 'for', propertyURI);
+              // console.log('Adding ', v2, 'for', propertyURI);
               restrictionURI = v2;
               restrictionValue = v3;
               property = ontologyClass.properties[propertyURI];
@@ -736,7 +789,7 @@ RDFE.OntologyManager.prototype.ontologyRestrictionsParse = function(graph, ontol
                      ('http://www.openlinksw.com/ontology/oplowl#hasCustomComment' == v2)
                     )
             {
-              console.log('Adding ', v2, 'for', propertyURI);
+              // console.log('Adding ', v2, 'for', propertyURI);
               restrictionURI = v2;
               restrictionValue = v3;
               property = ontologyClass.properties[propertyURI];
@@ -842,13 +895,8 @@ RDFE.OntologyManager.prototype.fresnelParse = function(URI, callParams) {
   self.load(URI, loadParams);
 }
 
-RDFE.OntologyManager.prototype.fresnelsParse = function(fresnels, params) {
-  var self = this;
-  if (fresnels) {
-    for (var i = 0, l = fresnels.length; i < l; i++) {
-      self.fresnelParse(fresnels[i], params);
-    }
-  }
+RDFE.OntologyManager.prototype.fresnelsParse = function(fresnels, options) {
+  this.synchronousParse('fresnelParse', fresnels, options);
 }
 
 // fresnel lenses
@@ -1029,13 +1077,8 @@ RDFE.OntologyManager.prototype.individualParse = function(URI, callParams) {
   self.load(URI, loadParams);
 }
 
-RDFE.OntologyManager.prototype.individualsParse = function(individuals, params) {
-  var self = this;
-  if (individuals) {
-    for (var i = 0, l = individuals.length; i < l; i++) {
-      self.individualParse(individuals[i], params);
-    }
-  }
+RDFE.OntologyManager.prototype.individualsParse = function(individuals, options) {
+  this.synchronousParse('individualParse', individuals, options);
 }
 
 /*
@@ -1409,7 +1452,7 @@ RDFE.OntologyProperty.prototype.getRange = function(pp) {
     if($.inArray(sp, pp) < 0) {
       pp = pp || [];
       pp.push(sp);
-      console.log('Checking sub-property', sp, sp.range)
+      // console.log('Checking sub-property', sp, sp.range)
       r = this.manager.ontologyPropertyByURI(sp).getRange(pp);
       if(r) {
         return r;
