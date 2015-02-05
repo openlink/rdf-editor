@@ -324,11 +324,14 @@ RDFE.EntityModel = Backbone.Model.extend({
             for(subP in subVal.values) {
               var sv = subVal.values[subP];
               for(var k = 0; k < sv.length; k++) {
-                haveSubT = true;
-                triples.push(self.doc.store.rdf.createTriple(
-                  node,
-                  self.doc.store.rdf.createNamedNode(subP),
-                  sv[k].toStoreNode(self.doc.store)));
+                var svv = sv[k].toStoreNode(self.doc.store);
+                if(svv && svv.nominalValue.length > 0) {
+                  haveSubT = true;
+                  triples.push(self.doc.store.rdf.createTriple(
+                    node,
+                    self.doc.store.rdf.createNamedNode(subP),
+                    svv));
+                }
               }
             }
             if(!haveSubT) {
