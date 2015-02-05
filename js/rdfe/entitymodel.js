@@ -15,13 +15,10 @@ RDFE.EntityModel = Backbone.Model.extend({
 
   getIndividuals: function(range, callback) {
     var items = [];
+
+    // get individuals from the ontology manager
     if(range === 'http://www.w3.org/1999/02/22-rdf-syntax-ns#Resource') {
-      items = _.map(_.values(this.doc.ontologyManager.individuals), function(cl) {
-        var n = new RDFE.RdfNode('uri', cl.URI);
-        // FIXME: honor config.labelProps
-        n.label = cl.label;
-        return n;
-      });
+      items = this.doc.ontologyManager.individuals;
     }
     else {
       var rc = this.doc.ontologyManager.ontologyClassByURI(range);
@@ -29,7 +26,20 @@ RDFE.EntityModel = Backbone.Model.extend({
         items = rc.getIndividuals(true);
       }
     }
-    $.merge(items, RDFE.individuals(this.doc, range));
+    // convert the object we get from the ontologyManager into a flat list with labels
+    items = _.map(_.values(items), function(cl) {
+      var n = new RDFE.RdfNode('uri', cl.URI);
+      // FIXME: honor config.labelProps
+      n.label = cl.label;
+      return n;
+    });
+
+    // get individuals from the document
+    this.doc.listEntities(range, function(el) {
+      $.merge(items, el);
+    });
+
+    // return the merged individuals list
     callback(items);
   },
 
