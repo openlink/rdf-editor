@@ -42,6 +42,15 @@ RDFE.EntityModel = Backbone.Model.extend({
     return null;
   },
 
+  restrictionsForProperty: function(p) {
+    for(var i = 0; i < this.types.length; i++) {
+      var c = this.types[i].restrictions[p];
+      if(c)
+        return c;
+    }
+    return null;
+  },
+
   isAggregateProperty: function(p) {
     for(var i = 0; i < this.types.length; i++) {
       if(this.types[i].isAggregateProperty(p))
@@ -54,13 +63,20 @@ RDFE.EntityModel = Backbone.Model.extend({
     var self = this;
     var property = (p.URI ? p : (self.doc.ontologyManager.ontologyProperties[p] || { URI: p }));
 
-    var label = RDFE.Utils.createTitle(property.label || property.title || property.URI.split(/[/#]/).pop())
+    var restrictions = this.restrictionsForProperty(p);
+    var restrictionLabel;
+    var restrictionComment;
+    if (restrictions) {
+      restrictionLabel = restrictions["hasCustomLabel"];
+      restrictionComment = restrictions["hasCustomComment"];
+    }
+    var label = RDFE.Utils.createTitle(restrictionLabel || property.label || property.title || property.URI.split(/[/#]/).pop())
     var item = {
       titleHTML: '<span title="{0}">{1}</span>'.format(RDFE.Utils.escapeXml(property.URI), label),
       title: label,
       maxCardinality: self.maxCardinalityForProperty(property.URI),
       editorAttrs: {
-        "title": RDFE.coalesce(property.comment, property.description)
+        "title": RDFE.coalesce(restrictionComment, property.comment, property.description)
       }
     };
 

@@ -706,8 +706,8 @@ RDFE.OntologyManager.prototype.ontologyRestrictionsParse = function(graph, ontol
         if (success) {
           var property;
           var propertyURI = '',
-              cardinalityURI = '',
-              cardinalityValue = '';
+              restrictionURI = '',
+              restrictionValue = '';
           for (var i = 0, l = results.length; i < l; i++) {
             var v1 = RDFE.sparqlValue(results[i]['v1']);
             var v2 = RDFE.sparqlValue(results[i]['v2']);
@@ -726,17 +726,30 @@ RDFE.OntologyManager.prototype.ontologyRestrictionsParse = function(graph, ontol
             }
 
             else if (
-                (self.uriDenormalize('owl:minCardinality') == v2) ||
-                (self.uriDenormalize('owl:maxCardinality') == v2) ||
-                (self.uriDenormalize('owl:cardinality') == v2)
-               )
+                     (self.uriDenormalize('owl:minCardinality') == v2) ||
+                     (self.uriDenormalize('owl:maxCardinality') == v2) ||
+                     (self.uriDenormalize('owl:cardinality') == v2)
+                    )
             {
               console.log('Adding ', v2, 'for', propertyURI);
-              cardinalityURI = v2;
-              cardinalityValue = v3;
+              restrictionURI = v2;
+              restrictionValue = v3;
               property = ontologyClass.properties[propertyURI];
               ontologyClass.restrictions[propertyURI] = ontologyClass.restrictions[propertyURI] || {};
-              ontologyClass.restrictions[propertyURI][RDFE.uriLabel(cardinalityURI)] = parseInt(cardinalityValue);
+              ontologyClass.restrictions[propertyURI][RDFE.uriLabel(restrictionURI)] = parseInt(restrictionValue);
+            }
+
+            else if (
+                     ('http://www.openlinksw.com/ontology/oplowl#hasCustomLabel' == v2) ||
+                     ('http://www.openlinksw.com/ontology/oplowl#hasCustomComment' == v2)
+                    )
+            {
+              console.log('Adding ', v2, 'for', propertyURI);
+              restrictionURI = v2;
+              restrictionValue = v3;
+              property = ontologyClass.properties[propertyURI];
+              ontologyClass.restrictions[propertyURI] = ontologyClass.restrictions[propertyURI] || {};
+              ontologyClass.restrictions[propertyURI][RDFE.uriLabel(restrictionURI)] = restrictionValue;
             }
           }
         }
