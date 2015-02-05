@@ -49,6 +49,10 @@
     {
       "uri": "http://ldp.e.corpintra.net/ontology/bce#Toolkit",
       "label": "Toolkit"
+    } ,
+    {
+      "uri": "http://ldp.e.corpintra.net/ontology/bceui#Filter",
+      "label": "Filter"
     }
   ]
 }
