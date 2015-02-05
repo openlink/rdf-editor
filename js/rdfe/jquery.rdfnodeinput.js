@@ -305,16 +305,32 @@
     $(this).trigger('change', this);
   };
 
+  /**
+   * Check if two literal types are compatible. The only point of this function is to
+   * allow the special case of xsd:string == rdfs:Literal.
+   *
+   * @return @p true if the given types are compatible, @p false otherwise.
+   */
+  var checkTypeComp = function() {
+    var ta = [
+      'http://www.w3.org/2000/01/rdf-schema#Literal',
+      'http://www.w3.org/2001/XMLSchema#string'
+    ];
+
+    return function(t1, t2) {
+      return (t1 === t2 || ($.inArray(t1, ta) >= 0 && $.inArray(t2, ta) >= 0));
+    };
+  }();
+
   RdfNodeEditor.prototype.updateEditor = function(initial) {
     // always show the type selection field if the type differs
     // typed string and plain literal without lang should be treated as similar
-    if(!this.options.type ||
-        (this.options.type != this.currentType &&
-        this.options.type != 'http://www.w3.org/2000/01/rdf-schema#Literal' &&
-        this.currentType != 'http://www.w3.org/2001/XMLSchema#string'))
-      this.typeContainer.css('display', 'table-cell');
-    else
+    if(checkTypeComp(this.options.type, this.currentType)) {
       this.typeContainer.hide();
+    }
+    else {
+      this.typeContainer.css('display', 'table-cell');
+    }
 
     if(!this.options.showLangSelect || this.currentType != 'http://www.w3.org/2000/01/rdf-schema#Literal')
       this.langContainer.hide();
