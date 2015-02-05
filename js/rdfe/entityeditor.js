@@ -24,10 +24,15 @@
       '),
 
       render: function() {
+        var self = this;
+
         Backbone.Form.prototype.render.call(this);
 
+        if(!self.model.allowAddProperty) {
+          this.$el.find('.addProp').hide();
+        }
+
         // we only want to find our own button, not the ones from nested forms
-        var self = this;
         this.$el.find('> a.addProp').click(function(e) {
           e.preventDefault();
 

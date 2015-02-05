@@ -246,6 +246,9 @@ RDFE.EntityModel = Backbone.Model.extend({
         }
 
         if(!lens) {
+          // only chow the "Add Property" button if we have fresnel:allProperties in the lens or we have no lens
+          self.allowAddProperty = true;
+
           // build the list of fields from the existing triples.
           for (var i = 0, l = r.length; i < l; i++) {
             var p = r[i].p.value;
@@ -258,6 +261,9 @@ RDFE.EntityModel = Backbone.Model.extend({
           // replace fresnel:allProperties with the missing properties, rather than appending them
           var j = self.fields.indexOf(self.ontologyManager.uriDenormalize('fresnel:allProperties'));
           if(j >= 0) {
+            // only chow the "Add Property" button if we have fresnel:allProperties in the lens or we have no lens
+            self.allowAddProperty = true;
+
             var mp = [];
             for (var i = 0, l = r.length; i < l; i++) {
               var p = r[i].p.value;
