@@ -536,7 +536,7 @@ RDFE.OntologyManager.prototype.load = function(URI, params) {
   var ioType = (params.ioType)? params.ioType: 'http';
   var IO = RDFE.IO.createIO(ioType);
   IO.type = ioType;
-  IO.retrieveToStore(URI, self.store, URI, $.extend({"proxy": self.options.proxy}, params));
+  IO.retrieveToStore(URI, self.store, params?(params.graph||URI) : URI, $.extend({"proxy": self.options.proxy}, params));
 }
 
 RDFE.OntologyManager.prototype.ontologyParse = function(URI, callParams) {
@@ -974,13 +974,14 @@ RDFE.OntologyManager.prototype.individualParse = function(URI, callParams) {
     }
     return;
   }
+  var graph = "urn:rdfe:individuals"; // quick hack to avoid problems with /sparql urls that can become too long for graph names. FIXME: find a generic solution
 
   var __success = (function(params) {
     return function() {
       // individuals parse
 
       // add property to classes
-      var sparql = RDFE.OM_INDIVIDUALS_TEMPLATE.format(URI);
+      var sparql = RDFE.OM_INDIVIDUALS_TEMPLATE.format(graph);
       self.store.execute(sparql, function(success, results) {
         if (!success) {
           console.error('ontology individuals =>', results);
@@ -988,15 +989,15 @@ RDFE.OntologyManager.prototype.individualParse = function(URI, callParams) {
         }
         for (var j = 0, m = results.length; j < m; j++) {
           var i = results[j]["i"].value;
-          var c = self.OntologyClass(URI, results[j]["c"].value, params);
+          var c = self.OntologyClass(graph, results[j]["c"].value, params);
           if (!_.isEmpty(i) && !RDFE.isBlankNode(i) && !RDFE.isBlankNode(c)) {
-            self.OntologyIndividual(URI, i, c, params);
+            self.OntologyIndividual(graph, i, c, params);
           }
         }
       });
 
       // clear graph after parse
-      self.graphClear(URI);
+      self.graphClear(graph);
 
       if (params.success) {
         params.success();
@@ -1009,7 +1010,8 @@ RDFE.OntologyManager.prototype.individualParse = function(URI, callParams) {
   var loadParams = {
     "ioType": params.ioType,
     "success": __success,
-    "error": params.error
+    "error": params.error,
+    "graph": graph
   };
   self.load(URI, loadParams);
 }
