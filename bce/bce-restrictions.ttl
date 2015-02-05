@@ -26,6 +26,9 @@ bce:TouchPoint a owl:Class ;
     a owl:Restriction , oplowl:AggregateRestriction ;
     owl:onProperty bce:sampleKpi
   ] , [
+    a owl:Restriction , oplowl:AggregateRestriction ;
+    owl:onProperty bce:markedAs
+  ] , [
     a owl:Restriction , oplowl:UniqueIdRestriction ;
     owl:onProperty bce:legacyId ;
     owl:cardinality "1"^^xsd:nonNegativeInteger

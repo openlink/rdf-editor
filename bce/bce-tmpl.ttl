@@ -45,6 +45,14 @@ lens:MilieuSpecificLiteralLens a fresnel:Lens ;
       bce:literalForMilieuSpecific
     ) .
 
+lens:MilieuSpecificResourceLens a fresnel:Lens ;
+    fresnel:classLensDomain bce:MilieuSpecificResource ;
+    fresnel:showProperties (
+      skos:prefLabel
+      skos:definition
+      bce:resourceForMilieuSpecific
+    ) .
+
 lens:ToolkitLens a fresnel:Lens;
     fresnel:classLensDomain bce:Toolkit;
     fresnel:purpose fresnel:defaultLens;
@@ -79,6 +87,14 @@ lens:JourneyLens a fresnel:Lens;
       bce:customerJourneySequence
       bce:source
       bce:multiply
+    ) .
+
+lens:MarketLens a fresnel:Lens;
+    fresnel:classLensDomain bce:Market;
+    fresnel:purpose fresnel:defaultLens;
+    fresnel:showProperties (
+      skos:prefLabel
+      skos:definition
     ) .
 
 lens:FinancingLens a fresnel:Lens;
