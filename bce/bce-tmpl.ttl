@@ -40,16 +40,14 @@ lens:TouchPointLens a fresnel:Lens;
 lens:MilieuSpecificLiteralLens a fresnel:Lens ;
     fresnel:classLensDomain bce:MilieuSpecificLiteral ;
     fresnel:showProperties (
-      skos:prefLabel
-      skos:definition
+      bce:mileu
       bce:literalForMilieuSpecific
     ) .
 
 lens:MilieuSpecificResourceLens a fresnel:Lens ;
     fresnel:classLensDomain bce:MilieuSpecificResource ;
     fresnel:showProperties (
-      skos:prefLabel
-      skos:definition
+      bce:mileu
       bce:resourceForMilieuSpecific
     ) .
 
