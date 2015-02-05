@@ -51,6 +51,42 @@ lens:ToolkitLens a fresnel:Lens;
     fresnel:showProperties (
       skos:prefLabel
       skos:definition
+      skos:broader
+    ) .
+
+lens:DurationLens a fresnel:Lens;
+    fresnel:classLensDomain bce:Duration;
+    fresnel:purpose fresnel:defaultLens;
+    fresnel:showProperties (
+      skos:prefLabel
+      skos:definition
+    ) .
+
+lens:HighlightLens a fresnel:Lens;
+    fresnel:classLensDomain bce:Highlight;
+    fresnel:purpose fresnel:defaultLens;
+    fresnel:showProperties (
+      skos:prefLabel
+      skos:definition
+      bce:abbreviation
+    ) .
+
+lens:JourneyLens a fresnel:Lens;
+    fresnel:classLensDomain bce:Journey;
+    fresnel:purpose fresnel:defaultLens;
+    fresnel:showProperties (
+      skos:prefLabel
+      bce:customerJourneySequence
+      bce:source
+      bce:multiply
+    ) .
+
+lens:FinancingLens a fresnel:Lens;
+    fresnel:classLensDomain bce:Financing;
+    fresnel:purpose fresnel:defaultLens;
+    fresnel:showProperties (
+      skos:prefLabel
+      skos:definition
     ) .
 
 lens:FilterLens a fresnel:Lens;
@@ -93,6 +129,15 @@ lens:PhaseLens a fresnel:Lens ;
       bceui:tooltip
       bce:phaseGroup
       bceui:phaseOrder
+      skos:broader
+    ) .
+
+lens:ChannelLens a fresnel:Lens ;
+    fresnel:classLensDomain bce:Channel;
+    fresnel:purpose fresnel:defaultLens;
+    fresnel:showProperties (
+      skos:prefLabel
+      skos:definition
     ) .
 
 lens:OrderedListLens a fresnel:Lens ;
