@@ -182,7 +182,7 @@ RDFE.sparqlValue = function(v) {
  */
 RDFE.coalesce = function() {
   for (i = 0; i < arguments.length; i++) {
-    if (arguments[i]) {
+    if ((typeof arguments[i] !== 'undefined') && (arguments[i] !== null)) {
       return arguments[i];
     }
   }
@@ -720,6 +720,11 @@ RDFE.OntologyManager.prototype.ontologyRestrictionsParse = function(graph, ontol
               ontologyClass.restrictions[propertyURI] = $.extend(ontologyClass.restrictions[propertyURI], { isAggregate: true });
             }
 
+            else if (self.uriDenormalize('rdf:type') == v2 && v3 == 'http://www.openlinksw.com/ontology/oplowl#UniqueIdRestriction') {
+              // console.log('Adding ', v3, 'for', propertyURI);
+              ontologyClass.restrictions[propertyURI] = $.extend(ontologyClass.restrictions[propertyURI], { uniqueIdRestriction: true });
+            }
+
             else if (
                 (self.uriDenormalize('owl:minCardinality') == v2) ||
                 (self.uriDenormalize('owl:maxCardinality') == v2) ||
@@ -1254,6 +1259,19 @@ RDFE.OntologyClass.prototype.isAggregateProperty = function(p, cc) {
   }
 
   return false;
+};
+
+RDFE.OntologyClass.prototype.getUniqueRestrictions = function() {
+  var uniqueRestrictions = [];
+  if (this.restrictions) {
+    for (var key in this.restrictions) {
+      var property = this.restrictions[key];
+      if (property.uniqueIdRestriction === true) {
+        uniqueRestrictions.push(this.manager.ontologyPropertyByURI(key));
+      }
+    }
+  }
+  return uniqueRestrictions;
 };
 
 RDFE.OntologyClass.prototype.getIndividuals = function(includeSuper, cc) {
