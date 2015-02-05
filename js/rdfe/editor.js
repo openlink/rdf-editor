@@ -172,6 +172,7 @@ RDFE.Editor.prototype.createNewEntityEditor = function(forcedType) {
 
     ontologiesSelect = $('#ontology').ontoBox({ "ontoManager": self.ontologyManager });
     ontologiesSelect.on('changed', classesList);
+    ontologiesSelect.sel.focus();
 
     // FIXME: this is all pretty much the same as in the PropertyBox, in any case it should be moved into a separate class/file
     $classesSelect = $('#class').selectize({
