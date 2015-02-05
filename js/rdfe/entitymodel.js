@@ -17,8 +17,14 @@ RDFE.EntityModel = Backbone.Model.extend({
     var items = [];
 
     // get individuals from the ontology manager
-    if(range === 'http://www.w3.org/1999/02/22-rdf-syntax-ns#Resource') {
+    if(!range || range === 'http://www.w3.org/1999/02/22-rdf-syntax-ns#Resource') {
       items = this.doc.ontologyManager.individuals;
+    }
+    else if(range === 'http://www.w3.org/2000/01/rdf-schema#Class') {
+      items = this.doc.ontologyManager.ontologyClasses;
+    }
+    else if(range === 'http://www.w3.org/1999/02/22-rdf-syntax-ns#Property') {
+      items = this.doc.ontologyManager.ontologyProperties;
     }
     else {
       var rc = this.doc.ontologyManager.ontologyClassByURI(range);
