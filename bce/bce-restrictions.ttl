@@ -26,8 +26,12 @@ bce:TouchPoint a owl:Class ;
     a owl:Restriction , oplowl:AggregateRestriction ;
     owl:onProperty bce:sampleKpi
   ] , [
+    a owl:Restriction , oplowl:AggregateRestriction ;
+    owl:onProperty bce:markedAs
+  ] , [
     a owl:Restriction , oplowl:UniqueIdRestriction ;
-    owl:onProperty bce:legacyId
+    owl:onProperty bce:legacyId ;
+    owl:cardinality "1"^^xsd:nonNegativeInteger
   ] .
 
 bce:MilieuSpecificLiteral a owl:Class ;
@@ -45,6 +49,10 @@ bce:UseCase a owl:Class ;
     a owl:Restriction , oplowl:AggregateRestriction ;
     owl:onProperty bce:useCaseSequence ;
     owl:cardinality "1"^^xsd:nonNegativeInteger
+  ] , [
+    a owl:Restriction , oplowl:UniqueIdRestriction ;
+    owl:onProperty bce:legacyId ;
+    owl:cardinality "1"^^xsd:nonNegativeInteger
   ] .
 
 bce:MilieuSpecific a owl:Class ;
@@ -54,24 +62,74 @@ bce:MilieuSpecific a owl:Class ;
     owl:cardinality "1"^^xsd:nonNegativeInteger
   ] .
 
+bce:Duration a owl:Class ;
+  rdfs:subClassOf [
+    a owl:Restriction , oplowl:UniqueIdRestriction;
+    owl:onProperty bce:legacyId ;
+    owl:cardinality "1"^^xsd:nonNegativeInteger
+  ] .
+
 bce:Phase a owl:Class ;
   rdfs:subClassOf [
     a owl:Restriction ;
-    owl:onProperty bce:phaseGroup ;
+    owl:onProperty bce:phaseGroup , skos:broader ;
     owl:cardinality "1"^^xsd:nonNegativeInteger
   ] , [
     a owl:Restriction , oplowl:AggregateRestriction ;
     owl:onProperty bce:phaseOrder ;
     owl:cardinality "1"^^xsd:nonNegativeInteger
+  ] , [
+    a owl:Restriction , oplowl:UniqueIdRestriction ;
+    owl:onProperty bce:legacyId ;
+    owl:cardinality "1"^^xsd:nonNegativeInteger
   ] .
 
-# Disabled because we should be able to add multiple languages for labels, etc.
-#bce:Toolkit a owl:Class ;
-#  rdfs:subClassOf [
-#    a owl:Restriction ;
-#    owl:onProperty skos:prefLabel , skos:definition ;
-#    owl:cardinality "1"^^xsd:nonNegativeInteger
-#  ] .
+bce:Channel a owl:Class ;
+  rdfs:subClassOf [
+    a owl:Restriction , oplowl:UniqueIdRestriction ;
+    owl:onProperty bce:legacyId ;
+    owl:cardinality "1"^^xsd:nonNegativeInteger
+  ] .
+
+bce:Financing a owl:Class ;
+  rdfs:subClassOf [
+    a owl:Restriction , oplowl:UniqueIdRestriction ;
+    owl:onProperty bce:legacyId ;
+    owl:cardinality "1"^^xsd:nonNegativeInteger
+  ] .
+
+bce:Highlight a owl:Class ;
+  rdfs:subClassOf [
+    a owl:Restriction ;
+    owl:onProperty bce:abbreviation ;
+    owl:maxCardinality "1"^^xsd:nonNegativeInteger
+  ] , [
+    a owl:Restriction , oplowl:UniqueIdRestriction ;
+    owl:onProperty bce:legacyId ;
+    owl:cardinality "1"^^xsd:nonNegativeInteger
+  ] .
+
+bce:Journey a owl:Class ;
+  rdfs:subClassOf [
+    a owl:Restriction ;
+    owl:onProperty bce:multiply, bce:source ;
+    owl:maxCardinality "1"^^xsd:nonNegativeInteger
+  ] , [
+    a owl:Restriction , oplowl:AggregateRestriction ;
+    owl:onProperty bce:customerJourneySequence ;
+    owl:cardinality "1"^^xsd:nonNegativeInteger
+  ] , [
+    a owl:Restriction , oplowl:UniqueIdRestriction ;
+    owl:onProperty bce:legacyId ;
+    owl:cardinality "1"^^xsd:nonNegativeInteger
+  ] .
+
+bce:Toolkit a owl:Class ;
+ rdfs:subClassOf [
+   a owl:Restriction ;
+   owl:onProperty skos:broader ;
+   owl:maxCardinality "1"^^xsd:nonNegativeInteger
+ ] .
 
 bceui:Filter a owl:Class ;
   rdfs:subClassOf [

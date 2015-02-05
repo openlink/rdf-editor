@@ -14,7 +14,7 @@
 olo:  rdf:type owl:Ontology ;
       dc:creator <http://foaf.me/zazi#me> , "Samer Abdallah"^^xsd:string ;
       dc:date "2010-07-23T13:30:52+01:00"^^xsd:dateTime ;
-      dc:description """The Ordered Lists Ontology Specification provides basic concepts and properties 
+      dc:description """The Ordered Lists Ontology Specification provides basic concepts and properties
 for describing ordered lists as semantic graph. This document contains a RDF description of the Ordered Lists Ontology
 as proposed by Samer Abdallah."""@en ;
       dc:title "The Ordered Lists Ontology"@en ;

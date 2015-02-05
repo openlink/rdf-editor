@@ -100,6 +100,7 @@
           pagination: true,
           search: true,
           searchAlign: 'left',
+          trimOnSearch: false,
           showHeader: true,
           data: entityData,
           idField: 'uri',

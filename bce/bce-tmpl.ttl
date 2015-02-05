@@ -40,13 +40,63 @@ lens:TouchPointLens a fresnel:Lens;
 lens:MilieuSpecificLiteralLens a fresnel:Lens ;
     fresnel:classLensDomain bce:MilieuSpecificLiteral ;
     fresnel:showProperties (
-      skos:prefLabel
-      skos:definition
+      bce:milieu
       bce:literalForMilieuSpecific
+    ) .
+
+lens:MilieuSpecificResourceLens a fresnel:Lens ;
+    fresnel:classLensDomain bce:MilieuSpecificResource ;
+    fresnel:showProperties (
+      bce:milieu
+      bce:resourceForMilieuSpecific
     ) .
 
 lens:ToolkitLens a fresnel:Lens;
     fresnel:classLensDomain bce:Toolkit;
+    fresnel:purpose fresnel:defaultLens;
+    fresnel:showProperties (
+      skos:prefLabel
+      skos:definition
+      skos:broader
+    ) .
+
+lens:DurationLens a fresnel:Lens;
+    fresnel:classLensDomain bce:Duration;
+    fresnel:purpose fresnel:defaultLens;
+    fresnel:showProperties (
+      skos:prefLabel
+      skos:definition
+    ) .
+
+lens:HighlightLens a fresnel:Lens;
+    fresnel:classLensDomain bce:Highlight;
+    fresnel:purpose fresnel:defaultLens;
+    fresnel:showProperties (
+      skos:prefLabel
+      skos:definition
+      bce:abbreviation
+    ) .
+
+lens:JourneyLens a fresnel:Lens;
+    fresnel:classLensDomain bce:Journey;
+    fresnel:purpose fresnel:defaultLens;
+    fresnel:showProperties (
+      skos:prefLabel
+      bce:customerJourneySequence
+      bce:source
+      bce:multiply
+    ) .
+
+lens:MarketLens a fresnel:Lens;
+    fresnel:classLensDomain bce:Market;
+    fresnel:purpose fresnel:defaultLens;
+    fresnel:showProperties (
+      skos:prefLabel
+      skos:definition
+    ) .
+
+lens:FinancingLens a fresnel:Lens;
+    fresnel:classLensDomain bce:Financing;
     fresnel:purpose fresnel:defaultLens;
     fresnel:showProperties (
       skos:prefLabel
@@ -93,6 +143,15 @@ lens:PhaseLens a fresnel:Lens ;
       bceui:tooltip
       bce:phaseGroup
       bceui:phaseOrder
+      skos:broader
+    ) .
+
+lens:ChannelLens a fresnel:Lens ;
+    fresnel:classLensDomain bce:Channel;
+    fresnel:purpose fresnel:defaultLens;
+    fresnel:showProperties (
+      skos:prefLabel
+      skos:definition
     ) .
 
 lens:OrderedListLens a fresnel:Lens ;

@@ -35,8 +35,9 @@
 </ddls>
 <resources>
   <file source_uri="demo.html" target_uri="rdf-editor/" />
+  <file source_uri="bceadmin.html" target_uri="rdf-editor/" />
   <file source_uri="data/*.html" target_uri="rdf-editor/" />
-  <file source_uri="config.json" target_uri="rdf-editor/" />
+  <file source_uri="*.json" target_uri="rdf-editor/" />
   <file source_uri="css/*.css" target_uri="rdf-editor/" />
   <file source_uri="js/**/*.js" target_uri="rdf-editor/" />
   <file source_uri="fonts/*" target_uri="rdf-editor/" />
@@ -44,6 +45,8 @@
   <file source_uri="img/*.png" target_uri="rdf-editor/" />
   <file source_uri="test/*.ttl" target_uri="rdf-editor/" />
   <file source_uri="test/*.rdf" target_uri="rdf-editor/" />
+  <file source_uri="bce/*.ttl" target_uri="rdf-editor/" />
+  <file source_uri="bce/*.rdf" target_uri="rdf-editor/" />
 </resources>
 <registry>
 </registry>
