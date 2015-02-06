@@ -12,7 +12,7 @@
   Form.editors.List = Form.editors.Base.extend({
 
     events: {
-      'click [data-action="add"]': function(event) {
+      'click [data-action="add"]:last': function(event) {
         event.preventDefault();
         this.addItem(null, true);
       }
@@ -71,8 +71,10 @@
       }
 
       // hide the "add" button in case the cardinality has been reached
-      if (self.schema.maxCardinality && self.items.length >= self.schema.maxCardinality)
-        $el.find('button[data-action="add"]').hide();
+      if (self.schema.maxCardinality && self.items.length >= self.schema.maxCardinality) {
+        // we only hide the last button we find to not influence any nested list editors.
+        $el.find('button[data-action="add"]:last').hide();
+      }
 
       this.setElement($el);
       this.$el.attr('id', this.id);
@@ -108,7 +110,8 @@
 
         // hide the "add" button in case the cardinality has been reached
         if (self.schema.maxCardinality && self.items.length >= self.schema.maxCardinality) {
-          self.$el.find('button[data-action="add"]').hide();
+          // we only hide the last button we find to not influence any nested list editors.
+          self.$el.find('button[data-action="add"]:last').hide();
         }
 
         item.editor.on('all', function(event) {
@@ -191,8 +194,10 @@
       if (!this.items.length && !this.Editor.isAsync) this.addItem();
 
       // show the "add" button in case the cardinality has not been reached
-      if (this.schema.maxCardinality && this.items.length < this.schema.maxCardinality)
-        this.$el.find('button[data-action="add"]').show();
+      if (this.schema.maxCardinality && this.items.length < this.schema.maxCardinality) {
+        // we only show the last button we find to not influence any nested list editors.
+        this.$el.find('button[data-action="add"]:last').show();
+      }
     },
 
     getValue: function() {
@@ -283,7 +288,7 @@
   Form.editors.List.Item = Form.editors.Base.extend({
 
     events: {
-      'click [data-action="remove"]': function(event) {
+      'click [data-action="remove"]:last': function(event) {
         event.preventDefault();
         this.list.removeItem(this);
       },
