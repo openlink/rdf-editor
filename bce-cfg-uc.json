@@ -38,7 +38,8 @@
   ],
   "defaultView": "entities",
   "labelProps": [
-    "http://www.w3.org/2004/02/skos/core#prefLabel"
+    "http://www.w3.org/2004/02/skos/core#prefLabel",
+    "http://www.w3.org/2000/01/rdf-schema#label"
   ],
   "prefixes": {
     "bce": "http://ldp.e.corpintra.net/ontology/bce#",

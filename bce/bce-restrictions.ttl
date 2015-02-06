@@ -76,7 +76,7 @@ bce:Phase a owl:Class ;
     owl:cardinality "1"^^xsd:nonNegativeInteger
   ] , [
     a owl:Restriction , oplowl:AggregateRestriction ;
-    owl:onProperty bce:phaseOrder ;
+    owl:onProperty bceui:phaseOrder ;
     owl:cardinality "1"^^xsd:nonNegativeInteger
   ] , [
     a owl:Restriction , oplowl:UniqueIdRestriction ;
@@ -142,6 +142,13 @@ olo:OrderedList a owl:Class ;
   rdfs:subClassOf [
     a owl:Restriction , oplowl:AggregateRestriction ;
     owl:onProperty olo:slot
+  ] .
+
+olo:Slot a owl:Class ;
+  rdfs:subClassOf [
+    a owl:Restriction ;
+    owl:onProperty olo:item ;
+    owl:cardinality "1"^^xsd:nonNegativeInteger
   ] .
 
 skos:note a rdf:Property ;

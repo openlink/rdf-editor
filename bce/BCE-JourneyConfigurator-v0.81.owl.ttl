@@ -610,6 +610,8 @@ THis will be refined to a more detailed model using ordered lists instead of a s
 
 :TouchpointFilter rdf:type owl:Class ;
 
+                  rdfs:label "Touchpoint Filter" ;
+
                   rdfs:subClassOf :Filter ;
 
                   rdfs:comment "Touchpoint filter" ;
