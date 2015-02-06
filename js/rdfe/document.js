@@ -142,25 +142,14 @@ RDFE.Document.prototype.deleteBySubject = function(uri, success, fail) {
   var self = this;
 
   if(self.config.options.autoInverseOfHandling) {
-    var sparql = 'SELECT distinct ?p ?o FROM <{0}> WHERE { <{1}> ?p ?o. } '.format(self.graph, uri);
+    var sparql = 'construct { <{1}> ?p ?o } FROM <{0}> WHERE { <{1}> ?p ?o. } '.format(self.graph, uri);
     self.store.execute(sparql, function(s, results) {
       if (!s) {
         if (fail) {
           fail(results);
         }
       } else {
-        var triples = [];
-        for (var i = 0, l = results.length; i < l; i++) {
-          var p = results[i]["p"];
-          var o = results[i]["o"];
-          var triple = self.store.rdf.createTriple(
-            self.store.rdf.createNamedNode(uri),
-            self.store.rdf.createNamedNode(p.value),
-            (o.token === "uri")? self.store.rdf.createNamedNode(o.value): self.store.rdf.createLiteral(o.value)
-          )
-          triples.push(triple);
-        }
-        self.deleteTriples(triples, success, fail);
+        self.deleteTriples(results.triples, success, fail);
       }
     });
   }
@@ -181,23 +170,14 @@ RDFE.Document.prototype.deleteByObject = function(uri, success, fail) {
   var self = this;
 
   if(self.config.options.autoInverseOfHandling) {
-    var sparql = 'SELECT distinct ?s ?p FROM <{0}> WHERE { ?s ?p <{1}> . } '.format(self.graph, uri);
+    var sparql = 'construct { ?s ?p <{1}> } FROM <{0}> WHERE { ?s ?p <{1}> . } '.format(self.graph, uri);
     self.store.execute(sparql, function(s, results) {
       if (!s) {
         if (fail) {
           fail(results);
         }
       } else {
-        var triples = [];
-        for (var i = 0, l = results.length; i < l; i++) {
-          var triple = self.store.rdf.createTriple(
-            self.store.rdf.createNamedNode(results[i]["s"].value),
-            self.store.rdf.createNamedNode(results[i]["p"].value),
-            self.store.rdf.createNamedNode(uri)
-          )
-          triples.push(triple);
-        }
-        self.deleteTriples(triples, success, fail);
+        self.deleteTriples(results.triples, success, fail);
       }
     });
   }
