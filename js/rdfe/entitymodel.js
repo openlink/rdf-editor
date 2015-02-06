@@ -401,8 +401,8 @@ RDFE.EntityModel = Backbone.Model.extend({
         }
       }
 
-      console.log('Triples to add', triples);
-      console.log('Nodes to delete first', deleteNodes);
+//       console.log('Triples to add', triples);
+//       console.log('Nodes to delete first', deleteNodes);
 
       // first delete all subjects we create
       var saveTriples = function(i) {
