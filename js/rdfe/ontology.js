@@ -371,7 +371,7 @@ RDFE.OntologyManager.prototype.init = function(options) {
           var __successIndividuals = (function (options) {
             return function () {
               // end
-              console.log('final');
+              // console.log('final');
               if (options.success) {
                 options.success();
               }
@@ -407,15 +407,19 @@ RDFE.OntologyManager.prototype.synchronousParse = function(itemParse, items, opt
     if (items.length > 0) {
       var item = items[0];
       items = _.rest(items);
-      var __success = (function (itemParse, items, options, fn) {
+      var __callback = function (itemParse, items, options, item, itemMessage, fn) {
         return function () {
+          // console.log(itemMessage, item);
+          $(self).trigger(itemMessage, [self, item]);
           fn(itemParse, items, options, fn);
         }
-      })(itemParse, items, options, fn);
+      };
       var params = {
-        "success":  __success,
-        "error": options.error
+        "success":  __callback(itemParse, items, options, item, 'loadingFinished', fn),
+        "error": __callback(itemParse, items, options, item, 'loadingFailed', fn)
       }
+      // console.log('loading', item);
+      $(self).trigger('loading', [self, item]);
       self[itemParse](item, params);
     } else {
       if (options.success) {
