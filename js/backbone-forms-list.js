@@ -295,8 +295,9 @@
       'keydown input[type=text]': function(event) {
         if(event.keyCode !== 13) return;
         event.preventDefault();
-        this.list.addItem();
-        this.list.$list.find("> li:last input").focus();
+        // FIXME: make this configurable instead of just commenting it out
+//         this.list.addItem();
+//         this.list.$list.find("> li:last input").focus();
       }
     },
 
