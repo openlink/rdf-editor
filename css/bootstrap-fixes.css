@@ -10,3 +10,7 @@
   margin-right: 0px;
   margin-left: 0px;
 }
+
+.input-group .form-control {
+  z-index: auto;
+}

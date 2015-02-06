@@ -1,0 +1,171 @@
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>.
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#>.
+@prefix owl: <http://www.w3.org/2002/07/owl#>.
+@prefix rdfg: <http://www.w3.org/2004/03/trix/rdfg-1/>.
+@prefix foaf: <http://xmlns.com/foaf/0.1/>.
+@prefix fresnel: <http://www.w3.org/2004/09/fresnel#>.
+@prefix ordf: <http://purl.org/NET/ordf/>.
+@prefix lens: <http://daimler.com/whatever/test/bce#>.
+@prefix google: <http://rdf.data-vocabulary.org/#>.
+@prefix skos: <http://www.w3.org/2004/02/skos/core#> .
+@prefix bce: <http://ldp.e.corpintra.net/ontology/bce#> .
+@prefix bceui: <http://ldp.e.corpintra.net/ontology/bceui#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+@prefix olo: <http://purl.org/ontology/olo/core#> .
+
+lens:TouchPointLens a fresnel:Lens;
+    fresnel:classLensDomain bce:TouchPoint;
+    fresnel:purpose fresnel:defaultLens;
+    fresnel:showProperties (
+      skos:prefLabel
+      skos:definition
+      bceui:tooltip
+      bce:markedAs
+      bceui:forceLabel
+      bce:channel
+      bce:duration
+      bce:financing
+      bce:prio
+      bce:mediaControl
+      bce:reach
+      bce:toolkit
+      bce:sampleKpi
+      fresnel:allProperties
+    ) ;
+    fresnel:hideProperties (
+      rdf:type
+      bce:legacyId
+    ) .
+
+lens:MilieuSpecificLiteralLens a fresnel:Lens ;
+    fresnel:classLensDomain bce:MilieuSpecificLiteral ;
+    fresnel:showProperties (
+      bce:milieu
+      bce:literalForMilieuSpecific
+    ) .
+
+lens:MilieuSpecificResourceLens a fresnel:Lens ;
+    fresnel:classLensDomain bce:MilieuSpecificResource ;
+    fresnel:showProperties (
+      bce:milieu
+      bce:resourceForMilieuSpecific
+    ) .
+
+lens:ToolkitLens a fresnel:Lens;
+    fresnel:classLensDomain bce:Toolkit;
+    fresnel:purpose fresnel:defaultLens;
+    fresnel:showProperties (
+      skos:prefLabel
+      skos:definition
+      skos:broader
+    ) .
+
+lens:DurationLens a fresnel:Lens;
+    fresnel:classLensDomain bce:Duration;
+    fresnel:purpose fresnel:defaultLens;
+    fresnel:showProperties (
+      skos:prefLabel
+      skos:definition
+    ) .
+
+lens:HighlightLens a fresnel:Lens;
+    fresnel:classLensDomain bce:Highlight;
+    fresnel:purpose fresnel:defaultLens;
+    fresnel:showProperties (
+      skos:prefLabel
+      skos:definition
+      bce:abbreviation
+    ) .
+
+lens:JourneyLens a fresnel:Lens;
+    fresnel:classLensDomain bce:Journey;
+    fresnel:purpose fresnel:defaultLens;
+    fresnel:showProperties (
+      skos:prefLabel
+      bce:customerJourneySequence
+      bce:source
+      bce:multiply
+    ) .
+
+lens:MarketLens a fresnel:Lens;
+    fresnel:classLensDomain bce:Market;
+    fresnel:purpose fresnel:defaultLens;
+    fresnel:showProperties (
+      skos:prefLabel
+      skos:definition
+    ) .
+
+lens:FinancingLens a fresnel:Lens;
+    fresnel:classLensDomain bce:Financing;
+    fresnel:purpose fresnel:defaultLens;
+    fresnel:showProperties (
+      skos:prefLabel
+      skos:definition
+    ) .
+
+lens:FilterLens a fresnel:Lens;
+    fresnel:classLensDomain bceui:Filter;
+    fresnel:purpose fresnel:defaultLens;
+    fresnel:showProperties (
+      rdf:type
+      skos:prefLabel
+      bceui:tooltip
+      bceui:displayPriority
+      bceui:filterType
+      bceui:filtersOn
+      bceui:optionOrder
+      bceui:prefix
+      bceui:suffix
+    ) .
+
+
+lens:UseCaseLens a fresnel:Lens;
+    fresnel:classLensDomain bce:UseCase;
+    fresnel:purpose fresnel:defaultLens;
+    fresnel:showProperties (
+      skos:prefLabel
+      skos:definition
+      bceui:tooltip
+      bce:prio
+      bce:useCaseSequence
+    ) ;
+    fresnel:hideProperties (
+      rdf:type
+    ) .
+
+lens:PhaseLens a fresnel:Lens ;
+    fresnel:classLensDomain bce:Phase;
+    fresnel:purpose fresnel:defaultLens;
+    fresnel:showProperties (
+      skos:prefLabel
+      skos:definition
+      bce:legacyId
+      bceui:tooltip
+      bce:phaseGroup
+      bceui:phaseOrder
+      skos:broader
+    ) .
+
+lens:ChannelLens a fresnel:Lens ;
+    fresnel:classLensDomain bce:Channel;
+    fresnel:purpose fresnel:defaultLens;
+    fresnel:showProperties (
+      skos:prefLabel
+      skos:definition
+    ) .
+
+lens:OrderedListLens a fresnel:Lens ;
+    fresnel:classLensDomain olo:OrderedList;
+    fresnel:purpose fresnel:defaultLens;
+    fresnel:showProperties (
+      olo:slot
+      olo:length
+    ) .
+
+lens:OloSlotLens a fresnel:Lens ;
+    fresnel:classLensDomain olo:Slot;
+    fresnel:purpose fresnel:defaultLens;
+    fresnel:showProperties (
+      olo:index
+      olo:item
+    ) .

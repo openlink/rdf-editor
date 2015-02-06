@@ -3,41 +3,41 @@
 @prefix olo: <http://purl.org/ontology/olo/core#> .
 @prefix owl: <http://www.w3.org/2002/07/owl#> .
 @prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
-@prefix xml: <http://www.w3.org/XML/1998/namespace/> .
+@prefix xml: <http://www.w3.org/XML/1998/namespace> .
 @prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
 @prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
 @prefix skos: <http://www.w3.org/2004/02/skos/core#> .
 @base <http://ldp.e.corpintra.net/ontology/bceui> .
 
 <http://ldp.e.corpintra.net/ontology/bceui> rdf:type owl:Ontology ;
-                                            
+
                                             rdfs:label "BCE ontology" ;
-                                            
-                                            <http://purl.org/dc/terms/modified> "2014-11-19"^^xsd:date ;
-                                            
+
+                                            <http://purl.org/dc/terms/modified> "2014-12-11"^^xsd:date ;
+
                                             <http://purl.org/dc/elements/1.1/contributor> "ITM/CP  --  SIS" ;
-                                            
+
                                             rdfs:comment "Ontology for the application 'Best Customer Experience Configurator'" ;
-                                            
+
+                                            owl:priorVersion "BCE-JourneyConfigurator-v0.8.0.owl.ttl" ;
+
                                             <http://purl.org/dc/elements/1.1/creator> "Marcel Fröhlich [brox IT Solutions GmbH]" ;
-                                            
+
+                                            <http://purl.org/dc/terms/hasVersion> "0.82" ;
+
                                             skos:changeNote """
 -aligned with S. Goebel (BCE Team)
 -aligend with K. Moser (Media Man)
 -split in domain and application ontology""" ;
-                                            
+
                                             owl:versionInfo "Changes for sprint SIS-04" ;
-                                            
-                                            <http://purl.org/dc/terms/hasVersion> "0.8" ;
-                                            
+
                                             <http://purl.org/dc/terms/publisher> "Daimler AG" ;
-                                            
-                                            owl:priorVersion "BCE-JourneyConfigurator-v0.6.1.owl.ttl" ;
-                                            
+
                                             owl:imports <http://ldp.e.corpintra.net/ontology/bce> ;
-                                            
+
                                             owl:versionIRI <http://ldp.e.corpintra.net/ontology/bceui> ;
-                                            
+
                                             owl:imports olo: ,
                                                         <http://www.w3.org/TR/skos-reference/skos-owl1-dl.rdf> .
 
@@ -52,14 +52,14 @@
 ###  http://ldp.e.corpintra.net/ontology/bceui#altPhase
 
 :altPhase rdf:type owl:AnnotationProperty ;
-          
+
           rdfs:label "alt phase" ;
-          
+
           rdfs:comment """UI side mapping of old/alternative phase classification
 legacy label is metaphase""" ;
-          
+
           rdfs:isDefinedBy "http://ldp.e.corpintra.net/ontology/bceui#" ;
-          
+
           rdfs:domain bce:Phase .
 
 
@@ -67,13 +67,13 @@ legacy label is metaphase""" ;
 ###  http://ldp.e.corpintra.net/ontology/bceui#mpOffset
 
 :mpOffset rdf:type owl:AnnotationProperty ;
-          
+
           rdfs:label "mp offset" ;
-          
+
           rdfs:isDefinedBy "http://ldp.e.corpintra.net/ontology/bceui#" ;
-          
+
           rdfs:comment "ui offset value for alt phase" ;
-          
+
           rdfs:domain bce:Phase .
 
 
@@ -81,7 +81,7 @@ legacy label is metaphase""" ;
 ###  http://ldp.e.corpintra.net/ontology/bceui#orderOfTouchpoints
 
 :orderOfTouchpoints rdf:type owl:AnnotationProperty ;
-                    
+
                     rdfs:domain bce:Phase ,
                                 bce:PhaseMilieu .
 
@@ -99,13 +99,13 @@ legacy label is metaphase""" ;
 ###  http://ldp.e.corpintra.net/ontology/bceui#bceuiObjectProperty
 
 :bceuiObjectProperty rdf:type owl:ObjectProperty ;
-                     
+
                      rdfs:label "bceui object property" ;
-                     
+
                      rdfs:comment "Top object property for bceui." ;
-                     
+
                      rdfs:isDefinedBy "http://ldp.e.corpintra.net/ontology/bceui#" ;
-                     
+
                      rdfs:subPropertyOf bce:bceObjectProperty .
 
 
@@ -113,47 +113,71 @@ legacy label is metaphase""" ;
 ###  http://ldp.e.corpintra.net/ontology/bceui#filterType
 
 :filterType rdf:type owl:ObjectProperty ;
-            
+
             rdfs:label "filter type" ;
-            
-            rdfs:comment "Rage ist one of: bceui:SelectOneFIlter bceui:SelectManyFilter or bceui:RangeFilter" ;
-            
+
+            rdfs:comment "Rage ist one of: bceui:SelectOneFilter bceui:SelectManyFilter or bceui:RangeFilter" ;
+
             rdfs:isDefinedBy "http://ldp.e.corpintra.net/ontology/bceui#" ;
-            
-            rdfs:subPropertyOf :bceuiObjectProperty .
+
+            rdfs:subPropertyOf :bceuiObjectProperty ;
+
+            rdfs:domain :Filter ;
+
+            rdfs:range :FilterType .
 
 
 
 ###  http://ldp.e.corpintra.net/ontology/bceui#filtersOn
 
 :filtersOn rdf:type owl:ObjectProperty ;
-           
+
            rdfs:label "filters on" ;
-           
+
            rdfs:isDefinedBy "http://ldp.e.corpintra.net/ontology/bceui#" ;
-           
+
            rdfs:comment "defines the filter property" ;
-           
+
            rdfs:domain :Filter ;
-           
+
+           rdfs:range rdf:Property ;
+
            rdfs:subPropertyOf :bceuiObjectProperty .
+
+
+
+###  http://ldp.e.corpintra.net/ontology/bceui#group
+
+:group rdf:type owl:ObjectProperty ;
+
+       rdfs:label "group" ;
+
+       rdfs:isDefinedBy "http://ldp.e.corpintra.net/ontology/bceui#" ;
+
+       rdfs:comment "grouping in property panel" ;
+
+       rdfs:range :Group ;
+
+       rdfs:domain :Property ;
+
+       rdfs:subPropertyOf :bceuiObjectProperty .
 
 
 
 ###  http://ldp.e.corpintra.net/ontology/bceui#phaseOrder
 
 :phaseOrder rdf:type owl:ObjectProperty ;
-            
+
             rdfs:label "phase order" ;
-            
+
             rdfs:isDefinedBy "http://ldp.e.corpintra.net/ontology/bceui#" ;
-            
+
             rdfs:comment "Detailed model of relative order to present touchpoints of a phase" ;
-            
+
             rdfs:domain bce:Phase ;
-            
+
             rdfs:range bce:PhaseSequence ;
-            
+
             rdfs:subPropertyOf :bceuiObjectProperty .
 
 
@@ -170,16 +194,16 @@ legacy label is metaphase""" ;
 ###  http://ldp.e.corpintra.net/ontology/bceui#altPhase
 
 :altPhase rdf:type owl:DatatypeProperty ;
-          
+
           rdfs:label "alt phase" ;
-          
+
           rdfs:comment """UI side mapping of old/alternative phase classification
 legacy label is metaphase""" ;
-          
+
           rdfs:isDefinedBy "http://ldp.e.corpintra.net/ontology/bceui#" ;
-          
+
           rdfs:subPropertyOf :bceuiDataProperty ;
-          
+
           rdfs:range xsd:string .
 
 
@@ -187,31 +211,49 @@ legacy label is metaphase""" ;
 ###  http://ldp.e.corpintra.net/ontology/bceui#attachment
 
 :attachment rdf:type owl:DatatypeProperty ;
-            
+
             rdfs:label "attachment" ;
-            
+
             rdfs:comment "attachment to a BCE THing" ;
-            
+
             rdfs:isDefinedBy "http://ldp.e.corpintra.net/ontology/bceui#" ;
-            
+
             rdfs:domain bce:BceThing ;
-            
+
             rdfs:subPropertyOf :bceuiDataProperty ;
-            
+
             rdfs:range xsd:string .
+
+
+
+###  http://ldp.e.corpintra.net/ontology/bceui#base64content
+
+:base64content rdf:type owl:DatatypeProperty ;
+
+               rdfs:label "base64 content" ;
+
+               rdfs:isDefinedBy "http://ldp.e.corpintra.net/ontology/bceui#" ;
+
+               rdfs:comment "base64 encoded file" ;
+
+               rdfs:domain :Attachment ;
+
+               rdfs:subPropertyOf :bceuiDataProperty ;
+
+               rdfs:range xsd:base64Binary .
 
 
 
 ###  http://ldp.e.corpintra.net/ontology/bceui#bceuiDataProperty
 
 :bceuiDataProperty rdf:type owl:DatatypeProperty ;
-                   
+
                    rdfs:label "bceui data property" ;
-                   
-                   rdfs:comment "Top data propperty for bceui" ;
-                   
+
+                   rdfs:comment "Top data property for bceui" ;
+
                    rdfs:isDefinedBy "http://ldp.e.corpintra.net/ontology/bceui#" ;
-                   
+
                    rdfs:subPropertyOf bce:bceDataProperty .
 
 
@@ -219,68 +261,230 @@ legacy label is metaphase""" ;
 ###  http://ldp.e.corpintra.net/ontology/bceui#displayPriority
 
 :displayPriority rdf:type owl:DatatypeProperty ;
-                 
+
                  rdfs:label "display priority" ;
-                 
+
                  rdfs:isDefinedBy "http://ldp.e.corpintra.net/ontology/bceui#" ;
-                 
+
                  rdfs:comment "property of a Filter " ;
-                 
+
                  rdfs:domain :Filter ;
-                 
+
                  rdfs:subPropertyOf :bceuiDataProperty .
+
+
+
+###  http://ldp.e.corpintra.net/ontology/bceui#fileId
+
+:fileId rdf:type owl:DatatypeProperty ;
+
+        rdfs:label "file ID" ;
+
+        rdfs:isDefinedBy "http://ldp.e.corpintra.net/ontology/bceui#" ;
+
+        rdfs:comment "file ID of attachment" ;
+
+        rdfs:domain :Attachment ;
+
+        rdfs:subPropertyOf :bceuiDataProperty ;
+
+        rdfs:range xsd:string .
+
+
+
+###  http://ldp.e.corpintra.net/ontology/bceui#fileName
+
+:fileName rdf:type owl:DatatypeProperty ;
+
+          rdfs:label "file name" ;
+
+          rdfs:isDefinedBy "http://ldp.e.corpintra.net/ontology/bceui#" ;
+
+          rdfs:comment "file name of attachment" ;
+
+          rdfs:domain :Attachment ;
+
+          rdfs:subPropertyOf :bceuiDataProperty ;
+
+          rdfs:range xsd:string .
+
+
+
+###  http://ldp.e.corpintra.net/ontology/bceui#forceLabel
+
+:forceLabel rdf:type owl:DatatypeProperty ;
+
+            rdfs:label "force label" ;
+
+            rdfs:isDefinedBy "http://ldp.e.corpintra.net/ontology/bceui#" ;
+
+            rdfs:comment "used to signal that a label of the doamin thing has to be shown at any zoom level" ;
+
+            rdfs:domain bce:BceThing ;
+
+            rdfs:subPropertyOf :bceuiDataProperty ;
+
+            rdfs:range xsd:boolean .
+
+
+
+###  http://ldp.e.corpintra.net/ontology/bceui#mainKpi
+
+:mainKpi rdf:type owl:DatatypeProperty ;
+
+         rdfs:label "main KPI" ;
+
+         rdfs:comment "bool switch for main KPI" ;
+
+         rdfs:isDefinedBy "http://ldp.e.corpintra.net/ontology/bceui#" ;
+
+         rdfs:domain :Property ;
+
+         rdfs:subPropertyOf :bceuiDataProperty ;
+
+         rdfs:range xsd:boolean .
 
 
 
 ###  http://ldp.e.corpintra.net/ontology/bceui#mpOffset
 
 :mpOffset rdf:type owl:DatatypeProperty ;
-          
+
           rdfs:label "mp offset" ;
-          
+
           rdfs:isDefinedBy "http://ldp.e.corpintra.net/ontology/bceui#" ;
-          
+
           rdfs:comment "ui offset value for alt phase" ;
-          
+
           rdfs:subPropertyOf :bceuiDataProperty ;
-          
+
           rdfs:range xsd:integer .
+
+
+
+###  http://ldp.e.corpintra.net/ontology/bceui#node
+
+:node rdf:type owl:DatatypeProperty ;
+
+      rdfs:label "node" ;
+
+      rdfs:comment "class identifer (see altLabel on classes)" ;
+
+      rdfs:isDefinedBy "http://ldp.e.corpintra.net/ontology/bceui#" ;
+
+      rdfs:domain :Property ;
+
+      rdfs:subPropertyOf :bceuiDataProperty ;
+
+      rdfs:range xsd:string .
+
+
+
+###  http://ldp.e.corpintra.net/ontology/bceui#optionOrder
+
+:optionOrder rdf:type owl:DatatypeProperty ;
+
+             rdfs:label "option order" ;
+
+             rdfs:isDefinedBy "http://ldp.e.corpintra.net/ontology/bceui#" ;
+
+             rdfs:comment "json list of int as sring, giving order for options " ;
+
+             rdfs:domain :Property ;
+
+             rdfs:subPropertyOf :bceuiDataProperty ;
+
+             rdfs:range xsd:string .
 
 
 
 ###  http://ldp.e.corpintra.net/ontology/bceui#order
 
 :order rdf:type owl:DatatypeProperty ;
-       
+
        rdfs:label "order" ;
-       
+
        rdfs:isDefinedBy "http://ldp.e.corpintra.net/ontology/bceui#" ;
-       
+
        rdfs:comment """JSON containment structure encoding the layout of touchpoints per phase (optionally milieu sensitive).
 THis will be refined to a more detailed model using ordered lists instead of a string later.""" ;
-       
+
        rdfs:domain bce:Phase ;
-       
+
        rdfs:subPropertyOf :bceuiDataProperty ;
-       
+
        rdfs:range xsd:string .
+
+
+
+###  http://ldp.e.corpintra.net/ontology/bceui#prefix
+
+:prefix rdf:type owl:DatatypeProperty ;
+
+        rdfs:label "prefix" ;
+
+        rdfs:comment "prefix to KPI" ;
+
+        rdfs:isDefinedBy "http://ldp.e.corpintra.net/ontology/bceui#" ;
+
+        rdfs:domain :Property ;
+
+        rdfs:subPropertyOf :bceuiDataProperty ;
+
+        rdfs:range xsd:string .
+
+
+
+###  http://ldp.e.corpintra.net/ontology/bceui#propertyOrder
+
+:propertyOrder rdf:type owl:DatatypeProperty ;
+
+               rdfs:label "property order" ;
+
+               rdfs:comment "Order information for Property-Panel" ;
+
+               rdfs:isDefinedBy "http://ldp.e.corpintra.net/ontology/bceui#" ;
+
+               rdfs:domain :Property ;
+
+               rdfs:subPropertyOf :bceuiDataProperty ;
+
+               rdfs:range xsd:integer .
+
+
+
+###  http://ldp.e.corpintra.net/ontology/bceui#suffix
+
+:suffix rdf:type owl:DatatypeProperty ;
+
+        rdfs:label "suffix" ;
+
+        rdfs:comment "suffix to KPI" ;
+
+        rdfs:isDefinedBy "http://ldp.e.corpintra.net/ontology/bceui#" ;
+
+        rdfs:domain :Property ;
+
+        rdfs:subPropertyOf :bceuiDataProperty ;
+
+        rdfs:range xsd:string .
 
 
 
 ###  http://ldp.e.corpintra.net/ontology/bceui#tooltip
 
 :tooltip rdf:type owl:DatatypeProperty ;
-         
+
          rdfs:label "tooltip" ;
-         
+
          rdfs:comment "tooltip to a BCE thing" ;
-         
+
          rdfs:isDefinedBy "http://ldp.e.corpintra.net/ontology/bceui#" ;
-         
+
          rdfs:domain bce:BceThing ;
-         
+
          rdfs:subPropertyOf :bceuiDataProperty ;
-         
+
          rdfs:range xsd:string .
 
 
@@ -294,16 +498,30 @@ THis will be refined to a more detailed model using ordered lists instead of a s
 #################################################################
 
 
+###  http://ldp.e.corpintra.net/ontology/bceui#Attachment
+
+:Attachment rdf:type owl:Class ;
+
+            rdfs:label "Attachment" ;
+
+            rdfs:subClassOf :BceuiThing ;
+
+            rdfs:isDefinedBy "http://ldp.e.corpintra.net/ontology/bceui#" ;
+
+            rdfs:comment "File Attachment" .
+
+
+
 ###  http://ldp.e.corpintra.net/ontology/bceui#BceuiThing
 
 :BceuiThing rdf:type owl:Class ;
-            
+
             rdfs:label "BCEUI Thing" ;
-            
+
             rdfs:subClassOf bce:BceThing ;
-            
+
             rdfs:comment "top class for classes defined within bceui" ;
-            
+
             rdfs:isDefinedBy "http://ldp.e.corpintra.net/ontology/bceui#" .
 
 
@@ -311,41 +529,104 @@ THis will be refined to a more detailed model using ordered lists instead of a s
 ###  http://ldp.e.corpintra.net/ontology/bceui#Filter
 
 :Filter rdf:type owl:Class ;
-        
+
         rdfs:label "Filter" ;
-        
+
         rdfs:subClassOf :BceuiThing ;
-        
+
         rdfs:isDefinedBy "http://ldp.e.corpintra.net/ontology/bceui#" ;
-        
+
         rdfs:comment "Filter class" .
+
+
+
+###  http://ldp.e.corpintra.net/ontology/bceui#Group
+
+:Group rdf:type owl:Class ;
+
+       rdfs:label "Group" ,
+                  "Groups of elements in the property panel" ;
+
+       rdfs:subClassOf :BceuiThing ;
+
+       rdfs:isDefinedBy "http://ldp.e.corpintra.net/ontology/bceui#" .
+
+
+###  http://ldp.e.corpintra.net/ontology/bceui#FilterType
+
+:FilterType rdf:type owl:Class ;
+
+        rdfs:label "Filter type" ;
+
+        rdfs:subClassOf :BceuiThing ;
+
+        rdfs:isDefinedBy "http://ldp.e.corpintra.net/ontology/bceui#" ;
+
+        rdfs:comment "Defines how a filter is to be applied." .
 
 
 
 ###  http://ldp.e.corpintra.net/ontology/bceui#MilieuSelector
 
 :MilieuSelector rdf:type owl:Class ;
-                
+
                 rdfs:label "Milieu selector" ;
-                
+
                 rdfs:subClassOf :Filter ;
-                
+
                 rdfs:isDefinedBy "http://ldp.e.corpintra.net/ontology/bceui#" .
+
+
+
+###  http://ldp.e.corpintra.net/ontology/bceui#Property
+
+:Property rdf:type owl:Class ;
+
+          rdfs:label "Property" ;
+
+          rdfs:subClassOf :BceuiThing ;
+
+          rdfs:isDefinedBy "http://ldp.e.corpintra.net/ontology/bceui#" ;
+
+          rdfs:comment "Property-panel element" .
+
+
+
+###  http://ldp.e.corpintra.net/ontology/bceui#TextElement
+
+:TextElement rdf:type owl:Class ;
+
+             rdfs:label "Text element" ;
+
+             rdfs:subClassOf :BceuiThing ;
+
+             rdfs:isDefinedBy "http://ldp.e.corpintra.net/ontology/bceui#" ;
+
+             rdfs:comment "plain ID to string mapping" .
 
 
 
 ###  http://ldp.e.corpintra.net/ontology/bceui#TouchpointFilter
 
 :TouchpointFilter rdf:type owl:Class ;
-                  
+
+                  rdfs:label "Touchpoint Filter" ;
+
                   rdfs:subClassOf :Filter ;
-                  
+
                   rdfs:comment "Touchpoint filter" ;
-                  
+
                   rdfs:isDefinedBy "http://ldp.e.corpintra.net/ontology/bceui#" .
 
 
+:SelectOneFilter a :FilterType ;
+  rdfs:label "Select one filter" .
 
+
+:SelectManyFilter a :FilterType ;
+  rdfs:label "Select many filter" .
+
+:RangeFilter a :FilterType ;
+  rdfs:label "Range filter" .
 
 ###  Generated by the OWL API (version 3.4.2) http://owlapi.sourceforge.net
-

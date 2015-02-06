@@ -297,29 +297,47 @@
       self.typeElem.val(self.options.type);
       self.typeContainer.hide();
     }
+
+    self.updateEditor(true);
   };
 
   RdfNodeEditor.prototype.change = function() {
     $(this).trigger('change', this);
   };
 
-  RdfNodeEditor.prototype.updateEditor = function() {
+  /**
+   * Check if two literal types are compatible. The only point of this function is to
+   * allow the special case of xsd:string == rdfs:Literal.
+   *
+   * @return @p true if the given types are compatible, @p false otherwise.
+   */
+  var checkTypeComp = function() {
+    var ta = [
+      'http://www.w3.org/2000/01/rdf-schema#Literal',
+      'http://www.w3.org/2001/XMLSchema#string'
+    ];
+
+    return function(t1, t2) {
+      return (t1 === t2 || ($.inArray(t1, ta) >= 0 && $.inArray(t2, ta) >= 0));
+    };
+  }();
+
+  RdfNodeEditor.prototype.updateEditor = function(initial) {
     // always show the type selection field if the type differs
     // typed string and plain literal without lang should be treated as similar
-    if(!this.options.type ||
-        (this.options.type != this.currentType &&
-        this.options.type != 'http://www.w3.org/2000/01/rdf-schema#Literal' &&
-        this.currentType != 'http://www.w3.org/2001/XMLSchema#string'))
-      this.typeContainer.css('display', 'table-cell');
-    else
+    if(checkTypeComp(this.options.type, this.currentType)) {
       this.typeContainer.hide();
+    }
+    else {
+      this.typeContainer.css('display', 'table-cell');
+    }
 
     if(!this.options.showLangSelect || this.currentType != 'http://www.w3.org/2000/01/rdf-schema#Literal')
       this.langContainer.hide();
     else
       this.langContainer.css('display', 'table-cell');
 
-    if(this.lastType != this.currentType) {
+    if(initial || this.lastType != this.currentType) {
       if(this.lastType && nodeTypes[this.lastType].setup)
         nodeTypes[this.lastType].setup(this.mainElem, true);
       if(nodeTypes[this.currentType].setup)
@@ -348,10 +366,18 @@
       var node = RDFE.RdfNode.fromStoreNode(node_);
       this.lastType = this.currentType;
       var t = node.type;
-      if (t === 'uri')
+      if (t === 'uri') {
         this.currentType = 'http://www.w3.org/1999/02/22-rdf-syntax-ns#Resource';
-      else
+      }
+      else {
         this.currentType = node.datatype || 'http://www.w3.org/2000/01/rdf-schema#Literal';
+
+        // special case for boolean where we support 0 and 1
+        if(this.options.type === "http://www.w3.org/2001/XMLSchema#boolean" &&
+           (node.value === "0" || node.value === "1")) {
+          this.currentType = "http://www.w3.org/2001/XMLSchema#boolean";
+        }
+      }
       this.lang = node.language;
 
       this.mainElem.val(node.value);

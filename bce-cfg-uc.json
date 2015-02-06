@@ -12,8 +12,7 @@
       "bce/olo.ttl",
       "bce/BCE-Domain-v0.81.owl.ttl",
       "bce/BCE-JourneyConfigurator-v0.81.owl.ttl",
-      "bce/bce-restrictions.ttl",
-      "test/foaf-restrictions.ttl"
+      "bce/bce-restrictions.ttl"
     ],
     "preloadFresnels": [
       "bce/bce-tmpl.ttl"
@@ -22,41 +21,35 @@
       "/sparql/?default-graph-uri=&query=prefix+bce%3A+%3Chttp%3A%2F%2Fldp.e.corpintra.net%2Fontology%2Fbce%23%3E%0D%0Aprefix+skos%3A+%3Chttp%3A%2F%2Fwww.w3.org%2F2004%2F02%2Fskos%2Fcore%23%3E%0D%0Aconstruct+%7B+%3Fr+a+bce%3ATouchpoint+%3B+skos%3AprefLabel+%3Fl+%7D+%0D%0Awhere+%7B+graph+%3Chttp%3A%2F%2Fldp.e.corpintra.net%2Fgraph%2Fbcetp%3E+%7B+%3Fr+a+%3Chttp%3A%2F%2Fldp.e.corpintra.net%2Fontology%2Fbce%23TouchPoint%3E+.+optional+%7B+%3Fr+skos%3AprefLabel+%3Fl+%7D+%7D+%7D&should-sponge=&format=text%2Fturtle&CXML_redir_for_subjs=121&CXML_redir_for_hrefs=&timeout=30000"
     ]
   },
+  "document":{
+    "label": "Daimler BCE Use Cases",
+    "uri": "http://ldp.e.corpintra.net/graph/bceuc",
+    "type": "gsp"
+  },
   "bookmarks": [
     {
-      "label": "Daimler BCE Touchpoints",
-      "uri": "http://ldp.e.corpintra.net/graph/bcetp",
-      "type": "gsp"
+      "label": "Daimler Touchpoints",
+      "cfgUri": "bce-cfg-tp.json"
     },
     {
       "label": "Daimler BCE Journeys, Toolkits, etc.",
-      "uri": "http://ldp.e.corpintra.net/graph/bce",
-      "type": "gsp"
-    },
-    {
-      "label": "Daimler BCE Use Cases",
-      "uri": "http://ldp.e.corpintra.net/graph/bceuc",
-      "type": "gsp"
+      "cfgUri": "bce-cfg-rest.json"
     }
-  ],
-  "actions": [
-      "new", "open", "save", "saveas", "bookmarks", "entities", "triples"
   ],
   "defaultView": "entities",
   "labelProps": [
     "http://www.w3.org/2004/02/skos/core#prefLabel",
-    "http://www.w3.org/2000/01/rdf-schema#label",
-    "http://xmlns.com/foaf/0.1/name"
+    "http://www.w3.org/2000/01/rdf-schema#label"
   ],
   "prefixes": {
-    "bce": "http://ldp.e.corpintra.net/ontology/bce#"
+    "bce": "http://ldp.e.corpintra.net/ontology/bce#",
+    "bceui": "http://ldp.e.corpintra.net/ontology/bceui#"
   },
   "entityUriTmpl": "http://ldp.e.corpintra.net/resources/bce/{NAME}",
   "newEntityTypes": [
     {
-      "uri": "http://ldp.e.corpintra.net/ontology/bce#TouchPoint",
-      "label": "Touchpoint"
+      "uri": "http://ldp.e.corpintra.net/ontology/bce#UseCase",
+      "label": "Use Case"
     }
-  ],
-  "autoInverseOfHandling": true
+  ]
 }

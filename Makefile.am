@@ -7,6 +7,9 @@ RDF_EDITOR_FILES = \
   js/*.js \
   js/rdfe/*.js \
   test/*.ttl \
+  test/*.rdf \
+  bce/*.ttl \
+  bce/*.rdf \
   config.json
 
 VERSION=`./version`

@@ -8,16 +8,37 @@ if (typeof String.prototype.startsWith != 'function') {
 if(!window.RDFE)
   window.RDFE = {};
 
-RDFE.Editor = function(doc, ontoMan, config) {
+RDFE.Editor = function(config) {
   var self = this;
 
-  this.doc = doc;
-  this.ontologyManager = ontoMan;
+  // initialize our ontology manager
+  this.ontologyManager = new RDFE.OntologyManager(null, config.options);
+  this.ontologyManager.init();
+
+  // create our main document
+  this.doc = new RDFE.Document(this.ontologyManager, config);
+
+  // store the config for future access
   this.config = config;
 };
 
-RDFE.Editor.prototype.createTripleList = function(container, callback) {
+RDFE.Editor.prototype.render = function(container) {
+  this.container = container;
+  if (this.config.options.defaultView === 'triples') {
+    this.createTripleList();
+  }
+  else {
+    this.createEntityList();
+  }
+};
+
+RDFE.Editor.prototype.createTripleList = function() {
   var self = this;
+
+  $(self).trigger('rdf-editor-start', {
+    "id": "render-triple-list",
+    "message": "Loading Triples..."
+  });
 
   if(!this.tripleView) {
     this.tripleView = new RDFE.TripleView(this.doc, this.ontologyManager);
@@ -27,16 +48,20 @@ RDFE.Editor.prototype.createTripleList = function(container, callback) {
       $(self).trigger('rdf-editor-success', d);
     });
   }
-  this.tripleView.render(container, callback);
+  this.container.empty();
+  this.tripleView.render(self.container, function() {
+    $(self).trigger('rdf-editor-done', { "id": "render-triple-list" });
+  });
 };
 
-RDFE.Editor.prototype.createNewStatementEditor = function(container) {
+RDFE.Editor.prototype.createNewStatementEditor = function() {
   var self = this;
 
-  if (!this.doc)
+  if (!this.doc) {
     return false;
+  }
 
-  container.html(' \
+  self.container.html(' \
       <div class="panel panel-default"> \
       <div class="panel-heading"><h3 class="panel-title">Add new Triple</h3></div> \
       <div class="panel-body"><div class="form-horizontal"> \
@@ -47,11 +72,11 @@ RDFE.Editor.prototype.createNewStatementEditor = function(container) {
       <div class="form-group"><label for="object" class="col-sm-2 control-label">Object</label> \
       <div class="col-sm-10"><input name="object" class="form-control" /></div></div> \
       <div class="form-group"><div class="col-sm-10 col-sm-offset-2"><a href="#" class="btn btn-default triple-action triple-action-new-cancel">Cancel</a> \
-        <a href="#" class="btn btn-primary triple-action triple-action-new-save">Save</a></div></div> \
+        <a href="#" class="btn btn-primary triple-action triple-action-new-save">OK</a></div></div> \
       </form></div></div>\n');
 
-  var objEd = container.find('input[name="object"]').rdfNodeEditor();
-  var propEd = container.find('select[name="predicate"]').propertyBox({
+  var objEd = self.container.find('input[name="object"]').rdfNodeEditor();
+  var propEd = self.container.find('select[name="predicate"]').propertyBox({
     ontoManager: self.ontologyManager
   }).on('changed', function(e, p) {
     console.log('changed', p)
@@ -69,18 +94,16 @@ RDFE.Editor.prototype.createNewStatementEditor = function(container) {
     objEd.setValue(n);
   });
 
-  container.find('a.triple-action-new-cancel').click(function(e) {
-    container.empty();
+  self.container.find('a.triple-action-new-cancel').click(function(e) {
+    self.createTripleList();
   });
 
-  container.find('a.triple-action-new-save').click(function(e) {
-    var s = container.find('input[name="subject"]').val();
+  self.container.find('a.triple-action-new-save').click(function(e) {
+    var s = self.container.find('input[name="subject"]').val();
     var p = propEd.selectedURI();
     var o = objEd.getValue();
     var t = self.doc.store.rdf.createTriple(self.doc.store.rdf.createNamedNode(s), self.doc.store.rdf.createNamedNode(p), o.toStoreNode(self.doc.store));
     self.doc.addTriples([t], function() {
-      container.empty();
-
       if (self.tripleView) {
         self.tripleView.addTriple(t);
       }
@@ -88,6 +111,8 @@ RDFE.Editor.prototype.createNewStatementEditor = function(container) {
         "type": "triple-insert-success",
         "message": "Successfully added new triple."
       });
+
+      self.createTripleList();
     }, function() {
       $(self).trigger('rdf-editor-error', {
         "type": 'triple-insert-failed',
@@ -97,13 +122,13 @@ RDFE.Editor.prototype.createNewStatementEditor = function(container) {
   });
 };
 
-RDFE.Editor.prototype.createNewEntityEditor = function(container, manager) {
+RDFE.Editor.prototype.createNewEntityEditor = function(forcedType) {
   var self = this;
   var $ontologiesSelect, ontologiesSelect;
   var $classesSelect, classesSelect;
 
   var classesList = function (e) {
-    var ontology = manager.ontologyByURI(e.currentTarget.selectedOntologyURI());
+    var ontology = self.ontologyManager.ontologyByURI(e.currentTarget.selectedOntologyURI());
     classesSelect.clearOptions();
     classesSelect.addOption(ontology ? ontology.classesAsArray() : self.ontologyManager.allClasses());
   };
@@ -112,89 +137,122 @@ RDFE.Editor.prototype.createNewEntityEditor = function(container, manager) {
     return false;
   }
 
-  container.html(
-    '<div class="panel panel-default">' +
-    '<div class="panel-heading"><h3 class="panel-title">Add new Entity</h3></div>' +
-    '<div class="panel-body"><div class="form-horizontal"> ' +
-    '  <div class="form-group"> ' +
-    '    <label for="ontology" class="col-sm-2 control-label">Ontology</label> ' +
-    '    <div class="col-sm-10"> ' +
-    '      <select name="ontology" id="ontology" class="form-control" /> ' +
-    '    </div> ' +
-    '  </div> ' +
-    '  <div class="form-group"> ' +
-    '    <label for="class" class="col-sm-2 control-label">Type</label> ' +
-    '    <div class="col-sm-10"> ' +
-    '      <select name="class" id="class" class="form-control" /> ' +
-    '    </div> ' +
-    '  </div> ' +
-    '  <div class="form-group"> ' +
-    '     <label for="subject" class="col-sm-2 control-label">Entity URI</label> ' +
-    '     <div class="col-sm-10"> ' +
-    '       <input name="subject" id="subject" class="form-control" /> ' +
-    '     </div> ' +
-    '  </div> ' +
-    '  <div class="form-group"> ' +
-    '    <div class="col-sm-10 col-sm-offset-2"> ' +
-    '      <a href="#" class="btn btn-default triple-action triple-action-new-cancel">Cancel</a> ' +
-    '      <a href="#" class="btn btn-primary triple-action triple-action-new-save">Save</a> ' +
-    '    </div> ' +
-    '  </div> ' +
-    '</div></div></div>\n');
+
+
+  if (!forcedType) {
+    self.container.html(
+      '<div class="panel panel-default">' +
+      '<div class="panel-heading"><h3 class="panel-title">Add new Entity</h3></div>' +
+      '<div class="panel-body"><div class="form-horizontal"> ' +
+      '  <div class="form-group"> ' +
+      '    <label for="ontology" class="col-sm-2 control-label">Ontology</label> ' +
+      '    <div class="col-sm-10"> ' +
+      '      <select name="ontology" id="ontology" class="form-control" /> ' +
+      '    </div> ' +
+      '  </div> ' +
+      '  <div class="form-group"> ' +
+      '    <label for="class" class="col-sm-2 control-label">Type</label> ' +
+      '    <div class="col-sm-10"> ' +
+      '      <select name="class" id="class" class="form-control" /> ' +
+      '    </div> ' +
+      '  </div> ' +
+      '  <div class="form-group"> ' +
+      '     <label for="subject" class="col-sm-2 control-label">Entity URI</label> ' +
+      '     <div class="col-sm-10"> ' +
+      '       <input name="subject" id="subject" class="form-control" /> ' +
+      '     </div> ' +
+      '  </div> ' +
+      '  <div class="form-group"> ' +
+      '    <div class="col-sm-10 col-sm-offset-2"> ' +
+      '      <a href="#" class="btn btn-default triple-action triple-action-new-cancel">Cancel</a> ' +
+      '      <a href="#" class="btn btn-primary triple-action triple-action-new-save">OK</a> ' +
+      '    </div> ' +
+      '  </div> ' +
+      '</div></div></div>\n');
+
+    ontologiesSelect = $('#ontology').ontoBox({ "ontoManager": self.ontologyManager });
+    ontologiesSelect.on('changed', classesList);
+    ontologiesSelect.sel.focus();
+
+    // FIXME: this is all pretty much the same as in the PropertyBox, in any case it should be moved into a separate class/file
+    $classesSelect = $('#class').selectize({
+      create: true,
+      valueField: 'URI',
+      labelField: 'URI',
+      searchField: [ "title", "label", "prefix", "URI" ],
+      sortField: [ "prefix", "URI" ],
+      options: self.ontologyManager.allClasses(),
+      create: function(input, cb) {
+        // search for and optionally create a new class
+        cb(self.ontologyManager.OntologyClass(null, self.ontologyManager.uriDenormalize(input)));
+      },
+      render: {
+        item: function(item, escape) {
+          var x = item.title || item.label || name.curi || item.name;
+          if(item.curi && item.curi != x) {
+            x = escape(x) + ' <small>(' + escape(item.curi) + ')</small>';
+          }
+          else {
+            x = escape(x);
+          }
+          return '<div>' + x + '</div>';
+        },
+        option: function(item, escape) {
+          return '<div>' + escape(item.title || item.label || name.curi || item.name) + '<br/><small>(' + escape(item.URI) + ')</small></div>';
+        },
+        'option_create': function(data, escape) {
+          var url = self.ontologyManager.uriDenormalize(data.input);
+          if (url != data.input)
+            return '<div class="create">Add <strong>' + escape(data.input) + '</strong> <small>(' + escape(url) + ')</small>&hellip;</div>';
+          else
+            return '<div class="create">Add <strong>' + escape(url) + '</strong>&hellip;</div>';
+        }
+      }
+    });
+    classesSelect = $classesSelect[0].selectize;
+  }
+  else {
+    var forcedTypeRes = self.ontologyManager.ontologyClassByURI(forcedType);
+    var forcedTypeLabel = forcedTypeRes ? forcedTypeRes.label : forcedType.split(/[/#]/).pop();
+    self.container.html(
+      '<div class="panel panel-default">' +
+      '<div class="panel-heading"><h3 class="panel-title">Add new Entity</h3></div>' +
+      '<div class="panel-body"><div class="form-horizontal"> ' +
+      '  <div class="form-group"> ' +
+      '    <label for="class" class="col-sm-2 control-label">Type</label> ' +
+      '    <div class="col-sm-10"> ' +
+      '      <p class="form-control-static" title="' + forcedType + '">' + forcedTypeLabel + '</p>' +
+      '    </div> ' +
+      '  </div> ' +
+      '  <div class="form-group"> ' +
+      '     <label for="subject" class="col-sm-2 control-label">Entity URI</label> ' +
+      '     <div class="col-sm-10"> ' +
+      '       <input name="subject" id="subject" class="form-control" /> ' +
+      '     </div> ' +
+      '  </div> ' +
+      '  <div class="form-group"> ' +
+      '    <div class="col-sm-10 col-sm-offset-2"> ' +
+      '      <a href="#" class="btn btn-default triple-action triple-action-new-cancel">Cancel</a> ' +
+      '      <a href="#" class="btn btn-primary triple-action triple-action-new-save">OK</a> ' +
+      '    </div> ' +
+      '  </div> ' +
+      '</div></div></div>\n');
+    self.container.find('input#subject').focus();
+  }
 
   // if we have an entity uri template we ask the user to provide a nem instead of the uri
   if(this.config.options.entityUriTmpl) {
-    container.find('label[for="subject"]').text('Entity Name');
+    self.container.find('label[for="subject"]').text('Entity Name');
   }
 
-  ontologiesSelect = $('#ontology').ontoBox({ "ontoManager": manager });
-  ontologiesSelect.on('changed', classesList);
-
-  // FIXME: this is all pretty much the same as in the PropertyBox
-  $classesSelect = $('#class').selectize({
-    create: true,
-    valueField: 'URI',
-    labelField: 'URI',
-    searchField: [ "title", "label", "prefix", "URI" ],
-    sortField: [ "prefix", "URI" ],
-    options: self.ontologyManager.allClasses(),
-    create: function(input, cb) {
-      // search for and optionally create a new class
-      cb(self.ontologyManager.OntologyClass(null, self.ontologyManager.uriDenormalize(input)));
-    },
-    render: {
-      item: function(item, escape) {
-        var x = item.title || item.label || name.curi || item.name;
-        if(item.curi && item.curi != x) {
-          x = escape(x) + ' <small>(' + escape(item.curi) + ')</small>';
-        }
-        else {
-          x = escape(x);
-        }
-        return '<div>' + x + '</div>';
-      },
-      option: function(item, escape) {
-        return '<div>' + escape(item.title || item.label || name.curi || item.name) + '<br/><small>(' + escape(item.URI) + ')</small></div>';
-      },
-      'option_create': function(data, escape) {
-        var url = self.ontologyManager.uriDenormalize(data.input);
-        if (url != data.input)
-          return '<div class="create">Add <strong>' + escape(data.input) + '</strong> <small>(' + escape(url) + ')</small>&hellip;</div>';
-        else
-          return '<div class="create">Add <strong>' + escape(url) + '</strong>&hellip;</div>';
-      }
-    }
-  });
-  classesSelect = $classesSelect[0].selectize;
-
-  container.find('a.triple-action-new-cancel').click(function(e) {
-    container.empty();
+  self.container.find('a.triple-action-new-cancel').click(function(e) {
+    self.createEntityList();
   });
 
-  container.find('a.triple-action-new-save').click(function(e) {
-    var uri = container.find('input[name="subject"]').val(),
+  var saveFct = function() {
+    var uri = self.container.find('input[name="subject"]').val(),
         name = null,
-        type = container.find('#class')[0].selectize.getValue();
+        type = forcedType || self.container.find('#class')[0].selectize.getValue();
 
     if(self.config.options.entityUriTmpl) {
       name = uri;
@@ -202,7 +260,6 @@ RDFE.Editor.prototype.createNewEntityEditor = function(container, manager) {
     }
 
     self.doc.addEntity(uri, name, type, function(ent) {
-      container.empty();
       if (self.entityView) {
         self.entityView.addEntity(ent);
       }
@@ -211,17 +268,36 @@ RDFE.Editor.prototype.createNewEntityEditor = function(container, manager) {
         "type": "entity-insert-success",
         "message": "Successfully created new entity."
       });
+
+      // once the new entity is created we open the editor
+      self.editEntity(ent.uri);
     }, function() {
       $(self).trigger('rdf-editor-error', {
         "type": 'triple-insert-failed',
         "message": "Failed to add new triple to store."
       });
     });
+  };
+
+  self.container.find('a.triple-action-new-save').click(function(e) {
+    saveFct();
   });
+
+  self.container.find('input#subject').keypress(function(e) {
+    if(e.which === 13) {
+      saveFct();
+    }
+  })
 };
 
-RDFE.Editor.prototype.createEntityList = function(container, callback) {
+RDFE.Editor.prototype.createEntityList = function() {
   var self = this;
+
+  $(self).trigger('rdf-editor-start', {
+    "id": "render-entity-list",
+    "message": "Loading Entities..."
+  });
+
   if(!self.entityView) {
     self.entityView = new RDFE.EntityView(this.doc, this.ontologyManager);
     $(self.entityView).on('rdf-editor-error', function(e) {
@@ -230,5 +306,28 @@ RDFE.Editor.prototype.createEntityList = function(container, callback) {
       $(self).trigger('rdf-editor-success', d);
     });
   }
-  self.entityView.render(container, callback);
+
+  self.container.empty();
+  self.entityView.render(self.container, function() {
+    $(self).trigger('rdf-editor-done', {
+      "id": "render-entity-list"
+    });
+  });
+};
+
+RDFE.Editor.prototype.editEntity = function(uri) {
+  var self = this;
+  if(!self.entityEditor) {
+    self.entityEditor = new RDFE.EntityEditor(self.doc, self.ontologyManager);
+    $(self.entityEditor).on('rdf-editor-error', function(e) {
+      $(self).trigger('rdf-editor-error', d);
+    }).on('rdf-editor-success', function(e, d) {
+      $(self).trigger('rdf-editor-success', d);
+    });
+  }
+
+  // render the entity editor and re-create the entity list once the editor is done
+  self.entityEditor.render(self.container, uri, function() {
+    self.createEntityList();
+  });
 };

@@ -15,19 +15,24 @@
       // Add a "new property" button to the default Backbone-Forms form
       template: _.template('\
         <form class="form-horizontal clearfix" role="form">\
+          <a href="#" class="btn btn-default pull-right addProp">Add Property</a>\
           <div data-fieldsets></div>\
           <% if (submitButton) { %>\
             <button type="submit" class="btn"><%= submitButton %></button>\
           <% } %>\
-          <a href="#" class="btn btn-default pull-right addProp">Add Property</a>\
         </form>\
       '),
 
       render: function() {
+        var self = this;
+
         Backbone.Form.prototype.render.call(this);
 
+        if(!self.model.allowAddProperty) {
+          this.$el.find('.addProp').hide();
+        }
+
         // we only want to find our own button, not the ones from nested forms
-        var self = this;
         this.$el.find('> a.addProp').click(function(e) {
           e.preventDefault();
 
@@ -55,6 +60,9 @@
             if(ps.selectedURI()) {
               console.log('Adding new property', ps.selectedURI(), 'to form', self);
 
+              // commit the changes to the model
+              self.commit();
+
               // add the new property
               self.model.addSchemaEntryForProperty(ps.selectedProperty());
               self.model.fields.push(ps.selectedURI());
@@ -78,7 +86,7 @@
             }
           });
 
-          self.$el.append(c);
+          self.$el.prepend(c);
         });
 
         return this;
@@ -89,7 +97,7 @@
         <div class="panel-heading clearfix">\
           <h3 class="panel-title pull-left">Editing <a href="<%= entityUri %>"><span class="entity-label"><%= entityLabel %><span></a></h3>\
           <div class="btn-group pull-right" role="group">\
-            <button type="button" class="btn btn-primary" id="okBtn">OK</button>\
+            <button type="button" class="btn btn-primary" id="okBtn">Apply</button>\
             <button type="button" class="btn btn-default" id="cnclBtn">Cancel</button>\
           </div>\
         </div>\
@@ -121,22 +129,35 @@
         // add the newly created form to the container
         container.find('#entityFormContainer').append(form.el);
 
-        // add click handlers to our buttons
+        // add click handlers to our buttons (we have three handlers because we used to have three buttons)
         var cancelBtn = container.find('button#cnclBtn');
-        var saveBtn = container.find('button#okBtn');
+        var saveBtn = container.find('button#saveBtn');
+        var okBtn = container.find('button#okBtn');
         cancelBtn.click(function() {
           closeCb();
         });
-        saveBtn.click(function() {
+        var saveFnct = function(cb) {
           form.commit();
           model.modelToDoc(function() {
-            closeCb();
+            $(self).trigger('rdf-editor-success', {
+              "type": 'editor-form-save-done',
+              "message": "Locally saved details of " + url
+            });
+            if(cb) {
+              cb();
+            }
           }, function(msg) {
             $(self).trigger('rdf-editor-error', {
               "type": 'editor-form-save-failed',
               "message": msg
             });
           });
+        };
+        saveBtn.click(function() {
+          saveFnct();
+        });
+        okBtn.click(function() {
+          saveFnct(closeCb);
         });
       }, function(msg) {
         $(self).trigger('rdf-editor-error', {

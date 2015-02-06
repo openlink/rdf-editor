@@ -1,3 +1,10 @@
+0.11
+  * Added missing Daimler BCE templates
+  * Added specialized Daimler BCE editor page.
+  * Improved template handling
+  * Individuals loading in the ontology manager.
+  * many fixes and improvements.
+
 0.10
   * Small design improvements in the entity editor
   * subPropertyOf handling for ranges in the ontology manger

@@ -21,7 +21,10 @@
         $(self).trigger('changed', self.options.ontoManager.ontologyByURI(value));
       },
       create: function(input, cb) {
-        var url = self.options.ontoManager.prefixes[input] || input;
+        var url = self.options.ontoManager.ontologyDetermine(input);
+        if (!url) {
+          url = self.options.ontoManager.prefixes[input] || input;
+        }
         self.options.ontoManager.ontologyParse(url, {
           "success": function(onto) {
             cb(onto);

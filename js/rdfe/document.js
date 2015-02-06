@@ -30,9 +30,13 @@ RDFE.Document.prototype.load = function(url, io, success, fail) {
         if (success)
             success();
     };
-    io.retrieveToStore(url, self.store, self.graph, {
-      'success': successFct,
-      'error': fail
+
+    // clear the store and then load the new data
+    self.store.clear(function() {
+      io.retrieveToStore(url, self.store, self.graph, {
+        'success': successFct,
+        'error': fail
+      });
     });
 };
 
@@ -53,10 +57,10 @@ RDFE.Document.prototype.verifyData = function(callback, fail) {
   var self = this;
 
   // check if there are any invalid uris in the document
-  var emptyUriCb = function(s,r) {
+  self.store.execute("select * from <" + self.graph + "> where {{ <> ?p ?o } union { ?s2 ?p2 <> }}", function(s,r) {
     if(s) {
       if(r.length > 0) {
-        callback(false, "Found empty URI node.");
+        callback(false, "The document is not valid. It contains empty URI nodes.");
         return false;
       }
       else {
@@ -69,14 +73,6 @@ RDFE.Document.prototype.verifyData = function(callback, fail) {
         fail();
       }
       return false;
-    }
-  };
-
-  self.store.execute("select * from <" + self.graph + "> where { <> ?p ?o }", function(s,r) {
-    if(emptyUriCb(s,r)) {
-      self.store.execute("select * from <" + self.graph + "> where { ?s ?p <> }", function(s,r) {
-        emptyUriCb(s,r);
-      });
     }
   });
 };
@@ -122,10 +118,10 @@ RDFE.Document.prototype.save = function(url, io, success, fail) {
             "error": myFail
           });
         }
-        else {
-          fail(m);
+        else if(myFail) {
+          myFail(m);
         }
-      }, fail);
+      }, myFail);
     }
 };
 
@@ -141,107 +137,226 @@ RDFE.Document.prototype.new = function(success, fail) {
   });
 };
 
-RDFE.Document.prototype.deleteTriples = function(s, p, o, success, fail) {
+// delete all triplets based on subject URI
+RDFE.Document.prototype.deleteBySubject = function(uri, success, fail) {
   var self = this;
-  var t = '';
-  if(s)
-    t += s.toNT();
-  else
-    t += '?s';
-  t += ' ';
-  if(p)
-    t += p.toNT();
-  else
-    t += '?p';
-  t += ' ';
-  if(o)
-    t += o.toNT();
-  else
-    t += '?o';
-
-  var q = 'with <' + self.graph + '> delete { ' + t + ' } where { ' + t + ' }';
-  self.store.execute(q, function(s, r) {
-    if(s) {
-      self.setChanged();
-      if(success)
-        success();
+  var sparql = 'SELECT distinct ?p ?o FROM <{0}> WHERE { <{1}> ?p ?o. } '.format(self.graph, uri);
+  self.store.execute(sparql, function(s, results) {
+    if (!s) {
+      if (fail) {
+        fail(results);
+      }
+    } else {
+      var triples = [];
+      for (var i = 0, l = results.length; i < l; i++) {
+        var p = results[i]["p"];
+        var o = results[i]["o"];
+        var triple = self.store.rdf.createTriple(
+          self.store.rdf.createNamedNode(uri),
+          self.store.rdf.createNamedNode(p.value),
+          (o.token === "uri")? self.store.rdf.createNamedNode(o.value): self.store.rdf.createLiteral(o.value)
+        )
+        triples.push(triple);
+      }
+      self.deleteTriples(triples, success, fail);
     }
-    else if(fail)
-      fail();
   });
 };
 
+// delete all triplets based on object URI
+RDFE.Document.prototype.deleteByObject = function(uri, success, fail) {
+  var self = this;
+
+  var sparql = 'SELECT distinct ?s ?p FROM <{0}> WHERE { ?s ?p <{1}> . } '.format(self.graph, uri);
+  self.store.execute(sparql, function(s, results) {
+    if (!s) {
+      if (fail) {
+        fail(results);
+      }
+    } else {
+      var triples = [];
+      for (var i = 0, l = results.length; i < l; i++) {
+        var triple = self.store.rdf.createTriple(
+          self.store.rdf.createNamedNode(results[i]["s"].value),
+          self.store.rdf.createNamedNode(results[i]["p"].value),
+          self.store.rdf.createNamedNode(uri)
+        )
+        triples.push(triple);
+      }
+      self.deleteTriples(triples, success, fail);
+    }
+  });
+};
+
+// delete all triplets of entity
 RDFE.Document.prototype.deleteEntity = function(uri, success, fail) {
   var self = this;
 
-  if(!uri) {
-    if(fail)
+  if (!uri) {
+    if (fail) {
       fail('Need Entity URI for deletion.');
+    }
+  } else {
+    self.deleteBySubject(
+      uri,
+      function () {
+        self.deleteByObject(uri, success, fail);
+      },
+      fail
+    )
+  }
+};
+
+// add triplet(s)
+RDFE.Document.prototype.addTriples = function(triple, success, fail, isInverseTripple) {
+  var self = this;
+
+  var triples = _.isArray(triple) ? triple : [triple];
+  if (_.isEmpty(triples)) {
+    if (success) {
+      success();
+    }
     return;
   }
 
-  self.store.execute('with <' + self.graph + '> delete { <' + uri + '> ?p ?o } where { <' + uri + '> ?p ?o }', function(s, r) {
-    if(s) {
-      self.setChanged();
-      self.store.execute('with <' + self.graph + '> delete { ?s ?p <' + uri + '> } where { ?s ?p <' + uri + '> }', function(s, r) {
-        if (s) {
-          if (success)
-            success();
-        }
-        else if(fail) {
-          fail(r);
-        }
-      });
-    }
-    else if (fail) {
-      fail(r);
-    }
-  });
-};
-
-RDFE.Document.prototype.addTriples = function(triples, success, fail) {
-  var self = this;
   self.store.insert(self.store.rdf.createGraph(triples), self.graph, function(s) {
-    if(s) {
-      self.setChanged();
-      if(success)
-        success();
-    }
-    else if (fail) {
-      fail();
-    }
-  });
-};
-
-RDFE.Document.prototype.deleteTriple = function(triple, success, fail) {
-  var self = this;
-  self.store.delete(self.store.rdf.createGraph([triple]), self.graph, function(s) {
-    if(s) {
-      self.setChanged();
-      if(success)
-        success();
-    }
-    else if (fail) {
-      fail();
-    }
-  });
-};
-
-RDFE.Document.prototype.updateTriple = function(oldTr, newTr, success, fail) {
-  var self = this;
-  self.store.delete(self.store.rdf.createGraph([oldTr]), self.graph, function(s) {
     if (s) {
-      self.store.insert(self.store.rdf.createGraph([newTr]), self.graph, function(s) {
+
+      if (self.config.options.autoInverseOfHandling === true && !isInverseTripple) {
+        var inverseTriples = self.inverseTriples(triples);
+        if (!_.isEmpty(inverseTriples)) {
+          self.addTriples(inverseTriples, success, fail, true);
+        }
+        else {
+          self.setChanged();
+          if (success) {
+            success();
+          }
+        }
+      }
+      else {
         self.setChanged();
-        if (!s && fail)
-          fail('Adding new triple failed');
-        else if(success)
+        if(success) {
           success();
-      });
+        }
+      }
+    } else if (fail) {
+      fail();
     }
-    else if(fail)
-      fail('Deleting triple failed');
   });
+};
+
+RDFE.Document.prototype.addTriple = RDFE.Document.prototype.addTriples;
+
+// delete triplet(s)
+RDFE.Document.prototype.deleteTriples = function(triple, success, fail, isInverseTripple) {
+  var self = this;
+
+  var triples = (_.isArray(triple))? triple: [triple];
+  if (_.isEmpty(triples)) {
+    if (success) {
+      success();
+    }
+    return;
+  }
+
+  self.store.delete(self.store.rdf.createGraph(triples), self.graph, function(s) {
+    if (s) {
+      self.setChanged();
+
+      if (self.config.options.autoInverseOfHandling === true && !isInverseTripple) {
+        var inverseTriples = self.inverseTriples(triples);
+        if (!_.isEmpty(inverseTriples)) {
+          self.deleteTriples(inverseTriples, success, fail, true);
+        }
+        else {
+          self.setChanged();
+          if(success) {
+            success();
+          }
+        }
+      }
+      else {
+        self.setChanged();
+        if(success) {
+          success();
+        }
+      }
+    } else if (fail) {
+      fail();
+    }
+  });
+};
+
+RDFE.Document.prototype.deleteTriple = RDFE.Document.prototype.deleteTriples;
+
+RDFE.Document.prototype.updateTriple = function(oldTriple, newTriple, success, fail) {
+  var self = this;
+
+  self.deleteTriple(
+    oldTriple,
+    function () {
+      self.addTriple(
+        newTriple,
+        function () {
+          self.setChanged();
+          if (success) {
+            success();
+          }
+        },
+        function () {
+          if (fail) {
+            fail('Adding new triple failed');
+          }
+        }
+      );
+    },
+    function () {
+      if (fail) {
+        fail('Deleting triple failed');
+      }
+    }
+  );
+};
+
+// create single inverseOf triplet
+RDFE.Document.prototype.inverseTriple = function(triple) {
+  var self = this;
+
+  var inverseTriple = null;
+  var s = triple.subject;
+  var o = triple.object;
+  if ((s.interfaceName == 'NamedNode') && (o.interfaceName == 'NamedNode')) {
+    var p = triple.predicate;
+    var property = self.ontologyManager.ontologyPropertyByURI(p.nominalValue);
+    if (property) {
+      // found
+      var inverseOfProperty = property.inverseOf;
+      if (inverseOfProperty) {
+        // create inverse triple
+        var inverseTriple = self.store.rdf.createTriple(
+          self.store.rdf.createNamedNode(o.nominalValue),
+          self.store.rdf.createNamedNode(inverseOfProperty.URI),
+          self.store.rdf.createNamedNode(s.nominalValue)
+        )
+      }
+    }
+  }
+  return inverseTriple;
+};
+
+// create inverseOf triplets from triplets array
+RDFE.Document.prototype.inverseTriples = function(triples) {
+  var self = this;
+
+  var inverseTriples = [];
+  for (var i = 0, l = triples.length; i < l; i++) {
+    var inverseTriple = self.inverseTriple(triples[i]);
+    if (inverseTriple) {
+      inverseTriples.push(inverseTriple);
+    }
+  }
+  return inverseTriples;
 };
 
 /**
@@ -302,7 +417,7 @@ RDFE.Document.prototype.listEntities = function(type, callback, errorCb) {
   else if(typeof(t) == 'string')
     t = [t];
 
-  var q = "select distinct ?s ";
+  var q = "select distinct ?s ?t ";
   for(var i = 0; i < self.config.options.labelProps.length; i++) {
     q += "?l" + i + " ";
   }
@@ -316,12 +431,12 @@ RDFE.Document.prototype.listEntities = function(type, callback, errorCb) {
     q += ") . ";
   }
   else {
-    q += "?s ?p ?o . ";
+    q += "?s ?p ?o . optional { ?s a ?t } . ";
   }
   for(var i = 0; i < self.config.options.labelProps.length; i++) {
     q += "optional { ?s <" + self.config.options.labelProps[i] + "> ?l" + i + " . } . ";
   }
-  q += '}';
+  q += '} order by ?s';
 
   self.store.execute(q, function(success, r) {
     var sl = [];
@@ -329,15 +444,26 @@ RDFE.Document.prototype.listEntities = function(type, callback, errorCb) {
     if(success) {
       for(var i = 0; i < r.length; i += 1) {
         var n = r[i].s;
-        for(var j = 0; j < self.config.options.labelProps.length; j++) {
-          if(r[i]["l" + j]) {
-            n.label = r[i]["l" + j].value;
-            break;
-          }
+
+        // add a type to an existing entity
+        if(sl.length > 0 && sl[sl.length-1].value === n.value) {
+          sl[sl.length-1].types.push(r[i].t.value);
         }
-        if(!n.label)
-          n.label = r[i].s.value.split(/[/#]/).pop();
-        sl.push(n);
+
+        // add a new entity to the list
+        else {
+          for(var j = 0; j < self.config.options.labelProps.length; j++) {
+            if(r[i]["l" + j]) {
+              n.label = r[i]["l" + j].value;
+              break;
+            }
+          }
+          if(!n.label)
+            n.label = r[i].s.value.split(/[/#]/).pop();
+          n.types = r[i].t ? [r[i].t.value] : [];
+
+          sl.push(n);
+        }
       }
     }
     else if(errorCb)
@@ -409,6 +535,20 @@ RDFE.Document.prototype.addEntity = function(uri, name, type, cb, failCb) {
     ));
   }
 
+  var ontologyClass = self.ontologyManager.ontologyClassByURI(type);
+  var uniqueRestrictions = ontologyClass.getUniqueRestrictions();
+  for (var i = 0; i < uniqueRestrictions.length; i++) {
+    var property = uniqueRestrictions[i];
+    var uniqueValue = self.getUniqueValue(uri, property);
+    if (uniqueValue) {
+      t.push(self.store.rdf.createTriple(
+        self.store.rdf.createNamedNode(uri),
+        self.store.rdf.createNamedNode(property.URI),
+        self.store.rdf.createLiteral(uniqueValue, null, property.range)
+      ));
+    }
+  }
+
   self.addTriples(t, function() {
     if(cb) {
       cb({
@@ -422,3 +562,54 @@ RDFE.Document.prototype.addEntity = function(uri, name, type, cb, failCb) {
     }
   });
 };
+
+RDFE.Document.prototype.getUniqueValue = function() {
+  var stringTypes = [
+    "http://www.w3.org/2000/01/rdf-schema#Literal",
+    "http://www.w3.org/2001/XMLSchema#string"
+  ];
+  var integerTypes = [
+    "http://www.w3.org/2001/XMLSchema#integer",
+    "http://www.w3.org/2001/XMLSchema#decimal",
+    "http://www.w3.org/2001/XMLSchema#nonPositiveInteger",
+    "http://www.w3.org/2001/XMLSchema#negativeInteger",
+    "http://www.w3.org/2001/XMLSchema#long",
+    "http://www.w3.org/2001/XMLSchema#int",
+    "http://www.w3.org/2001/XMLSchema#short",
+    "http://www.w3.org/2001/XMLSchema#byte",
+    "http://www.w3.org/2001/XMLSchema#nonNegativeInteger",
+    "http://www.w3.org/2001/XMLSchema#unsignedLong",
+    "http://www.w3.org/2001/XMLSchema#unsignedInt",
+    "http://www.w3.org/2001/XMLSchema#unsignedShort",
+    "http://www.w3.org/2001/XMLSchema#unsignedByte",
+    "http://www.w3.org/2001/XMLSchema#positiveInteger"
+  ];
+
+  return function(uri, property) {
+    var self = this,
+        uniqueValue,
+        range = property.range;
+
+    if (stringTypes.indexOf(range) !== -1) {
+      uniqueValue = uri;
+    }
+    else if (integerTypes.indexOf(range) !== -1) {
+      uniqueValue = 1;
+      var sparql = 'SELECT (MAX(?v) as ?mv) FROM <{0}> WHERE {?s <{1}> ?v}'.format(self.graph, property.URI);
+      self.store.execute(sparql, function(success, results) {
+        if (success) {
+          if (results.length !== 0) {
+            uniqueValue = parseInt(RDFE.coalesce(results[0]["mv"].value, 0));
+            if (isNaN(uniqueValue)) {
+              uniqueValue = 0;
+            }
+            uniqueValue++;
+          }
+        } else {
+          console.log('Failed to determine unique value for ', uri, ' and ', property.URI, results);
+        }
+      });
+    }
+    return uniqueValue;
+  };
+}();
