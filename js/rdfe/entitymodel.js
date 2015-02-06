@@ -313,18 +313,21 @@ RDFE.EntityModel = Backbone.Model.extend({
   /// save the data in the model back to the store
   modelToDoc: function() {
 
+    // A counter for newly created resource URIs. This is necessary since
+    // we might be creating multiple new resource URIs in one go without saving them into
+    // the document.
+    var newResCnt = 1;
+
     /**
      * Recursively build the triples from the given resource uri and values.
      *
      * @param res The resource/subject URI (can be empty)
      * @param values An object mapping property URIs to lists of values
      * @param doc The RDFE.Document to save to (required for building nodes)
-     * @param depth A depth counter for nested values. This is required to build
-     * unique uris for new resources.
      *
      * @return A list of rdfstore triples.
      */
-    function buildTriples(res, values, doc, depth) { // FIXME: add loop-detection
+    function buildTriples(res, values, doc) { // FIXME: add loop-detection
       var t = [];
 
       // build a new resource uri. We need to use the depth since doc.buildEntityUri()
@@ -338,8 +341,9 @@ RDFE.EntityModel = Backbone.Model.extend({
             break;
           }
         }
-        name = (name || 'subres') + '_' + depth;
+        name = (name || 'subres') + '_' + newResCnt;
         res = doc.buildEntityUri(name);
+        newResCnt++;
       }
 
       var resNode = doc.store.rdf.createNamedNode(res);
@@ -358,7 +362,7 @@ RDFE.EntityModel = Backbone.Model.extend({
           // nested model
           if(v.values) {
             // merge in tripels from the nested model
-            var nt = buildTriples(v.uri, v.values, doc, depth+1);
+            var nt = buildTriples(v.uri, v.values, doc);
             if(nt.length > 0) {
               // include the relation to the sub-resource itself
               // Here we rely on the fact that the main triples come first since we use the first triple's subject as object.
@@ -391,7 +395,8 @@ RDFE.EntityModel = Backbone.Model.extend({
     return function(success, fail) {
       var self = this;
       // recursively build the set of triples to add
-      var triples = buildTriples(this.uri, self.attributes, self.doc, 1);
+      newResCnt = 1;
+      var triples = buildTriples(this.uri, self.attributes, self.doc);
 
       // get the list of triples to delete by gathering the subjects in the triples to add
       var deleteNodes = [];
@@ -408,15 +413,7 @@ RDFE.EntityModel = Backbone.Model.extend({
       var saveTriples = function(i) {
         if(i >= deleteNodes.length) {
           // then add all the triples
-          self.doc.store.insert(triples, self.doc.graph, function(s, r) {
-            if (s && success) {
-              success();
-            }
-
-            else if (!s && fail) {
-              fail(r);
-            }
-          });
+          self.doc.addTriples(triples, success, fail);
         }
         else {
           self.doc.deleteBySubject(deleteNodes[i], function() {
