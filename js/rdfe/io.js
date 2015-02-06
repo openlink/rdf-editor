@@ -11,6 +11,9 @@ String.prototype.format = function() {
   }
   RDFE.IO = {};
 
+  // we deal with dynamic content which means we do not want any caching
+  $.ajaxSetup({ cache: false });
+
   RDFE.IO.createIO = function(type, options) {
     var t = "sparql";
     var o = {};
