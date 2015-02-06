@@ -408,15 +408,7 @@ RDFE.EntityModel = Backbone.Model.extend({
       var saveTriples = function(i) {
         if(i >= deleteNodes.length) {
           // then add all the triples
-          self.doc.store.insert(triples, self.doc.graph, function(s, r) {
-            if (s && success) {
-              success();
-            }
-
-            else if (!s && fail) {
-              fail(r);
-            }
-          });
+          self.doc.addTriples(triples, success, fail);
         }
         else {
           self.doc.deleteBySubject(deleteNodes[i], function() {
