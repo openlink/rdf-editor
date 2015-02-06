@@ -419,7 +419,7 @@ RDFE.EntityModel = Backbone.Model.extend({
           });
         }
         else {
-          self.doc.deleteTriples(self.doc.store.rdf.createNamedNode(deleteNodes[i]), null, null, function() {
+          self.doc.deleteBySubject(deleteNodes[i], function() {
             saveTriples(i+1);
           }, fail);
         }
