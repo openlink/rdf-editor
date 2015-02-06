@@ -83,5 +83,8 @@ RDFE.Config.defaults = {
   // Examples:
   // - {DOC-URI}#{NAME}
   // - urn:test:{NAME}
-  entityUriTmpl: undefined
+  entityUriTmpl: undefined,
+
+  // if true then the editor will take owl:inverseOf into account and create or delete the values properly
+  autoInverseOfHandling: false
 };
