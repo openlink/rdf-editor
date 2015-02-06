@@ -8,12 +8,15 @@ if (typeof String.prototype.startsWith != 'function') {
 if(!window.RDFE)
   window.RDFE = {};
 
-RDFE.Editor = function(config) {
+RDFE.Editor = function(config, options) {
   var self = this;
+  var options = $.extend({"initOntologyManager": true}, options);
 
   // initialize our ontology manager
   this.ontologyManager = new RDFE.OntologyManager(null, config.options);
-  this.ontologyManager.init();
+  if (options.initOntologyManager === true) {
+    this.ontologyManager.init();
+  }
 
   // create our main document
   this.doc = new RDFE.Document(this.ontologyManager, config);
