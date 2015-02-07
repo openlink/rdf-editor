@@ -213,7 +213,7 @@ RDFE.Editor.prototype.createNewEntityEditor = function(forcedType) {
   }
   else {
     var forcedTypeRes = self.ontologyManager.ontologyClassByURI(forcedType);
-    var forcedTypeLabel = forcedTypeRes ? forcedTypeRes.label : forcedType.split(/[/#]/).pop();
+    var forcedTypeLabel = forcedTypeRes ? forcedTypeRes.label : RDFE.Utils.uri2name(forcedType);
     self.container.html(
       '<div class="panel panel-default">' +
       '<div class="panel-heading"><h3 class="panel-title">Add new Entity</h3></div>' +

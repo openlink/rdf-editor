@@ -373,7 +373,7 @@ RDFE.Document.prototype.getEntityLabel = function(url, success) {
   var getLabel = function(lps, i) {
     // fall back to the last section of the uri
     if(i >= lps.length)
-      success(url.split(/[/#]/).pop());
+      success(RDFE.Utils.uri2name(url));
     else
       self.store.execute('select ?l from <' + self.graph + '> where { <' + url + '> <' + lps[i] + '> ?l . }', function(s, r) {
         if(s && r.length > 0 && r[0].l.value.length > 0) {
@@ -464,7 +464,7 @@ RDFE.Document.prototype.listEntities = function(type, callback, errorCb) {
             }
           }
           if(!n.label)
-            n.label = r[i].s.value.split(/[/#]/).pop();
+            n.label = RDFE.Utils.uri2name(r[i].s.value);
           n.types = r[i].t ? [r[i].t.value] : [];
 
           sl.push(n);
