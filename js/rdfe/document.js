@@ -393,7 +393,7 @@ RDFE.Document.prototype.listProperties = function(callback) {
     var pl = [];
 
     if(success) {
-      for(var i = 0; i < r.length; i += 1)
+      for(var i = 0; i < r.length; i++)
         pl.push(r[i].p.value);
     }
 
@@ -447,7 +447,7 @@ RDFE.Document.prototype.listEntities = function(type, callback, errorCb) {
     var sl = [];
 
     if(success) {
-      for(var i = 0; i < r.length; i += 1) {
+      for(var i = 0; i < r.length; i++) {
         var n = r[i].s;
 
         // add a type to an existing entity
