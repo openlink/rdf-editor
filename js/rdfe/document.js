@@ -387,6 +387,40 @@ RDFE.Document.prototype.getEntityLabel = function(url, success) {
   getLabel(self.config.options.labelProps, 0);
 };
 
+RDFE.Document.prototype.getEntity = function(url, success) {
+  var self = this;
+
+  // Iterating over all triples of the entity is faster than a specific sparql query.
+  self.store.node(url, self.graph, function(s, r) {
+    var e = {
+      uri: url,
+      label: RDFE.Utils.uri2name(url),
+      types: []
+    };
+
+    if(s) {
+      r = r.triples;
+      for(var i = 0; i < r.length; i++) {
+        if(r[i].predicate.nominalValue == 'http://www.w3.org/1999/02/22-rdf-syntax-ns#type') {
+          e.types.push(r[i].object.nominalValue);
+        }
+        else if(_.indexOf(self.config.options.labelProps, r[i].predicate.nominalValue) >= 0) {
+          e[r[i].predicate.nominalValue] = r[i].object.nominalValue;
+        }
+      }
+
+      for(var i = 0; i < self.config.options.labelProps.length; i++) {
+        if(e[self.config.options.labelProps[i]]) {
+          e.label = e[self.config.options.labelProps[i]];
+          break;
+        }
+      }
+    }
+
+    success(e);
+  });
+};
+
 RDFE.Document.prototype.listProperties = function(callback) {
   var self = this;
   self.store.execute("select distinct ?p from <" + self.graph + "> where { ?s ?p ?o }", function(success, r) {
