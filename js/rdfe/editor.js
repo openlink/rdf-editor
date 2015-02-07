@@ -24,6 +24,9 @@ RDFE.Editor = function(config) {
 
 RDFE.Editor.prototype.render = function(container) {
   this.container = container;
+  this.listContainer = $(document.createElement('div')).appendTo(this.container);
+  this.formContainer = $(document.createElement('div')).appendTo(this.container);
+
   if (this.config.options.defaultView === 'triples') {
     this.createTripleList();
   }
@@ -48,8 +51,9 @@ RDFE.Editor.prototype.createTripleList = function() {
       $(self).trigger('rdf-editor-success', d);
     });
   }
-  this.container.empty();
-  this.tripleView.render(self.container, function() {
+  this.formContainer.hide();
+  this.listContainer.empty().show();
+  this.tripleView.render(self.listContainer, function() {
     $(self).trigger('rdf-editor-done', { "id": "render-triple-list" });
   });
 };
@@ -61,7 +65,8 @@ RDFE.Editor.prototype.createNewStatementEditor = function() {
     return false;
   }
 
-  self.container.html(' \
+  self.listContainer.hide();
+  self.formContainer.html(' \
       <div class="panel panel-default"> \
       <div class="panel-heading"><h3 class="panel-title">Add new Triple</h3></div> \
       <div class="panel-body"><div class="form-horizontal"> \
@@ -73,10 +78,10 @@ RDFE.Editor.prototype.createNewStatementEditor = function() {
       <div class="col-sm-10"><input name="object" class="form-control" /></div></div> \
       <div class="form-group"><div class="col-sm-10 col-sm-offset-2"><a href="#" class="btn btn-default triple-action triple-action-new-cancel">Cancel</a> \
         <a href="#" class="btn btn-primary triple-action triple-action-new-save">OK</a></div></div> \
-      </form></div></div>\n');
+      </form></div></div>\n').show();
 
-  var objEd = self.container.find('input[name="object"]').rdfNodeEditor();
-  var propEd = self.container.find('select[name="predicate"]').propertyBox({
+  var objEd = self.formContainer.find('input[name="object"]').rdfNodeEditor();
+  var propEd = self.formContainer.find('select[name="predicate"]').propertyBox({
     ontoManager: self.ontologyManager
   }).on('changed', function(e, p) {
     console.log('changed', p)
@@ -94,12 +99,12 @@ RDFE.Editor.prototype.createNewStatementEditor = function() {
     objEd.setValue(n);
   });
 
-  self.container.find('a.triple-action-new-cancel').click(function(e) {
+  self.formContainer.find('a.triple-action-new-cancel').click(function(e) {
     self.createTripleList();
   });
 
-  self.container.find('a.triple-action-new-save').click(function(e) {
-    var s = self.container.find('input[name="subject"]').val();
+  self.formContainer.find('a.triple-action-new-save').click(function(e) {
+    var s = self.formContainer.find('input[name="subject"]').val();
     var p = propEd.selectedURI();
     var o = objEd.getValue();
     var t = self.doc.store.rdf.createTriple(self.doc.store.rdf.createNamedNode(s), self.doc.store.rdf.createNamedNode(p), o.toStoreNode(self.doc.store));
@@ -138,9 +143,11 @@ RDFE.Editor.prototype.createNewEntityEditor = function(forcedType) {
   }
 
 
+  this.listContainer.hide();
+  this.formContainer.show();
 
   if (!forcedType) {
-    self.container.html(
+    self.formContainer.html(
       '<div class="panel panel-default">' +
       '<div class="panel-heading"><h3 class="panel-title">Add new Entity</h3></div>' +
       '<div class="panel-body"><div class="form-horizontal"> ' +
@@ -214,7 +221,7 @@ RDFE.Editor.prototype.createNewEntityEditor = function(forcedType) {
   else {
     var forcedTypeRes = self.ontologyManager.ontologyClassByURI(forcedType);
     var forcedTypeLabel = forcedTypeRes ? forcedTypeRes.label : RDFE.Utils.uri2name(forcedType);
-    self.container.html(
+    self.formContainer.html(
       '<div class="panel panel-default">' +
       '<div class="panel-heading"><h3 class="panel-title">Add new Entity</h3></div>' +
       '<div class="panel-body"><div class="form-horizontal"> ' +
@@ -237,22 +244,23 @@ RDFE.Editor.prototype.createNewEntityEditor = function(forcedType) {
       '    </div> ' +
       '  </div> ' +
       '</div></div></div>\n');
-    self.container.find('input#subject').focus();
+    self.formContainer.find('input#subject').focus();
   }
 
   // if we have an entity uri template we ask the user to provide a nem instead of the uri
   if(this.config.options.entityUriTmpl) {
-    self.container.find('label[for="subject"]').text('Entity Name');
+    self.formContainer.find('label[for="subject"]').text('Entity Name');
   }
 
-  self.container.find('a.triple-action-new-cancel').click(function(e) {
-    self.createEntityList();
+  self.formContainer.find('a.triple-action-new-cancel').click(function(e) {
+    this.listContainer.show();
+    this.formContainer.hide();
   });
 
   var saveFct = function() {
-    var uri = self.container.find('input[name="subject"]').val(),
+    var uri = self.formContainer.find('input[name="subject"]').val(),
         name = null,
-        type = forcedType || self.container.find('#class')[0].selectize.getValue();
+        type = forcedType || self.formContainer.find('#class')[0].selectize.getValue();
 
     if(self.config.options.entityUriTmpl) {
       name = uri;
@@ -279,11 +287,11 @@ RDFE.Editor.prototype.createNewEntityEditor = function(forcedType) {
     });
   };
 
-  self.container.find('a.triple-action-new-save').click(function(e) {
+  self.formContainer.find('a.triple-action-new-save').click(function(e) {
     saveFct();
   });
 
-  self.container.find('input#subject').keypress(function(e) {
+  self.formContainer.find('input#subject').keypress(function(e) {
     if(e.which === 13) {
       saveFct();
     }
@@ -307,8 +315,9 @@ RDFE.Editor.prototype.createEntityList = function() {
     });
   }
 
-  self.container.empty();
-  self.entityView.render(self.container, function() {
+  self.formContainer.hide();
+  self.listContainer.empty().show();
+  self.entityView.render(self.listContainer, function() {
     $(self).trigger('rdf-editor-done', {
       "id": "render-entity-list"
     });
@@ -327,7 +336,11 @@ RDFE.Editor.prototype.editEntity = function(uri) {
   }
 
   // render the entity editor and re-create the entity list once the editor is done
-  self.entityEditor.render(self.container, uri, function() {
-    self.createEntityList();
+  self.listContainer.hide();
+  self.formContainer.show();
+  self.entityEditor.render(self.formContainer, uri, function() {
+    self.formContainer.hide();
+    self.listContainer.show();
+    self.entityView.updateEntity(uri);
   });
 };
