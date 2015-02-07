@@ -15,6 +15,10 @@ Maintained in https://github.com/trueg/backbone-forms
 1. Added support for maxCardinality in the "list" editor.
 
 
+bootstrap-table
+---------------
+1. Added new function "update"
+
 
 Create minified js and css:
 ===========================
