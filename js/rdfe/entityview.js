@@ -30,6 +30,25 @@
       ].join('');
     };
 
+    /**
+     * Convert an entity object as returns by Document.listEntities or
+     * Document.getEntity into a row for the entity table.
+     */
+    var docEntityToRow = function(entity, ontoMan) {
+      return {
+        'label': entity.label,
+        'types': _.uniq(_.map(entity.types, function(s) {
+          // merge class name with class labentity for the searchable entity type
+          var c = ontoMan.ontologyClassByURI(s);
+          if(c) {
+            return c.label;
+          }
+          return RDFE.Utils.uri2name(s);
+        })).join(', '),
+        'uri': entity.uri || entity.value
+      };
+    };
+
     c.prototype.render = function(container, callback) {
       var self = this;
 
@@ -43,23 +62,8 @@
         // create entries
         var entityData = [];
         for (var i = 0; i < el.length; i++) {
-          entityData.push({
-            'label': el[i].label,
-            'types': _.uniq(_.map(el[i].types, function(s) {
-              // merge class name with class label for the searchable entity type
-              var c = self.ontologyManager.ontologyClassByURI(s);
-              if(c) {
-                return c.label;
-              }
-              return s.split(/[/#]/).pop();
-            })).join(', '),
-            'uri': el[i].value,
-            'id': i
-          });
+          entityData.push(docEntityToRow(el[i], self.ontologyManager));
         }
-        console.log('Entity list:', entityData);
-
-        $list.data('maxindex', i);
 
         var editFct = function(uri) {
           // open the editor and once its done re-create the entity list
@@ -140,10 +144,17 @@
     };
 
     c.prototype.addEntity = function(entity) {
-      var i = this.entityTable.data('maxindex');
-      entity.id = i;
       this.entityTable.bootstrapTable('append', entity);
-      this.entityTable.data('maxindex', i+1);
+    };
+
+    /**
+     * Fetch details about the given entity from the document and update them in the table.
+     */
+    c.prototype.updateEntity = function(uri) {
+      var self = this;
+      self.doc.getEntity(uri, function(e) {
+        self.entityTable.bootstrapTable('update', docEntityToRow(e));
+      });
     };
 
     return c;
