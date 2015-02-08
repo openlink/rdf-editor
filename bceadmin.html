@@ -331,6 +331,8 @@
               $('#action-'+configActions[i]).show();
             }
 
+            toggleSpinner(true);
+
             if($.inArray("bookmarks", config.options.actions) >= 0)
               loadBookmarks(config);
 
@@ -359,6 +361,7 @@
             mainDoc = editor.doc;
 
             ontologyManager = editor.ontologyManager;
+
             // subscribe to ontologyManager init events
             $(ontologyManager).on('loading', function(e, d, uri) {
               $('#contents').append('<p>Loading - <b>' + uri + '</b></p>')
@@ -374,11 +377,13 @@
 
             ontologyManager.init({success:
               function() {
-                $('#contents').empty();
-                toggleSpinner(true);
                 if(config.options.document) {
+                  $('#contents').append('<p>Loading - <b>' + config.options.document.label + '</b></p>');
                   $('#docUrl').text(config.options.document.label);
                   ioRetrieve(config.options.document.uri, config.options.document.type);
+                }
+                else {
+                  $('#contents').empty();
                 }
               }
             });
