@@ -5,6 +5,7 @@ RDFE.EntityModel = Backbone.Model.extend({
   setEntity: function(doc, uri) {
     this.doc = doc;
     this.uri = uri;
+    this.individualsCache = {};
   },
 
   addValue: function(p, val) {
@@ -13,7 +14,20 @@ RDFE.EntityModel = Backbone.Model.extend({
     this.set(p, d);
   },
 
+  /**
+   * Gets individuals for the given range type from both the document
+   * and the ontology manager.
+   *
+   * Results are cached for performance improvement on larger editor
+   * forms.
+   */
   getIndividuals: function(range, callback) {
+    // check cache first
+    if(this.individualsCache[range]) {
+      callback(this.individualsCache[range]);
+      return;
+    }
+
     var items = [];
 
     // get individuals from the ontology manager
@@ -44,6 +58,9 @@ RDFE.EntityModel = Backbone.Model.extend({
     this.doc.listEntities(range, function(el) {
       $.merge(items, el);
     });
+
+    // cache the items for a minor perf improvement
+    this.individualsCache[range] = items;
 
     // return the merged individuals list
     callback(items);
@@ -109,7 +126,8 @@ RDFE.EntityModel = Backbone.Model.extend({
             RDFE.EntityModel.prototype.initialize.call(this, options);
             this.doc = self.doc;
             this.buildSchemaFromTypes([range]);
-          }
+          },
+          individualsCache: self.individualsCache
         });
         item.editorAttrs.style = "height:auto;"; //FIXME: use editorClass instead
       }
@@ -295,6 +313,7 @@ RDFE.EntityModel = Backbone.Model.extend({
             var v = r[i];
             var subm = new RDFE.EntityModel();
             subm.setEntity (self.doc, v.o.value);
+            subm.individualsCache = self.individualsCache;
             subm.docToModel(function() {
               self.addValue(v.p.value, subm);
             });
