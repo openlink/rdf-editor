@@ -1,3 +1,7 @@
+0.12
+  * Performance improvements.
+  * Show loading messages which initializing the ontology manager.
+
 0.11.1
   * Fixed creation of multiple new aggregate resources. They used to have the same URI.
   * Fixed deletion of triples by subject or object in RDFE.Document.

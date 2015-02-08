@@ -75,3 +75,18 @@ RDFE.Utils.uriParams = function() {
   }
   return result;
 }
+
+/**
+ * Extract a name from a URI. The name is the last part of the URI which is
+ * either the fragment or the last path section.
+ */
+RDFE.Utils.uri2name = function(u) {
+  var m = u.lastIndexOf('#');
+  if(m < 0) {
+    m = u.lastIndexOf('/');
+  }
+  if (m >= 0) {
+    return u.substring(m+1, u.length);
+  }
+  return u;
+}
