@@ -242,22 +242,6 @@
           $('#busyspinner').spin(false);
       }
 
-      function currentView() {
-        var view = rdfeConfig.options.defaultView;
-        if($('#panel-view-triples').is(":visible"))
-          view = 'triples';
-        else if($('#panel-view-entities').is(":visible"))
-          view = 'entities';
-        return view;
-      }
-
-      function updateViewContents(view) {
-        if((view || currentView()) == "triples")
-          editor.createTripleList();
-        else
-          editor.createEntityList();
-      }
-
       function ioRetrieve(url, type) {
         var io_rdfe;
         try {
@@ -275,9 +259,7 @@
         toggleSpinner(true);
 
         mainDoc.load(url, io_rdfe, function() {
-            var view = currentView();
-            updateViewContents(view);
-            toggleView(view);
+            editor.updateView();
             $('#docUrl').text(url);
             $.jStorage.set("editor-document-url", url);
             $.jStorage.set("editor-document-io-type", type);
@@ -290,20 +272,6 @@
             });
             toggleSpinner(false);
         });
-      }
-
-      function toggleView(view) {
-        if(view == "triples") {
-          $('#panel-view-triples').show();
-          $('#action-triples').addClass('active').find('input').attr('checked', 'checked');
-          $('#action-entities').removeClass('active').find('input').removeAttr('checked');
-        }
-        else {
-          editor.createEntityList();
-          $('#panel-view-entities').show();
-          $('#action-triples').removeClass('active').find('input').removeAttr('checked');
-          $('#action-entities').addClass('active').find('input').attr('checked', 'checked');
-        }
       }
 
       // set defaults
@@ -359,7 +327,7 @@
       function documentNew() {
         var n = function() {
           mainDoc.new(function() {
-            updateViewContents();
+            editor.updateView();
             $('#docUrl').text("no document loaded");
           }, function() {
             $.growl({
@@ -450,6 +418,16 @@
               toggleSpinner(true);
               editor.render($("#contents"), function() { toggleSpinner(false); });
 
+              // initial state of the view button
+              if(editor.currentView() === 'triples') {
+                $('#action-triples').addClass('active').find('input').attr('checked', 'checked');
+                $('#action-entities').removeClass('active').find('input').removeAttr('checked');
+              }
+              else {
+                $('#action-entities').addClass('active').find('input').attr('checked', 'checked');
+                $('#action-triples').removeClass('active').find('input').removeAttr('checked');
+              }
+
               $("#io_spq").val($.jStorage.get("editor-sparql-endpoint", config.options.sparqlEndpoint));
               $("#gspEndpoint").val($.jStorage.get("editor-sparql-graph-endpoint", config.options.gspEndpoint));
 
@@ -518,32 +496,15 @@
         });
 
         $('button#action-add').click(function(e) {
-          if ($('#panel-view-triples').is(":visible")) {
+          if (editor.currentView() === 'triples') {
             editor.createNewStatementEditor();
           } else {
             editor.createNewEntityEditor();
           }
         });
 
-        // reload the contents when the panel shows
-        $(document).on('show-view-triples', function() {
-          console.log('show-view-triples event');
-          editor.createTripleList();
-        });
-        $(document).on('show-view-entities', function() {
-          console.log('show-view-entities event');
-          editor.createEntityList();
-        });
-
-        function togglePanel(id) {
-          console.log('togglePanel ' + id);
-          $('.main-view-panel').hide();
-          $('#panel-' + id).show();
-          $(document).trigger('show-' + id);
-        }
-
         $('input[name="view"]').change(function(e) {
-          togglePanel(e.target.id);
+          editor.toggleView(e.target.id === 'view-triples' ? 'triples' : 'entities');
         });
       });
     </script>

@@ -1137,7 +1137,7 @@ RDFE.OntologyClass = function(ontologyManager, graph, URI, options) {
   this.options = $.extend({}, options);
   this.URI = URI;
   this.curi = ontologyManager.uriNormalize(URI);
-  this.name = URI.split(/[/#]/).pop();
+  this.name = RDFE.Utils.uri2name(URI);
   this.sources = [];
   this.subClassOf = [];
   this.superClassOf = [];
@@ -1308,7 +1308,7 @@ RDFE.OntologyProperty = function(ontologyManager, graph, URI, options) {
   this.options = $.extend({}, options);
   this.URI = URI;
   this.curi = ontologyManager.uriNormalize(URI);
-  this.name = URI.split(/[/#]/).pop();
+  this.name = RDFE.Utils.uri2name(URI);
   this.sources = [];
   this.subPropertyOf = [];
 
@@ -1435,7 +1435,7 @@ RDFE.OntologyIndividual = function(ontologyManager, graph, URI, individualClass,
   this.options = $.extend({}, options);
   this.URI = URI;
   this.curi = ontologyManager.uriNormalize(URI);
-  this.name = URI.split(/[/#]/).pop();
+  this.name = RDFE.Utils.uri2name(URI);
   this.sources = [];
 
   this.manager = ontologyManager;

@@ -373,7 +373,7 @@ RDFE.Document.prototype.getEntityLabel = function(url, success) {
   var getLabel = function(lps, i) {
     // fall back to the last section of the uri
     if(i >= lps.length)
-      success(url.split(/[/#]/).pop());
+      success(RDFE.Utils.uri2name(url));
     else
       self.store.execute('select ?l from <' + self.graph + '> where { <' + url + '> <' + lps[i] + '> ?l . }', function(s, r) {
         if(s && r.length > 0 && r[0].l.value.length > 0) {
@@ -387,13 +387,47 @@ RDFE.Document.prototype.getEntityLabel = function(url, success) {
   getLabel(self.config.options.labelProps, 0);
 };
 
+RDFE.Document.prototype.getEntity = function(url, success) {
+  var self = this;
+
+  // Iterating over all triples of the entity is faster than a specific sparql query.
+  self.store.node(url, self.graph, function(s, r) {
+    var e = {
+      uri: url,
+      label: RDFE.Utils.uri2name(url),
+      types: []
+    };
+
+    if(s) {
+      r = r.triples;
+      for(var i = 0; i < r.length; i++) {
+        if(r[i].predicate.nominalValue == 'http://www.w3.org/1999/02/22-rdf-syntax-ns#type') {
+          e.types.push(r[i].object.nominalValue);
+        }
+        else if(_.indexOf(self.config.options.labelProps, r[i].predicate.nominalValue) >= 0) {
+          e[r[i].predicate.nominalValue] = r[i].object.nominalValue;
+        }
+      }
+
+      for(var i = 0; i < self.config.options.labelProps.length; i++) {
+        if(e[self.config.options.labelProps[i]]) {
+          e.label = e[self.config.options.labelProps[i]];
+          break;
+        }
+      }
+    }
+
+    success(e);
+  });
+};
+
 RDFE.Document.prototype.listProperties = function(callback) {
   var self = this;
   self.store.execute("select distinct ?p from <" + self.graph + "> where { ?s ?p ?o }", function(success, r) {
     var pl = [];
 
     if(success) {
-      for(var i = 0; i < r.length; i += 1)
+      for(var i = 0; i < r.length; i++)
         pl.push(r[i].p.value);
     }
 
@@ -402,8 +436,9 @@ RDFE.Document.prototype.listProperties = function(callback) {
 };
 
 /**
- * List all the entities in the document. A "label" property is added to each node
- * in the result passed to the @p callback function.
+ * List all entities by Iterating over all triples in the store rather than using
+ * a sparql query. Experiments showed a 10x performance improvement this way.
+ *
  * @param type optional type(s) the entities should have. Can be a list or a string.
  * @param callback a function which takes an array of rdfstore nodes as input.
  * @param errorCb Callback function in case an error occurs, takes err msg as input.
@@ -422,11 +457,9 @@ RDFE.Document.prototype.listEntities = function(type, callback, errorCb) {
   else if(typeof(t) == 'string')
     t = [t];
 
-  var q = "select distinct ?s ?t ";
-  for(var i = 0; i < self.config.options.labelProps.length; i++) {
-    q += "?l" + i + " ";
-  }
-  q += " from <" + self.graph + "> where { ";
+  var q = "select ?s ?p ?o from <" + self.graph + "> where { ?s ?p ?o . ";
+
+  // FIXME: add super-types to t like so: self.ontologyManager.getAllSuperTypes(t)
   if(t && t.length > 0) {
     q += "?s a ?t . filter(";
     for(var i = 0; i < t.length; i++) {
@@ -435,44 +468,58 @@ RDFE.Document.prototype.listEntities = function(type, callback, errorCb) {
     }
     q += ") . ";
   }
-  else {
-    q += "?s ?p ?o . optional { ?s a ?t } . ";
-  }
-  for(var i = 0; i < self.config.options.labelProps.length; i++) {
-    q += "optional { ?s <" + self.config.options.labelProps[i] + "> ?l" + i + " . } . ";
-  }
-  q += '} order by ?s';
+
+  q += '}';
 
   self.store.execute(q, function(success, r) {
-    var sl = [];
+    var sl = {};
 
     if(success) {
-      for(var i = 0; i < r.length; i += 1) {
-        var n = r[i].s;
+      for(var i = 0; i < r.length; i++) {
+        var s = r[i].s.value,
+            p = r[i].p.value;
 
-        // add a type to an existing entity
-        if(sl.length > 0 && sl[sl.length-1].value === n.value) {
-          sl[sl.length-1].types.push(r[i].t.value);
+        // create an initial entity which only contains the uri
+        if(!sl[s]) {
+          sl[s] = {
+            uri: s,
+            types: []
+          };
+        }
+        var e = sl[s];
+
+        // add types to the entity
+        if(p == 'http://www.w3.org/1999/02/22-rdf-syntax-ns#type') {
+          e.types.push(r[i].o.value);
         }
 
-        // add a new entity to the list
-        else {
-          for(var j = 0; j < self.config.options.labelProps.length; j++) {
-            if(r[i]["l" + j]) {
-              n.label = r[i]["l" + j].value;
-              break;
-            }
-          }
-          if(!n.label)
-            n.label = r[i].s.value.split(/[/#]/).pop();
-          n.types = r[i].t ? [r[i].t.value] : [];
+        // store labels from the list of configured label props
+        else if(_.indexOf(self.config.options.labelProps, p) >= 0) {
+          e[p] = r[i].o.value;
+        }
+      }
 
-          sl.push(n);
+      // the result should be a flat list of entities
+      sl = _.values(sl);
+
+      // finally generate the labels from the values stored in the entities.
+      // This allows to always choose the label value with the highest prio (highest up in the configured list of label props)
+      for(var i = 0; i < sl.length; i++) {
+        e = sl[i];
+        for(var j = 0; j < self.config.options.labelProps.length; j++) {
+          if(e[self.config.options.labelProps[j]]) {
+            e.label = e[self.config.options.labelProps[j]];
+            break;
+          }
+        }
+        if(!e.label) {
+          e.label = RDFE.Utils.uri2name(e.uri);
         }
       }
     }
-    else if(errorCb)
+    else if(errorCb) {
       errorCb(r);
+    }
 
     cb(sl);
   });

@@ -120,7 +120,7 @@
         // create the basic entity editor layout using the template above
         container.append(self.template({
           entityUri: url,
-          entityLabel: url.split(/[/#]/).pop()
+          entityLabel: RDFE.Utils.uri2name(url)
         }));
         self.doc.getEntityLabel(url, function(label) {
           container.find('.entity-label').text(label);

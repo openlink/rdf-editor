@@ -32,15 +32,22 @@ RDFE.RdfNode.prototype.toString = function() {
  * Signals an error when encountering a blank node as those are not supported.
  */
 RDFE.RdfNode.fromStoreNode = function(node) {
+  // plain string
   if(typeof(node) == 'string') {
     return new RDFE.RdfNode('uri', node);
   }
+
+  // already an RdfNode
   else if(node instanceof RDFE.RdfNode) {
     return node;
   }
+
+  // rdfstore nodes
   else if(node.token) {
     return new RDFE.RdfNode(node.token, node.value, node.type, node.lang);
   }
+
+  // rdfstore.rdf nodes
   else if(node.interfaceName) {
     var t;
     if(node.interfaceName == 'NamedNode')
@@ -52,6 +59,14 @@ RDFE.RdfNode.fromStoreNode = function(node) {
 
     return new RDFE.RdfNode(t, node.nominalValue, node.datatype, node.language);
   }
-  else
+
+  // entities
+  else if(node.uri) {
+    return new RDFE.RdfNode('uri', node.uri);
+  }
+
+  // unknown
+  else {
     throw "Unsupported node type for RDFE.RdfNode conversion.";
+  }
 };

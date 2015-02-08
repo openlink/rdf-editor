@@ -27,7 +27,7 @@ var jsCustomDeps = [
   "js/val.js",
   "js/backbone-forms-list.js",
   "js/rdf_store.js",
-  "js/rdfxml_parser.js"
+  "js/bootstrap-table.js",
 ];
 
 // Vanialla Third-party dependencies
@@ -35,10 +35,8 @@ var jsDeps = [
   "js/jquery-1.11.1.min.js",
   "js/jstorage.js",
   "js/bootstrap.min.js",
-  "js/bootstrap-table.js",
   "js/bootstrap-editable.js",
   "js/bootstrap-datetimepicker.min.js",
-  "js/bootstrap-table.min.js",
   "js/bootstrap-table-editable.js",
   "js/bootstrap-toggle.min.js",
   "js/bootstrap-growl.min.js",

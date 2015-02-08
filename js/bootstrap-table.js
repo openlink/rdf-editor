@@ -1456,6 +1456,29 @@
         this.initBody(true);
     };
 
+    BootstrapTable.prototype.update = function (params) {
+        var len = this.data.length,
+            i, row;
+
+        if (!params.hasOwnProperty('field') || !params.hasOwnProperty('data')) {
+            return;
+        }
+
+        for (i = len - 1; i >= 0; i--) {
+            row = this.data[i];
+
+            if (!row.hasOwnProperty(params.field)) {
+                return;
+            }
+            if (row[params.field] === params.data[params.field]) {
+                $.extend(this.data[i], params.data);
+                break;
+            }
+        }
+
+        this.initBody(true);
+    };
+
     BootstrapTable.prototype.insertRow = function (params) {
         if (!params.hasOwnProperty('index') || !params.hasOwnProperty('row')) {
             return;
@@ -1644,7 +1667,8 @@
         'scrollTo',
         'selectPage', 'prevPage', 'nextPage',
         'togglePagination',
-        'toggleView'
+        'toggleView',
+        'update'
     ];
 
     $.fn.bootstrapTable = function (option, _relatedTarget) {
