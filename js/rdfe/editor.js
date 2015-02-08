@@ -27,10 +27,46 @@ RDFE.Editor.prototype.render = function(container) {
   this.listContainer = $(document.createElement('div')).appendTo(this.container);
   this.formContainer = $(document.createElement('div')).appendTo(this.container);
 
-  if (this.config.options.defaultView === 'triples') {
+  this.toggleView(this.config.options.defaultView);
+};
+
+/**
+ * Get the name of the current view mode.
+ *
+ * @return The current view mode which is either @p entites,
+ * @p triples or @p undefined in case render() has not been
+ * called yet.
+ */
+RDFE.Editor.prototype.currentView = function() {
+  return this._currentView;
+};
+
+/**
+ * Toggle the view to the given @p view mode.
+ * Nothing is done if the given @p view is already
+ * the current one.
+ */
+RDFE.Editor.prototype.toggleView = function(view) {
+  if(view !== this._currentView) {
+    if (view === 'triples') {
+      this.createTripleList();
+      this._currentView = "triples";
+    }
+    else {
+      this.createEntityList();
+      this._currentView = "entities";
+    }
+  }
+};
+
+/**
+ * Forcefully update the contents in the current view.
+ */
+RDFE.Editor.prototype.updateView = function() {
+  if(this._currentView === 'triples') {
     this.createTripleList();
   }
-  else {
+  else if(this._currentView === 'entities') {
     this.createEntityList();
   }
 };
@@ -253,8 +289,8 @@ RDFE.Editor.prototype.createNewEntityEditor = function(forcedType) {
   }
 
   self.formContainer.find('a.triple-action-new-cancel').click(function(e) {
-    this.listContainer.show();
-    this.formContainer.hide();
+    self.listContainer.show();
+    self.formContainer.hide();
   });
 
   var saveFct = function() {
@@ -307,7 +343,11 @@ RDFE.Editor.prototype.createEntityList = function() {
   });
 
   if(!self.entityView) {
-    self.entityView = new RDFE.EntityView(this.doc, this.ontologyManager);
+    self.entityView = new RDFE.EntityView(this.doc, this.ontologyManager, {
+      editFct: function(uri) {
+        self.editEntity.call(self, uri);
+      }
+    });
     $(self.entityView).on('rdf-editor-error', function(e) {
       $(self).trigger('rdf-editor-error', d);
     }).on('rdf-editor-success', function(e, d) {

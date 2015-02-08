@@ -5,9 +5,10 @@
 
   RDFE.EntityView = (function() {
     // constructor
-    var c = function(doc, ontoMan) {
+    var c = function(doc, ontoMan, params) {
       this.doc = doc;
       this.ontologyManager = ontoMan;
+      this.editFct = params.editFct;
     };
 
     var labelFormatter = function(value, row, index) {
@@ -65,20 +66,6 @@
           entityData.push(docEntityToRow(el[i], self.ontologyManager));
         }
 
-        var editFct = function(uri) {
-          // open the editor and once its done re-create the entity list
-          if(!self.entityEditor) {
-            self.entityEditor = new RDFE.EntityEditor(self.doc, self.ontologyManager);
-            $(self.entityEditor).on('rdf-editor-error', function(e) {
-              $(self).trigger('rdf-editor-error', d);
-            }).on('rdf-editor-success', function(e, d) {
-              $(self).trigger('rdf-editor-success', d);
-            });
-          }
-          self.entityEditor.render(container, uri, function() {
-            self.render(container);
-          });
-        };
         var deleteFct = function(uri) {
           self.doc.deleteEntity(uri, function() {
             $list.bootstrapTable('remove', {
@@ -123,7 +110,7 @@
             formatter: entityListActionsFormatter,
             events: {
               'click .edit': function(e, value, row, index) {
-                editFct(row.uri);
+                self.editFct(row.uri);
               },
               'click .remove': function(e, value, row, index) {
                 deleteFct(row.uri);
@@ -153,7 +140,7 @@
     c.prototype.updateEntity = function(uri) {
       var self = this;
       self.doc.getEntity(uri, function(e) {
-        self.entityTable.bootstrapTable('update', docEntityToRow(e));
+        self.entityTable.bootstrapTable('update', docEntityToRow(e, self.ontologyManager));
       });
     };
 
