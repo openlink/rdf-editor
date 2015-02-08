@@ -27,6 +27,9 @@ RDFE.Editor = function(config, options) {
 
 RDFE.Editor.prototype.render = function(container) {
   this.container = container;
+
+  this.container.empty();
+
   this.listContainer = $(document.createElement('div')).appendTo(this.container);
   this.formContainer = $(document.createElement('div')).appendTo(this.container);
 
