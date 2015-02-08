@@ -103,7 +103,7 @@ RDFE.EntityModel = Backbone.Model.extend({
       restrictionLabel = restrictions["hasCustomLabel"];
       restrictionComment = restrictions["hasCustomComment"];
     }
-    var label = RDFE.Utils.createTitle(restrictionLabel || property.label || property.title || RDFE.Utils.uri2name(property))
+    var label = RDFE.Utils.createTitle(restrictionLabel || property.label || property.title || RDFE.Utils.uri2name(property.URI))
     var item = {
       titleHTML: '<span title="{0}">{1}</span>'.format(RDFE.Utils.escapeXml(property.URI), label),
       title: label,

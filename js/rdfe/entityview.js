@@ -140,7 +140,10 @@
     c.prototype.updateEntity = function(uri) {
       var self = this;
       self.doc.getEntity(uri, function(e) {
-        self.entityTable.bootstrapTable('update', docEntityToRow(e, self.ontologyManager));
+        self.entityTable.bootstrapTable('update', {
+          field: 'uri',
+          data: docEntityToRow(e, self.ontologyManager)
+        });
       });
     };
 
