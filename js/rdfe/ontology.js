@@ -1315,6 +1315,22 @@ RDFE.OntologyClass.prototype.isAggregateProperty = function(p, cc) {
   return false;
 };
 
+RDFE.OntologyClass.prototype.getSubClasses = function(includeSuper, subClasses, checkedClasses) {
+  subClasses = subClasses || [];
+  subClasses = _.union(subClasses, this.superClassOf);
+  if (includeSuper === true) {
+    checkedClasses = checkedClasses || [];
+    checkedClasses.push(this.URI);
+    for (var i = 0; i < this.superClassOf.length; i++) {
+      var subClass = this.superClassOf[i];
+      if ($.inArray(subClass.URI, checkedClasses) < 0) {
+        subClass.getSubClasses(includeSuper, subClasses, checkedClasses);
+      }
+    }
+  }
+  return subClasses;
+};
+
 RDFE.OntologyClass.prototype.getUniqueRestrictions = function() {
   var uniqueRestrictions = [];
   if (this.restrictions) {
@@ -1329,18 +1345,14 @@ RDFE.OntologyClass.prototype.getUniqueRestrictions = function() {
 };
 
 RDFE.OntologyClass.prototype.getIndividuals = function(includeSuper, cc) {
-  var iv = this.individuals;
+  var individuals = this.individuals;
   if(includeSuper) {
-    for(var i = 0; i < this.superClassOf.length; i++) {
-      var sc = this.superClassOf[i];
-      if($.inArray(sc.URI, cc) < 0) {
-        cc = cc || [];
-        cc.push(sc.URI);
-        iv = _.union(iv, this.superClassOf[i].getIndividuals(true, cc));
-      }
+    var subClasses = this.getSubClasses(true);
+    for (var i = 0; i < subClasses.length; i++) {
+      individuals = _.union(individuals, subClasses[i].individuals);
     }
   }
-  return iv;
+  return individuals;
 };
 
 /*

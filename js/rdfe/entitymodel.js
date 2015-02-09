@@ -38,11 +38,11 @@ RDFE.EntityModel = Backbone.Model.extend({
       });
       var ontologyClass = self.doc.ontologyManager.ontologyClassByURI(range);
       if (ontologyClass) {
-        var subClasses = ontologyClass.superClassOf;
-        if (_.isArray(subClasses)) {
-          for (var i = 0, l = subClasses.length; i < l; i++) {
-            listEntities(subClasses[i].URI);
-          }
+        var subClasses = ontologyClass.getSubClasses(true);
+        for (var i = 0, l = subClasses.length; i < l; i++) {
+          self.doc.listEntities(subClasses[i].URI, function(el) {
+            $.merge(items, el);
+          });
         }
       }
     }
