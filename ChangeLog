@@ -1,3 +1,6 @@
+0.12.1
+  * Included bce:Highlights into the individuals query of the touchpoint document config.
+
 0.12
   * Performance improvements.
   * Show loading messages which initializing the ontology manager.
