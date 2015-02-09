@@ -22,6 +22,8 @@ RDFE.EntityModel = Backbone.Model.extend({
    * forms.
    */
   getIndividuals: function(range, callback) {
+    var self = this;
+
     // check cache first
     if(this.individualsCache[range]) {
       callback(this.individualsCache[range]);
@@ -29,6 +31,21 @@ RDFE.EntityModel = Backbone.Model.extend({
     }
 
     var items = [];
+    // get individuals from the document whith subclasses
+    var listEntities = function(range) {
+      self.doc.listEntities(range, function(el) {
+        $.merge(items, el);
+      });
+      var ontologyClass = self.doc.ontologyManager.ontologyClassByURI(range);
+      if (ontologyClass) {
+        var subClasses = ontologyClass.superClassOf;
+        if (_.isArray(subClasses)) {
+          for (var i = 0, l = subClasses.length; i < l; i++) {
+            listEntities(subClasses[i].URI);
+          }
+        }
+      }
+    }
 
     // get individuals from the ontology manager
     if(!range || range === 'http://www.w3.org/1999/02/22-rdf-syntax-ns#Resource') {
@@ -55,9 +72,7 @@ RDFE.EntityModel = Backbone.Model.extend({
     });
 
     // get individuals from the document
-    this.doc.listEntities(range, function(el) {
-      $.merge(items, el);
-    });
+    listEntities(range);
 
     // cache the items for a minor perf improvement
     this.individualsCache[range] = items;
