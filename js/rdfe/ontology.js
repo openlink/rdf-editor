@@ -589,12 +589,13 @@ RDFE.OntologyManager.prototype.load = function(URI, params) {
   }
 }
 
-RDFE.OntologyManager.prototype.parseOntologyFile = function(URI, callParams) {
+RDFE.OntologyManager.prototype.parseOntologyFile = function(URI, params) {
   var self = this,
       labels = {}, // maps uris to labels
       comments = {}, // maps uris to comments
       restrictions = {}, // maps blank nodes to restriction details
-      restrictionMap = {}; // maps class uri to restriction blank node
+      restrictionMap = {}, // maps class uri to restriction blank node
+      collections = {}; // maps collection nodes
 
 
   function findOrCreateOntology(uri) {
@@ -626,97 +627,130 @@ RDFE.OntologyManager.prototype.parseOntologyFile = function(URI, callParams) {
     c.ontology = findOrCreateOntology(RDFE.uriOntology(uri));
     c.ontology.properties[uri] = c;
     return c;
-  };
+  }
+
+  function findOrCreateIndividual(uri) {
+    // TODO: can we not simplify this using $.extend or sth?
+    var c = self.individuals[uri];
+    if(!c) {
+      self.individuals[uri] = c = new RDFE.OntologyIndividual(self, uri);
+    }
+    return c;
+  }
+
+  /**
+   * Resolve an rdf collection for a given node uri (typically a blank node)
+   * using the relations in @p collections.
+   */
+  function resolveCollection(uri) {
+    var r = [];
+    var cur = uri;
+    while(cur) {
+      var curNode = collections[cur];
+      cur = null;
+      if(curNode) {
+        if(curNode.first) {
+          r.push(curNode.first);
+        }
+        cur = curNode.rest;
+      }
+    }
+    return r;
+  }
 
   // handle a single triple from the N3 parser
-  var handleTriple(triple) {
-    var p = triple.predicate;
+  var handleTriple = function(triple) {
+    var s = triple.subject,
+        p = triple.predicate,
+        o = triple.object;
 
     // handle the type triples
     if(p === 'http://www.w3.org/1999/02/22-rdf-syntax-ns#type') {
-      var o = triple.o;
       switch(o) {
         case 'http://www.w3.org/2000/01/rdf-schema##Class':
         case 'http://www.w3.org/2002/07/owl#Class':
-          findOrCreateClass(triple.subject);
+          findOrCreateClass(s);
           break;
 
         case 'http://www.w3.org/2002/07/owl#ObjectProperty':
         case 'http://www.w3.org/2002/07/owl#DatatypeProperty':
         case 'http://www.w3.org/1999/02/22-rdf-syntax-ns#Property':
-          findOrCreateProperty(triple.subject);
+          findOrCreateProperty(s);
           break;
 
         case 'http://www.w3.org/2002/07/owl#Restriction':
-          restrictions[triple.s] = restrictions[triple.s] || {};
+          restrictions[s] = restrictions[s] || {};
           break;
 
         case 'http://www.openlinksw.com/ontology/oplowl#AggregateRestriction':
-          var r = restrictions[triple.s] = restrictions[triple.s] || {};
+          var r = restrictions[s] = restrictions[s] || {};
           r.isAggregate = true;
           break;
 
         case 'http://www.openlinksw.com/ontology/oplowl#UniqueIdRestriction':
-          var r = restrictions[triple.s] = restrictions[triple.s] || {};
+          var r = restrictions[s] = restrictions[s] || {};
           r.isUniqueId = true;
           break;
 
         default:
           // any other type is an individual to us
-          // FIXME: add individuals
+          var indi = findOrCreateIndividual(s),
+              oc = findOrCreateClass(o);
+          indi.type = oc;
+          oc.individuals[s] = indi;
           break;
       }
     }
 
     else if(p === 'http://www.w3.org/2000/01/rdf-schema#label') {
-      labels[triple.s] = triple.o;
+      labels[s] = o;
     }
 
     else if(p === 'http://www.w3.org/2000/01/rdf-schema#comment') {
-      comments[triple.s] = triple.o;
+      comments[s] = o;
     }
 
     else if(p === 'http://www.w3.org/2000/01/rdf-schema#subClassOf') {
-      var cc = findOrCreateClass(triple.s);
-      if(N3.Utile.isBlankNode(triple.o)) {
+      var cc = findOrCreateClass(s);
+      if(N3.Util.isBlank(o)) {
         // remember blank node for restriction handling later
-        var r = restrictionMap[triple.s] = restrictionMap[triple.s] || [];
-        r.push(triple.o);
+        var r = restrictionMap[s] = restrictionMap[s] || [];
+        r.push(o);
       }
       else {
-        pc = findOrCreateClass(triple.o)
+        pc = findOrCreateClass(o)
         cc.subClassOf.push(pc);
         pc.superClassOf.push(cc);
       }
     }
 
     else if(p === 'http://www.w3.org/2000/01/rdf-schema#subPropertyOf') {
-      var pc = findOrCreateProperty(triple.o),
-          cc = findOrCreateProperty(triple.s);
+      var pc = findOrCreateProperty(o),
+          cc = findOrCreateProperty(s);
       cc.subPropertyOf.push(pc);
       pc.superPropertyOf.push(cc);
     }
 
     else if(p === 'http://www.w3.org/2000/01/rdf-schema#domain') {
-      var c = findOrCreateClass(triple.s),
-          d = triple.o;
-      if(N3.Util.isBlank(d)) {
+      var c = findOrCreateProperty(s);
+      if(N3.Util.isBlank(o)) {
         // postpone the collection query for later
-        c.domain.push(d);
+        c.domain.push(o);
       }
       else {
-        c.domain.push(findOrCreateClass(d));
+        c.domain.push(findOrCreateClass(o));
       }
     }
 
     else if(p === 'http://www.w3.org/2000/01/rdf-schema#range') {
-      var c = findOrCreateClass(triple.s);
-      c.range = triple.o;
+      var c = findOrCreateProperty(s);
+      // we store the range as a uri since it could be a literal. TODO: maybe introduce literal types or sth like that.
+      c.range = o;
     }
 
     else if(p === 'http://www.w3.org/2002/07/owl#onProperty') {
-      var r = restrictions[triple.s] = restrictions[triple.s] || {};
-      r.onProperty = triple.o;
+      var r = restrictions[s] = restrictions[s] || {};
+      r.onProperty = o;
     }
 
     else if(p === 'http://www.w3.org/2002/07/owl#cardinality' ||
@@ -724,8 +758,21 @@ RDFE.OntologyManager.prototype.parseOntologyFile = function(URI, callParams) {
             p === 'http://www.w3.org/2002/07/owl#minCardinality' ||
             p === 'http://www.openlinksw.com/ontology/oplowl#hasCustomLabel' ||
             p === 'http://www.openlinksw.com/ontology/oplowl#hasCustomComment') {
-      var r = restrictions[triple.s] = restrictions[triple.s] || {};
-      r[RDFE.uriLabel(p)] = N3.Util.getLiteralValue(triple.o);
+      var r = restrictions[s] = restrictions[s] || {};
+      r[RDFE.uriLabel(p)] = N3.Util.getLiteralValue(o);
+    }
+
+    else if(p === 'http://www.w3.org/1999/02/22-rdf-syntax-ns#first' ||
+            p === 'http://www.w3.org/1999/02/22-rdf-syntax-ns#rest') {
+      if(o !== 'http://www.w3.org/1999/02/22-rdf-syntax-ns#nil') {
+        var c = collections[s] = collections[s] || {};
+        c[RDFE.uriLabel(p)] = o;
+      }
+    }
+
+    else if(p === 'http://www.w3.org/2002/07/owl#unionOf') {
+      // poor-man's owl:unionOf handling which simply converts it to a plain rdf collection
+      collections[s] = { rest: o };
     }
   };
 
@@ -753,6 +800,25 @@ RDFE.OntologyManager.prototype.parseOntologyFile = function(URI, callParams) {
       var p = self.ontologyProperties[uri];
       p.label = labels[uri];
       p.comment = comments[uri];
+
+      // resolve the range in case it is a collection (owl:UnionOf)
+      // TODO: convert range into an array and drop rangeAll. This requires changes throughout RDFE
+      if(N3.Util.isBlank(p.range)) {
+        p.rangeAll = resolveCollection(p.range);
+        p.range = _.first(p.rangeAll);
+      }
+
+      // we store the domain as a list
+      var dmn = _.clone(p.domain);
+      p.domain = [];
+      for(var i = 0; i < dmn.length; i++) {
+        if(!dmn[i].URI && N3.Util.isBlank(dmn[i])) {
+          p.domain = _.union(p.domain, resolveCollection(dmn[i]));
+        }
+        else {
+          p.domain.push(dmn[i]);
+        }
+      }
     }
 
     for(uri in self.ontologies) {
@@ -762,13 +828,19 @@ RDFE.OntologyManager.prototype.parseOntologyFile = function(URI, callParams) {
       o.comment = comments[uri] || comments[uri.substring(0, uri.length - 1)];
     }
 
-    // FIXME: resolve blank nodes in property domains
+    for(uri in self.individuals) {
+      var p = self.individuals[uri];
+      // TODO: use config.labelProps for individuals
+      p.label = labels[uri];
+      p.comment = comments[uri];
+    }
 
     // cleanup locally
     delete labels;
     delete comments;
     delete restrictionMap;
     delete restrictions;
+    delete collections;
   };
 
   // parse the ttl gotten from the URI
