@@ -83,34 +83,23 @@ String.prototype.format = function() {
 
     c.prototype.baseExec = function(ajaxParams, params) {
       var self = this;
+
       $(document).ajaxError(params.ajaxError);
       $(document).ajaxSuccess(params.ajaxSuccess);
 
-      var __success =
-        (function(params) {
-          return function(data, status, xhr) {
-            if (params && params.success) {
-              params.success(data, status, xhr);
-            }
-          };
-        })(params);
-
-      var __error =
-        (function(params) {
-          return function(data, status, xhr) {
-            if (params && params.error) {
-              var state = {
-                "httpCode": data.status,
-                "message": data.statusText
-              }
-              params.error(state, data, status, xhr);
-            }
-          };
-        })(params);
-
-      ajaxParams.success = __success;
-      ajaxParams.error = __error;
-      $.ajax(ajaxParams);
+      $.ajax(ajaxParams).done(function(data, status, xhr) {
+        if (params && params.success) {
+          params.success(data, status, xhr);
+        }
+      }).fail(function(data, status, xhr) {
+        if (params && params.error) {
+          var state = {
+            "httpCode": data.status,
+            "message": data.statusText
+          }
+          params.error(state, data, status, xhr);
+        }
+      });
     }
 
 
