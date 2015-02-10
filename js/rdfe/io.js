@@ -512,6 +512,29 @@ String.prototype.format = function() {
       }
     });
 
+    c.prototype.retrieve = function(URI, params) {
+      var self = this;
+      params.__success = params.success;
+      params.success = function(data, status, xhr) {
+        var contentType = (xhr.getResponseHeader('content-type') || '').split(';')[0];
+        if (params && params.__success) {
+          params.__success(data, contentType);
+        }
+      };
+
+      var host = (params.proxy) ? self.options.httpProxyTemplate.format(encodeURIComponent(URI)) : self.options.httpTemplate.format(URI);
+      var acceptType = (params && params.acceptType) ? params.acceptType : 'text/n3; q=1, text/turtle; q=0.8, application/rdf+xml; q=0.6';
+      var ajaxParams = {
+        url: host,
+        type: 'GET',
+        dataType: 'text',
+        beforeSend: function(xhr) {
+          xhr.setRequestHeader("Accept", acceptType);
+        }
+      };
+      return self.baseExec(ajaxParams, params);
+    };
+
     c.prototype.retrieveToStore = function(URI, store, graph, params) {
       var self = this;
       params.__success = params.success;
