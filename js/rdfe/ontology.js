@@ -348,12 +348,12 @@ RDFE.OntologyManager = function(store, config) {
   store.registerDefaultNamespace('fresnel', 'http://www.w3.org/2004/09/fresnel#');
 
   this.store = store;
-  this.config = config;
-  this.options = $.extend(RDFE.Config.defaults.ontology, config.ontology);
+  this.config = config || {};
+  this.options = $.extend(RDFE.Config.defaults.ontology, this.config.ontology);
 
   this.reset();
 
-  this.prefixes = $.extend({}, RDFE.prefixes, config.prefixes);
+  this.prefixes = $.extend({}, RDFE.prefixes, this.config.prefixes);
 }
 
 RDFE.OntologyManager.prototype.init = function(options) {
