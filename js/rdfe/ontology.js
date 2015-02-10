@@ -660,6 +660,11 @@ RDFE.OntologyManager.prototype.parseOntologyFile = function(URI, callParams) {
           var r = restrictions[triple.s] = restrictions[triple.s] || {};
           r.isUniqueId = true;
           break;
+
+        default:
+          // any other type is an individual to us
+          // FIXME: add individuals
+          break;
       }
     }
 
