@@ -50,9 +50,9 @@ RDFE.RdfNode.fromStoreNode = function(node) {
   // rdfstore.rdf nodes
   else if(node.interfaceName) {
     var t;
-    if(node.interfaceName == 'NamedNode')
+    if(node.interfaceName === 'NamedNode')
       t = 'uri';
-    else if(node.interfaceName == 'Literal')
+    else if(node.interfaceName === 'Literal')
       t = 'literal'
     else
       throw "Blank nodes cannot be converted into RDFE.RdfNode values.";
