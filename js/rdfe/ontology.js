@@ -350,12 +350,7 @@ RDFE.OntologyManager.prototype.load = function(URI, params) {
   var ioType = (params.ioType)? params.ioType: 'http';
   var IO = RDFE.IO.createIO(ioType);
   IO.type = ioType;
-  if(params && params.triples) {
-    IO.retrieve(URI, $.extend({"proxy": self.options.proxy}, params));
-  }
-  else {
-    IO.retrieveToStore(URI, self.store, params?(params.graph||URI) : URI, $.extend({"proxy": self.options.proxy}, params));
-  }
+  IO.retrieve(URI, $.extend({"proxy": self.options.proxy}, params));
 }
 
 RDFE.OntologyManager.prototype.parseOntologyFile = function(URI, params) {
@@ -641,31 +636,38 @@ RDFE.OntologyManager.prototype.parseOntologyFile = function(URI, params) {
   };
 
   // parse the ttl gotten from the URI
-  var parseTripels = function(data, textStatus) {
-    var parser = N3.Parser();
-    parser.parse(data, function(error, triple, prefixes) {
-      if (error) {
-        if(params.error) {
-          params.error();
+  var parseTripels = function(data, contentType) {
+    if(contentType.length > 0 && contentType.indexOf('turtle') < 0) {
+      console.error('Only Turtle files can be parsed in the ontology manager.');
+      if(params.error) {
+        params.error();
+      }
+    }
+    else {
+      var parser = N3.Parser();
+      parser.parse(data, function(error, triple, prefixes) {
+        if (error) {
+          if(params.error) {
+            params.error();
+          }
         }
-      }
-      else if(!triple) {
-        finishParse();
-        if(params.success) {
-          params.success();
+        else if(!triple) {
+          finishParse();
+          if(params.success) {
+            params.success();
+          }
         }
-      }
-      else {
-        handleTriple(triple);
-      }
-    });
+        else {
+          handleTriple(triple);
+        }
+      });
+    }
   };
 
   var loadParams = {
     "ioType": params.ioType,
     "success": parseTripels,
-    "error": params.error,
-    "triples": true
+    "error": params.error
   };
   self.load(URI, loadParams);
 };
