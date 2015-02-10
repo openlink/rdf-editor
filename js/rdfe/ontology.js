@@ -516,32 +516,15 @@ RDFE.OntologyManager.prototype.Ontology = function(graph, URI, options) {
   return ontology;
 }
 
-RDFE.OntologyManager.prototype.OntologyClass = function(graph, URI, options) {
+RDFE.OntologyManager.prototype.OntologyClass = function(URI) {
   var self = this;
   var ontologyClass = self.ontologyClassByURI(URI);
   if (ontologyClass) {
-    if (graph && ontologyClass.sources.indexOf(graph) === -1) {
-      ontologyClass.parse(graph, options);
-    }
   } else {
-    ontologyClass = new RDFE.OntologyClass(self, graph, URI, options);
+    ontologyClass = new RDFE.OntologyClass(self, URI);
   }
 
   return ontologyClass;
-}
-
-RDFE.OntologyManager.prototype.OntologyProperty = function(graph, URI, options) {
-  var self = this;
-  var ontologyProperty = self.ontologyPropertyByURI(URI);
-  if (ontologyProperty) {
-    if (graph && ontologyProperty.sources.indexOf(graph) === -1) {
-      ontologyProperty.parse(graph, options);
-    }
-  } else {
-    ontologyProperty = new RDFE.OntologyProperty(self, graph, URI, options);
-  }
-
-  return ontologyProperty;
 }
 
 RDFE.OntologyManager.prototype.OntologyIndividual = function(graph, URI, individualClass, options) {
@@ -813,210 +796,8 @@ RDFE.OntologyManager.prototype.parseOntologyFile = function(URI, callParams) {
   self.load(URI, loadParams);
 };
 
-RDFE.OntologyManager.prototype.ontologyParse = function(URI, callParams) {
-  var self = this;
-  var $self = $(self);
-  var params = $.extend({}, callParams);
-  var options = $.extend(self.options, params);
-  if (options.preloadOnly == true) {
-    if (params.success) {
-      params.success();
-    }
-    return;
-  }
-
-  var __success = function() {
-    // ontology classes & properties parse
-    var ontologies = [];
-    var ontologyClasses = self.ontologyClassesParse(URI, options);
-    self.ontologyPropertiesParse(URI, options);
-    self.ontologyRestrictionsParse(URI, ontologyClasses, options);
-
-    // Check if we have details for the ontology itself
-    var sparql = RDFE.OM_ONTOLOGY_TEMPLATE.format(URI);
-    self.store.execute(sparql, function(success, results) {
-      if (!success) {
-        console.error('ontology =>', results);
-        if(options.error) {
-          options.error();
-        }
-        return;
-      }
-      if (results.length) {
-        var graph = URI;
-        var ontology;
-        for (var i = 0; i < results.length; i++) {
-          var ontologyURI = results[i]["o"].value;
-          // console.log('Found owl:Ontology:', ontologyURI);
-          // Fix for some ontlogies
-          if ((graph.charAt(graph.length - 1) == '#') && (graph.substring(0, graph.length - 1) == ontologyURI)) {
-            // console.log('replacing onto uri', ontologyURI, 'with', graph);
-            ontologyURI = graph;
-          }
-          if(self.ontologies[ontologyURI + '#']) {
-            ontologyURI += '#';
-          }
-          else if(self.ontologies[ontologyURI + '/']) {
-            ontologyURI += '/';
-          }
-
-          ontology = self.Ontology(graph, ontologyURI, options);
-          ontology.parse(graph, {
-            ontoUri: results[i]["o"].value
-          });
-          ontologies.push(ontology);
-        }
-      }
-    });
-
-    // clear graph after parse
-    self.graphClear(URI);
-
-    if (options.success) {
-      options.success(_.head(ontologies));
-    }
-
-    $self.trigger('changed', [ self ]);
-  };
-
-  $self.trigger('loadingOntology', [ self, URI ]);
-
-  var loadParams = {
-    "ioType": params.ioType,
-    "success": __success,
-    "error": params.error
-  };
-  self.load(URI, loadParams);
-}
-
 RDFE.OntologyManager.prototype.ontologiesParse = function(ontologies, options) {
-  this.synchronousParse('ontologyParse', ontologies, options);
-}
-
-// ontology classes
-RDFE.OntologyManager.prototype.ontologyClassesParse = function(graph, params) {
-  var self = this;
-  var ontologyClasses = [];
-  var sparql = RDFE.OM_ONTOLOGY_CLASSES_TEMPLATE.format(graph);
-  self.store.execute(sparql, function(success, results) {
-    if (!success) {
-      console.error('ontology =>', results);
-      return;
-    }
-    for (var i = 0, l = results.length; i < l; i++) {
-      var c = results[i]["c"].value;
-      if (!RDFE.isBlankNode(c) && (c != self.uriDenormalize('rdfs:Class')) && (c != self.uriDenormalize('owl:Class'))) {
-        var ontologyClass = self.OntologyClass(graph, c, params);
-        ontologyClasses.push(ontologyClass);
-
-        // add property to classes
-        var sparql = RDFE.OM_ONTOLOGY_INDIVIDUALS_TEMPLATE.format(graph, c);
-        self.store.execute(sparql, function(success, results) {
-          if (!success) {
-            console.error('ontology individuals =>', results);
-            return;
-          }
-          for (var j = 0, m = results.length; j < m; j++) {
-            var c = results[j]["i"].value;
-            if (!_.isEmpty(c) && !RDFE.isBlankNode(c)) {
-              self.OntologyIndividual(graph, c, ontologyClass, params);
-            }
-          }
-        });
-      }
-    }
-  });
-  return ontologyClasses;
-}
-
-// ontology properties
-RDFE.OntologyManager.prototype.ontologyPropertiesParse = function(graph, params) {
-  var self = this;
-  var sparql = RDFE.OM_ONTOLOGY_PROPERTIES_TEMPLATE.format(graph);
-  self.store.execute(sparql, function(success, results) {
-    if (!success) {
-      console.error('ontology =>', results);
-      return;
-    }
-    for (var i = 0, l = results.length; i < l; i++) {
-      var p = results[i]["p"].value;
-      var property = self.OntologyProperty(graph, p, params);
-    }
-  });
-}
-
-// ontology properties
-RDFE.OntologyManager.prototype.ontologyRestrictionsParse = function(graph, ontologyClasses, options) {
-  var self = this;
-  for (var i = 0, l = ontologyClasses.length; i < l; i++) {
-    var ontologyClass = ontologyClasses[i];
-    if (ontologyClass.hasRestrictions) {
-      var RDFE_TEMPLATE =
-      '\n SELECT distinct ?v1 ?v2 ?v3 ' +
-      '\n  FROM <{0}>' +
-      '\n WHERE { ' +
-      '\n         <{1}> rdfs:subClassOf ' +
-      '\n         [ ' +
-      '\n           owl:onProperty ?v1; ' +
-      '\n           ?v2 ?v3 ' +
-      '\n         ]. ' +
-      '\n       } ' +
-      '\n ORDER BY ?v1 ?v2 ';
-      var sparql = RDFE_TEMPLATE.format(graph, ontologyClass.URI);
-      self.store.execute(sparql, function(success, results) {
-        if (success) {
-          var property;
-          var propertyURI = '',
-              restrictionURI = '',
-              restrictionValue = '';
-          for (var i = 0, l = results.length; i < l; i++) {
-            var v1 = RDFE.sparqlValue(results[i]['v1']);
-            var v2 = RDFE.sparqlValue(results[i]['v2']);
-            var v3 = RDFE.sparqlValue(results[i]['v3']);
-
-            propertyURI = v1;
-
-            if (self.uriDenormalize('rdf:type') == v2 && v3 == 'http://www.openlinksw.com/ontology/oplowl#AggregateRestriction') {
-              // console.log('Adding ', v3, 'for', propertyURI);
-              ontologyClass.restrictions[propertyURI] = $.extend(ontologyClass.restrictions[propertyURI], { isAggregate: true });
-            }
-
-            else if (self.uriDenormalize('rdf:type') == v2 && v3 == 'http://www.openlinksw.com/ontology/oplowl#UniqueIdRestriction') {
-              // console.log('Adding ', v3, 'for', propertyURI);
-              ontologyClass.restrictions[propertyURI] = $.extend(ontologyClass.restrictions[propertyURI], { uniqueIdRestriction: true });
-            }
-
-            else if (
-                     (self.uriDenormalize('owl:minCardinality') == v2) ||
-                     (self.uriDenormalize('owl:maxCardinality') == v2) ||
-                     (self.uriDenormalize('owl:cardinality') == v2)
-                    )
-            {
-              // console.log('Adding ', v2, 'for', propertyURI);
-              restrictionURI = v2;
-              restrictionValue = v3;
-              property = ontologyClass.properties[propertyURI];
-              ontologyClass.restrictions[propertyURI] = ontologyClass.restrictions[propertyURI] || {};
-              ontologyClass.restrictions[propertyURI][RDFE.uriLabel(restrictionURI)] = parseInt(restrictionValue);
-            }
-
-            else if (
-                     ('http://www.openlinksw.com/ontology/oplowl#hasCustomLabel' == v2) ||
-                     ('http://www.openlinksw.com/ontology/oplowl#hasCustomComment' == v2)
-                    )
-            {
-              // console.log('Adding ', v2, 'for', propertyURI);
-              restrictionURI = v2;
-              restrictionValue = v3;
-              property = ontologyClass.properties[propertyURI];
-              ontologyClass.restrictions[propertyURI] = ontologyClass.restrictions[propertyURI] || {};
-              ontologyClass.restrictions[propertyURI][RDFE.uriLabel(restrictionURI)] = restrictionValue;
-            }
-          }
-        }
-      });
-    }
-  }
+  this.synchronousParse('parseOntologyFile', ontologies, options);
 }
 
 RDFE.OntologyManager.prototype.FresnelLens = function(graph, URI, options) {
@@ -1266,7 +1047,7 @@ RDFE.OntologyManager.prototype.individualParse = function(URI, callParams) {
         }
         for (var j = 0, m = results.length; j < m; j++) {
           var i = results[j]["i"].value;
-          var c = self.OntologyClass(graph, results[j]["c"].value, params);
+          var c = self.OntologyClass(results[j]["c"].value, params);
           if (!_.isEmpty(i) && !RDFE.isBlankNode(i) && !RDFE.isBlankNode(c)) {
             self.OntologyIndividual(graph, i, c, params);
           }
@@ -1389,10 +1170,8 @@ RDFE.Ontology.prototype.allProperties = function(domain) {
  * Ontology Class
  *
  */
-RDFE.OntologyClass = function(ontologyManager, graph, URI, options) {
+RDFE.OntologyClass = function(ontologyManager, URI) {
   // console.log('class =>', URI);
-  var self = this;
-
   this.options = $.extend({}, options);
   this.URI = URI;
   this.curi = ontologyManager.uriNormalize(URI);
@@ -1406,14 +1185,6 @@ RDFE.OntologyClass = function(ontologyManager, graph, URI, options) {
   this.restrictions = {};
 
   this.manager = ontologyManager;
-  this.manager.ontologyClasses[URI] = self;
-
-  this.ontology = self.manager.Ontology(graph, RDFE.uriOntology(URI), options);
-  if (this.ontology) {
-    this.ontology.classes[URI] = self;
-  }
-
-  this.parse(graph, options);
 }
 
 RDFE.OntologyClass.prototype.parse = function(graph, options) {
@@ -1572,9 +1343,8 @@ RDFE.OntologyClass.prototype.getIndividuals = function(includeSuper, cc) {
  * Ontology Property
  *
  */
-RDFE.OntologyProperty = function(ontologyManager, graph, URI, options) {
+RDFE.OntologyProperty = function(ontologyManager, URI) {
   // console.log('property =>', URI);
-  var self = this;
 
   this.options = $.extend({}, options);
   this.URI = URI;
@@ -1582,15 +1352,10 @@ RDFE.OntologyProperty = function(ontologyManager, graph, URI, options) {
   this.name = RDFE.Utils.uri2name(URI);
   this.sources = [];
   this.subPropertyOf = [];
+  this.superPropertyOf = [];
 
   this.manager = ontologyManager;
   this.manager.ontologyProperties[URI] = self;
-
-  this.ontology = self.manager.Ontology(graph, RDFE.uriOntology(URI), options);
-  if(this.ontology)
-    this.ontology.properties[URI] = self;
-
-  this.parse(graph, options);
 }
 
 RDFE.OntologyProperty.prototype.parse = function(graph, options) {
