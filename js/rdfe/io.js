@@ -562,7 +562,6 @@ String.prototype.format = function() {
       var ajaxParams = {
         url: host,
         type: 'GET',
-        crossDomain: true,
         dataType: 'text',
         beforeSend: function(xhr) {
           xhr.setRequestHeader("Accept", acceptType);
