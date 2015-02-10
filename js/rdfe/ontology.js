@@ -593,6 +593,15 @@ RDFE.OntologyManager.prototype.parseOntologyFile = function(URI, params) {
     return c;
   }
 
+  function findOrCreateLens(uri) {
+    // TODO: can we not simplify this using $.extend or sth?
+    var c = self.fresnelLenses[uri];
+    if(!c) {
+      self.fresnelLenses[uri] = c = new RDFE.FresnelLens(self, uri);
+    }
+    return c;
+  }
+
   /**
    * Resolve an rdf collection for a given node uri (typically a blank node)
    * using the relations in @p collections.
@@ -645,6 +654,10 @@ RDFE.OntologyManager.prototype.parseOntologyFile = function(URI, params) {
         case 'http://www.openlinksw.com/ontology/oplowl#UniqueIdRestriction':
           var r = restrictions[s] = restrictions[s] || {};
           r.isUniqueId = true;
+          break;
+
+        case 'http://www.w3.org/2004/09/fresnel#Lens':
+          findOrCreateLens(s);
           break;
 
         default:
@@ -729,6 +742,13 @@ RDFE.OntologyManager.prototype.parseOntologyFile = function(URI, params) {
       // poor-man's owl:unionOf handling which simply converts it to a plain rdf collection
       collections[s] = { rest: o };
     }
+
+    else if(p === 'http://www.w3.org/2004/09/fresnel#showProperties' ||
+            p === 'http://www.w3.org/2004/09/fresnel#hideProperties' ||
+            p === 'http://www.w3.org/2004/09/fresnel#classLensDomain') {
+      var f = findOrCreateLens(s);
+      f[RDFE.uriLabel(p)] = o; // this will be resovled as a collection later
+    }
   };
 
   // map the cached values in labels, comments, and restrictions to the previously parsed classes and properties
@@ -788,6 +808,14 @@ RDFE.OntologyManager.prototype.parseOntologyFile = function(URI, params) {
       // TODO: use config.labelProps for individuals
       p.label = labels[uri];
       p.comment = comments[uri];
+    }
+
+    for(uri in self.fresnelLenses) {
+      var p = self.fresnelLenses[uri];
+      p.label = labels[uri];
+      p.comment = comments[uri];
+      p.showProperties = resolveCollection(p.showProperties);
+      p.hideProperties = resolveCollection(p.hideProperties);
     }
 
     // cleanup locally
