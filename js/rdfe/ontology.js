@@ -1132,51 +1132,6 @@ RDFE.OntologyClass = function(ontologyManager, URI) {
   this.manager = ontologyManager;
 }
 
-RDFE.OntologyClass.prototype.parse = function(graph, options) {
-  var self = this;
-  if (!graph) {
-    return;
-  }
-  if (self.sources.indexOf(graph) == -1) {
-    self.sources.push(graph);
-  }
-  ontologyManager.store.node(self.URI, graph, function(success, results) {
-    if (!success) {
-      console.error('class =>', results);
-      return;
-    }
-    // console.log('class results =>', results.length);
-    for (var i = 0, l = results.length; i < l; i++) {
-      var p = results.triples[i].predicate.valueOf();
-      var o = results.triples[i].object.valueOf();
-      // console.log('class =>', p, o);
-      if (p == self.manager.uriDenormalize('rdfs:label'))
-        self.label = RDFE.coalesce(self.label, o);
-
-      else if (p == self.manager.uriDenormalize('rdfs:comment'))
-        self.comment = RDFE.coalesce(self.comment, o);
-
-      else if (p == self.manager.uriDenormalize('dc:title'))
-        self.title = RDFE.coalesce(self.title, o);
-
-      else if (p == self.manager.uriDenormalize('dc:description'))
-        self.description = RDFE.coalesce(self.description, o);
-
-      else if (p == self.manager.uriDenormalize('rdfs:subClassOf')) {
-        if (RDFE.isBlankNode(o)) { // FIXME: this sounds like an assumption one could easily break!
-          self.hasRestrictions = true;
-        } else {
-          var sc = self.manager.OntologyClass(graph, o, options);
-          self.subClassOf.push(sc);
-          sc.superClassOf.push(self);
-        }
-      }
-      else if (p == self.manager.uriDenormalize('owl:disjointWith'))
-        self.disjointWith.push(o);
-    }
-  });
-}
-
 RDFE.OntologyClass.prototype.propertiesAsArray = function() {
   var self = this;
   var properties = [];
@@ -1358,42 +1313,6 @@ RDFE.OntologyIndividual = function(ontologyManager, URI, options) {
 
   this.manager = ontologyManager;
   this.manager.individuals[URI] = this;
-}
-
-RDFE.OntologyIndividual.prototype.parse = function(graph, options) {
-  var self = this;
-  if (!graph) {
-    return;
-  }
-  if (self.sources.indexOf(graph) == -1) {
-    self.sources.push(graph);
-  }
-  self.manager.store.node(self.URI, graph, function(success, results) {
-    if (!success) {
-      console.error('individual =>', results);
-      return;
-    }
-    // console.log('individual results =>', results.length);
-    for (var i = 0, l = results.length; i < l; i++) {
-      var p = results.triples[i].predicate.valueOf();
-      var o = results.triples[i].object.valueOf();
-      // console.log('individual =>', RDFE.uriNormalize(p), o);
-      if ($.inArray(p, self.manager.config.labelProps) >= 0)
-        self.label = RDFE.coalesce(self.label, o);
-
-      else if (p == self.manager.uriDenormalize('rdfs:comment'))
-        self.comment = RDFE.coalesce(self.comment, o);
-
-      else if (p == self.manager.uriDenormalize('dc:title'))
-        self.title = RDFE.coalesce(self.title, o);
-
-      else if (p == self.manager.uriDenormalize('dc:description'))
-        self.description = RDFE.coalesce(self.description, o);
-
-      else if (p == self.manager.uriDenormalize('rdf:type'))
-        self.class = self.manager.OntologyClass(graph, o, options);
-    }
-  });
 }
 
 /*
