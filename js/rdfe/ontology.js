@@ -598,8 +598,220 @@ RDFE.OntologyManager.prototype.load = function(URI, params) {
   var ioType = (params.ioType)? params.ioType: 'http';
   var IO = RDFE.IO.createIO(ioType);
   IO.type = ioType;
-  IO.retrieveToStore(URI, self.store, params?(params.graph||URI) : URI, $.extend({"proxy": self.options.proxy}, params));
+  if(params && params.triples) {
+    IO.retrieve(URI, $.extend({"proxy": self.options.proxy}, params));
+  }
+  else {
+    IO.retrieveToStore(URI, self.store, params?(params.graph||URI) : URI, $.extend({"proxy": self.options.proxy}, params));
+  }
 }
+
+RDFE.OntologyManager.prototype.parseOntologyFile = function(URI, callParams) {
+  var self = this,
+      labels = {}, // maps uris to labels
+      comments = {}, // maps uris to comments
+      restrictions = {}, // maps blank nodes to restriction details
+      restrictionMap = {}; // maps class uri to restriction blank node
+
+
+  function findOrCreateOntology(uri) {
+    // TODO: can we not simplify this using $.extend or sth?
+    var c = self.ontologies[uri];
+    if(!c) {
+      self.ontologies[uri] = c = new RDFE.Ontology(self, uri);
+    }
+    return c;
+  };
+
+  function findOrCreateClass(uri) {
+    // TODO: can we not simplify this using $.extend or sth?
+    var c = self.ontologyClasses[uri];
+    if(!c) {
+      self.ontologyClasses[uri] = c = new RDFE.OntologyClass(self, uri);
+    }
+    c.ontology = findOrCreateOntology(RDFE.uriOntology(uri));
+    c.ontology.classes[uri] = c;
+    return c;
+  };
+
+  function findOrCreateProperty(uri) {
+    // TODO: can we not simplify this using $.extend or sth?
+    var c = self.ontologyProperties[uri];
+    if(!c) {
+      self.ontologyProperties[uri] = c = new RDFE.OntologyProperty(self, uri);
+    }
+    c.ontology = findOrCreateOntology(RDFE.uriOntology(uri));
+    c.ontology.properties[uri] = c;
+    return c;
+  };
+
+  // handle a single triple from the N3 parser
+  var handleTriple(triple) {
+    var p = triple.predicate;
+
+    // handle the type triples
+    if(p === 'http://www.w3.org/1999/02/22-rdf-syntax-ns#type') {
+      var o = triple.o;
+      switch(o) {
+        case 'http://www.w3.org/2000/01/rdf-schema##Class':
+        case 'http://www.w3.org/2002/07/owl#Class':
+          findOrCreateClass(triple.subject);
+          break;
+
+        case 'http://www.w3.org/2002/07/owl#ObjectProperty':
+        case 'http://www.w3.org/2002/07/owl#DatatypeProperty':
+        case 'http://www.w3.org/1999/02/22-rdf-syntax-ns#Property':
+          findOrCreateProperty(triple.subject);
+          break;
+
+        case 'http://www.w3.org/2002/07/owl#Restriction':
+          restrictions[triple.s] = restrictions[triple.s] || {};
+          break;
+
+        case 'http://www.openlinksw.com/ontology/oplowl#AggregateRestriction':
+          var r = restrictions[triple.s] = restrictions[triple.s] || {};
+          r.isAggregate = true;
+          break;
+
+        case 'http://www.openlinksw.com/ontology/oplowl#UniqueIdRestriction':
+          var r = restrictions[triple.s] = restrictions[triple.s] || {};
+          r.isUniqueId = true;
+          break;
+      }
+    }
+
+    else if(p === 'http://www.w3.org/2000/01/rdf-schema#label') {
+      labels[triple.s] = triple.o;
+    }
+
+    else if(p === 'http://www.w3.org/2000/01/rdf-schema#comment') {
+      comments[triple.s] = triple.o;
+    }
+
+    else if(p === 'http://www.w3.org/2000/01/rdf-schema#subClassOf') {
+      var cc = findOrCreateClass(triple.s);
+      if(N3.Utile.isBlankNode(triple.o)) {
+        // remember blank node for restriction handling later
+        var r = restrictionMap[triple.s] = restrictionMap[triple.s] || [];
+        r.push(triple.o);
+      }
+      else {
+        pc = findOrCreateClass(triple.o)
+        cc.subClassOf.push(pc);
+        pc.superClassOf.push(cc);
+      }
+    }
+
+    else if(p === 'http://www.w3.org/2000/01/rdf-schema#subPropertyOf') {
+      var pc = findOrCreateProperty(triple.o),
+          cc = findOrCreateProperty(triple.s);
+      cc.subPropertyOf.push(pc);
+      pc.superPropertyOf.push(cc);
+    }
+
+    else if(p === 'http://www.w3.org/2000/01/rdf-schema#domain') {
+      var c = findOrCreateClass(triple.s),
+          d = triple.o;
+      if(N3.Util.isBlank(d)) {
+        // postpone the collection query for later
+        c.domain.push(d);
+      }
+      else {
+        c.domain.push(findOrCreateClass(d));
+      }
+    }
+
+    else if(p === 'http://www.w3.org/2000/01/rdf-schema#range') {
+      var c = findOrCreateClass(triple.s);
+      c.range = triple.o;
+    }
+
+    else if(p === 'http://www.w3.org/2002/07/owl#onProperty') {
+      var r = restrictions[triple.s] = restrictions[triple.s] || {};
+      r.onProperty = triple.o;
+    }
+
+    else if(p === 'http://www.w3.org/2002/07/owl#cardinality' ||
+            p === 'http://www.w3.org/2002/07/owl#maxCardinality' ||
+            p === 'http://www.w3.org/2002/07/owl#minCardinality' ||
+            p === 'http://www.openlinksw.com/ontology/oplowl#hasCustomLabel' ||
+            p === 'http://www.openlinksw.com/ontology/oplowl#hasCustomComment') {
+      var r = restrictions[triple.s] = restrictions[triple.s] || {};
+      r[RDFE.uriLabel(p)] = N3.Util.getLiteralValue(triple.o);
+    }
+  };
+
+  // map the cached values in labels, comments, and restrictions to the previously parsed classes and properties
+  var finishParse = function() {
+    for(uri in self.ontologyClasses) {
+      var c = self.ontologyClasses[uri];
+      c.label = labels[uri];
+      c.comment = comments[uri];
+
+      var rm = restrictionMap[uri];
+      if(rm) {
+        for(var i = 0; i < rm.length; i++) {
+          var r = restrictions[rm[i]];
+          if(r.onProperty) {
+            var rr = _.clone(r);
+            delete rr.onProperty;
+            c.restrictions[r.onProperty] = rr;
+          }
+        }
+      }
+    }
+
+    for(uri in self.ontologyProperties) {
+      var p = self.ontologyProperties[uri];
+      p.label = labels[uri];
+      p.comment = comments[uri];
+    }
+
+    for(uri in self.ontologies) {
+      // ontology URIs often are stripped of the trailing '#'
+      var o = self.ontologies[uri];
+      o.label = labels[uri] || labels[uri.substring(0, uri.length - 1)];
+      o.comment = comments[uri] || comments[uri.substring(0, uri.length - 1)];
+    }
+
+    // FIXME: resolve blank nodes in property domains
+
+    // cleanup locally
+    delete labels;
+    delete comments;
+    delete restrictionMap;
+    delete restrictions;
+  };
+
+  // parse the ttl gotten from the URI
+  var parseTripels = function(data, textStatus) {
+    var parser = N3.Parser();
+    parser.parse(data, function(error, triple, prefixes) {
+      if (error) {
+        if(params.error) {
+          params.error();
+        }
+      }
+      else if(!triple) {
+        finishParse();
+        if(params.success) {
+          params.success();
+        }
+      }
+      else {
+        handleTriple(triple);
+      }
+    });
+  };
+
+  var loadParams = {
+    "ioType": params.ioType,
+    "success": parseTripels,
+    "error": params.error,
+    "triples": true
+  };
+  self.load(URI, loadParams);
+};
 
 RDFE.OntologyManager.prototype.ontologyParse = function(URI, callParams) {
   var self = this;
