@@ -446,7 +446,7 @@ RDFE.OntologyManager.prototype.parseOntologyFile = function(URI, params) {
 
     else if(p === 'http://www.w3.org/2002/07/owl#onProperty') {
       var r = restrictions[s] = restrictions[s] || {};
-      r.onProperty = o;
+      (r.onProperty = r.onProperty || []).push(o);
     }
 
     else if(p === 'http://www.w3.org/2002/07/owl#cardinality' ||
@@ -490,11 +490,11 @@ RDFE.OntologyManager.prototype.parseOntologyFile = function(URI, params) {
       if(rm) {
         for(var i = 0; i < rm.length; i++) {
           var r = restrictions[rm[i]];
-          if(r.onProperty) {
-            var rr = _.clone(r);
-            delete rr.onProperty;
-            c.restrictions[r.onProperty] = rr;
+          var rr = _.clone(r);
+          for(var j = 0; j < r.onProperty.length; j++) {
+            c.restrictions[r.onProperty[j]] = rr;
           }
+          delete rr.onProperty;
         }
       }
     }
