@@ -150,20 +150,7 @@ RDFE.ontologyByPrefix = function(prefix) {
  * Ontology Manager
  *
  */
-RDFE.OntologyManager = function(store, config) {
-  var self = this;
-
-  if (!store) {
-    store = rdfstore.create();
-  }
-
-  // set default namespaces
-  store.registerDefaultNamespace('rdf', 'http://www.w3.org/1999/02/22-rdf-syntax-ns#');
-  store.registerDefaultNamespace('rdfs', 'http://www.w3.org/2000/01/rdf-schema#');
-  store.registerDefaultNamespace('owl', 'http://www.w3.org/2002/07/owl#');
-  store.registerDefaultNamespace('fresnel', 'http://www.w3.org/2004/09/fresnel#');
-
-  this.store = store;
+RDFE.OntologyManager = function(config) {
   this.config = config || {};
   this.options = $.extend(RDFE.Config.defaults.ontology, this.config.ontology);
 
@@ -210,18 +197,12 @@ RDFE.OntologyManager.prototype.synchronousParse = function(itemParse, items, opt
 }
 
 RDFE.OntologyManager.prototype.reset = function(options) {
-  var self = this;
-
   // ontologies
   this.ontologies = {};
   this.ontologyClasses = {};
   this.ontologyProperties = {};
   this.individuals = {};
-
-  // fresnels
   this.fresnelLenses = {};
-
-  this.templates = [];
 }
 
 RDFE.OntologyManager.prototype.prefixByOntology = function(url) {
