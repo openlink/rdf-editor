@@ -249,12 +249,7 @@ RDFE.OntologyManager.prototype.uriNormalize = function(v, fb) {
 }
 
 RDFE.OntologyManager.prototype.ontologiesAsArray = function() {
-  var self = this;
-  var ontologies = [];
-  for (v in self.ontologies) {
-    ontologies.push(self.ontologies[v]);
-  }
-  return ontologies;
+  return _.values(this.ontologies);
 }
 
 RDFE.OntologyManager.prototype.ontologyByURI = function(URI) {
@@ -295,7 +290,8 @@ RDFE.OntologyManager.prototype.parseOntologyFile = function(URI, params) {
       comments = {}, // maps uris to comments
       restrictions = {}, // maps blank nodes to restriction details
       restrictionMap = {}, // maps class uri to restriction blank node
-      collections = {}; // maps collection nodes
+      collections = {}, // maps collection nodes
+      lenses = {}; // the parsed fresnel lenses
 
 
   function findOrCreateOntology(uri) {
@@ -331,7 +327,7 @@ RDFE.OntologyManager.prototype.parseOntologyFile = function(URI, params) {
   }
 
   function findOrCreateLens(uri) {
-    return (self.fresnelLenses[uri] = self.fresnelLenses[uri] || new RDFE.FresnelLens(self, uri));
+    return (lenses[uri] = lenses[uri] || new RDFE.FresnelLens(self, uri));
   }
 
   /**
@@ -542,12 +538,20 @@ RDFE.OntologyManager.prototype.parseOntologyFile = function(URI, params) {
       p.comment = p.comment || comments[uri];
     }
 
-    for(uri in self.fresnelLenses) {
-      var p = self.fresnelLenses[uri];
+    // assign lenses to classes
+    for(uri in lenses) {
+      var p = lenses[uri];
+
       p.label = p.label || labels[uri];
       p.comment = p.comment || comments[uri];
       p.showProperties = resolveCollection(p.showProperties);
       p.hideProperties = resolveCollection(p.hideProperties);
+
+      self.fresnelLenses[uri] = p;
+
+      if(p.classLensDomain) {
+        findOrCreateClass(p.classLensDomain).fresnelLens = p;
+      }
     }
 
     // cleanup locally
@@ -597,20 +601,17 @@ RDFE.OntologyManager.prototype.parseOntologyFile = function(URI, params) {
   self.load(URI, loadParams);
 };
 
-RDFE.OntologyManager.prototype.fresnelLensByURI = function(URI) {
-  return this.fresnelLenses[URI];
-}
-
-// FIXME: why is the classLensDomain not the key in the self.fresnelLenses dict??? Who cares about the uris for the lenses??
+/**
+ * Find a fresnel lens for the given @p domainURI.
+ *
+ * @return The fresnel lens for the given domain or one of its
+ * superclasses or null if none was found.
+ */
 RDFE.OntologyManager.prototype.findFresnelLens = function(domainURI) {
-  var self = this;
-  for (v in self.fresnelLenses) {
-    var x = self.fresnelLenses[v];
-    if (x.classLensDomain == domainURI) {
-      return x;
-    }
+  var c = self.ontologyClasses[domainURI];
+  if(c) {
+    return c.getFresnelLens();
   }
-  // FIXME: check super-classes for lens definitions
   return null;
 }
 
@@ -781,7 +782,7 @@ RDFE.OntologyClass.prototype.isAggregateProperty = function(p, cc) {
 RDFE.OntologyClass.prototype.getSubClasses = function(includeSuper, subClasses, checkedClasses) {
   subClasses = subClasses || [];
   subClasses = _.union(subClasses, this.superClassOf);
-  if (includeSuper === true) {
+  if (includeSuper !== false) {
     checkedClasses = checkedClasses || [];
     checkedClasses.push(this.URI);
     for (var i = 0; i < this.superClassOf.length; i++) {
@@ -792,6 +793,22 @@ RDFE.OntologyClass.prototype.getSubClasses = function(includeSuper, subClasses, 
     }
   }
   return subClasses;
+};
+
+RDFE.OntologyClass.prototype.getSuperClasses = function(includeSub, superClasses, checkedClasses) {
+  superClasses = superClasses || [];
+  superClasses = _.union(superClasses, this.subClassOf);
+  if (includeSub !== false) {
+    checkedClasses = checkedClasses || [];
+    checkedClasses.push(this.URI);
+    for (var i = 0; i < this.subClassOf.length; i++) {
+      var superClass = this.subClassOf[i];
+      if ($.inArray(superClass.URI, checkedClasses) < 0) {
+        superClass.getSuperClasses(includeSub, superClasses, checkedClasses);
+      }
+    }
+  }
+  return superClasses;
 };
 
 RDFE.OntologyClass.prototype.getUniqueRestrictions = function() {
@@ -816,6 +833,26 @@ RDFE.OntologyClass.prototype.getIndividuals = function(includeSuper, cc) {
     }
   }
   return individuals;
+};
+
+/**
+ * Find a Fresnel Lens for this class.
+ *
+ * Check this class and all super-classes for a fresnel lens and
+ * returns it.
+ */
+RDFE.OntologyClass.prototype.getFresnelLens = function() {
+  var fl = this.fresnelLens;
+  if(!fl) {
+    var superClasses = this.getSuperClasses(true);
+    for (var i = 0; i < superClasses.length; i++) {
+      fl = superClasses[i].fresnelLens;
+      if(fl) {
+        return fl;
+      }
+    }
+  }
+  return fl;
 };
 
 /*
