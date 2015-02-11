@@ -173,45 +173,8 @@ RDFE.OntologyManager = function(store, config) {
 }
 
 RDFE.OntologyManager.prototype.init = function(options) {
-  var self = this;
-  self.reset();
-
-  var options = $.extend({}, options);
-  // ontologies init
-  var __successOntologies = (function (options) {
-    return function () {
-      // fresnels init
-      var __successFresnels = (function (options) {
-        return function () {
-          // individuals init
-          var __successIndividuals = (function (options) {
-            return function () {
-              // end
-              // console.log('final');
-              if (options.success) {
-                options.success();
-              }
-            }
-          })(options);
-          var params = {
-            "success":  __successIndividuals,
-            "error": options.error
-          }
-          self.individualsParse(self.options.preloadIndividuals, params);
-        }
-      })(options);
-      var params = {
-        "success":  __successFresnels,
-        "error": options.error
-      }
-      self.fresnelsParse(self.options.preloadFresnels, params);
-    }
-  })(options);
-  var params = {
-    "success":  __successOntologies,
-    "error": options.error
-  }
-  self.ontologiesParse(self.options.preloadOntologies, params);
+  this.reset();
+  this.ontologiesParse(self.options.preloadOntologies, $.extend({}, options));
 }
 
 RDFE.OntologyManager.prototype.synchronousParse = function(itemParse, items, options) {
@@ -686,10 +649,6 @@ RDFE.OntologyManager.prototype.fresnelLensByURI = function(URI) {
   return this.fresnelLenses[URI];
 }
 
-RDFE.OntologyManager.prototype.fresnelsParse = function(fresnels, options) {
-  this.synchronousParse('parseOntologyFile', fresnels, options);
-}
-
 // FIXME: why is the classLensDomain not the key in the self.fresnelLenses dict??? Who cares about the uris for the lenses??
 RDFE.OntologyManager.prototype.findFresnelLens = function(domainURI) {
   var self = this;
@@ -738,10 +697,6 @@ RDFE.OntologyManager.prototype.allProperties = function(domain) {
   }
   return pl;
 };
-
-RDFE.OntologyManager.prototype.individualsParse = function(individuals, options) {
-  this.synchronousParse('parseOntologyFile', individuals, options);
-}
 
 /*
  *
