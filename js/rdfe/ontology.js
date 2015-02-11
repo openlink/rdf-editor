@@ -500,8 +500,8 @@ RDFE.OntologyManager.prototype.parseOntologyFile = function(URI, params) {
   var finishParse = function() {
     for(uri in self.ontologyClasses) {
       var c = self.ontologyClasses[uri];
-      c.label = labels[uri];
-      c.comment = comments[uri];
+      c.label = c.label || labels[uri];
+      c.comment = c.comment || comments[uri];
 
       var rm = restrictionMap[uri];
       if(rm) {
@@ -518,8 +518,8 @@ RDFE.OntologyManager.prototype.parseOntologyFile = function(URI, params) {
 
     for(uri in self.ontologyProperties) {
       var p = self.ontologyProperties[uri];
-      p.label = labels[uri];
-      p.comment = comments[uri];
+      p.label = p.label || labels[uri];
+      p.comment = p.comment || comments[uri];
 
       // resolve the range in case it is a collection (owl:UnionOf)
       // TODO: convert range into an array and drop rangeAll. This requires changes throughout RDFE
@@ -544,21 +544,21 @@ RDFE.OntologyManager.prototype.parseOntologyFile = function(URI, params) {
     for(uri in self.ontologies) {
       // ontology URIs often are stripped of the trailing '#'
       var o = self.ontologies[uri];
-      o.label = labels[uri] || labels[uri.substring(0, uri.length - 1)];
-      o.comment = comments[uri] || comments[uri.substring(0, uri.length - 1)];
+      o.label = o.label || labels[uri] || labels[uri.substring(0, uri.length - 1)];
+      o.comment = o.comment || comments[uri] || comments[uri.substring(0, uri.length - 1)];
     }
 
     for(uri in self.individuals) {
       var p = self.individuals[uri];
       // TODO: use config.labelProps for individuals
-      p.label = labels[uri];
-      p.comment = comments[uri];
+      p.label = p.label || labels[uri];
+      p.comment = p.comment || comments[uri];
     }
 
     for(uri in self.fresnelLenses) {
       var p = self.fresnelLenses[uri];
-      p.label = labels[uri];
-      p.comment = comments[uri];
+      p.label = p.label || labels[uri];
+      p.comment = p.comment || comments[uri];
       p.showProperties = resolveCollection(p.showProperties);
       p.hideProperties = resolveCollection(p.hideProperties);
     }
