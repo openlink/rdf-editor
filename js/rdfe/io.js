@@ -83,34 +83,23 @@ String.prototype.format = function() {
 
     c.prototype.baseExec = function(ajaxParams, params) {
       var self = this;
+
       $(document).ajaxError(params.ajaxError);
       $(document).ajaxSuccess(params.ajaxSuccess);
 
-      var __success =
-        (function(params) {
-          return function(data, status, xhr) {
-            if (params && params.success) {
-              params.success(data, status, xhr);
-            }
-          };
-        })(params);
-
-      var __error =
-        (function(params) {
-          return function(data, status, xhr) {
-            if (params && params.error) {
-              var state = {
-                "httpCode": data.status,
-                "message": data.statusText
-              }
-              params.error(state, data, status, xhr);
-            }
-          };
-        })(params);
-
-      ajaxParams.success = __success;
-      ajaxParams.error = __error;
-      $.ajax(ajaxParams);
+      $.ajax(ajaxParams).done(function(data, status, xhr) {
+        if (params && params.success) {
+          params.success(data, status, xhr);
+        }
+      }).fail(function(data, status, xhr) {
+        if (params && params.error) {
+          var state = {
+            "httpCode": data.status,
+            "message": data.statusText
+          }
+          params.error(state, data, status, xhr);
+        }
+      });
     }
 
 
@@ -523,6 +512,29 @@ String.prototype.format = function() {
       }
     });
 
+    c.prototype.retrieve = function(URI, params) {
+      var self = this;
+      params.__success = params.success;
+      params.success = function(data, status, xhr) {
+        var contentType = (xhr.getResponseHeader('content-type') || '').split(';')[0];
+        if (params && params.__success) {
+          params.__success(data, contentType);
+        }
+      };
+
+      var host = (params.proxy) ? self.options.httpProxyTemplate.format(encodeURIComponent(URI)) : self.options.httpTemplate.format(URI);
+      var acceptType = (params && params.acceptType) ? params.acceptType : 'text/n3; q=1, text/turtle; q=0.8, application/rdf+xml; q=0.6';
+      var ajaxParams = {
+        url: host,
+        type: 'GET',
+        dataType: 'text',
+        beforeSend: function(xhr) {
+          xhr.setRequestHeader("Accept", acceptType);
+        }
+      };
+      return self.baseExec(ajaxParams, params);
+    };
+
     c.prototype.retrieveToStore = function(URI, store, graph, params) {
       var self = this;
       params.__success = params.success;
@@ -538,7 +550,7 @@ String.prototype.format = function() {
               params.__success();
             }
           };
-          if(contentType.indexOf('turtle') > 0)
+          if(contentType.indexOf('turtle') > 0 || contentType.length === 0)
             store.loadTurtle(data, URI, loadResultFct);
           else
             store.load(contentType, data, URI, loadResultFct);
@@ -550,7 +562,6 @@ String.prototype.format = function() {
       var ajaxParams = {
         url: host,
         type: 'GET',
-        crossDomain: true,
         dataType: 'text',
         beforeSend: function(xhr) {
           xhr.setRequestHeader("Accept", acceptType);

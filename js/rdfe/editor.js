@@ -13,7 +13,7 @@ RDFE.Editor = function(config, options) {
   var options = $.extend({"initOntologyManager": true}, options);
 
   // initialize our ontology manager
-  this.ontologyManager = new RDFE.OntologyManager(null, config.options);
+  this.ontologyManager = new RDFE.OntologyManager(config.options);
   if (options.initOntologyManager === true) {
     this.ontologyManager.init();
   }
