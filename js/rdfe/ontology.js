@@ -929,10 +929,12 @@ RDFE.OntologyProperty.prototype.getRange = function(pp) {
     if($.inArray(sp, pp) < 0) {
       pp = pp || [];
       pp.push(sp);
-      // console.log('Checking sub-property', sp, sp.range)
-      r = this.manager.ontologyPropertyByURI(sp).getRange(pp);
-      if(r) {
-        return r;
+      var op = this.manager.ontologyPropertyByURI(sp);
+      if(op) {
+        r = op.getRange(pp);
+        if(r) {
+          return r;
+        }
       }
     }
     else {
