@@ -651,6 +651,36 @@ RDFE.OntologyManager.prototype.allProperties = function(domain) {
   return pl;
 };
 
+/**
+ * Create a string representation of a list of type uris.
+ *
+ * The given list of @p types is converted into a comma-separated list of
+ * type labels.
+ *
+ * @param types An array or class uris.
+ * @param html If @p true then an html string will be retutned.
+ */
+RDFE.OntologyManager.prototype.typesToLabel = function(types, html) {
+  var self = this;
+  return _.uniq(_.map(types, function(s) {
+    // merge class name with class labentity for the searchable entity type
+    var c = self.ontologyClassByURI(s),
+        l;
+    if(c) {
+      l = c.label;
+    }
+    else {
+      l = RDFE.Utils.uri2name(s);
+    }
+    if(html) {
+      return '<a href="' + s + '">' + l + '</a>';
+    }
+    else {
+      return l;
+    }
+  })).join(', ')
+};
+
 /*
  *
  * Ontology
