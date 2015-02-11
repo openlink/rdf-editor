@@ -38,14 +38,7 @@
     var docEntityToRow = function(entity, ontoMan) {
       return {
         'label': entity.label,
-        'types': _.uniq(_.map(entity.types, function(s) {
-          // merge class name with class labentity for the searchable entity type
-          var c = ontoMan.ontologyClassByURI(s);
-          if(c) {
-            return c.label;
-          }
-          return RDFE.Utils.uri2name(s);
-        })).join(', '),
+        'types': ontoMan.typesToLabel(entity.types),
         'uri': entity.uri || entity.value
       };
     };

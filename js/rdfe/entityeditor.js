@@ -15,7 +15,7 @@
       // Add a "new property" button to the default Backbone-Forms form
       template: _.template('\
         <form class="form-horizontal clearfix" role="form">\
-          <a href="#" class="btn btn-default pull-right addProp">Add Property</a>\
+          <a href="#" class="btn btn-default btn-xs pull-right addProp">Add Property</a>\
           <div data-fieldsets></div>\
           <% if (submitButton) { %>\
             <button type="submit" class="btn"><%= submitButton %></button>\
@@ -95,10 +95,10 @@
 
     c.prototype.template = _.template('<div class="panel panel-default">\
         <div class="panel-heading clearfix">\
-          <h3 class="panel-title pull-left">Editing <a href="<%= entityUri %>"><span class="entity-label"><%= entityLabel %><span></a></h3>\
+          <h3 class="panel-title pull-left">Editing <a href="<%= entityUri %>"><span class="entity-label"><%= entityLabel %><span></a> <span class="entity-types"></span></h3>\
           <div class="btn-group pull-right" role="group">\
-            <button type="button" class="btn btn-primary" id="okBtn">Apply</button>\
-            <button type="button" class="btn btn-default" id="cnclBtn">Cancel</button>\
+            <button type="button" class="btn btn-primary btn-sm" id="okBtn">Apply</button>\
+            <button type="button" class="btn btn-default btn-sm" id="cnclBtn">Cancel</button>\
           </div>\
         </div>\
         <div class="panel-body" id="entityFormContainer">\
@@ -122,8 +122,9 @@
           entityUri: url,
           entityLabel: RDFE.Utils.uri2name(url)
         }));
-        self.doc.getEntityLabel(url, function(label) {
-          container.find('.entity-label').text(label);
+        self.doc.getEntity(url, function(entity) {
+          container.find('.entity-types').html(self.ontologyManager.typesToLabel(entity.types, true));
+          container.find('.entity-label').html(entity.label);
         });
 
         // add the newly created form to the container
