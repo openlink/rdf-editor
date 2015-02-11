@@ -416,11 +416,11 @@ RDFE.OntologyManager.prototype.parseOntologyFile = function(URI, params) {
     }
 
     else if(p === 'http://www.w3.org/2000/01/rdf-schema#label') {
-      labels[s] = o;
+      labels[s] = N3.Util.getLiteralValue(o);
     }
 
     else if(p === 'http://www.w3.org/2000/01/rdf-schema#comment') {
-      comments[s] = o;
+      comments[s] = N3.Util.getLiteralValue(o);
     }
 
     else if(p === 'http://www.w3.org/2000/01/rdf-schema#subClassOf') {
