@@ -299,52 +299,39 @@ RDFE.OntologyManager.prototype.parseOntologyFile = function(URI, params) {
 
 
   function findOrCreateOntology(uri) {
-    // TODO: can we not simplify this using $.extend or sth?
-    var c = self.ontologies[uri];
-    if(!c) {
-      self.ontologies[uri] = c = new RDFE.Ontology(self, uri);
-    }
-    return c;
+    return (self.ontologies[uri] = self.ontologies[uri] || new RDFE.Ontology(self, uri));
   };
 
   function findOrCreateClass(uri) {
-    // TODO: can we not simplify this using $.extend or sth?
+    if(N3.Util.isBlank(uri)) {
+      return null;
+    }
+
     var c = self.ontologyClasses[uri];
     if(!c) {
       self.ontologyClasses[uri] = c = new RDFE.OntologyClass(self, uri);
+      c.ontology = findOrCreateOntology(RDFE.uriOntology(uri));
+      c.ontology.classes[uri] = c;
     }
-    c.ontology = findOrCreateOntology(RDFE.uriOntology(uri));
-    c.ontology.classes[uri] = c;
     return c;
   };
 
   function findOrCreateProperty(uri) {
-    // TODO: can we not simplify this using $.extend or sth?
     var c = self.ontologyProperties[uri];
     if(!c) {
       self.ontologyProperties[uri] = c = new RDFE.OntologyProperty(self, uri);
+      c.ontology = findOrCreateOntology(RDFE.uriOntology(uri));
+      c.ontology.properties[uri] = c;
     }
-    c.ontology = findOrCreateOntology(RDFE.uriOntology(uri));
-    c.ontology.properties[uri] = c;
     return c;
   }
 
   function findOrCreateIndividual(uri) {
-    // TODO: can we not simplify this using $.extend or sth?
-    var c = self.individuals[uri];
-    if(!c) {
-      self.individuals[uri] = c = new RDFE.OntologyIndividual(self, uri);
-    }
-    return c;
+    return (self.individuals[uri] = self.individuals[uri] || new RDFE.OntologyIndividual(self, uri));
   }
 
   function findOrCreateLens(uri) {
-    // TODO: can we not simplify this using $.extend or sth?
-    var c = self.fresnelLenses[uri];
-    if(!c) {
-      self.fresnelLenses[uri] = c = new RDFE.FresnelLens(self, uri);
-    }
-    return c;
+    return (self.fresnelLenses[uri] = self.fresnelLenses[uri] || new RDFE.FresnelLens(self, uri));
   }
 
   /**
