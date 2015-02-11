@@ -134,7 +134,7 @@ RDFE.isBlankNode = function(v) {
  *
  */
 RDFE.ontologyByPrefix = function(prefix) {
-  var host = RDFE.OM_PREFIX_TEMPLATE.format(prefix);
+  var host = 'http://prefix.cc/{0}.file.json'.format(prefix);
   $.ajax({
     url: host,
     type: 'GET',
