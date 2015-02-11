@@ -62,7 +62,7 @@
     Form.editors.List.template = _.template('\
       <div class="bbf-list">\
         <ul class="list-unstyled clearfix" data-items></ul>\
-        <button type="button" class="btn btn-default bbf-add" data-action="add">Add</button>\
+        <button type="button" class="btn btn-success btn-xs bbf-add" data-action="add">add value</button>\
       </div>\
     ');
 
@@ -72,7 +72,7 @@
         <div class="input-group">\
           <div data-editor></div>\
           <span class="input-group-btn">\
-            <button type="button" class="btn btn-danger bbf-del" data-action="remove">&times;</button>\
+            <button type="button" class="btn btn-default bbf-del" data-action="remove">&times;</button>\
           </span>\
         </div>\
       </li>\

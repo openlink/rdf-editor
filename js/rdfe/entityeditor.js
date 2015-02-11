@@ -15,7 +15,7 @@
       // Add a "new property" button to the default Backbone-Forms form
       template: _.template('\
         <form class="form-horizontal clearfix" role="form">\
-          <a href="#" class="btn btn-default pull-right addProp">Add Property</a>\
+          <a href="#" class="btn btn-default btn-xs pull-right addProp">Add Property</a>\
           <div data-fieldsets></div>\
           <% if (submitButton) { %>\
             <button type="submit" class="btn"><%= submitButton %></button>\
@@ -97,8 +97,8 @@
         <div class="panel-heading clearfix">\
           <h3 class="panel-title pull-left">Editing <a href="<%= entityUri %>"><span class="entity-label"><%= entityLabel %><span></a></h3>\
           <div class="btn-group pull-right" role="group">\
-            <button type="button" class="btn btn-primary" id="okBtn">Apply</button>\
-            <button type="button" class="btn btn-default" id="cnclBtn">Cancel</button>\
+            <button type="button" class="btn btn-primary btn-sm" id="okBtn">Apply</button>\
+            <button type="button" class="btn btn-default btn-sm" id="cnclBtn">Cancel</button>\
           </div>\
         </div>\
         <div class="panel-body" id="entityFormContainer">\
