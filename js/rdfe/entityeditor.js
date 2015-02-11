@@ -130,6 +130,9 @@
         // add the newly created form to the container
         container.find('#entityFormContainer').append(form.el);
 
+        // small hack to resize toggle buttons
+        container.find('.toggle.btn').css('width', '100%');
+
         // add click handlers to our buttons (we have three handlers because we used to have three buttons)
         var cancelBtn = container.find('button#cnclBtn');
         var saveBtn = container.find('button#saveBtn');
