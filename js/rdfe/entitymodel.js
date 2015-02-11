@@ -269,7 +269,7 @@ RDFE.EntityModel = Backbone.Model.extend({
         // Get the list of properties (fresnel lens vs. existing properties)
         //
         for (var i = 0, l = self.types.length; i < l; i++) {
-          var lens = self.doc.ontologyManager.findFresnelLens(self.types[i].URI);
+          var lens = self.types[i].getFresnelLens();
           if(lens && lens.showProperties.length > 0) {
             self.lens = lens;
             break;

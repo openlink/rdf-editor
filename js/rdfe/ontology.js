@@ -608,7 +608,7 @@ RDFE.OntologyManager.prototype.parseOntologyFile = function(URI, params) {
  * superclasses or null if none was found.
  */
 RDFE.OntologyManager.prototype.findFresnelLens = function(domainURI) {
-  var c = self.ontologyClasses[domainURI];
+  var c = this.ontologyClasses[domainURI];
   if(c) {
     return c.getFresnelLens();
   }
