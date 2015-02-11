@@ -569,6 +569,8 @@ RDFE.OntologyManager.prototype.parseOntologyFile = function(URI, params) {
     delete restrictionMap;
     delete restrictions;
     delete collections;
+
+    $(self).trigger('changed', [ self ]);
   };
 
   // parse the ttl gotten from the URI
@@ -642,12 +644,12 @@ RDFE.OntologyManager.prototype.ontologyDetermine = function(URI) {
   return ontology;
 }
 
+RDFE.OntologyManager.prototype.allOntologies = function() {
+  return _.values(this.ontologies);
+};
+
 RDFE.OntologyManager.prototype.allClasses = function() {
-  var classes = [];
-  for (v in this.ontologyClasses) {
-    classes.push(this.ontologyClasses[v]);
-  }
-  return classes;
+  return _.values(this.ontologyClasses);
 };
 
 RDFE.OntologyManager.prototype.allProperties = function(domain) {
@@ -681,12 +683,7 @@ RDFE.Ontology = function(ontologyManager, URI, options) {
 }
 
 RDFE.Ontology.prototype.classesAsArray = function() {
-  var self = this;
-  var clases = [];
-  for (v in self.classes) {
-    clases.push(self.classes[v]);
-  }
-  return clases;
+  return _.values(this.classes);
 }
 
 RDFE.Ontology.prototype.ontologyClassByURI = function(classURI) {

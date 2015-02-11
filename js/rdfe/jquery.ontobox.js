@@ -8,8 +8,8 @@
 
     self.mainElem = elem;
 
-    $(ontologyManager).on('ontologyLoaded', function(e, om, onto) {
-      self.sel.addOption(onto);
+    $(ontologyManager).on('changed', function(e, om) {
+      self.sel.addOption(om.allOntologies());
     });
 
     $(self.mainElem).selectize({
