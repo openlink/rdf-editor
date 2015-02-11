@@ -550,7 +550,7 @@ String.prototype.format = function() {
               params.__success();
             }
           };
-          if(contentType.indexOf('turtle') > 0)
+          if(contentType.indexOf('turtle') > 0 || contentType.length === 0)
             store.loadTurtle(data, URI, loadResultFct);
           else
             store.load(contentType, data, URI, loadResultFct);
