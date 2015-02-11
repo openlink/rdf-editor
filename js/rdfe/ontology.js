@@ -666,7 +666,7 @@ RDFE.OntologyManager.prototype.allProperties = function(domain) {
  * Ontology
  *
  */
-RDFE.Ontology = function(ontologyManager, graph, URI, options) {
+RDFE.Ontology = function(ontologyManager, URI, options) {
   // console.log('ontology =>', URI);
   var self = this;
 
