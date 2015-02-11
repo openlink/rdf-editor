@@ -160,40 +160,37 @@ RDFE.OntologyManager = function(config) {
 }
 
 RDFE.OntologyManager.prototype.init = function(options) {
-  this.reset();
-  this.ontologiesParse(self.options.preloadOntologies, $.extend({}, options));
-}
-
-RDFE.OntologyManager.prototype.synchronousParse = function(itemParse, items, options) {
   var self = this;
 
+  this.reset();
+
   var options = $.extend({}, options);
-  var items = items || [];
-  var fn = function (itemParse, items, options, fn) {
-    if (items.length > 0) {
-      var item = items[0];
-      items = _.rest(items);
-      var __callback = function (itemParse, items, options, item, itemMessage, fn) {
+  var items = self.options.preloadOntologies || [];
+
+  var fn = function (i, options) {
+    if (i < items.length) {
+      var item = items[i];
+      var __callback = function (options, itemMessage) {
         return function () {
-          // console.log(itemMessage, item);
           $(self).trigger(itemMessage, [self, item]);
-          fn(itemParse, items, options, fn);
+          fn(i+1, options);
         }
       };
       var params = {
-        "success":  __callback(itemParse, items, options, item, 'loadingFinished', fn),
-        "error": __callback(itemParse, items, options, item, 'loadingFailed', fn)
+        "success":  __callback(options, 'loadingFinished'),
+        "error": __callback(options, 'loadingFailed')
       }
       // console.log('loading', item);
       $(self).trigger('loading', [self, item]);
-      self[itemParse](item, params);
+      self.parseOntologyFile(item, params);
     } else {
       if (options.success) {
         options.success();
       }
     }
   };
-  fn(itemParse, items, options, fn);
+
+  fn(0, options);
 }
 
 RDFE.OntologyManager.prototype.reset = function(options) {
@@ -249,11 +246,6 @@ RDFE.OntologyManager.prototype.uriNormalize = function(v, fb) {
   }
   // nothing found, return the fallback, undefined by default
   return fb;
-}
-
-RDFE.OntologyManager.prototype.graphClear = function(graph) {
-  var self = this;
-  self.store.clear(graph, function() {});
 }
 
 RDFE.OntologyManager.prototype.ontologiesAsArray = function() {
@@ -615,16 +607,6 @@ RDFE.OntologyManager.prototype.parseOntologyFile = function(URI, params) {
   };
   self.load(URI, loadParams);
 };
-
-RDFE.OntologyManager.prototype.ontologiesParse = function(ontologies, options) {
-  var start = performance.now();
-  var s = function() {
-    console.log('All ontologies parsed in ', (performance.now() - start));
-    if(options.success)
-      options.success();
-  };
-  this.synchronousParse('parseOntologyFile', ontologies, $.extend({}, options, {"success": s}));
-}
 
 RDFE.OntologyManager.prototype.fresnelLensByURI = function(URI) {
   return this.fresnelLenses[URI];
