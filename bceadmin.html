@@ -214,6 +214,7 @@
         mainDoc.load(url, io_rdfe, function() {
           editor.render($("#contents"));
         }, function() {
+          editor.render($("#contents"));
           $.growl({
               message: 'Failed to load document',
               icon: "glyphicon glyphicon-fire"
@@ -385,6 +386,7 @@
                 }
                 else {
                   $('#contents').empty();
+                  editor.render($("#contents"));
                 }
               }
             });
