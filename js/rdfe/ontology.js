@@ -926,15 +926,12 @@ RDFE.OntologyProperty.prototype.getRange = function(pp) {
   // check super-properties (with loop-protection)
   for(var i = 0; i < this.subPropertyOf.length; i++) {
     var sp = this.subPropertyOf[i];
-    if($.inArray(sp, pp) < 0) {
+    if($.inArray(sp.URI, pp) < 0) {
       pp = pp || [];
-      pp.push(sp);
-      var op = this.manager.ontologyPropertyByURI(sp);
-      if(op) {
-        r = op.getRange(pp);
-        if(r) {
-          return r;
-        }
+      pp.push(sp.URI);
+      r = sp.getRange(pp);
+      if(r) {
+        return r;
       }
     }
     else {
