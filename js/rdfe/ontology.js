@@ -752,6 +752,12 @@ RDFE.OntologyClass.prototype.propertiesAsArray = function() {
   return properties;
 }
 
+/**
+ * Find the max cardinality for the given property.
+ *
+ * Both super-classes and super-properties will be searched for the
+ * max cardinality.
+ */
 RDFE.OntologyClass.prototype.maxCardinalityForProperty = function(p, cc) {
   var prop = this.restrictions[p],
       c = null;
@@ -763,13 +769,28 @@ RDFE.OntologyClass.prototype.maxCardinalityForProperty = function(p, cc) {
       return c;
   }
 
+  // check if this class has a cardinality for any of the property's super-properties
+  var property = this.manager.ontologyPropertyByURI(p);
+  if(property) {
+    var sp = property.getSuperProperties();
+    for(var i = 0; i < sp.length; i++) {
+      var sr = this.restrictions[sp[i].URI];
+      if(sr) {
+        c = sr.cardinality || sr.maxCardinality;
+        if(c) {
+          return c;
+        }
+      }
+    }
+  }
+
   // check super-classes (with loop-protection)
-  for(var i = 0; i < this.subClassOf; i++) {
+  for(var i = 0; i < this.subClassOf.length; i++) {
     var sc = this.subClassOf[i];
-    if($.inArray(sc, cc) < 0) {
+    if($.inArray(sc.URI, cc) < 0) {
       cc = cc || [];
-      cc.push(sc);
-      c = this.manager.ontologyClassByURI(sc).maxCardinalityForProperty(p, cc);
+      cc.push(sc.URI);
+      c = sc.maxCardinalityForProperty(p, cc);
       if(c) {
         return c;
       }
@@ -792,12 +813,12 @@ RDFE.OntologyClass.prototype.isAggregateProperty = function(p, cc) {
   }
 
   // check super-classes (with loop-protection)
-  for(var i = 0; i < this.subClassOf; i++) {
+  for(var i = 0; i < this.subClassOf.length; i++) {
     var sc = this.subClassOf[i];
-    if($.inArray(sc, cc) < 0) {
+    if($.inArray(sc.URI, cc) < 0) {
       cc = cc || [];
-      cc.push(sc);
-      if(this.manager.ontologyClassByURI(sc).isAggregate(p, cc)) {
+      cc.push(sc.URI);
+      if(sc.isAggregateProperty(p, cc)) {
         return true;
       }
     }
@@ -926,15 +947,12 @@ RDFE.OntologyProperty.prototype.getRange = function(pp) {
   // check super-properties (with loop-protection)
   for(var i = 0; i < this.subPropertyOf.length; i++) {
     var sp = this.subPropertyOf[i];
-    if($.inArray(sp, pp) < 0) {
+    if($.inArray(sp.URI, pp) < 0) {
       pp = pp || [];
-      pp.push(sp);
-      var op = this.manager.ontologyPropertyByURI(sp);
-      if(op) {
-        r = op.getRange(pp);
-        if(r) {
-          return r;
-        }
+      pp.push(sp.URI);
+      r = sp.getRange(pp);
+      if(r) {
+        return r;
       }
     }
     else {
@@ -944,6 +962,22 @@ RDFE.OntologyProperty.prototype.getRange = function(pp) {
 
   return undefined;
 }
+
+RDFE.OntologyProperty.prototype.getSuperProperties = function(includeSub, superProperties, checkedProperties) {
+  superProperties = superProperties || [];
+  superProperties = _.union(superProperties, this.subPropertyOf);
+  if (includeSub !== false) {
+    checkedProperties = checkedProperties || [];
+    checkedProperties.push(this.URI);
+    for (var i = 0; i < this.subPropertyOf.length; i++) {
+      var superClass = this.subPropertyOf[i];
+      if ($.inArray(superClass.URI, checkedProperties) < 0) {
+        superClass.getSuperProperties(includeSub, superProperties, checkedProperties);
+      }
+    }
+  }
+  return superProperties;
+};
 
 /*
  *
