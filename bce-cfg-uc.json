@@ -7,14 +7,14 @@
     "preloadOntologies": [
       "bce/rdf.ttl",
       "bce/rdfs.ttl",
-      "bce/skos.rdf",
+      "bce/skos.ttl",
       "bce/skos-ext.ttl",
       "bce/olo.ttl",
       "bce/BCE-Domain-v0.81.owl.ttl",
       "bce/BCE-JourneyConfigurator-v0.81.owl.ttl",
       "bce/bce-restrictions.ttl",
       "bce/bce-tmpl.ttl",
-      "/sparql/?default-graph-uri=&query=prefix+bce%3A+%3Chttp%3A%2F%2Fldp.e.corpintra.net%2Fontology%2Fbce%23%3E%0D%0Aprefix+skos%3A+%3Chttp%3A%2F%2Fwww.w3.org%2F2004%2F02%2Fskos%2Fcore%23%3E%0D%0Aconstruct+%7B+%3Fr+a+bce%3ATouchpoint+%3B+skos%3AprefLabel+%3Fl+%7D+%0D%0Awhere+%7B+graph+%3Chttp%3A%2F%2Fldp.e.corpintra.net%2Fgraph%2Fbcetp%3E+%7B+%3Fr+a+%3Chttp%3A%2F%2Fldp.e.corpintra.net%2Fontology%2Fbce%23TouchPoint%3E+.+optional+%7B+%3Fr+skos%3AprefLabel+%3Fl+%7D+%7D+%7D&should-sponge=&format=text%2Fturtle&CXML_redir_for_subjs=121&CXML_redir_for_hrefs=&timeout=30000"
+      "/sparql/?default-graph-uri=&query=prefix+bce%3A+<http%3A%2F%2Fldp.e.corpintra.net%2Fontology%2Fbce%23>%0D%0Aprefix+skos%3A+<http%3A%2F%2Fwww.w3.org%2F2004%2F02%2Fskos%2Fcore%23>%0D%0Aconstruct+%7B+%3Fr+a+%3Ft+%3B+skos%3AprefLabel+%3Fl+%7D+%0D%0Awhere+%7B+%7B+graph+<http%3A%2F%2Fldp.e.corpintra.net%2Fgraph%2Fbcetp>+%7B+%3Fr+a+%3Ft+.+FILTER%28%3Ft+%3D+<http%3A%2F%2Fldp.e.corpintra.net%2Fontology%2Fbce%23TouchPoint>%29+.+optional+%7B+%3Fr+skos%3AprefLabel+%3Fl+%7D+%7D+%7D+union+%7B+graph+<http%3A%2F%2Fldp.e.corpintra.net%2Fgraph%2Fbcetp>+%7B+%3Fr+a+%3Ft+.+FILTER%28%3Ft+%3D+<http%3A%2F%2Fldp.e.corpintra.net%2Fontology%2Fbce%23Milieu>%29+.+optional+%7B+%3Fr+skos%3AprefLabel+%3Fl+%7D+%7D+%7D+%7D&format=text%2Fturtle"
     ]
   },
   "document":{
