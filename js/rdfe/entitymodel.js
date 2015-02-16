@@ -226,116 +226,99 @@ RDFE.EntityModel = Backbone.Model.extend({
     self.fields = [];
     self.ontologyManager = ontologyManager;
 
-    this.doc.store.execute('select ?p ?o from <' + self.doc.graph + '> where { <' + self.uri + '> ?p ?o } order by ?p', function(s, r) {
-      if (!s) {
-        if (fail) {
-          fail();
-        }
-      } else {
-        self.types = [];
-        self.fields = [];
-        self.lens = null;
-        var domainTypes = [];
+    this.doc.getEntity(self.uri, function(entity) {
+      // TODO: optionally load the ontologies for this.types. Ideally through a function in the ontology manager, something like getClass()
+      //       however, to avoid async code here, it might be better to load the ontologies once the document has been loaded.
+      self.types = _.compact(_.map(entity.types, self.doc.ontologyManager.ontologyClassByURI, self.doc.ontologyManager));
+      self.fields = [];
+      self.lens = null;
+      var domainTypes = [];
 
-        //
-        // Get the types of the resource
-        //
-        for (var i = 0, l = r.length; i < l; i++) {
-          if (r[i].p.value == self.doc.ontologyManager.uriDenormalize('rdf:type')) {
-            // TODO: optionally load the ontologies for this.types. Ideally through a function in the ontology manager, something like getClass()
-            //       however, to avoid async code here, it might be better to load the ontologies once the document has been loaded.
-            var oc = self.doc.ontologyManager.ontologyClassByURI(r[i].o.value);
-            if(oc) {
-              self.types.push(oc);
-            }
-          }
-          else {
-            var p = self.doc.ontologyManager.ontologyPropertyByURI(r[i].p.value);
-            if(p && p.domain) {
-              domainTypes = _.union(domainTypes, p.domain);
-            }
+      //
+      // poor-man's inference: if no type is specified, get the types via property domains
+      //
+      if(self.types.length === 0) {
+        for (var prop in entity.properties) {
+          var p = self.doc.ontologyManager.ontologyPropertyByURI(prop);
+          if(p && p.domain) {
+            self.types = _.union(self.types, p.domain);
           }
         }
+      }
 
-        //
-        // poor-man's inference: if no type is specified, get the types via property domains
-        //
-        if(self.types.length === 0) {
-          self.types = _.compact(domainTypes);
+
+      //
+      // Get the list of properties (fresnel lens vs. existing properties)
+      //
+      for (var i = 0, l = self.types.length; i < l; i++) {
+        var lens =  self.types[i].getFresnelLens();
+        if(lens && lens.showProperties.length > 0) {
+          self.lens = lens;
+          break;
         }
+      }
 
+      if(lens) {
+        self.fields = _.clone(lens.showProperties);
+      }
 
-        //
-        // Get the list of properties (fresnel lens vs. existing properties)
-        //
-        for (var i = 0, l = self.types.length; i < l; i++) {
-          var lens = self.types[i].getFresnelLens();
-          if(lens && lens.showProperties.length > 0) {
-            self.lens = lens;
-            break;
+      if(!lens) {
+        // only chow the "Add Property" button if we have fresnel:allProperties in the lens or we have no lens
+        self.allowAddProperty = true;
+
+        // build the list of fields from the existing triples.
+        for (var prop in entity.properties) {
+          if(!_.contains(self.fields, prop)) {
+            prop === 'http://www.w3.org/1999/02/22-rdf-syntax-ns#type' ? self.fields.unshift(prop) : self.fields.push(prop);
           }
         }
-
-        if(lens) {
-          self.fields = _.clone(lens.showProperties);
-        }
-
-        if(!lens) {
+      }
+      else {
+        // replace fresnel:allProperties with the missing properties, rather than appending them
+        var j = self.fields.indexOf(self.ontologyManager.uriDenormalize('fresnel:allProperties'));
+        if(j >= 0) {
           // only chow the "Add Property" button if we have fresnel:allProperties in the lens or we have no lens
           self.allowAddProperty = true;
 
-          // build the list of fields from the existing triples.
-          for (var i = 0, l = r.length; i < l; i++) {
-            var p = r[i].p.value;
-            if(!_.contains(self.fields, p)) {
-              p === 'http://www.w3.org/1999/02/22-rdf-syntax-ns#type' ? self.fields.unshift(p) : self.fields.push(p);
-            }
+          var mp = [];
+          for (prop in entity.properties) {
+            if(!_.contains(self.fields, prop) && !_.contains(lens.hideProperties, prop))
+              mp.push(prop);
           }
+          self.fields.splice.apply(self.fields, [j, 1].concat(mp));
         }
-        else {
-          // replace fresnel:allProperties with the missing properties, rather than appending them
-          var j = self.fields.indexOf(self.ontologyManager.uriDenormalize('fresnel:allProperties'));
-          if(j >= 0) {
-            // only chow the "Add Property" button if we have fresnel:allProperties in the lens or we have no lens
-            self.allowAddProperty = true;
+      }
 
-            var mp = [];
-            for (var i = 0, l = r.length; i < l; i++) {
-              var p = r[i].p.value;
-              if(!_.contains(self.fields, p) && !_.contains(lens.hideProperties, p))
-                mp.push(p);
-            }
-            self.fields.splice.apply(self.fields, [j, 1].concat(mp));
-          }
-        }
+      //
+      // Build the schema from the list of properties
+      //
+      for(var i = 0; i < self.fields.length; i++) {
+        self.addSchemaEntryForProperty(self.fields[i]);
+      }
 
-        //
-        // Build the schema from the list of properties
-        //
-        for(var i = 0; i < self.fields.length; i++) {
-          self.addSchemaEntryForProperty(self.fields[i]);
-        }
-
-        //
-        // Add the data to the model
-        //
-        for (var i = 0, l = r.length; i < l; i++) {
-          if(self.isAggregateProperty(r[i].p.value)) {
-            var v = r[i];
+      //
+      // Add the data to the model
+      //
+      for (var prop in entity.properties) {
+        var isAgg = self.isAggregateProperty(prop),
+            vals = entity.properties[prop];
+        for(var i = 0; i < vals.length; i++) {
+          if(isAgg) {
             var subm = new RDFE.EntityModel();
-            subm.setEntity (self.doc, v.o.value);
+            subm.setEntity (self.doc, vals[i].value);
             subm.individualsCache = self.individualsCache;
             subm.docToModel(function() {
-              self.addValue(v.p.value, subm);
+              self.addValue(prop, subm);
             });
           }
           else {
-            self.addValue(r[i].p.value, RDFE.RdfNode.fromStoreNode(r[i].o));
+            self.addValue(prop, vals[i]);
           }
         }
+      }
 
-        if(success)
-          success();
+      if(success) {
+        success();
       }
     });
   },
