@@ -395,23 +395,23 @@ RDFE.Document.prototype.getEntity = function(url, success) {
     var e = {
       uri: url,
       label: RDFE.Utils.uri2name(url),
-      types: []
+      types: [],
+      properties: {}
     };
 
     if(s) {
       r = r.triples;
       for(var i = 0; i < r.length; i++) {
-        if(r[i].predicate.nominalValue == 'http://www.w3.org/1999/02/22-rdf-syntax-ns#type') {
+        var p = r[i].predicate.nominalValue;
+        (e.properties[p] = e.properties[p] || []).push(RDFE.RdfNode.fromStoreNode(r[i].object));
+        if(p == 'http://www.w3.org/1999/02/22-rdf-syntax-ns#type') {
           e.types.push(r[i].object.nominalValue);
-        }
-        else if(_.indexOf(self.config.options.labelProps, r[i].predicate.nominalValue) >= 0) {
-          e[r[i].predicate.nominalValue] = r[i].object.nominalValue;
         }
       }
 
       for(var i = 0; i < self.config.options.labelProps.length; i++) {
-        if(e[self.config.options.labelProps[i]]) {
-          e.label = e[self.config.options.labelProps[i]];
+        if(e.properties[self.config.options.labelProps[i]]) {
+          e.label = e.properties[self.config.options.labelProps[i]][0].toString();
           break;
         }
       }
