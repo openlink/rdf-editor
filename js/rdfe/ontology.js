@@ -813,12 +813,12 @@ RDFE.OntologyClass.prototype.isAggregateProperty = function(p, cc) {
   }
 
   // check super-classes (with loop-protection)
-  for(var i = 0; i < this.subClassOf; i++) {
+  for(var i = 0; i < this.subClassOf.length; i++) {
     var sc = this.subClassOf[i];
-    if($.inArray(sc, cc) < 0) {
+    if($.inArray(sc.URI, cc) < 0) {
       cc = cc || [];
-      cc.push(sc);
-      if(this.manager.ontologyClassByURI(sc).isAggregate(p, cc)) {
+      cc.push(sc.URI);
+      if(sc.isAggregateProperty(p, cc)) {
         return true;
       }
     }
