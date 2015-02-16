@@ -53,7 +53,7 @@ RDFE.EntityModel = Backbone.Model.extend({
     items = _.map(_.values(items), function(cl) {
       var n = new RDFE.RdfNode('uri', cl.URI);
       // FIXME: honor config.labelProps
-      n.label = cl.label;
+      n.label = cl.label || cl.name;
       return n;
     });
 
