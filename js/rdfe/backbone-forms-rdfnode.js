@@ -19,6 +19,16 @@ Backbone.Form.editors.Rdfnode = Backbone.Form.editors.Base.extend({
         // this editor stops being the `document.activeElement`.
         this.trigger('blur', this);
         // This call automatically sets `this.hasFocus` to `false`.
+    },
+    'keyup': function(e, x) {
+        if (e.keyCode == 13 && e.shiftKey) {
+          console.log('shift+enter');
+          if (this.editor) {
+            this.editor.transformToTextarea();
+          }
+          e.stopPropagation();
+        }
+        this.trigger('keyup', this);
     }
   },
 

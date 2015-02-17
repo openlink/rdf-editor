@@ -380,6 +380,9 @@
       }
       this.lang = node.language;
 
+      if (node.value.indexOf('\n') !== -1) {
+        this.transformToTextarea();
+      }
       this.mainElem.val(node.value);
       if(this.resSelect) {
         this.resSelect[0].selectize.addOption(node);
@@ -427,6 +430,26 @@
 
   RdfNodeEditor.prototype.getElement = function() {
     return this.container;
+  };
+
+  RdfNodeEditor.prototype.transformToTextarea = function() {
+    var self = this;
+
+    if ((self.mainElem.prop("tagName") === 'INPUT') && (self.mainElem.prop("type") === 'text')) {
+      var content = self.mainElem.val()
+          textArea = document.createElement('textarea');
+
+      // Make sure all properties are transferred to the new object
+      textArea.id    = self.mainElem.prop("id");
+      textArea.name  = self.mainElem.prop("name");
+      $(textArea).addClass(self.mainElem.prop("class"));
+
+      textArea.value = content;
+
+      // Make the switch!
+      self.mainElem.replaceWith(textArea);
+      self.mainElem = $(textArea);
+    }
   };
 
   $.fn.rdfNodeEditor = function(methodOrOptions) {
