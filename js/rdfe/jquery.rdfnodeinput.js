@@ -436,23 +436,20 @@
     var self = this;
 
     if ((self.mainElem.prop("tagName") === 'INPUT') && (self.mainElem.prop("type") === 'text')) {
-      var content = self.mainElem.val();
-      // var caret = getCaret(this);
-      // content = content.substring(0,caret)+"\n"+content.substring(caret,content.length);
+      var content = self.mainElem.val()
+          textArea = document.createElement('textarea');
 
-  		var textArea = document.createElement('textarea');
+      // Make sure all properties are transferred to the new object
+      textArea.id    = self.mainElem.prop("id");
+      textArea.name  = self.mainElem.prop("name");
+      $(textArea).addClass(self.mainElem.prop("class"));
 
-  		// Make sure all properties are transferred to the new object
-  		textArea.id    = self.mainElem.prop("id");
-  		textArea.name  = self.mainElem.prop("name");
-  		$(textArea).addClass(self.mainElem.prop("class"));
+      textArea.value = content;
 
-  		textArea.value = content;
-
-  		// Make the switch!
-  		self.mainElem.replaceWith(textArea);
-  		self.mainElem = $(textArea);
-  	}
+      // Make the switch!
+      self.mainElem.replaceWith(textArea);
+      self.mainElem = $(textArea);
+    }
   };
 
   $.fn.rdfNodeEditor = function(methodOrOptions) {
