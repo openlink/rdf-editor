@@ -517,21 +517,21 @@
                 if (bb === undefined || bb === null) {
                     bb = '';
                 }
-                
+
                 if ($.isNumeric(aa) && $.isNumeric(bb)) {
                     if (aa < bb) {
                         return order * -1;
                     }
                     return order;
                 }
-                
+
                 if (aa === bb) {
                     return 0;
                 }
                 if (aa.localeCompare(bb) === -1) {
                     return order * -1;
                 }
-                    
+
                 return order;
             });
         }
