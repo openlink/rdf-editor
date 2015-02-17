@@ -61,8 +61,12 @@
 
     Form.editors.List.template = _.template('\
       <div class="bbf-list">\
-        <ul class="list-unstyled clearfix" data-items></ul>\
-        <button type="button" class="btn btn-success btn-xs bbf-add" data-action="add">add value</button>\
+        <div class="bbf-list-contents">\
+          <ul class="list-unstyled clearfix" data-items></ul>\
+        </div>\
+        <div class="bbf-list-buttons">\
+          <button type="button" class="btn btn-default bbf-add" data-action="add"><span class="glyphicon glyphicon-plus"></span> add value</button>\
+        </div>\
       </div>\
     ');
 
