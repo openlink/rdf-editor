@@ -14,3 +14,7 @@
 .input-group .form-control {
   z-index: auto;
 }
+
+.input-group-btn {
+  vertical-align: bottom;
+}

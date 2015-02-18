@@ -27,6 +27,10 @@
   margin-bottom: 5px
 }
 
+.bbf-list li:last-child {
+  margin-bottom: 0;
+}
+
 .bbf-list .bbf-del {
   margin-left: 4px
 }
@@ -40,4 +44,21 @@
   border-radius: 3px;
   padding: 4px;
   color: #555;
+}
+
+.bbf-list ul {
+  margin-bottom: 0;
+}
+
+.bbf-list {
+  display: table;
+  width: 100%;
+}
+
+.bbf-list .bbf-list-contents, .bbf-list-buttons {
+  display: table-cell;
+}
+
+.bbf-list .bbf-list-buttons {
+  vertical-align: bottom;
 }

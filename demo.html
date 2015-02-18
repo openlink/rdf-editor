@@ -31,11 +31,11 @@
     <link href="css/bootstrap-editable.css" rel="stylesheet"/>
     <link href="css/bootstrap-datetimepicker.min.css" rel="stylesheet" type="text/css"></link>
     <link href="css/backbone-forms-bootstrap3.css" rel="stylesheet" type="text/css"></link>
-    <link href="css/typeahead.js-bootstrap.css" rel="stylesheet">
     <link rel="stylesheet" href="css/bootstrap-table.min.css">
     <link rel="stylesheet" href="css/jquery.rdfnodeinput.css">
     <link rel="stylesheet" href="css/bootstrap-toggle.min.css">
     <link rel="stylesheet" href="css/selectize.bootstrap3.css">
+    <link rel="stylesheet" href="css/rdfe.css">
 
     <style type="text/css">
       body {
@@ -46,10 +46,6 @@
         text-overflow: ellipsis;
       }
       #busyspinner {margin: 1em; }
-      .entity-label {
-        font-weight: bold;
-        font-style: italic;
-      }
       .fixed-table-body {
         height: auto;
         overflow: inherit;
@@ -161,57 +157,56 @@
     </div>
 
 
-    <script src="js/jquery-1.11.1.min.js"></script>
-    <script src="js/jquery-deparam.min.js"></script>
-    <script src="js/jquery.cookie.js"></script>
-    <script src="js/spin.js"></script>
-    <script src="js/jquery.spin.js"></script>
+    <script src="src/deps-orig/jquery-1.11.1.min.js"></script>
+    <script src="src/deps-demo/jquery-deparam.min.js"></script>
+    <script src="src/deps-demo/jquery.cookie.js"></script>
+    <script src="src/deps-demo/spin.js"></script>
+    <script src="src/deps-demo/jquery.spin.js"></script>
 
-    <script src="js/bootstrap.min.js"></script>
-    <script src="js/bootstrap-editable.min.js"></script>
-    <script src="js/bootstrap-datetimepicker.min.js"></script>
-    <script src="js/bootstrap-table.js"></script>
-    <script src="js/bootstrap-table-editable.js"></script>
-    <script src="js/bootstrap-growl.min.js"></script>
-    <script src="js/typeahead.js"></script>
-    <script src="js/typeaheadjs.js"></script>
+    <script src="src/deps-orig/bootstrap.js"></script>
+    <script src="src/deps-orig/bootstrap-editable.js"></script>
+    <script src="src/deps-orig/bootstrap-datetimepicker.min.js"></script>
+    <script src="src/deps/bootstrap-table.js"></script>
+    <script src="src/deps-orig/bootstrap-table-editable.js"></script>
+    <script src="src/deps-demo/bootstrap-growl.min.js"></script>
 
-    <script src="js/n3-browser.min.js"></script>
-    <script src="js/rdf_store.js"></script>
+    <script src="src/deps-orig/n3-browser.min.js"></script>
+    <script src="src/deps/rdf_store.js"></script>
 
-    <script src="js/val.js"></script>
+    <script src="src/deps-demo/val.js"></script>
 
-    <script src="js/underscore-min.js"></script>
-    <script src="js/backbone-min.js"></script>
-    <script src="js/backbone-forms.js"></script>
-    <script src="js/backbone-forms-list.js"></script>
-    <script src="js/backbone-forms-bootstrap3.js"></script>
+    <script src="src/deps-orig/underscore-min.js"></script>
+    <script src="src/deps-orig/backbone-min.js"></script>
+    <script src="src/deps-orig/backbone-forms.js"></script>
+    <script src="src/deps/backbone-forms-list.js"></script>
+    <script src="src/deps/backbone-forms-bootstrap3.js"></script>
 
-    <script src="js/jstorage.js"></script>
+    <script src="src/deps-demo/jstorage.js"></script>
 
-    <script src="js/rdfe/io.js"></script>
-    <script src="js/rdfe/utils.js"></script>
-    <script src="js/rdfe/rdfnode.js"></script>
-    <script src="js/rdfe/config.js"></script>
-    <script src="js/rdfe/ontology.js"></script>
+    <script src="src/core/io.js"></script>
+    <script src="src/core/utils.js"></script>
+    <script src="src/core/rdfnode.js"></script>
+    <script src="src/core/config.js"></script>
+    <script src="src/core/ontology.js"></script>
+    <script src="src/core/rdf_store_ext.js"></script>
+    <script src="src/core/document.js"></script>
 
-    <script src="js/rdfe/rdf_store_ext.js"></script>
-    <script src="js/rdfe/document.js"></script>
-    <script src="js/rdfe/entitymodel.js"></script>
-    <script src="js/rdfe/tripleview.js"></script>
-    <script src="js/rdfe/entityeditor.js"></script>
-    <script src="js/rdfe/entityview.js"></script>
-    <script src="js/rdfe/editor.js"></script>
-    <script src="js/rdfe/jquery.rdfnodeinput.js"></script>
-    <script src="js/rdfe/editable-rdfnode.js"></script>
-    <script src="js/rdfe/backbone-forms-rdfnode.js"></script>
-    <script src="js/rdfe/backbone-forms-nestedrdf.js"></script>
-    <script src="js/bootstrap-toggle.min.js"></script>
-    <script src="js/selectize.min.js"></script>
-    <script src="js/bootbox.min.js"></script>
-    <script src="js/rdfe/jquery.ontobox.js"></script>
-    <script src="js/rdfe/jquery.propertybox.js"></script>
-    <script src="js/rdfe/editable-propertybox.js"></script>
+    <script src="src/ui/entitymodel.js"></script>
+    <script src="src/ui/tripleview.js"></script>
+    <script src="src/ui/entityeditor.js"></script>
+    <script src="src/ui/entityview.js"></script>
+    <script src="src/ui/editor.js"></script>
+    <script src="src/ui/jquery.rdfnodeinput.js"></script>
+    <script src="src/ui/editable-rdfnode.js"></script>
+    <script src="src/ui/backbone-forms-rdfnode.js"></script>
+    <script src="src/ui/backbone-forms-nestedrdf.js"></script>
+
+    <script src="src/deps-orig/bootstrap-toggle.min.js"></script>
+    <script src="src/deps-orig/selectize.js"></script>
+    <script src="src/deps-demo/bootbox.min.js"></script>
+    <script src="src/ui/jquery.ontobox.js"></script>
+    <script src="src/ui/jquery.propertybox.js"></script>
+    <script src="src/ui/editable-propertybox.js"></script>
 
     <script>
       var val = new VAL();

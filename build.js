@@ -1,64 +1,79 @@
 var buildify = require('buildify');
 
-// the main sources of the RDF Editor
-var jsRdfe = [
-  "js/rdfe/utils.js",
-  "js/rdfe/rdf_store_ext.js",
-  "js/rdfe/io.js",
-  "js/rdfe/config.js",
-  "js/rdfe/rdfnode.js",
-  "js/rdfe/ontology.js",
-  "js/rdfe/document.js",
-  "js/rdfe/jquery.rdfnodeinput.js",
-  "js/rdfe/editable-rdfnode.js",
-  "js/rdfe/jquery.ontobox.js",
-  "js/rdfe/jquery.propertybox.js",
-  "js/rdfe/tripleview.js",
-  "js/rdfe/backbone-forms-rdfnode.js",
-  "js/rdfe/backbone-forms-nextedrdf.js",
-  "js/rdfe/entitymodel.js",
-  "js/rdfe/entityeditor.js",
-  "js/rdfe/entityview.js",
-  "js/rdfe/editor.js",
+// the main sources of the RDF Editor - core part
+var jsRdfeCore = [
+  "src/core/utils.js",
+  "src/core/rdf_store_ext.js",
+  "src/core/io.js",
+  "src/core/config.js",
+  "src/core/rdfnode.js",
+  "src/core/ontology.js",
+  "src/core/document.js"
 ];
 
-// Third-party libs which we modified in one way or another
-var jsCustomDeps = [
+// the main sources of the RDF Editor - ui part
+var jsRdfeUi = [
+  "src/ui/jquery.rdfnodeinput.js",
+  "src/ui/editable-rdfnode.js",
+  "src/ui/jquery.ontobox.js",
+  "src/ui/jquery.propertybox.js",
+  "src/ui/tripleview.js",
+  "src/ui/backbone-forms-rdfnode.js",
+  "src/ui/backbone-forms-nestedrdf.js",
+  "src/ui/entitymodel.js",
+  "src/ui/entityeditor.js",
+  "src/ui/entityview.js",
+  "src/ui/editor.js"
+];
+
+// Third-party libs which we modified in one way or another for RDFE
+var jsRdfeCustomCoreDeps = [
+  "src/deps/rdf_store.js"
+];
+var jsRdfeCustomUiDeps = [
+  "src/deps/backbone-forms-list.js",
+  "src/deps/backbone-forms-bootstrap3.js",
+  "src/deps/bootstrap-table.js",
+];
+
+// Vanilla Third-party libs which were not modified and could theoretically be loaded differently
+var jsRdfeCoreDeps = [
+  "src/deps-orig/jquery-1.11.1.min.js",
+  "src/deps-orig/underscore-min.js",
+  "src/deps-orig/backbone-min.js",
+  "src/deps-orig/n3-browser.min.js"
+];
+var jsRdfeUiDeps = [
+  "src/deps-orig/selectize.js",
+  "src/deps-orig/backbone-forms.js",
+  "src/deps-orig/bootstrap.js",
+  "src/deps-orig/bootstrap-editable.js",
+  "src/deps-orig/bootstrap-table-editable.js",
+  "src/deps-orig/bootstrap-datetimepicker.min.js",
+  "src/deps-orig/bootstrap-toggle.min.js"
+];
+
+// Third-party dependencies for the demo page
+var demoPageDeps = [
   "js/val.js",
-  "js/backbone-forms-list.js",
-  "js/rdf_store.js",
-  "js/bootstrap-table.js",
-];
-
-// Vanialla Third-party dependencies
-var jsDeps = [
-  "js/jquery-1.11.1.min.js",
   "js/jstorage.js",
-  "js/bootstrap.min.js",
-  "js/bootstrap-editable.js",
-  "js/bootstrap-datetimepicker.min.js",
-  "js/bootstrap-table-editable.js",
-  "js/bootstrap-toggle.min.js",
   "js/bootstrap-growl.min.js",
   "js/dummy.js", // growl does not end in a ";" which breaks the parsing
-  "js/underscore-min.js",
-  "js/backbone-min.js",
-  "js/backbone-forms.js",
-  "js/backbone-forms-bootstrap3.js",
   "js/spin.js",
   "js/jquery.spin.js",
   "js/jquery.cookie.js",
-  "js/typeaheadjs.js",
-  "js/typeahead.js",
   "js/bootbox.min.js",
-  "js/selectize.min.js",
-  "js/jquery-deparam.min.js",
-  "js/n3-browser.min.js"
+  "js/jquery-deparam.min.js"
 ];
 
 var cssRdfe = [
   "css/jquery.rdfnodeinput.css",
-  "css/bootstrap-fixes.css"
+  "css/bootstrap-fixes.css",
+  "css/rdfe.css"
+];
+
+var cssCustomDeps = [
+  "css/backbone-forms-bootstrap3.css"
 ];
 
 var cssDeps = [
@@ -68,25 +83,53 @@ var cssDeps = [
   "css/bootstrap-theme.css",
   "css/bootstrap-table.min.css",
   "css/bootstrap-toggle.min.css",
-  "css/backbone-forms-bootstrap3.css",
-  "css/selectize.bootstrap3.css",
-  "css/typeahead.js-bootstrap.css"
+  "css/selectize.bootstrap3.css"
 ];
 
+// build the basic js distribution files
 buildify()
-  .concat(jsDeps)
-  .concat(jsCustomDeps)
-  .concat(jsRdfe)
-  .save('distribution/rdfe-standalone.js')
+  .concat(jsRdfeCustomCoreDeps)
+  .concat(jsRdfeCore)
   .uglify()
+  .save('distribution/rdfe-core.min.js');
+
+buildify()
+  .concat(jsRdfeUiDeps)
+  .concat(jsRdfeCustomUiDeps)
+  .uglify()
+  .save('distribution/rdfe-ui.min.js');
+
+
+// build the all-in-one js files
+buildify()
+  .concat(jsRdfeCoreDeps)
+  .uglify()
+  .concat(['distribution/rdfe-core.min.js'])
+  .save('distribution/rdfe-core-standalone.min.js');
+
+buildify()
+  .concat(jsRdfeUi)
+  .uglify()
+  .concat(['distribution/rdfe-ui.min.js'])
+  .save('distribution/rdfe-ui-standalone.min.js');
+
+
+buildify()
+  .concat([
+    'distribution/rdfe-core-standalone.min.js',
+    'distribution/rdfe-ui-standalone.min.js'
+  ])
   .save('distribution/rdfe-standalone.min.js');
 
+
+// build the stand-alone css files
 buildify()
   .concat(cssRdfe)
+  .cssmin()
+  .save('distribution/rdfe.min.css');
+
+buildify()
   .concat(cssDeps)
   .cssmin()
+  .concat(['distribution/rdfe.min.css'])
   .save('distribution/rdfe-standalone.min.css');
-
-for(var i = 0; i < jsRdfe.length; i++) {
-  buildify().load(jsRdfe[i]).uglify().save("distribution/rdfe/" + jsRdfe[i].split("/").pop().replace(".js", ".min.js"));
-}
