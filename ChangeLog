@@ -1,3 +1,7 @@
+0.13
+  * Performance improvements in the ontology manager.
+  * Beautification in the entity editor.
+
 0.12.1
   * Included bce:Highlights into the individuals query of the touchpoint document config.
 
