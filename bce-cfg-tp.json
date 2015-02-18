@@ -7,7 +7,7 @@
     "preloadOntologies": [
       "bce/rdf.ttl",
       "bce/rdfs.ttl",
-      "bce/skos.rdf",
+      "bce/skos.ttl",
       "bce/skos-ext.ttl",
       "bce/olo.ttl",
       "bce/BCE-Domain-v0.81.owl.ttl",
