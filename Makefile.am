@@ -4,8 +4,11 @@ RDF_EDITOR_FILES = \
   fonts/* \
   img/*.gif \
   img/*.png \
-  js/*.js \
-  js/rdfe/*.js \
+  src/core/*.js \
+  src/ui/*.js \
+  src/deps/*.js \
+  src/deps-orig/*.js \
+  src/deps-demo/*.js \
   test/*.ttl \
   test/*.rdf \
   bce/*.ttl \
