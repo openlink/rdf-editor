@@ -32,7 +32,7 @@
       label: 'Plain Literal'
     },
     'http://www.w3.org/1999/02/22-rdf-syntax-ns#Resource': {
-      label: 'Resource'
+      label: 'Reference'
     },
     "http://www.w3.org/2001/XMLSchema#integer": {
       label: 'Integer',
