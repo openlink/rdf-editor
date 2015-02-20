@@ -6,3 +6,8 @@
   font-size: 0.7em;
   font-style: italic;
 }
+
+textarea {
+  min-height: 5em;
+  resize: vertical;
+}
