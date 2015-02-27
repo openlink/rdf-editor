@@ -55,6 +55,7 @@
       </div>
     </nav>
 
+
     <div class="container" id="welcomePanel">
       <div class="page-header">
         <h1>OpenLink RDF Editor <small>Make Statements</small></h1>
@@ -70,10 +71,14 @@
           <button id="action-new" class="btn btn-primary btn-lg btn-block"><span class="glyphicon glyphicon-plus"></span> Create New Document</button>
           <button id="action-open" class="btn btn-default btn-lg btn-block"><span class="glyphicon glyphicon-open"></span> Open Document</button>
 
+        <div id="storageDocs">
+        </div>
+
         <div id="recentDocs">
         </div>
       </div>
     </div>
+
 
     <div id="contentPanel" class="container" style="display:none;">
       <div>
@@ -137,20 +142,33 @@
 
 
     <script>
-      var val = new VAL();
+      // The main document which contains the loaded data
+      var mainDoc;
+      var editor;
+      var ontologyManager;
+      var rdfeConfig;
 
-      val.profile(function (success, data) {
-        var $uli = $('#userLoginInfo'),
-            $lil = $('#loginoutLink');
-        if (success) {
-          $uli.html('Logged in as <a class="navbar-link" href="' + data.uri + '">' + (data.name ? data.name : (data.nick ? data.nick : data.uri)) + "</a>");
-          $lil.attr('href', val.config.host + val.config.logoutLink + '?returnto=' + encodeURIComponent(window.location.href)).text('Logout').show();
+      function loadLdpLocations(storages) {
+        var $storageDocsEl = $('#storageDocs');
+        if(storages) {
+          for(var i = 0; i < storages.length; i++) {
+            var c = new RDFE.LDPClient(rdfeConfig);
+            c.listDir(storages[i], function(files) {
+              if(files.length > 0) {
+                $storageDocsEl.append('<hr/><h3>Your Documents</h3>');
+                for(var i = 0; i < files.length; i++) {
+                  $storageDocsEl.append('<p class="btn-group btn-group-justified" role="group"><a href="' + files[i] + '" data-io-type="ldp" class="btn btn-default">Load ' + files[i] + '</a></p>');
+                }
+
+                $storageDocsEl.find('a').click(function(e) {
+                  e.preventDefault();
+                  ioRetrieve($(this).attr('href'), $(this).attr('data-io-type'));
+                });
+              }
+            });
+          }
         }
-        else {
-          $uli.text("Not logged in");
-          $lil.attr('href', val.config.host + val.config.loginLink + '?returnto=' + encodeURIComponent(window.location.href)).text('Login').show();
-        }
-      });
+      }
 
       // find recently used docs
       function loadRecentDocs() {
@@ -184,12 +202,6 @@
         recentDocs.unshift({ "url": url, "ioType": ioType });
         $.jStorage.set('rdfe:recentDocuments', recentDocs);
       }
-
-      // The main document which contains the loaded data
-      var mainDoc;
-      var editor;
-      var ontologyManager;
-      var rdfeConfig;
 
       function toggleView(v) {
         if(v === "start") {
@@ -320,7 +332,23 @@
         return io;
       }
 
+      var val = new VAL();
+
       $(document).ready(function() {
+        val.profile(function (success, data) {
+          var $uli = $('#userLoginInfo'),
+              $lil = $('#loginoutLink');
+          if (success) {
+            $uli.html('Logged in as <a class="navbar-link" href="' + data.uri + '">' + (data.name ? data.name : (data.nick ? data.nick : data.uri)) + "</a>");
+            $lil.attr('href', val.config.host + val.config.logoutLink + '?returnto=' + encodeURIComponent(window.location.href)).text('Logout').show();
+            loadLdpLocations(data.storage);
+          }
+          else {
+            $uli.text("Not logged in");
+            $lil.attr('href', val.config.host + val.config.loginLink + '?returnto=' + encodeURIComponent(window.location.href)).text('Login').show();
+          }
+        });
+
         $(document.createElement('div')).appendTo($("body")).load("data/dialogs.html", function() {
           $("#openDocLocation").val($.jStorage.get("editor-document-url"));
           $("#openDocIoType").val($.jStorage.get("editor-document-io-type") || "sparql");
