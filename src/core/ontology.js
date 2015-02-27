@@ -282,8 +282,8 @@ RDFE.OntologyManager.prototype.ontologyPropertyByURI = function(uri, create) {
   var p = this.ontologyProperties[uri];
   if(!p && create === true) {
     this.ontologyProperties[uri] = p = new RDFE.OntologyProperty(this, uri);
-    c.ontology = this.ontology(RDFE.uriOntology(uri), true);
-    c.ontology.properties[uri] = p;
+    p.ontology = this.ontologyByURI(RDFE.uriOntology(uri), true);
+    p.ontology.properties[uri] = p;
   }
   return p;
 }

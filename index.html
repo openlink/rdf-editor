@@ -154,14 +154,35 @@
 
       // find recently used docs
       function loadRecentDocs() {
+        var $recentDocsDiv = $('#recentDocs');
+        $recentDocsDiv.empty();
         var recentDocs = $.jStorage.get('rdfe:recentDocuments');
         if(recentDocs && recentDocs.length) {
-          var $recentDocsDiv = $('#recentDocs');
           $recentDocsDiv.append('<hr/><h3>Recent Documents</h3>');
           for(var i = 0; i < recentDocs.length && i < 10; i++) {
-            $recentDocsDiv.append('<p class="btn-group btn-group-justified" role="group"><a href="' + recentDocs[i].url + '" data-io-type="' + recentDocs[i].ioType + '" class="btn btn-default">' + recentDocs[i].title + '</a></p>');
+            if(recentDocs[i]) {
+              $recentDocsDiv.append('<p class="btn-group btn-group-justified" role="group"><a href="' + recentDocs[i].url + '" data-io-type="' + recentDocs[i].ioType + '" class="btn btn-default">Load ' + (recentDocs[i].title || recentDocs[i].url) + '</a></p>');
+            }
+          }
+
+          $recentDocsDiv.find('a').click(function(e) {
+            e.preventDefault();
+            ioRetrieve($(this).attr('href'), $(this).attr('data-io-type'));
+          });
+        }
+      }
+
+      function addRecentDoc(url, ioType) {
+        var recentDocs = _.compact($.jStorage.get('rdfe:recentDocuments'));
+        // remove the url from the list and then prepend it
+        for(var i = 0; i < recentDocs.length; i++) {
+          if(recentDocs[i].url === url) {
+            recentDocs.splice(i, 1);
+            break;
           }
         }
+        recentDocs.unshift({ "url": url, "ioType": ioType });
+        $.jStorage.set('rdfe:recentDocuments', recentDocs);
       }
 
       // The main document which contains the loaded data
@@ -174,6 +195,7 @@
         if(v === "start") {
           $('#contentPanel').fadeOut(200, function() {
             $('#welcomePanel').fadeIn(200);
+            loadRecentDocs();
           });
         }
         else {
@@ -210,7 +232,7 @@
             editor.updateView();
             $('#docUrl').text(url);
             toggleView("document");
-            // FIXME: add doc to recently used ones
+            addRecentDoc(url, io_rdfe.type);
             $.jStorage.set("editor-document-url", url);
             $.jStorage.set("editor-document-io-type", type);
         }, function() {
@@ -334,8 +356,7 @@
                 toggleSpinner(false);
               });
 
-              toggleSpinner(true);
-              editor.render($("#contents"), function() { toggleSpinner(false); });
+              editor.render($("#contents"));
 
               // initial state of the view button
               if(editor.currentView() === 'triples') {
@@ -349,6 +370,8 @@
 
               $("#io_spq").val($.jStorage.get("editor-sparql-endpoint", config.options.sparqlEndpoint));
               $("#gspEndpoint").val($.jStorage.get("editor-sparql-graph-endpoint", config.options.gspEndpoint));
+
+              loadRecentDocs();
             }
           );
 
@@ -368,6 +391,7 @@
               function() {
                 toggleSpinner(false);
                 $('#docUrl').text(url);
+                addRecentDoc(url, ioType);
                 $.jStorage.set("editor-document-url", url);
                 $.growl({
                   message: "Successfully saved document to <code>" + url + "</code>",
