@@ -252,8 +252,12 @@ RDFE.OntologyManager.prototype.ontologiesAsArray = function() {
   return _.values(this.ontologies);
 }
 
-RDFE.OntologyManager.prototype.ontologyByURI = function(URI) {
-  return this.ontologies[URI];
+RDFE.OntologyManager.prototype.ontologyByURI = function(uri, create) {
+  var o = this.ontologies[uri];
+  if(!o && create === true) {
+    this.ontologies[uri] = o = new RDFE.Ontology(this, uri);
+  }
+  return o;
 }
 
 RDFE.OntologyManager.prototype.ontologyByPrefix = function(prefix) {
@@ -264,12 +268,24 @@ RDFE.OntologyManager.prototype.ontologyRemove = function(URI) {
   delete this.ontologies[URI];
 }
 
-RDFE.OntologyManager.prototype.ontologyClassByURI = function(URI) {
-  return this.ontologyClasses[URI];
+RDFE.OntologyManager.prototype.ontologyClassByURI = function(uri, create) {
+  var c = this.ontologyClasses[uri];
+  if(!c && create === true) {
+    this.ontologyClasses[uri] = c = new RDFE.OntologyClass(this, uri);
+    c.ontology = this.ontologyByURI(RDFE.uriOntology(uri), true);
+    c.ontology.classes[uri] = c;
+  }
+  return c;
 }
 
-RDFE.OntologyManager.prototype.ontologyPropertyByURI = function(URI) {
-  return this.ontologyProperties[URI];
+RDFE.OntologyManager.prototype.ontologyPropertyByURI = function(uri, create) {
+  var p = this.ontologyProperties[uri];
+  if(!p && create === true) {
+    this.ontologyProperties[uri] = p = new RDFE.OntologyProperty(this, uri);
+    c.ontology = this.ontology(RDFE.uriOntology(uri), true);
+    c.ontology.properties[uri] = p;
+  }
+  return p;
 }
 
 RDFE.OntologyManager.prototype.individualByURI = function(URI) {
@@ -295,7 +311,7 @@ RDFE.OntologyManager.prototype.parseOntologyFile = function(URI, params) {
 
 
   function findOrCreateOntology(uri) {
-    return (self.ontologies[uri] = self.ontologies[uri] || new RDFE.Ontology(self, uri));
+    return self.ontologyByURI(uri, true);
   };
 
   function findOrCreateClass(uri) {
@@ -303,23 +319,11 @@ RDFE.OntologyManager.prototype.parseOntologyFile = function(URI, params) {
       return null;
     }
 
-    var c = self.ontologyClasses[uri];
-    if(!c) {
-      self.ontologyClasses[uri] = c = new RDFE.OntologyClass(self, uri);
-      c.ontology = findOrCreateOntology(RDFE.uriOntology(uri));
-      c.ontology.classes[uri] = c;
-    }
-    return c;
+    return self.ontologyClassByURI(uri, true);
   };
 
   function findOrCreateProperty(uri) {
-    var c = self.ontologyProperties[uri];
-    if(!c) {
-      self.ontologyProperties[uri] = c = new RDFE.OntologyProperty(self, uri);
-      c.ontology = findOrCreateOntology(RDFE.uriOntology(uri));
-      c.ontology.properties[uri] = c;
-    }
-    return c;
+    return self.ontologyPropertyByURI(uri, true);
   }
 
   function findOrCreateIndividual(uri) {

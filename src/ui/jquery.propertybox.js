@@ -22,7 +22,7 @@
       },
       create: function(input, cb) {
         // search for and optionally create a new property
-        cb(self.options.ontoManager.OntologyProperty(null, self.options.ontoManager.uriDenormalize(input)));
+        cb(self.options.ontoManager.ontologyPropertyByURI(self.options.ontoManager.uriDenormalize(input), true));
       },
       render: {
         item: function(item, escape) {

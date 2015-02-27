@@ -1,42 +1,11 @@
-<!--
- -
- -  This file is part of the OpenLink Software Virtuoso Open-Source (VOS)
- -  project.
- -
- -  Copyright (C) 1998-2014 OpenLink Software
- -
- -  This project is free software; you can redistribute it and/or modify it
- -  under the terms of the GNU General Public License as published by the
- -  Free Software Foundation; only version 2 of the License, dated June 1991.
- -
- -  This program is distributed in the hope that it will be useful, but
- -  WITHOUT ANY WARRANTY; without even the implied warranty of
- -  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
- -  General Public License for more details.
- -
- -  You should have received a copy of the GNU General Public License along
- -  with this program; if not, write to the Free Software Foundation, Inc.,
- -  51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA
- -
--->
 <html lang="en">
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="">
     <meta name="author" content="">
-    <title>RDF Editor I/O demo</title>
-    <link href="css/bootstrap.min.css" rel="stylesheet">
-    <link href="css/bootstrap-theme.min.css" rel="stylesheet">
-    <link href="css/bootstrap-fixes.css" rel="stylesheet">
-    <link href="css/bootstrap-editable.css" rel="stylesheet"/>
-    <link href="css/bootstrap-datetimepicker.min.css" rel="stylesheet" type="text/css"></link>
-    <link href="css/backbone-forms-bootstrap3.css" rel="stylesheet" type="text/css"></link>
-    <link rel="stylesheet" href="css/bootstrap-table.min.css">
-    <link rel="stylesheet" href="css/jquery.rdfnodeinput.css">
-    <link rel="stylesheet" href="css/bootstrap-toggle.min.css">
-    <link rel="stylesheet" href="css/selectize.bootstrap3.css">
-    <link rel="stylesheet" href="css/rdfe.css">
+    <title>RDF Editor</title>
+    <link href="distribution/rdfe-standalone.min.css" rel="stylesheet">
 
     <style type="text/css">
       body {
@@ -50,6 +19,12 @@
       .fixed-table-body {
         height: auto;
         overflow: inherit;
+      }
+      .btn-text {
+        padding-left: 0px;
+      }
+      #docUrl {
+        font-weight: bold;
       }
     </style>
   </head>
@@ -80,134 +55,86 @@
       </div>
     </nav>
 
-    <div class="container-fluid">
-      <div class="row">
-        <div class="col-md-9">
-          <form name="rdfe" class="form-horizontal">
-            <div class="panel panel-default">
-              <div class="panel-heading">
-                <h3 class="panel-title">Document</h3>
-              </div>
-              <div class="panel-body">
-                <div class="form-group">
-                  <label for="io_g" class="col-sm-2 control-label">Document URL</label>
-                  <div class="col-sm-10">
-                    <p id="docUrl" class="form-control-static">no document loaded</p>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </form>
-        </div>
-
-
-        <div class="col-md-3">
-          <div class="panel panel-default">
-            <div class="panel-heading">
-              <h3 class="panel-title">Ontologies</h3>
-            </div>
-            <div class="panel-body">
-              <select id="ontologySelection">
-              </select>
-              <select id="propertySelection">
-              </select>
-            </div>
-          </div>
-        </div>
+    <div class="container" id="welcomePanel">
+      <div class="page-header">
+        <h1>OpenLink RDF Editor <small>Make Statements</small></h1>
       </div>
 
-      <div class="btn-toolbar" role="toolbar">
-        <div class="btn-group" role="group">
-          <button id="action-new" type="button" class="btn btn-default" style="display:none"><span class="glyphicon glyphicon-file" aria-hidden="true"></span> New</button>
-          <button id="action-open" type="button" class="btn btn-default" style="display:none"><span class="glyphicon glyphicon-open" aria-hidden="true"></span> Open</button>
-          <div id="action-bookmarks" class="btn-group" role="group" style="display:none">
-            <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-expanded="false">
-              <span class="glyphicon glyphicon-star" aria-hidden="true"></span> Bookmarks <span class="caret"></span>
-            </button>
-            <ul id="bookmarks" class="dropdown-menu" role="menu">
-            </ul>
-          </div>
+      <div>
+        <div class="jumbotron">
+          <p>Welcome to the <strong>OpenLink RDF Editor</strong>. The Editor allows to edit RDF documents stored in a variety of systems. This includes
+            <strong>SPARQL endpoints</strong>, <strong>SPARQL Graph Protocol</strong> endpoints, <strong>LDP</strong> Containers and <strong>WebDAV</strong> folders. To get started create a new document
+            or open an existing one.</p>
         </div>
-        <div class="btn-group" role="group">
-          <button id="action-save" type="button" class="btn btn-default" style="display:none"><span class="glyphicon glyphicon-save" aria-hidden="true"></span> Save</button>
-          <button id="action-saveas" type="button" class="btn btn-default" style="display:none"><span class="glyphicon glyphicon-save" aria-hidden="true"></span> Save As...</button>
-        </div>
-        <div class="btn-group" role="group">
-          <button id="action-add" type="button" class="btn btn-default"><span class="glyphicon glyphicon-plus" aria-hidden="true"></span> Add</button>
-        </div>
-        <div class="btn-group" role="group" data-toggle="buttons">
-          <label id="action-entities" class="btn btn-default" title="Show the Entities in the Document" style="display:none">
-            <input type="radio" name="view" id="view-entities" autocomplete="off"><span class="glyphicon glyphicon-list" aria-hidden="true"></span> Entities
-          </label>
-          <label id="action-triples" class="btn btn-default" title="Show All Triples in the Document" style="display:none">
-            <input type="radio" name="view" id="view-triples" autocomplete="off"><span class="glyphicon glyphicon-th" aria-hidden="true"></span> Triples
-          </label>
-        </div>
-        <div class="btn-group" role="group">
-          <div id="busyspinner">
-          </div>
+
+          <button id="action-new" class="btn btn-primary btn-lg btn-block"><span class="glyphicon glyphicon-plus"></span> Create New Document</button>
+          <button id="action-open" class="btn btn-default btn-lg btn-block"><span class="glyphicon glyphicon-open"></span> Open Document</button>
+
+        <div id="recentDocs">
         </div>
       </div>
+    </div>
 
-      <br/>
+    <div id="contentPanel" class="container" style="display:none;">
+      <div>
+        <div class="row">
+          <div class="col-xs-8">
+            <span class="btn btn-text" id="docUrl"></span>
+          </div>
+          <div class="col-xs-4 text-right">
+            <button id="action-full-width" class="btn btn-default" title="Use the full width of the page"><span class="glyphicon glyphicon-resize-horizontal"></span></button>
+          </div>
+        </div>
 
-      <div id="panel-view-editor">
+        <div class="clearfix"></div>
+
+        <hr />
+
+        <div class="btn-toolbar pull-left" role="toolbar">
+          <div class="btn-group" role="group">
+            <button id="action-save" type="button" class="btn btn-default" style="display:none" title="Save the current document"><span class="glyphicon glyphicon-save" aria-hidden="true"></span> Save</button>
+            <button id="action-saveas" type="button" class="btn btn-default" style="display:none" title="Save the current document to a new location"><span class="glyphicon glyphicon-save" aria-hidden="true"></span> Save As...</button>
+          </div>
+          <div class="btn-group" role="group" data-toggle="buttons">
+            <label id="action-entities" class="btn btn-default" title="Show the Entities in the Document" style="display:none">
+              <input type="radio" name="view" id="view-entities" autocomplete="off"><span class="glyphicon glyphicon-list" aria-hidden="true"></span> Entities
+            </label>
+            <label id="action-triples" class="btn btn-default" title="Show All Triples in the Document" style="display:none">
+              <input type="radio" name="view" id="view-triples" autocomplete="off"><span class="glyphicon glyphicon-th" aria-hidden="true"></span> Triples
+            </label>
+          </div>
+          <div class="btn-group" role="group">
+            <button id="action-add" type="button" class="btn btn-default" title="Add a new entity or triple to the document"><span class="glyphicon glyphicon-plus" aria-hidden="true"></span> Add</button>
+          </div>
+          <div class="btn-group" role="group">
+            <div id="busyspinner">
+            </div>
+          </div>
+        </div>
+
+        <div class="btn-toolbar pull-right" role="toolbar">
+          <button id="action-close" class="btn btn-default" title="Close the document and return to the start page"><span class="glyphicon glyphicon-log-out"></span> Close</button>
+        </div>
+
+        <div class="clearfix"></div>
+
+        <hr />
+
         <div id="contents">
         </div>
       </div>
     </div>
 
-
-    <script src="src/deps-orig/jquery-1.11.1.min.js"></script>
+    <script src="distribution/rdfe-standalone.js"></script>
+    <script src="src/deps-demo/val.js"></script>
+    <script src="src/deps-demo/jstorage.js"></script>
+    <script src="src/deps-demo/bootbox.min.js"></script>
     <script src="src/deps-demo/jquery-deparam.min.js"></script>
     <script src="src/deps-demo/jquery.cookie.js"></script>
     <script src="src/deps-demo/spin.js"></script>
     <script src="src/deps-demo/jquery.spin.js"></script>
-
-    <script src="src/deps-orig/bootstrap.js"></script>
-    <script src="src/deps-orig/bootstrap-editable.js"></script>
-    <script src="src/deps-orig/bootstrap-datetimepicker.min.js"></script>
-    <script src="src/deps/bootstrap-table.js"></script>
-    <script src="src/deps-orig/bootstrap-table-editable.js"></script>
     <script src="src/deps-demo/bootstrap-growl.min.js"></script>
 
-    <script src="src/deps-orig/n3-browser.min.js"></script>
-    <script src="src/deps/rdf_store.js"></script>
-
-    <script src="src/deps-demo/val.js"></script>
-
-    <script src="src/deps-orig/underscore-min.js"></script>
-    <script src="src/deps-orig/backbone-min.js"></script>
-    <script src="src/deps-orig/backbone-forms.js"></script>
-    <script src="src/deps/backbone-forms-list.js"></script>
-    <script src="src/deps/backbone-forms-bootstrap3.js"></script>
-
-    <script src="src/deps-demo/jstorage.js"></script>
-
-    <script src="src/core/io.js"></script>
-    <script src="src/core/utils.js"></script>
-    <script src="src/core/rdfnode.js"></script>
-    <script src="src/core/config.js"></script>
-    <script src="src/core/ontology.js"></script>
-    <script src="src/core/rdf_store_ext.js"></script>
-    <script src="src/core/document.js"></script>
-
-    <script src="src/ui/entitymodel.js"></script>
-    <script src="src/ui/tripleview.js"></script>
-    <script src="src/ui/entityeditor.js"></script>
-    <script src="src/ui/entityview.js"></script>
-    <script src="src/ui/editor.js"></script>
-    <script src="src/ui/jquery.rdfnodeinput.js"></script>
-    <script src="src/ui/editable-rdfnode.js"></script>
-    <script src="src/ui/backbone-forms-rdfnode.js"></script>
-    <script src="src/ui/backbone-forms-nestedrdf.js"></script>
-
-    <script src="src/deps-orig/bootstrap-toggle.min.js"></script>
-    <script src="src/deps-orig/selectize.js"></script>
-    <script src="src/deps-demo/bootbox.min.js"></script>
-    <script src="src/ui/jquery.ontobox.js"></script>
-    <script src="src/ui/jquery.propertybox.js"></script>
-    <script src="src/ui/editable-propertybox.js"></script>
 
     <script>
       var val = new VAL();
@@ -225,11 +152,36 @@
         }
       });
 
+      // find recently used docs
+      function loadRecentDocs() {
+        var recentDocs = $.jStorage.get('rdfe:recentDocuments');
+        if(recentDocs && recentDocs.length) {
+          var $recentDocsDiv = $('#recentDocs');
+          $recentDocsDiv.append('<hr/><h3>Recent Documents</h3>');
+          for(var i = 0; i < recentDocs.length && i < 10; i++) {
+            $recentDocsDiv.append('<p class="btn-group btn-group-justified" role="group"><a href="' + recentDocs[i].url + '" data-io-type="' + recentDocs[i].ioType + '" class="btn btn-default">' + recentDocs[i].title + '</a></p>');
+          }
+        }
+      }
+
       // The main document which contains the loaded data
       var mainDoc;
       var editor;
       var ontologyManager;
       var rdfeConfig;
+
+      function toggleView(v) {
+        if(v === "start") {
+          $('#contentPanel').fadeOut(200, function() {
+            $('#welcomePanel').fadeIn(200);
+          });
+        }
+        else {
+          $('#welcomePanel').fadeOut(200, function() {
+            $('#contentPanel').fadeIn(200);
+          });
+        }
+      }
 
       function toggleSpinner(on) {
         if(on)
@@ -257,6 +209,8 @@
         mainDoc.load(url, io_rdfe, function() {
             editor.updateView();
             $('#docUrl').text(url);
+            toggleView("document");
+            // FIXME: add doc to recently used ones
             $.jStorage.set("editor-document-url", url);
             $.jStorage.set("editor-document-io-type", type);
         }, function() {
@@ -321,45 +275,17 @@
       }
 
       function documentNew() {
-        var n = function() {
-          mainDoc.new(function() {
-            editor.updateView();
-            $('#docUrl').text("no document loaded");
-          }, function() {
-            $.growl({
-              message: "Failed to clear Document for unknown reasons.",
-              icon: "glyphicon glyphicon-fire"
-            }, {
-              type: 'danger'
-            });
+        mainDoc.new(function() {
+          editor.updateView();
+          $('#docUrl').text("Editing new document");
+          toggleView("document");
+        }, function() {
+          $.growl({
+            message: "Failed to clear Document for unknown reasons.",
+            icon: "glyphicon glyphicon-fire"
+          }, {
+            type: 'danger'
           });
-        };
-        if(mainDoc.dirty) {
-          bootbox.confirm("Your Document has unsaved changes. Do you really want to create a new Document?", function(r) {
-            if(r)
-              n();
-          });
-        }
-        else {
-          n();
-        }
-      }
-
-      function loadBookmarks(config) {
-        var bm = config.options.bookmarks;
-        if(bm) {
-          if(bm.length > 0) {
-            var $bmMenu = $('#bookmarks');
-            $bmMenu.closest('div.btn-group').show();
-            for(var i = 0; i < bm.length; i+=1) {
-              $bmMenu.append('<li><a class="bookmark" href="' + bm[i].uri + '" data-io-type="' + bm[i].type + '">' + bm[i].label + '</a></li>');
-            }
-          }
-        }
-
-        $('a.bookmark').click(function(e) {
-          e.preventDefault();
-          ioRetrieve($(this).attr('href'), $(this).attr('data-io-type'));
         });
       }
 
@@ -384,9 +310,6 @@
               for (var i = 0; i < configActions.length; i++) {
                 $('#action-'+configActions[i]).show();
               }
-
-              if($.inArray("bookmarks", config.options.actions) >= 0)
-                loadBookmarks(config);
 
               editor = new RDFE.Editor(config);
               mainDoc = editor.doc;
@@ -426,11 +349,6 @@
 
               $("#io_spq").val($.jStorage.get("editor-sparql-endpoint", config.options.sparqlEndpoint));
               $("#gspEndpoint").val($.jStorage.get("editor-sparql-graph-endpoint", config.options.gspEndpoint));
-
-              $('#propertySelection').propertyBox({ "ontoManager": ontologyManager });
-              $('#ontologySelection').ontoBox({ "ontoManager": ontologyManager }).on('changed', function(e, o) {
-                $('#propertySelection').propertyBox().setOntology(o);
-              });
             }
           );
 
@@ -475,28 +393,45 @@
           );
         });
 
-        $('button#action-new').click(function(e) {
+        $('#action-new').click(function(e) {
           documentNew();
         });
 
-        $('button#action-open').click(function(e) {
+        $('#action-open').click(function(e) {
           $('#openDocDialog').modal();
         });
 
-        $('button#action-save').click(function(e) {
+        $('#action-save').click(function(e) {
           save();
         });
 
-        $('button#action-saveas').click(function(e) {
+        $('#action-saveas').click(function(e) {
           saveAs();
         });
 
-        $('button#action-add').click(function(e) {
+        $('#action-add').click(function(e) {
           if (editor.currentView() === 'triples') {
             editor.createNewStatementEditor();
           } else {
             editor.createNewEntityEditor();
           }
+        });
+
+        $('#action-close').click(function(e) {
+          // return to welcome page
+          if(mainDoc.dirty) {
+            bootbox.confirm("Your document has unsaved changes. Do you really want to close the document?", function(r) {
+              if(r)
+                toggleView("start");
+            });
+          }
+          else {
+            toggleView("start");
+          }
+        });
+
+        $('#action-full-width').click(function(e) {
+          $('#contentPanel').removeClass('container').addClass('container-fluid');
         });
 
         $('input[name="view"]').change(function(e) {

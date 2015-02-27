@@ -17,6 +17,7 @@ var jsRdfeUi = [
   "src/ui/editable-rdfnode.js",
   "src/ui/jquery.ontobox.js",
   "src/ui/jquery.propertybox.js",
+  "src/ui/editable-propertybox.js",
   "src/ui/tripleview.js",
   "src/ui/backbone-forms-rdfnode.js",
   "src/ui/backbone-forms-nestedrdf.js",
@@ -34,6 +35,7 @@ var jsRdfeCustomUiDeps = [
   "src/deps/backbone-forms-list.js",
   "src/deps/backbone-forms-bootstrap3.js",
   "src/deps/bootstrap-table.js",
+  "src/deps-orig/bootstrap-table-editable.js" // needs to be here because it depends on bs-table.
 ];
 
 // Vanilla Third-party libs which were not modified and could theoretically be loaded differently
@@ -48,7 +50,6 @@ var jsRdfeUiDeps = [
   "src/deps-orig/backbone-forms.js",
   "src/deps-orig/bootstrap.js",
   "src/deps-orig/bootstrap-editable.js",
-  "src/deps-orig/bootstrap-table-editable.js",
   "src/deps-orig/bootstrap-datetimepicker.min.js",
   "src/deps-orig/bootstrap-toggle.min.js"
 ];
@@ -90,12 +91,14 @@ var cssDeps = [
 buildify()
   .concat(jsRdfeCustomCoreDeps)
   .concat(jsRdfeCore)
+  .save('distribution/rdfe-core.js')
   .uglify()
   .save('distribution/rdfe-core.min.js');
 
 buildify()
-  .concat(jsRdfeUiDeps)
   .concat(jsRdfeCustomUiDeps)
+  .concat(jsRdfeUi)
+  .save('distribution/rdfe-ui.js')
   .uglify()
   .save('distribution/rdfe-ui.min.js');
 
@@ -103,15 +106,23 @@ buildify()
 // build the all-in-one js files
 buildify()
   .concat(jsRdfeCoreDeps)
+  .concat(['distribution/rdfe-core.js'])
+  .save('distribution/rdfe-core-standalone.js');
+buildify()
+  .concat(jsRdfeCoreDeps)
   .uglify()
   .concat(['distribution/rdfe-core.min.js'])
   .save('distribution/rdfe-core-standalone.min.js');
 
 buildify()
-  .concat(jsRdfeUi)
+  .concat(jsRdfeUiDeps)
   .uglify()
   .concat(['distribution/rdfe-ui.min.js'])
   .save('distribution/rdfe-ui-standalone.min.js');
+buildify()
+  .concat(jsRdfeUiDeps)
+  .concat(['distribution/rdfe-ui.js'])
+  .save('distribution/rdfe-ui-standalone.js');
 
 
 buildify()
@@ -120,6 +131,12 @@ buildify()
     'distribution/rdfe-ui-standalone.min.js'
   ])
   .save('distribution/rdfe-standalone.min.js');
+buildify()
+  .concat([
+    'distribution/rdfe-core-standalone.js',
+    'distribution/rdfe-ui-standalone.js'
+  ])
+  .save('distribution/rdfe-standalone.js');
 
 
 // build the stand-alone css files

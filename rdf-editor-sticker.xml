@@ -34,12 +34,12 @@
   <sql purpose="pre-uninstall"></sql>
 </ddls>
 <resources>
-  <file source_uri="demo.html" target_uri="rdf-editor/" />
-  <file source_uri="bceadmin.html" target_uri="rdf-editor/" />
+  <file source_uri="*.html" target_uri="rdf-editor/" />
   <file source_uri="data/*.html" target_uri="rdf-editor/" />
   <file source_uri="*.json" target_uri="rdf-editor/" />
   <file source_uri="css/*.css" target_uri="rdf-editor/" />
   <file source_uri="src/**/*.js" target_uri="rdf-editor/" />
+  <file source_uri="distribution/**/*.js" target_uri="rdf-editor/" />
   <file source_uri="fonts/*" target_uri="rdf-editor/" />
   <file source_uri="img/*.gif" target_uri="rdf-editor/" />
   <file source_uri="img/*.png" target_uri="rdf-editor/" />
