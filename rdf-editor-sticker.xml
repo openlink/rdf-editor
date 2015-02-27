@@ -40,6 +40,7 @@
   <file source_uri="css/*.css" target_uri="rdf-editor/" />
   <file source_uri="src/**/*.js" target_uri="rdf-editor/" />
   <file source_uri="distribution/**/*.js" target_uri="rdf-editor/" />
+  <file source_uri="distribution/**/*.css" target_uri="rdf-editor/" />
   <file source_uri="fonts/*" target_uri="rdf-editor/" />
   <file source_uri="img/*.gif" target_uri="rdf-editor/" />
   <file source_uri="img/*.png" target_uri="rdf-editor/" />
