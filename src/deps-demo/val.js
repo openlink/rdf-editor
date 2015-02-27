@@ -28,18 +28,26 @@ var VAL = function(config) {
       s.load('text/turtle', data, function(success, result) {
         if(success) {
           s.execute(
-            "select ?uri ?name ?img ?nick where { [] foaf:topic ?uri . ?uri a foaf:Agent . optional { ?uri foaf:name ?name . } . optional { ?uri foaf:nick ?nick . } . optional { ?uri foaf:img ?img . } . }",
+            "select ?uri ?name ?img ?nick ?storage where { [] foaf:topic ?uri . ?uri a foaf:Agent . optional { ?uri foaf:name ?name . } . optional { ?uri foaf:nick ?nick . } . optional { ?uri foaf:img ?img . } . optional { ?uri  <http://www.w3.org/ns/pim/space#storage> ?storage . } . }",
             function(success, result) {
               if (success && result.length > 0) {
                 var p = {
                   "uri": result[0].uri.value
                 };
-                if(result[0].name)
+                if(result[0].name) {
                   p.name = result[0].name.value;
-                if(result[0].img)
+                }
+                if(result[0].img) {
                   p.image = result[0].img.value;
-                if(result[0].nick)
+                }
+                if(result[0].nick) {
                   p.nick = result[0].nick.value;
+                }
+                for(var i = 0; i < result.length; i++) {
+                  if(result[0].storage) {
+                    (p.storage = p.storage || []).push(result[0].storage.value);
+                  }
+                }
 
                 cb(true, p);
               }
