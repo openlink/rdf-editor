@@ -90,3 +90,11 @@ RDFE.Utils.uri2name = function(u) {
   }
   return u;
 }
+
+RDFE.Utils.getLabel = function(labels, key) {
+  if (!labels || !labels[key]) {
+    return key;
+  }
+
+  return labels[key];
+}

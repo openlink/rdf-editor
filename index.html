@@ -105,7 +105,7 @@
               <input type="radio" name="view" id="view-entities" autocomplete="off"><span class="glyphicon glyphicon-list" aria-hidden="true"></span> Entities
             </label>
             <label id="action-triples" class="btn btn-default" title="Show All Triples in the Document" style="display:none">
-              <input type="radio" name="view" id="view-triples" autocomplete="off"><span class="glyphicon glyphicon-th" aria-hidden="true"></span> Triples
+              <input type="radio" name="view" id="view-triples" autocomplete="off"><span class="glyphicon glyphicon-th" aria-hidden="true"></span><span class="label-triples"> Triples</span>
             </label>
           </div>
           <div class="btn-group" role="group">
@@ -383,6 +383,10 @@
               }).on('rdf-editor-done', function(e, d) {
                 toggleSpinner(false);
               });
+
+
+              $('#action-triples').attr('title', 'Show All {0} in the Document'.replace('{0}', RDFE.Utils.getLabel(config.options.labels, 'Triples')));
+              $('#action-triples').find('.label-triples').html(' {0}'.replace('{0}', RDFE.Utils.getLabel(config.options.labels, 'Triples')));
 
               editor.render($("#contents"));
 
