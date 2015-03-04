@@ -8,7 +8,7 @@
 
     self.mainElem = elem;
 
-    $(ontologyManager).on('changed', function(e, om) {
+    $(self.options.ontoManager).on('changed', function(e, om) {
       self.sel.addOption(om.allOntologies());
     });
 
@@ -25,11 +25,14 @@
         if (!url) {
           url = self.options.ontoManager.prefixes[input] || input;
         }
-        self.options.ontoManager.ontologyParse(url, {
-          "success": function(onto) {
-            cb(onto);
+        self.options.ontoManager.parseOntologyFile(url, {
+          "success": function() {
+            cb(self.options.ontoManager.ontologyByURI(self.options.ontoManager.ontologyDetermine(input), true));
           },
-          "error": function() {
+          "error": function(state) {
+            if (state && state.message) {
+              $.growl({message: state.message}, {type: 'danger'});
+            }
             cb(null);
           }
         });
