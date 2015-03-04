@@ -571,9 +571,10 @@ RDFE.OntologyManager.prototype.parseOntologyFile = function(URI, params) {
   // parse the ttl gotten from the URI
   var parseTripels = function(data, contentType) {
     if(contentType.length > 0 && contentType.indexOf('turtle') < 0) {
-      console.error('Only Turtle files can be parsed in the ontology manager.');
+      var message = 'Only Turtle files can be parsed in the ontology manager.'
+      console.error(message);
       if(params.error) {
-        params.error();
+        params.error({"message": message});
       }
     }
     else {
