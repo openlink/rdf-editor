@@ -154,6 +154,9 @@
     "http://www.w3.org/2001/XMLSchema#string": {
       label: 'String'
     },
+    "http://www.w3.org/2001/XMLSchema#hexBinary": {
+      label: 'Hex Binary'
+    },
     "http://www.w3.org/2001/XMLSchema#dateTime": {
       label: 'Datetime',
       setup: function(input, remove) {
