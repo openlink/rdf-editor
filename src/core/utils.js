@@ -118,8 +118,8 @@ RDFE.Utils.resolveStorageLocations = function(uris, sparqlEndpoint, success) {
   var fileNameExtRx = /(?:\.([^.]+))?$/;
 
   function isRdfFile(uri) {
-    var ext = uri.match(fileNameExtRx);
-    return (ext == 'ttl' || ext == 'rdf' || ext == 'owl');
+    var ext = uri.match(fileNameExtRx)[0];
+    return (ext == '.ttl' || ext == '.rdf' || ext == '.owl');
   };
 
   /**
