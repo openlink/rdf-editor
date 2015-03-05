@@ -183,18 +183,18 @@
           $recentDocsDiv.append('<hr/><h3>Recent Documents</h3>');
           for(var i = 0; i < recentDocs.length && i < 10; i++) {
             if(recentDocs[i]) {
-              $recentDocsDiv.append('<p class="btn-group btn-group-justified" role="group"><a href="' + recentDocs[i].url + '" data-io-type="' + recentDocs[i].ioType + '" class="btn btn-default">Load ' + (recentDocs[i].title || recentDocs[i].url) + '</a></p>');
+              $recentDocsDiv.append('<p class="btn-group btn-group-justified" role="group"><a href="' + recentDocs[i].url + '" data-io-type="' + recentDocs[i].ioType + '" data-sparql-endpoint="' + (recentDocs[i].sparqlEndpoint || "") + '" class="btn btn-default">Load ' + (recentDocs[i].title || recentDocs[i].url) + '</a></p>');
             }
           }
 
           $recentDocsDiv.find('a').click(function(e) {
             e.preventDefault();
-            ioRetrieve($(this).attr('href'), $(this).attr('data-io-type'));
+            ioRetrieve($(this).attr('href'), $(this).attr('data-io-type'), $(this).attr('data-sparql-endpoint'));
           });
         }
       }
 
-      function addRecentDoc(url, ioType) {
+      function addRecentDoc(url, ioType, sparqlEndpoint) {
         var recentDocs = _.compact($.jStorage.get('rdfe:recentDocuments'));
         // remove the url from the list and then prepend it
         for(var i = 0; i < recentDocs.length; i++) {
@@ -203,7 +203,14 @@
             break;
           }
         }
-        recentDocs.unshift({ "url": url, "ioType": ioType });
+        var rd = {
+          "url": url,
+          "ioType": ioType
+        };
+        if(ioType === 'sparql') {
+          rd.sparqlEndpoint = sparqlEndpoint ? sparqlEndpoint : $('#io_spq').val();
+        }
+        recentDocs.unshift(rd);
         $.jStorage.set('rdfe:recentDocuments', recentDocs);
       }
 
@@ -228,10 +235,10 @@
           $('#busyspinner').spin(false);
       }
 
-      function ioRetrieve(url, type) {
+      function ioRetrieve(url, type, sparqlEndpoint) {
         var io_rdfe;
         try {
-          io_rdfe = getIO(type || "sparql");
+          io_rdfe = getIO(type || "sparql", sparqlEndpoint);
         }
         catch(e) {
           $.growl({
@@ -248,7 +255,7 @@
             editor.updateView();
             $('#docUrl').text(url);
             toggleView("document");
-            addRecentDoc(url, io_rdfe.type);
+            addRecentDoc(url, io_rdfe.type, sparqlEndpoint);
             $.jStorage.set("editor-document-url", url);
             $.jStorage.set("editor-document-io-type", type);
         }, function() {
@@ -327,9 +334,9 @@
         });
       }
 
-      function getIO(ioType) {
+      function getIO(ioType, sparqlEndpoint) {
         var io = RDFE.IO.createIO(ioType, {
-          "sparqlEndpoint": $('#io_spq').val(),
+          "sparqlEndpoint": sparqlEndpoint ? sparqlEndpoint : $('#io_spq').val(),
           "gspEndpoint": $('#gspEndpoint').val()
         });
         io.type = ioType;
@@ -423,11 +430,12 @@
                 ioType = $('#saveAsIoType').val();
             $('#saveAsDialog').modal('hide');
             toggleSpinner(true);
-            mainDoc.save(url, getIO(ioType),
+            var io = getIO(ioType);
+            mainDoc.save(url, io,
               function() {
                 toggleSpinner(false);
                 $('#docUrl').text(url);
-                addRecentDoc(url, ioType);
+                addRecentDoc(url, ioType, io.options.sparqlEndpoint);
                 $.jStorage.set("editor-document-url", url);
                 $.growl({
                   message: "Successfully saved document to <code>" + url + "</code>",
