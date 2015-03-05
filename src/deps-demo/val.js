@@ -47,8 +47,8 @@ var VAL = function(config) {
                   p.sparqlEndpoint = result[0].sparqlEndpoint.value;
                 }
                 for(var i = 0; i < result.length; i++) {
-                  if(result[0].storage) {
-                    (p.storage = p.storage || []).push(result[0].storage.value);
+                  if(result[i].storage) {
+                    (p.storage = p.storage || []).push(result[i].storage.value);
                   }
                 }
 
