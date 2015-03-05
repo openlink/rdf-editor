@@ -17935,6 +17935,9 @@ Automatically shown in inline mode.
     "http://www.w3.org/2001/XMLSchema#string": {
       label: 'String'
     },
+    "http://www.w3.org/2001/XMLSchema#hexBinary": {
+      label: 'Hex Binary'
+    },
     "http://www.w3.org/2001/XMLSchema#dateTime": {
       label: 'Datetime',
       setup: function(input, remove) {
@@ -18169,7 +18172,7 @@ Automatically shown in inline mode.
         this.resSelect[0].selectize.addOption(node);
         this.resSelect[0].selectize.setValue(node.value);
       }
-      if(nodeTypes[this.currentType].setValue)
+      if(nodeTypes[this.currentType] && nodeTypes[this.currentType].setValue)
         nodeTypes[this.currentType].setValue(this.mainElem, this.mainElem.val());
 
       this.langElem.val(this.lang);
@@ -18958,7 +18961,13 @@ RDFE.EntityModel = Backbone.Model.extend({
       maxCardinality: self.maxCardinalityForProperty(property.URI),
       editorAttrs: {
         "title": RDFE.coalesce(restrictionComment, property.comment, property.description)
-      }
+      },
+      validators: [
+        function(value, formValues) {
+          // Use the RdfNode editor to verify the value
+
+        }
+      ]
     };
 
     if(self.isAggregateProperty(property.URI)) {
@@ -19419,6 +19428,7 @@ RDFE.EntityModel = Backbone.Model.extend({
           closeCb();
         });
         var saveFnct = function(cb) {
+          
           form.commit();
           model.modelToDoc(function() {
             $(self).trigger('rdf-editor-success', {
