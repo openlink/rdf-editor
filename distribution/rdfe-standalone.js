@@ -53976,13 +53976,7 @@ RDFE.EntityModel = Backbone.Model.extend({
       maxCardinality: self.maxCardinalityForProperty(property.URI),
       editorAttrs: {
         "title": RDFE.coalesce(restrictionComment, property.comment, property.description)
-      },
-      validators: [
-        function(value, formValues) {
-          // Use the RdfNode editor to verify the value
-
-        }
-      ]
+      }
     };
 
     if(self.isAggregateProperty(property.URI)) {
@@ -54443,7 +54437,6 @@ RDFE.EntityModel = Backbone.Model.extend({
           closeCb();
         });
         var saveFnct = function(cb) {
-          
           form.commit();
           model.modelToDoc(function() {
             $(self).trigger('rdf-editor-success', {
