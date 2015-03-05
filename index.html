@@ -152,25 +152,22 @@
       var ontologyManager;
       var rdfeConfig;
 
-      function loadLdpLocations(storages) {
+      function loadLdpLocations(storages, sparqlEndpoint) {
         var $storageDocsEl = $('#storageDocs');
         if(storages) {
-          for(var i = 0; i < storages.length; i++) {
-            var c = new RDFE.LDPClient(rdfeConfig);
-            c.listDir(storages[i], function(files) {
-              if(files.length > 0) {
-                $storageDocsEl.append('<hr/><h3>Your Documents</h3>');
-                for(var i = 0; i < files.length; i++) {
-                  $storageDocsEl.append('<p class="btn-group btn-group-justified" role="group"><a href="' + files[i] + '" data-io-type="ldp" class="btn btn-default">Load ' + files[i] + '</a></p>');
-                }
-
-                $storageDocsEl.find('a').click(function(e) {
-                  e.preventDefault();
-                  ioRetrieve($(this).attr('href'), $(this).attr('data-io-type'));
-                });
+          RDFE.Utils.resolveStorageLocations(storages, sparqlEndpoint || $('#io_spq').val(), function(files) {
+            if(files.length > 0) {
+              $storageDocsEl.append('<hr/><h3>Your Documents</h3>');
+              for(var i = 0; i < files.length; i++) {
+                $storageDocsEl.append('<p class="btn-group btn-group-justified" role="group"><a href="' + files[i].uri + '" data-io-type="' + files[i].ioType + '" data-sparql-endpoint="' + (files[i].sparqlEndpoint || "") + '" class="btn btn-default">Load ' + files[i].uri + '</a></p>');
               }
-            });
-          }
+
+              $storageDocsEl.find('a').click(function(e) {
+                e.preventDefault();
+                ioRetrieve($(this).attr('href'), $(this).attr('data-io-type'), $(this).attr('data-sparql-endpoint'));
+              });
+            }
+          });
         }
       }
 
@@ -352,7 +349,7 @@
           if (success) {
             $uli.html('Logged in as <a class="navbar-link" href="' + data.uri + '">' + (data.name ? data.name : (data.nick ? data.nick : data.uri)) + "</a>");
             $lil.attr('href', val.config.host + val.config.logoutLink + '?returnto=' + encodeURIComponent(window.location.href)).text('Logout').show();
-            loadLdpLocations(data.storage);
+            loadLdpLocations(data.storage, data.sparqlEndpoint);
           }
           else {
             $uli.text("Not logged in");
