@@ -149,7 +149,7 @@ String.prototype.format = function() {
       params = extendParams(params, self.options);
       var __success = function(data, textStatus) {
         clearGraph(store, storeGraph);
-        store.loadTurtle(data, storeGraph, function(success, r) {
+        store.loadTurtle(data, storeGraph, graph, function(success, r) {
           if (success && params["__success"]) {
             params["__success"]();
           }
@@ -286,7 +286,7 @@ String.prototype.format = function() {
       params = extendParams(params, self.options);
       var __success = function(data, textStatus) {
         clearGraph(store, storeGraph);
-        store.loadTurtle(data, storeGraph, function(success, r) {
+        store.loadTurtle(data, storeGraph, graph, function(success, r) {
           if (success && params["__success"]) {
             params["__success"]();
           }
@@ -402,7 +402,7 @@ String.prototype.format = function() {
       params = extendParams(params, this.options);
       var __success = function(data, textStatus) {
         clearGraph(store, storeGraph);
-        store.loadTurtle(data, storeGraph, function(success, r) {
+        store.loadTurtle(data, storeGraph, path, function(success, r) {
           if (success && params["__success"]) {
             params["__success"]();
           }

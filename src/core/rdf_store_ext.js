@@ -55,15 +55,22 @@ rdfstore.Store.prototype.rdf.api.RDFNode.prototype.localeCompare = function(comp
     return this.toString().localeCompare(compareNode.toString(), locales, options);
 };
 
-rdfstore.Store.prototype.loadTurtle = function(data, graph, callback) {
+rdfstore.Store.prototype.loadTurtle = function(data, graph, baseUri, callback) {
   var self = this;
   var parser = N3.Parser();
+  if(typeof(baseUri) === 'function') {
+    callback = baseUri;
+    baseUri = graph;
+  }
 
   // mapping for blank nodes
   var bns = {};
 
   var convertNode = function(node) {
-    if(N3.Util.isLiteral(node)) {
+    if(!node) {
+      return self.rdf.createNamedNode(baseUri);
+    }
+    else if(N3.Util.isLiteral(node)) {
       // rdfstore treats the empty string as a valid language
       var l = N3.Util.getLiteralLanguage(node);
       if(l == '')
