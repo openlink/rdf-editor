@@ -152,10 +152,10 @@
       var ontologyManager;
       var rdfeConfig;
 
-      function loadLdpLocations(storages, sparqlEndpoint) {
+      function loadLdpLocations(storages) {
         var $storageDocsEl = $('#storageDocs');
         if(storages) {
-          RDFE.Utils.resolveStorageLocations(storages, sparqlEndpoint || $('#io_spq').val(), function(files) {
+          RDFE.Utils.resolveStorageLocations(storages, function(files) {
             if(files.length > 0) {
               $storageDocsEl.append('<hr/><h3>Your Documents</h3>');
               for(var i = 0; i < files.length; i++) {
@@ -349,7 +349,7 @@
           if (success) {
             $uli.html('Logged in as <a class="navbar-link" href="' + data.uri + '">' + (data.name ? data.name : (data.nick ? data.nick : data.uri)) + "</a>");
             $lil.attr('href', val.config.host + val.config.logoutLink + '?returnto=' + encodeURIComponent(window.location.href)).text('Logout').show();
-            loadLdpLocations(data.storage, data.sparqlEndpoint);
+            loadLdpLocations(data.storage);
           }
           else {
             $uli.text("Not logged in");
