@@ -391,7 +391,7 @@
         this.resSelect[0].selectize.addOption(node);
         this.resSelect[0].selectize.setValue(node.value);
       }
-      if(nodeTypes[this.currentType].setValue)
+      if(nodeTypes[this.currentType] && nodeTypes[this.currentType].setValue)
         nodeTypes[this.currentType].setValue(this.mainElem, this.mainElem.val());
 
       this.langElem.val(this.lang);
