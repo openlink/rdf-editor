@@ -8,8 +8,7 @@ var jsRdfeCore = [
   "src/core/config.js",
   "src/core/rdfnode.js",
   "src/core/ontology.js",
-  "src/core/document.js",
-  "src/core/ldpclient.js"
+  "src/core/document.js"
 ];
 
 // the main sources of the RDF Editor - ui part
