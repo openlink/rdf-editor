@@ -32279,13 +32279,13 @@ RDFE.Utils.getUrlBase = function(url) {
 /**
  * Find RDF documents at the given locations.
  *
- * A list of @p uris is checked for LDP containers, WebDAV folders, general
- * Turtle documents, and named graphs via the fiven @p sparqlEndpoint.
+ * A list of @p uris with optional sparqlEndpoint values is checked for LDP containers, WebDAV folders, general
+ * Turtle documents.
  *
  * The @p success callback function has one parameter: a list of objects
  * containing a @p uri, a @p ioType, and an optional @p sparqlEndpoint.
  */
-RDFE.Utils.resolveStorageLocations = function(uris, sparqlEndpoint, success) {
+RDFE.Utils.resolveStorageLocations = function(uris, success) {
   var fileNameExtRx = /(?:\.([^.]+))?$/;
 
   function isRdfFile(uri) {
@@ -32355,7 +32355,20 @@ RDFE.Utils.resolveStorageLocations = function(uris, sparqlEndpoint, success) {
       return;
     }
 
-    var uri = uris[i];
+    var uri = uris[i].uri,
+        sparqlEndpoint = uris[i].sparqlEndpoint;
+
+    // we do not specifically check if the sparql endpoint works.
+    if(sparqlEndpoint) {
+      files.push({
+        "uri": uri,
+        "ioType": "sparql",
+        "sparqlEndpoint": sparqlEndpoint
+      });
+
+      findFiles(i+1);
+      return;
+    }
 
     function checkNonTurtle() {
       checkDAVFolder(uri, function(newFiles) {
