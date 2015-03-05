@@ -28,7 +28,7 @@ var VAL = function(config) {
       s.load('text/turtle', data, function(success, result) {
         if(success) {
           s.execute(
-            "select ?uri ?name ?img ?nick ?storage where { [] foaf:topic ?uri . ?uri a foaf:Agent . optional { ?uri foaf:name ?name . } . optional { ?uri foaf:nick ?nick . } . optional { ?uri foaf:img ?img . } . optional { ?uri  <http://www.w3.org/ns/pim/space#storage> ?storage . } . }",
+            "select ?uri ?name ?img ?nick ?storage ?sparqlEndpoint where { [] foaf:topic ?uri . ?uri a foaf:Agent . optional { ?uri foaf:name ?name . } . optional { ?uri foaf:nick ?nick . } . optional { ?uri foaf:img ?img . } . optional { ?uri  <http://www.w3.org/ns/pim/space#storage> ?storage . } . optional { ?uri <http://rdfs.org/ns/void#sparqlEndpoint> ?sparqlEndpoint . } . }",
             function(success, result) {
               if (success && result.length > 0) {
                 var p = {
@@ -42,6 +42,9 @@ var VAL = function(config) {
                 }
                 if(result[0].nick) {
                   p.nick = result[0].nick.value;
+                }
+                if(result[0].sparqlEndpoint) {
+                  p.sparqlEndpoint = result[0].sparqlEndpoint.value;
                 }
                 for(var i = 0; i < result.length; i++) {
                   if(result[0].storage) {
