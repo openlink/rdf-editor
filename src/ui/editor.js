@@ -233,7 +233,7 @@ RDFE.Editor.prototype.createNewEntityEditor = function(forcedType) {
       options: self.ontologyManager.allClasses(),
       create: function(input, cb) {
         // search for and optionally create a new class
-        cb(self.ontologyManager.OntologyClass(null, self.ontologyManager.uriDenormalize(input)));
+        cb(self.ontologyManager.ontologyClassByURI(self.ontologyManager.uriDenormalize(input), true));
       },
       render: {
         item: function(item, escape) {
