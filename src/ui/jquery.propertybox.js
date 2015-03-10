@@ -20,10 +20,13 @@
       onChange: function(value) {
         $(self).trigger('changed', self.sel.options[value]);
       },
+      createProperty: function(input, create) {
+        return self.options.ontoManager.ontologyPropertyByURI(self.options.ontoManager.uriDenormalize(input), create);
+      },
       create: function(input, cb) {
         // search for and optionally create a new property
-
-        var property = self.options.ontoManager.ontologyPropertyByURI(self.options.ontoManager.uriDenormalize(input));
+        var that = this;
+        var property = this.settings.createProperty(input);
         if (property) {
           cb(property);
         }
@@ -34,13 +37,13 @@
           }
           self.options.ontoManager.parseOntologyFile(url, {
             "success": function() {
-              cb(self.options.ontoManager.ontologyPropertyByURI(self.options.ontoManager.uriDenormalize(input), true));
+              cb(that.settings.createProperty(input, true));
             },
             "error": function(state) {
               if (state && state.message) {
                 $.growl({message: state.message}, {type: 'danger'});
               }
-              cb(null);
+              cb(that.settings.createProperty(input, true));
             }
           });
         }
