@@ -32399,8 +32399,12 @@ RDFE.Utils.resolveStorageLocations = function(uris, success) {
             })
           }
 
-          // no sparql endpoint - continue with next storage uri
+          // no sparql endpoint - use the uri as is, and continue with next storage uri
           else {
+            files.push({
+              "uri": uri,
+              "ioType": "http"
+            });
             findFiles(i+1);
           }
         }
@@ -32447,6 +32451,23 @@ RDFE.Utils.resolveStorageLocations = function(uris, success) {
   };
   findFiles(0);
 };
+
+RDFE.Utils.extractDomain = function(url) {
+  var domain;
+
+  //find & remove protocol (http, ftp, etc.) and get domain
+  if (url.indexOf("://") > -1) {
+    domain = url.split('/')[2];
+  }
+  else {
+    domain = url.split('/')[0];
+  }
+
+  //find & remove port number
+  domain = domain.split(':')[0];
+
+  return domain;
+}
 
 /* Extensions for rdfstore.js */
 /**
@@ -32685,6 +32706,9 @@ String.prototype.format = function() {
           var state = {
             "httpCode": data.status,
             "message": data.statusText
+          }
+          if (this.crossDomain && (state.message = 'error') && (RDFE.Utils.extractDomain(this.url) !== window.location.hostname)) {
+            state.message = "The Document failed to load - this could be related to missing CORS settings on the server."
           }
           params.error(state, data, status, xhr);
         }
@@ -33900,9 +33924,10 @@ RDFE.OntologyManager.prototype.parseOntologyFile = function(URI, params) {
   // parse the ttl gotten from the URI
   var parseTripels = function(data, contentType) {
     if(contentType.length > 0 && contentType.indexOf('turtle') < 0) {
-      console.error('Only Turtle files can be parsed in the ontology manager.');
+      var message = 'Only Turtle files can be parsed in the ontology manager.'
+      console.error(message);
       if(params.error) {
-        params.error();
+        params.error({"message": message});
       }
     }
     else {
