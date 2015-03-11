@@ -228,8 +228,12 @@ RDFE.Utils.resolveStorageLocations = function(uris, success) {
             })
           }
 
-          // no sparql endpoint - continue with next storage uri
+          // no sparql endpoint - use the uri as is, and continue with next storage uri
           else {
+            files.push({
+              "uri": uri,
+              "ioType": "http"
+            });
             findFiles(i+1);
           }
         }
