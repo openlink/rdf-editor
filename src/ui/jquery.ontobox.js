@@ -8,7 +8,7 @@
 
     self.mainElem = elem;
 
-    $(ontologyManager).on('changed', function(e, om) {
+    $(self.options.ontoManager).on('changed', function(e, om) {
       self.sel.addOption(om.allOntologies());
     });
 
@@ -20,17 +20,24 @@
       onChange: function(value) {
         $(self).trigger('changed', self.options.ontoManager.ontologyByURI(value));
       },
+      createOntology: function(input, create) {
+        return self.options.ontoManager.ontologyByURI(self.options.ontoManager.ontologyDetermine(input), create);
+      },
       create: function(input, cb) {
+        var that = this;
         var url = self.options.ontoManager.ontologyDetermine(input);
         if (!url) {
           url = self.options.ontoManager.prefixes[input] || input;
         }
-        self.options.ontoManager.ontologyParse(url, {
-          "success": function(onto) {
-            cb(onto);
+        self.options.ontoManager.parseOntologyFile(url, {
+          "success": function() {
+            cb(that.settings.createOntology(input, true));
           },
-          "error": function() {
-            cb(null);
+          "error": function(state) {
+            if (state && state.message) {
+              $.growl({message: state.message}, {type: 'danger'});
+            }
+            cb(that.settings.createOntology(input, true));
           }
         });
       },

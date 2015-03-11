@@ -97,6 +97,9 @@ String.prototype.format = function() {
             "httpCode": data.status,
             "message": data.statusText
           }
+          if (this.crossDomain && (state.message = 'error') && (RDFE.Utils.extractDomain(this.url) !== window.location.hostname)) {
+            state.message = "The Document failed to load - this could be related to missing CORS settings on the server."
+          }
           params.error(state, data, status, xhr);
         }
       });
