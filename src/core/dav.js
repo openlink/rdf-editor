@@ -232,4 +232,120 @@ RDFE.IO.WebDavFolder = (function() {
   return c;
 }());
 
+RDFE.IO.LDPFolder = (function() {
+  var c = RDFE.IO.Folder.inherit(function(url, options) {
+    var self = this;
+
+    // call super-constructor
+    self.constructor.super.call(this, url);
+
+    var defaults = {
+    }
+
+    self.options = $.extend({}, defaults, options);
+  });
+
+  function findLdpFiles(store, baseUrl, success, fail) {
+
+    store.registerDefaultNamespace('rdfs', 'http://www.w3.org/2000/01/rdf-schema#');
+    store.registerDefaultNamespace('posix', 'http://www.w3.org/ns/posix/stat#');
+
+    var files = [];
+
+    // query files
+    store.execute('select distinct ?s ?size ?mtime from <urn:default> where { ?s a ?t . FILTER(?t in (posix:File, rdfs:Resource)) . optional { ?s posix:size ?size . } . optional { ?s posix:mtime ?mtime . } }', function(s,r) {
+      if(!s) {
+        fail('Failed to query LDP the container at ' + baseUrl + '.');
+      }
+      else {
+        for(var i = 0; i < r.length; i++) {
+          var uri = r[i].s.value;
+          if(!uri.startsWith('http')) {
+            uri = baseUrl + uri;
+          }
+
+          if(uri != baseUrl) {
+            var file = new RDFE.IO.File(uri);
+            if(r[i].mtime) {
+              file.modificationDate = new Date(r[i].mtime.value*1000);
+            }
+            if(r[i].size) {
+              file.size = r[i].size.value;
+            }
+            file.dirty = false;
+
+            files.push(file);
+          }
+        }
+
+        // query folders
+        store.execute('select distinct ?s ?size ?mtime from <urn:default> where { ?s a posix:Directory . optional { ?s posix:mtime ?mtime } }', function(s,r) {
+          if(!s) {
+            fail('Failed to query LDP the container at ' + baseUrl + '.');
+          }
+          else {
+            for(var i = 0; i < r.length; i++) {
+              var uri = r[i].s.value;
+              if(!uri.startsWith('http')) {
+                uri = baseUrl + uri;
+              }
+
+              var dir = new RDFE.IO.LDPFolder(uri);
+              if(r[i].mtime) {
+                dir.modificationDate = new Date(r[i].mtime.value*1000);
+              }
+              files.push(dir);
+            }
+
+            success(files);
+          }
+        });
+      }
+    });
+  };
+
+  c.prototype.listDir = function(success, fail) {
+    var self = this;
+
+    $.ajax({
+      url: self.url,
+      headers: {
+        Accept: "text/turtle"
+      }
+    }).done(function(data, textStatus, jqXHR) {
+      // check if we have a BasicContainer which is what we currently support
+      var lh = jqXHR.getResponseHeader('Link').split(','),
+          haveBasicContainer = false;
+      for(var i = 0; i < lh.length; i++) {
+        if(lh[i].replace(/ /g, '').toLowerCase().indexOf('rel="type"') >= 0 &&
+          lh[i].indexOf('http://www.w3.org/ns/ldp#BasicContainer') >= 0) {
+          haveBasicContainer = true;
+          break;
+        }
+      }
+
+      if(!haveBasicContainer) {
+        fail('Only LDP Basic containers are supported at the moment.');
+      }
+      else if(jqXHR.getResponseHeader('Content-Type').indexOf('turtle') < 0) {
+        fail('The LDP container at ' + self.url + ' does not return Turtle content.');
+      }
+      else {
+        // look for LDP resources
+        var store = rdfstore.create();
+        store.load('text/turtle', data, 'urn:default', function() {
+          findLdpFiles(store, self.url, function(newFiles) {
+            self.children = newFiles;
+            if(success) {
+              success();
+            }
+          }, fail);
+        });
+      }
+    });
+  };
+
+  return c;
+})();
+
 })(jQuery);
