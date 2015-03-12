@@ -27,6 +27,13 @@ RDFE.Document.prototype.load = function(url, io, success, fail) {
         self.io = io;
         self.setChanged(false);
 
+
+        // store document identification properties after load
+        self.srcParams = {
+          "length": data.length,
+          "md5": $.md5(data)
+        }
+
         if (success)
             success();
     };
@@ -108,7 +115,21 @@ RDFE.Document.prototype.save = function(url, io, success, fail) {
         if(s) {
           var __success = function() {
             self.url = myUrl;
+            self.io = myIo;
             self.setChanged(false);
+
+            // refresh document identification properties after save
+            myIo.retrieve(myUrl, {
+              "success": function (data, status, xhr) {
+                self.srcParams = {
+                  "length": data.length,
+                  "md5": $.md5(data)
+                }
+              },
+              "error":  function () {
+                self.srcParams = null;
+              }
+            });
 
             if(mySuccess)
               mySuccess();
