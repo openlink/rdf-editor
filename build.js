@@ -41,6 +41,7 @@ var jsRdfeCustomUiDeps = [
 // Vanilla Third-party libs which were not modified and could theoretically be loaded differently
 var jsRdfeCoreDeps = [
   "src/deps-orig/jquery-1.11.1.min.js",
+  "src/deps-orig/jquery.md5.js",
   "src/deps-orig/underscore-min.js",
   "src/deps-orig/backbone-min.js",
   "src/deps-orig/n3-browser.min.js"
