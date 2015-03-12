@@ -150,11 +150,11 @@ String.prototype.format = function() {
     c.prototype.retrieveToStore = function(graph, store, storeGraph, params) {
       var self = this;
       params = extendParams(params, self.options);
-      var __success = function(data, textStatus) {
+      var __success = function(data, status, xhr) {
         clearGraph(store, storeGraph);
         store.loadTurtle(data, storeGraph, graph, function(success, r) {
           if (success && params["__success"]) {
-            params["__success"]();
+            params["__success"](data, status, xhr);
           }
           else if(!success && params["error"]) {
             params["error"](r);
@@ -287,11 +287,11 @@ String.prototype.format = function() {
     c.prototype.retrieveToStore = function(graph, store, storeGraph, params) {
       var self = this;
       params = extendParams(params, self.options);
-      var __success = function(data, textStatus) {
+      var __success = function(data, status, xhr) {
         clearGraph(store, storeGraph);
         store.loadTurtle(data, storeGraph, graph, function(success, r) {
           if (success && params["__success"]) {
-            params["__success"]();
+            params["__success"](data, status, xhr);
           }
           else if(!success && params["error"]) {
             params["error"](r);
@@ -403,11 +403,11 @@ String.prototype.format = function() {
 
     c.prototype.retrieveToStore = function(path, store, storeGraph, params) {
       params = extendParams(params, this.options);
-      var __success = function(data, textStatus) {
+      var __success = function(data, status, xhr) {
         clearGraph(store, storeGraph);
         store.loadTurtle(data, storeGraph, path, function(success, r) {
           if (success && params["__success"]) {
-            params["__success"]();
+            params["__success"](data, status, xhr);
           }
           else if(!success && params["error"]) {
             params["error"](r);
@@ -519,9 +519,8 @@ String.prototype.format = function() {
       var self = this;
       params.__success = params.success;
       params.success = function(data, status, xhr) {
-        var contentType = (xhr.getResponseHeader('content-type') || '').split(';')[0];
         if (params && params.__success) {
-          params.__success(data, contentType);
+          params.__success(data, status, xhr);
         }
       };
 
@@ -550,7 +549,7 @@ String.prototype.format = function() {
               return;
             }
             if (params && params.__success) {
-              params.__success();
+              params.__success(data, status, xhr);
             }
           };
           if(contentType.indexOf('turtle') > 0 || contentType.length === 0)

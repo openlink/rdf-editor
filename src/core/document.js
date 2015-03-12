@@ -22,7 +22,7 @@ RDFE.Document.prototype.setChanged = function(d) {
 
 RDFE.Document.prototype.load = function(url, io, success, fail) {
     var self = this;
-    var successFct = function(data) {
+    var successFct = function(data, status, xhr) {
         self.url = url;
         self.io = io;
         self.setChanged(false);
