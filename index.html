@@ -284,26 +284,63 @@
         </div>'
       });
 
+      function saveCheck(cbSave, myUrl, myIo) {
+        if (!myUrl) {
+          myUrl = mainDoc.url;
+        }
+        if (!myIo) {
+          myIo = mainDoc.io;
+        }
+        var mySave = function (data, status, xhr) {
+          if (status === 'success') {
+            if ((!mainDoc.url || (mainDoc.io && (mainDoc.io !== myIo))) && data.length)  {
+              bootbox.confirm("Target document exists. Do you really want to overwrite it?", function(result) {
+                if (result)
+                  cbSave(myUrl, myIo);
+              });
+
+              return;
+            }
+            if (mainDoc.srcParams && ((mainDoc.srcParams.length !== data.length) || (mainDoc.srcParams.md5 !== $.md5(data)))) {
+              bootbox.confirm("Target document was updated after last open/save. Do you really want to overwrite it?", function(result) {
+                if (result)
+                  cbSave(myUrl, myIo);
+              });
+
+              return;
+            }
+          }
+          cbSave(myUrl, myIo);
+        }
+        myIo.retrieve(myUrl, {
+          "success": mySave,
+          "error": mySave
+        });
+      }
+
       function save() {
         if (mainDoc.url) {
-          toggleSpinner(true);
-          mainDoc.save(function() {
-            toggleSpinner(false);
-            $.growl({
-              message: "Successfully saved document to <code>" + mainDoc.url + "</code>",
-              icon: "glyphicon glyphicon-ok"
-            }, {
-              type: 'success'
+          var cbSave = function () {
+            toggleSpinner(true);
+            mainDoc.save(function() {
+              toggleSpinner(false);
+              $.growl({
+                message: "Successfully saved document to <code>" + mainDoc.url + "</code>",
+                icon: "glyphicon glyphicon-ok"
+              }, {
+                type: 'success'
+              });
+            }, function(err) {
+              toggleSpinner(false);
+              $.growl({
+                message: (err ? err.message || err : "An unknown error occured"),
+                icon: "glyphicon glyphicon-fire"
+              }, {
+                type: 'danger'
+              });
             });
-          }, function(err) {
-            toggleSpinner(false);
-            $.growl({
-              message: (err ? err.message || err : "An unknown error occured"),
-              icon: "glyphicon glyphicon-fire"
-            }, {
-              type: 'danger'
-            });
-          });
+          };
+          saveCheck(cbSave);
         }
         else {
           saveAs();
@@ -426,29 +463,33 @@
             var url = $('#saveAsDialog input[name="saveAsLocation"]').val(),
                 ioType = $('#saveAsIoType').val();
             $('#saveAsDialog').modal('hide');
-            toggleSpinner(true);
             var io = getIO(ioType);
-            mainDoc.save(url, io,
-              function() {
-                toggleSpinner(false);
-                $('#docUrl').text(url);
-                addRecentDoc(url, ioType, io.options.sparqlEndpoint);
-                $.jStorage.set("editor-document-url", url);
-                $.growl({
-                  message: "Successfully saved document to <code>" + url + "</code>",
-                  icon: "glyphicon glyphicon-ok"
-                }, {
-                  type: 'success'
-                });
-              }, function(err) {
-                toggleSpinner(false);
-                $.growl({
-                  message: (err ? err.message || err : "An unknown error occured"),
-                  icon: "glyphicon glyphicon-fire"
-                }, {
-                  type: 'danger'
-                });
-              });
+            cbSave = function (url, io) {
+              toggleSpinner(true);
+              mainDoc.save(url, io,
+                function() {
+                  toggleSpinner(false);
+                  $('#docUrl').text(url);
+                  addRecentDoc(url, ioType, io.options.sparqlEndpoint);
+                  $.jStorage.set("editor-document-url", url);
+                  $.growl({
+                    message: "Successfully saved document to <code>" + url + "</code>",
+                    icon: "glyphicon glyphicon-ok"
+                  }, {
+                    type: 'success'
+                  });
+                }, function(err) {
+                  toggleSpinner(false);
+                  $.growl({
+                    message: (err ? err.message || err : "An unknown error occured"),
+                    icon: "glyphicon glyphicon-fire"
+                  }, {
+                    type: 'danger'
+                  });
+                }
+              );
+            };
+            saveCheck(cbSave, url, io);
           });
 
           $("#io_spq").change(
