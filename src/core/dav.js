@@ -96,33 +96,49 @@ RDFE.IO.Folder = (function() {
   /**
    * Update the folder contents.
    *
-   * @param force If @p true then the contents will always be updated, otherwise only if the folder is @p dirty.
+   * @param force If @p true then the contents will always be updated, otherwise only if the folder is @p dirty. (optional)
    * @param success An optional callback function which gets the folder itself as a parameter.
    * @param fail An optional callback function which gets the folder itself and an error message as parameters.
    */
   c.prototype.update = function(force, success, fail) {
-    if(force || this.dirty) {
+    var _force = force,
+        _success = success,
+        _fail = fail;
+    if(typeof(_force) === 'function') {
+      _fail = _success;
+      _success = _force;
+      _force = false;
+    }
+    if(_force || this.dirty) {
       var self = this;
       this.listDir(function() {
         // update the root dir of all children
         $(self.children).each(function() {
           this.rootUrl = self.rootUrl;
+          this.parent = self;
         });
 
         self.dirty = false;
 
-        if(success) {
-          success(self);
+        if(_success) {
+          _success(self);
         }
       }, function(err) {
-        if(fail) {
-          fail(this, err);
+        if(_fail) {
+          _fail(this, err);
         }
       });
     }
     else {
-      success(this);
+      _success(this);
     }
+  };
+
+  /**
+   * Sub-classes implement this function to update the children property.
+   */
+  c.prototype.listDir = function(success) {
+    success();
   };
 
   /**
