@@ -289,8 +289,8 @@ RDFE.IO.WebDavFolder = (function() {
       contentType: "text/xml",
       data: body,
       dataType: "xml"
-    }).done(ref).fail(function() {
-      fail('Failed to list WebDAV folder for "' + self.url + '".');
+    }).done(ref).fail(function(xhr, textStatus) {
+      fail('Failed to list WebDAV folder for "' + self.url + '" (' + textStatus + ').');
     });
   }
 
@@ -407,6 +407,10 @@ RDFE.IO.LDPFolder = (function() {
             }
           }, fail);
         });
+      }
+    }).fail(function(jqXHR, textStatus, errorThrown) {
+      if(fail) {
+        fail(textStatus);
       }
     });
   };
