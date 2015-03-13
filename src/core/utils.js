@@ -152,25 +152,15 @@ RDFE.Utils.resolveStorageLocations = function(uris, success) {
     }
 
     // check if we have an LDP container
-    var ldp = new RDFE.IO.LDPFolder(uri);
-    ldp.update(function() {
-      // success, we found an ldp container
-      ldp.parent = files;
-      files.children.push(ldp);
+    RDFE.IO.openFolder(uri, function(dir) {
+      // success, we found a container
+      dir.parent = files;
+      files.children.push(dir);
       findFiles(i+1);
     }, function() {
-      // not an ldp container, try webdav
-      var dav = new RDFE.IO.WebDavFolder(uri);
-      dav.update(function() {
-        // success, we have a webdav folder
-        dav.parent = files;
-        files.children.push(dav);
-        findFiles(i+1);
-      }, function() {
-        // not a dav folder, just add it as a simple url to fetch
-        files.children.push(new RDFE.IO.File(uri));
-        findFiles(i+1);
-      });
+      // not a folder, just add it as a simple url to fetch
+      files.children.push(new RDFE.IO.File(uri));
+      findFiles(i+1);
     });
   };
   findFiles(0);

@@ -418,4 +418,27 @@ RDFE.IO.LDPFolder = (function() {
   return c;
 })();
 
+/**
+ * Open a DAV or LDP folder at the given location.
+ */
+RDFE.IO.openFolder = function(url, success, fail) {
+  var ldp = new RDFE.IO.LDPFolder(url);
+  ldp.update(function() {
+    // success, we found an ldp container
+    success(ldp);
+  }, function() {
+    // not an ldp container, try webdav
+    var dav = new RDFE.IO.WebDavFolder(url);
+    dav.update(function() {
+      // success, we have a webdav folder
+      success(dav);
+    }, function() {
+      // not a known folder
+      if(fail) {
+        fail();
+      }
+    });
+  });
+};
+
 })(jQuery);
