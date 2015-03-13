@@ -105,6 +105,19 @@ RDFE.Utils.getUrlBase = function(url) {
   return parser.protocol + '//' + parser.host;
 };
 
+RDFE.Utils.splitUrl = function(url) {
+  var parser = document.createElement('a');
+  parser.href = url;
+  return {
+    protocol: parser.protocol,
+    host: parser.host,
+    hostname: parser.hostname,
+    path: parser.pathname,
+    port: parser.port,
+    search: parser.search
+  };
+};
+
 /**
  * Find RDF documents at the given locations.
  *
