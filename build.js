@@ -5,6 +5,7 @@ var jsRdfeCore = [
   "src/core/utils.js",
   "src/core/rdf_store_ext.js",
   "src/core/io.js",
+  "src/core/dav.js",
   "src/core/config.js",
   "src/core/rdfnode.js",
   "src/core/ontology.js",
