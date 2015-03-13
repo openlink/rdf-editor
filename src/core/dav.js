@@ -329,19 +329,17 @@ RDFE.IO.LDPFolder = (function() {
             uri = baseUrl + uri;
           }
 
-          if(uri != baseUrl) {
-            var file = new RDFE.IO.File(uri);
-            if(r[i].mtime) {
-              file.modificationDate = new Date(r[i].mtime.value*1000);
-            }
-            if(r[i].size) {
-              file.size = r[i].size.value;
-            }
-            file.dirty = false;
-            file.ioType = "ldp";
-
-            files.push(file);
+          var file = new RDFE.IO.File(uri);
+          if(r[i].mtime) {
+            file.modificationDate = new Date(r[i].mtime.value*1000);
           }
+          if(r[i].size) {
+            file.size = r[i].size.value;
+          }
+          file.dirty = false;
+          file.ioType = "ldp";
+
+          files.push(file);
         }
 
         // query folders
@@ -356,11 +354,13 @@ RDFE.IO.LDPFolder = (function() {
                 uri = baseUrl + uri;
               }
 
-              var dir = new RDFE.IO.LDPFolder(uri);
-              if(r[i].mtime) {
-                dir.modificationDate = new Date(r[i].mtime.value*1000);
+              if(uri != baseUrl) {
+                var dir = new RDFE.IO.LDPFolder(uri);
+                if(r[i].mtime) {
+                  dir.modificationDate = new Date(r[i].mtime.value*1000);
+                }
+                files.push(dir);
               }
-              files.push(dir);
             }
 
             success(files);
