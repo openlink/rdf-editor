@@ -128,69 +128,10 @@ RDFE.Utils.splitUrl = function(url) {
  * containing a @p uri, a @p ioType, and an optional @p sparqlEndpoint.
  */
 RDFE.Utils.resolveStorageLocations = function(uris, success) {
-  var fileNameExtRx = /(?:\.([^.]+))?$/;
-
-  function isRdfFile(uri) {
-    var ext = uri.match(fileNameExtRx)[0];
-    return (ext == '.ttl' || ext == '.rdf' || ext == '.owl');
-  };
-
-  /**
-    * Check if the given url refers to a DAV folder and if so, try
-    * to list the files in that folder.
-    */
-  function checkDAVFolder(url, cb) {
-    $.ajax({
-      "url": url,
-      "type": 'PROPFIND'
-    }).done(function (data) {
-      // find rdf files in the folder
-      var files = [];
-
-      $(data).find('href').each(function() {
-        var fn = $(this).text(),
-            urlBase = RDFE.Utils.getUrlBase(url);
-
-        if(isRdfFile(fn)) {
-          files.push({ "uri": urlBase + fn, "ioType": "webdav" });
-        }
-      });
-
-      cb(files);
-    }).fail(function() {
-      // nothing found
-      cb([]);
-    });
-  };
-
-  /**
-    * Check if the given store contains details on an LDP collection
-    * and if so, list the resources in it.
-    */
-  function findLdpFiles(store, baseUrl, cb) {
-    var files = [];
-
-    store.registerDefaultNamespace('rdfs', 'http://www.w3.org/2000/01/rdf-schema#');
-    store.registerDefaultNamespace('posix', 'http://www.w3.org/ns/posix/stat#');
-
-    store.execute('select distinct ?s from <urn:default> where { ?s a ?t . FILTER(?t in (posix:File, rdfs:Resource)) . }', function(s,r) {
-      for(var i = 0; i < r.length; i++) {
-        var uri = r[i].s.value;
-        if(!uri.startsWith('http')) {
-          uri = baseUrl + uri;
-        }
-        files.push({ "uri": uri, "ioType": "ldp" });
-      }
-    });
-
-    cb(files);
-  };
-
-
   //
   // check all uris to see what we get
   //
-  var files = [];
+  var files = new RDFE.IO.Folder();
   function findFiles(i) {
     if(i >= uris.length) {
       success(files);
@@ -202,94 +143,35 @@ RDFE.Utils.resolveStorageLocations = function(uris, success) {
 
     // we do not specifically check if the sparql endpoint works.
     if(sparqlEndpoint) {
-      files.push({
-        "uri": uri,
-        "ioType": "sparql",
-        "sparqlEndpoint": sparqlEndpoint
-      });
+      var sf = new RDFE.IO.File(uri);
+      sf.sparqlEndpoint = sparqlEndpoint;
+      files.children.push(sf);
 
       findFiles(i+1);
       return;
     }
 
-    function checkNonTurtle() {
-      checkDAVFolder(uri, function(newFiles) {
-        if(newFiles.length) {
-          files = files.concat(newFiles);
-          findFiles(i+1);
-        }
-
-        // no DAV files found - check if we can access the uri via a sparql endpoint
-        else {
-          if(sparqlEndpoint) {
-            var sparqlUrl = sparqlEndpoint + "?query=" + encodeURIComponent("construct { ?s ?p ?o } where { graph <" + uri + "> { ?s ?p ?o } }");
-            $.ajax({
-              url: sparqlUrl,
-              headers: {
-                Accept: "text/turtle"
-              }
-            }).done(function(data, textStatus, jqXHR) {
-              if(jqXHR.getResponseHeader('Content-Type').indexOf('turtle') > 0) {
-                files.push({
-                  "uri": uri,
-                  "ioType": "sparql",
-                  "sparqlEndpoint": sparqlEndpoint
-                });
-              }
-            }).then(function() {
-              findFiles(i+1);
-            })
-          }
-
-          // no sparql endpoint - use the uri as is, and continue with next storage uri
-          else {
-            files.push({
-              "uri": uri,
-              "ioType": "http"
-            });
-            findFiles(i+1);
-          }
-        }
+    // check if we have an LDP container
+    var ldp = new RDFE.IO.LDPFolder(uri);
+    ldp.update(function() {
+      // success, we found an ldp container
+      ldp.parent = files;
+      files.children.push(ldp);
+      findFiles(i+1);
+    }, function() {
+      // not an ldp container, try webdav
+      var dav = new RDFE.IO.WebDavFolder(uri);
+      dav.update(function() {
+        // success, we have a webdav folder
+        dav.parent = files;
+        files.children.push(dav);
+        findFiles(i+1);
+      }, function() {
+        // not a dav folder, just add it as a simple url to fetch
+        files.children.push(new RDFE.IO.File(uri));
+        findFiles(i+1);
       });
-    };
-
-    // get the URI, request Turtle and see what we get
-    $.ajax({
-      url: uri,
-      headers: {
-        Accept: "text/turtle"
-      }
-    }).done(function(data, textStatus, jqXHR) {
-      var ct = jqXHR.getResponseHeader('Content-Type');
-
-      // turtle content
-      if(ct.indexOf('turtle') >= 0) {
-        // look for LDP
-        var store = rdfstore.create();
-        store.load('text/turtle', data , 'urn:default', function() {
-          findLdpFiles(store, uri, function(newFiles) {
-            if(newFiles.length) {
-              // we found LDP files
-              files = files.concat(newFiles);
-              findFiles(i+1);
-            }
-            else if(data.length) {
-              // no LDP files found but we have turtle content
-              files.push({ "uri": uri, "ioType": "webdav" });
-              findFiles(i+1);
-            }
-            else {
-              findFiles(i+1);
-            }
-          });
-        });
-      }
-
-      // no turtle content found, check if we have a DAV location
-      else {
-        checkNonTurtle();
-      }
-    }).fail(checkNonTurtle);
+    });
   };
   findFiles(0);
 };
