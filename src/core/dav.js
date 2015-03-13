@@ -233,6 +233,7 @@ RDFE.IO.WebDavFolder = (function() {
           res = new RDFE.IO.File(url);
           res.size = parseInt($prop.find('getcontentlength').text());
           res.dirty = false; // we already got all the properties below
+          res.ioType = "dav";
         }
 
         var tmp = $prop.find('creationdate');
@@ -337,6 +338,7 @@ RDFE.IO.LDPFolder = (function() {
               file.size = r[i].size.value;
             }
             file.dirty = false;
+            file.ioType = "ldp";
 
             files.push(file);
           }
