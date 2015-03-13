@@ -12,9 +12,9 @@ if(!RDFE.IO) {
 RDFE.IO.Resource = (function() {
   // constructor
   var c = function(url) {
-    this.url = url;
-    this.name = decodeURIComponent(url);
-    this.name = this.name.match(/([^\/]+)\/?$/)[1];
+    this.url = url || "";
+    this.path = decodeURIComponent(RDFE.Utils.splitUrl(url).path);
+    this.name = this.path.match(/([^\/]+)\/?$/)[1];
   };
 
   // class-inheritance utitity function
