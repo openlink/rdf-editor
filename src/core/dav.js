@@ -149,6 +149,52 @@ RDFE.IO.Folder = (function() {
   c.prototype.filterByMimetype = function(mt, cb) {
   }
 
+  var childrenDefaults = {
+    sort: "name",
+    foldersFirst: true,
+    sortOrder: "asc"
+  };
+
+  /**
+   * List all the children in the folder.
+   * @param options An optional set of parameters:
+   * - @p sort Which criteria to sort by. Supported are all possible properties of the resources. Default is sorting by @p name.
+   * - @p sortOrder @p desc or @p acs. Defaults to @p asc
+   * - @p foldersFirst This is @p true by default
+   * - @p type Can be @p folder or @p file to return only one of those types
+   */
+  c.prototype.getChildren = function(options) {
+    var o = $.extend({}, childrenDefaults, options),
+        files = [],
+        folders = [];
+
+    for(var i = 0; i < this.children.length; i++) {
+      if((o.type !== 'folder' && this.children[i].type === "file") || (o.type !== 'file' && !o.foldersFirst)) {
+        files.push(this.children[i]);
+      }
+      else if (o.type !== 'file') {
+        folders.push(this.children[i]);
+      }
+    }
+
+    var desc = (o.sortOrder.toLowerCase() === 'desc');
+    var sorter = function(a, b) {
+      if(desc) {
+        return a[o.sort] > b[o.sort];
+      }
+      else {
+         return a[o.sort] < b[o.sort];
+      }
+    };
+
+    if(o.sort) {
+      files.sort(sorter);
+      folders.sort(sorter);
+    }
+
+    return $.merge(folders, files);
+  }
+
   return c;
 })();
 
