@@ -32,11 +32,11 @@ RDFE.IO.Resource = (function() {
   };
 
   c.prototype.isFolder = function() {
-    return this.resType === "folder";
+    return this.type === "folder";
   };
 
   c.prototype.isFile = function() {
-    return this.resType === "file";
+    return this.type === "file";
   };
 
   return c;
@@ -52,7 +52,7 @@ RDFE.IO.File = (function() {
     // call super-constructor
     self.constructor.super.call(this, url);
 
-    self.resType = "file";
+    self.type = "file";
     self.dirty = true;
 
     var defaults = {
@@ -74,7 +74,7 @@ RDFE.IO.Folder = (function() {
     // call super-constructor (directly since we have 2 inheritance levels)
     RDFE.IO.Resource.call(this, url);
 
-    self.resType = "folder";
+    self.type = "folder";
     self.dirty = true;
 
     // add trailing slash if necessary
