@@ -85,6 +85,8 @@ RDFE.IO.Folder = (function() {
     // set the default root url which is the url browsing started at
     self.rootUrl = self.url;
 
+    self.children = [];
+
     var defaults = {
     }
 
