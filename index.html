@@ -170,6 +170,7 @@
           $el.append(
             $(document.createElement('a'))
               .addClass('btn btn-default btn-block')
+              .attr('href', folder.parent.url)
               .append('<span class="glyphicon glyphicon-circle-arrow-up"></span> Up')
               .click(function(e) {
                 e.preventDefault();
