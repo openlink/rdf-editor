@@ -25,7 +25,11 @@
 </div>
 
 <div id="folder" class="col-xs-8">
-  <h3>{{currentFolder.name}}</h3>
+  <h3>
+    {{currentFolder.name}}
+    <button class="btn btn-link pull-right" ng-click="refresh()" title="Refresh the contents of the folder"><span class="glyphicon glyphicon-refresh"></span> Refresh</button>
+  </h3>
+
   <ul class="list-group">
     <li ng-show="currentFolder.parent" class="list-group-item" ng-click="folderUp()">
       <a href="{{currentFolder.parent.url}}" ng-click="$event.preventDefault();">

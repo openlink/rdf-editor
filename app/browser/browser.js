@@ -179,6 +179,16 @@ angular.module('myApp.fileBrowser', ['ngRoute', 'ui.bootstrap'])
     }
   };
 
+  $scope.refresh = function() {
+    $scope.currentFolder.update(true, function() {
+      $scope.$apply(function() {
+        $scope.currentFolder = $scope.currentFolder;
+      });
+    }, function() {
+      // do nothing
+    });
+  };
+
   $scope.openFile = function(file) {
     window.location.href =
       window.location.protocol +
