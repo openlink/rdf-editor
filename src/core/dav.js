@@ -15,6 +15,7 @@ RDFE.IO.Resource = (function() {
     this.url = url || "";
     this.path = decodeURIComponent(RDFE.Utils.splitUrl(url).path);
     this.name = this.path.match(/([^\/]+)\/?$/)[1];
+    this.options = {};
   };
 
   // class-inheritance utitity function
@@ -37,6 +38,39 @@ RDFE.IO.Resource = (function() {
 
   c.prototype.isFile = function() {
     return this.type === "file";
+  };
+
+  /**
+   * Recursively search for an option value for the given @p key.
+   * If the Resource itself does not have the option, its parent
+   * it checked instead.
+   */
+  c.prototype.getOption = function(key) {
+    if(this.options[key]) {
+      return this.options[key];
+    }
+    else if(this.parent) {
+      return this.parent.getOption(key);
+    }
+    else {
+      return undefined;
+    }
+  };
+
+  /**
+   * Add standard request headers to be used with every HTTP request.
+   * For now this method only creates an @p Authorization header if
+   * appropriate, i.e. if @p username and @p password options are available.
+   *
+   * @return The possible enriched value of @p headers.
+   */
+  c.prototype.standardAjaxHeaders = function(headers) {
+    var uid = this.getOption('username');
+    headers = headers || {};
+    if(uid) {
+      headers["Authorization"] = "Basic " + btoa(uid + ":" + this.getOption('password'));
+    }
+    return headers;
   };
 
   return c;
@@ -66,6 +100,10 @@ RDFE.IO.File = (function() {
 
 /**
  * The base class for any type of folder.
+ * @param url The URL of the folder
+ * @param options An optional object of options:
+ * - @p username Auth information
+ * - @p password Auth information
  */
 RDFE.IO.Folder = (function() {
   var c = RDFE.IO.Resource.inherit(function(url, options) {
@@ -78,7 +116,7 @@ RDFE.IO.Folder = (function() {
     self.dirty = true;
 
     // add trailing slash if necessary
-    if (self.url.substring(self.url.length-1) != "/") {
+    if (self.url.length > 0 && self.url.substring(self.url.length-1) != "/") {
       self.url += "/";
     }
 
@@ -98,7 +136,7 @@ RDFE.IO.Folder = (function() {
    *
    * @param force If @p true then the contents will always be updated, otherwise only if the folder is @p dirty. (optional)
    * @param success An optional callback function which gets the folder itself as a parameter.
-   * @param fail An optional callback function which gets the folder itself and an error message as parameters.
+   * @param fail An optional callback function which gets the folder itself, an error message, and an http result code as parameters.
    */
   c.prototype.update = function(force, success, fail) {
     var _force = force,
@@ -123,9 +161,22 @@ RDFE.IO.Folder = (function() {
         if(_success) {
           _success(self);
         }
-      }, function(err) {
-        if(_fail) {
-          _fail(this, err);
+      }, function(err, status) {
+        // get auth information from the user if possible
+        if((status === 401 || status === 403) &&
+            self.options.authFunction) {
+          self.options.authFunction(self.url, function(uid, pwd) {
+            self.options.username = uid;
+            self.options.password = pwd;
+            self.update(_force, _success, _fail);
+          }, function() {
+            if(_fail) {
+              _fail(self, err, status);
+            }
+          });
+        }
+        else if(_fail) {
+          _fail(self, err, status);
         }
       });
     }
@@ -209,6 +260,7 @@ RDFE.IO.WebDavFolder = (function() {
     var defaults = {
     }
 
+    self.ioType = 'webdav';
     self.options = $.extend({}, defaults, options);
   });
 
@@ -276,7 +328,7 @@ RDFE.IO.WebDavFolder = (function() {
     var ref = function(data) {
       self.children = parseDavFolder(self.url, data);
       if (!self.children) {
-        fail('Failed to parse WebDAV result for "' + self.url + '".');
+        fail('Failed to parse WebDAV result for "' + self.url + '".', 200);
       }
       else {
         success();
@@ -288,9 +340,10 @@ RDFE.IO.WebDavFolder = (function() {
       method: "PROPFIND",
       contentType: "text/xml",
       data: body,
-      dataType: "xml"
-    }).done(ref).fail(function(xhr, textStatus) {
-      fail('Failed to list WebDAV folder for "' + self.url + '" (' + textStatus + ').');
+      dataType: "xml",
+      headers: this.standardAjaxHeaders()
+    }).done(ref).fail(function(xhr) {
+      fail('Failed to list WebDAV folder for "' + self.url + '".', xhr.status);
     });
   }
 
@@ -307,6 +360,7 @@ RDFE.IO.LDPFolder = (function() {
     var defaults = {
     }
 
+    self.ioType = 'ldp';
     self.options = $.extend({}, defaults, options);
   });
 
@@ -375,9 +429,9 @@ RDFE.IO.LDPFolder = (function() {
 
     $.ajax({
       url: self.url,
-      headers: {
+      headers: self.standardAjaxHeaders({
         Accept: "text/turtle"
-      }
+      })
     }).done(function(data, textStatus, jqXHR) {
       // check if we have a BasicContainer which is what we currently support
       var lh = jqXHR.getResponseHeader('Link').split(','),
@@ -408,9 +462,9 @@ RDFE.IO.LDPFolder = (function() {
           }, fail);
         });
       }
-    }).fail(function(jqXHR, textStatus, errorThrown) {
+    }).fail(function(jqXHR) {
       if(fail) {
-        fail(textStatus);
+        fail('Failed to fetch Turtle content from ' + self.url + '.', jqXHR.status);
       }
     });
   };
@@ -420,22 +474,35 @@ RDFE.IO.LDPFolder = (function() {
 
 /**
  * Open a DAV or LDP folder at the given location.
+ * @param url the Url to open
+ * @param optional object with options like @p authFunction.
+ * @param success Callback with the Folder instance on success.
+ * @param fail optional callback in the case of an error with an error message and an HTTP status code.
  */
-RDFE.IO.openFolder = function(url, success, fail) {
-  var ldp = new RDFE.IO.LDPFolder(url);
+RDFE.IO.openFolder = function(url, options, success, fail) {
+  var _success = success,
+      _fail = fail,
+      _options = options;
+  if(typeof(options) === 'function') {
+    _fail = _success;
+    _success = _options;
+    _options = undefined;
+  }
+
+  var ldp = new RDFE.IO.LDPFolder(url, _options);
   ldp.update(function() {
     // success, we found an ldp container
-    success(ldp);
+    _success(ldp);
   }, function() {
-    // not an ldp container, try webdav
-    var dav = new RDFE.IO.WebDavFolder(url);
+    // not an ldp container, try webdav, reusing the auth info we might have gotten for ldp
+    var dav = new RDFE.IO.WebDavFolder(url, ldp.options);
     dav.update(function() {
       // success, we have a webdav folder
-      success(dav);
-    }, function() {
+      _success(dav);
+    }, function(folder, errMsg, status) {
       // not a known folder
-      if(fail) {
-        fail();
+      if(_fail) {
+        _fail(errMsg, status);
       }
     });
   });
