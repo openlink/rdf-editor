@@ -186,11 +186,39 @@ RDFE.Document.prototype.deleteBySubject = function(uri, success, fail) {
   }
 };
 
+// delete all triplets based on predicatet URI
+RDFE.Document.prototype.deleteByPredicate = function(uri, success, fail) {
+  var self = this;
+
+  if (self.config.options.autoInverseOfHandling) {
+    var sparql = 'construct { ?s <{1}> ?o} FROM <{0}> WHERE { ?s <{1}> ?o . } '.format(self.graph, uri);
+    self.store.execute(sparql, function(s, results) {
+      if (!s) {
+        if (fail) {
+          fail(results);
+        }
+      } else {
+        self.deleteTriples(results.triples, success, fail);
+      }
+    });
+  }
+  else {
+    self.store.execute('with <' + self.graph + '> delete { ?s <' + uri + '> ?o} where { ?s <' + uri + '> ?o . }', function(s, r) {
+      if (s && success) {
+        success();
+      }
+      else if (!s && fail) {
+        fail(r);
+      }
+    });
+  }
+};
+
 // delete all triplets based on object URI
 RDFE.Document.prototype.deleteByObject = function(uri, success, fail) {
   var self = this;
 
-  if(self.config.options.autoInverseOfHandling) {
+  if (self.config.options.autoInverseOfHandling) {
     var sparql = 'construct { ?s ?p <{1}> } FROM <{0}> WHERE { ?s ?p <{1}> . } '.format(self.graph, uri);
     self.store.execute(sparql, function(s, results) {
       if (!s) {
@@ -203,7 +231,7 @@ RDFE.Document.prototype.deleteByObject = function(uri, success, fail) {
     });
   }
   else {
-    self.store.execute('with <' + self.graph + '> delete { ?s ?p <' + uri + '> } where { ?s ?p <' + uri + '> }', function(s, r) {
+    self.store.execute('with <' + self.graph + '> delete { ?s ?p <' + uri + '> } where { ?s ?p <' + uri + '> . }', function(s, r) {
       if(s && success) {
         success();
       }
@@ -228,6 +256,23 @@ RDFE.Document.prototype.deleteEntity = function(uri, success, fail) {
       function () {
         self.deleteByObject(uri, success, fail);
       },
+      fail
+    )
+  }
+};
+
+// delete all triplets of predicate
+RDFE.Document.prototype.deletePredicate = function(uri, success, fail) {
+  var self = this;
+
+  if (!uri) {
+    if (fail) {
+      fail('Need Predicate URI for deletion.');
+    }
+  } else {
+    self.deleteByPredicate (
+      uri,
+      success,
       fail
     )
   }
@@ -525,17 +570,8 @@ RDFE.Document.prototype.listEntities = function(type, callback, errorCb) {
 
       // finally generate the labels from the values stored in the entities.
       // This allows to always choose the label value with the highest prio (highest up in the configured list of label props)
-      for(var i = 0; i < sl.length; i++) {
-        e = sl[i];
-        for(var j = 0; j < self.config.options.labelProps.length; j++) {
-          if(e[self.config.options.labelProps[j]]) {
-            e.label = e[self.config.options.labelProps[j]];
-            break;
-          }
-        }
-        if(!e.label) {
-          e.label = RDFE.Utils.uri2name(e.uri);
-        }
+      for (var i = 0; i < sl.length; i++) {
+        self.getLabel(sl[i]);
       }
     }
     else if(errorCb) {
@@ -634,6 +670,75 @@ RDFE.Document.prototype.addEntity = function(uri, name, type, cb, failCb) {
       failCb();
     }
   });
+};
+
+/**
+ * List all entities by iterating over all triples in the store
+ *
+ * @param success a function which takes an array of rdfstore nodes as input.
+ * @param error a function in case an error occurs, takes error message as input.
+ */
+RDFE.Document.prototype.listPredicates = function(success, error) {
+  var self = this;
+
+  self.store.graph(self.graph, function(s, result) {
+    if (s) {
+      var sl = {};
+      var triples = result.toArray();
+      for (var i = 0; i < triples.length; i+=1) {
+        var p = triples[i].predicate.toString();
+        if (!sl[p]) {
+          sl[p] = {
+            "uri": p,
+            "items": []
+          };
+        }
+        sl[p].items.push(triples[i]);
+      }
+      sl = _.values(sl);
+      success(sl);
+    }
+    else if (error) {
+      error(result);
+    }
+  });
+};
+
+RDFE.Document.prototype.getPredicate = function(uri, success, error) {
+  var self = this;
+
+  self.store.graph(self.graph, function(s, result) {
+    if (s) {
+      var sl = {
+        "uri": uri,
+        "items": []
+      };
+      var triples = result.toArray();
+      for (var i = 0; i < triples.length; i+=1) {
+        if (triples[i].predicate.toString() === uri) {
+          sl.items.push(triples[i]);
+        }
+      }
+      success(sl);
+    }
+    else if (error) {
+      error(result);
+    }
+  });
+};
+
+RDFE.Document.prototype.getLabel = function(e) {
+  var self = this;
+
+  for (var j = 0; j < self.config.options.labelProps.length; j++) {
+    if (e[self.config.options.labelProps[j]]) {
+      e.label = e[self.config.options.labelProps[j]];
+      break;
+    }
+  }
+  if (!e.label) {
+    e.label = RDFE.Utils.uri2name(e.uri);
+  }
 };
 
 RDFE.Document.prototype.getUniqueValue = function() {
