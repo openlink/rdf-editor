@@ -41,9 +41,10 @@ angular.module('myApp.fileBrowser', ['ngRoute', 'ui.bootstrap'])
   };
 })
 
-.controller('AuthInfoDialogCtrl', ["$scope", "$modalInstance", function($scope, $modalInstance) {
+.controller('AuthInfoDialogCtrl', ["$scope", "$modalInstance", "url", function($scope, $modalInstance, url) {
   $scope.username = "";
   $scope.password = "";
+  $scope.url = url;
 
   $scope.ok = function() {
     $modalInstance.close({
@@ -104,7 +105,7 @@ angular.module('myApp.fileBrowser', ['ngRoute', 'ui.bootstrap'])
       templateUrl: 'authInfoDialog.html',
       controller: 'AuthInfoDialogCtrl',
       resolve: {
-        'url': function() {
+        url: function() {
           return url;
         }
       }
@@ -169,7 +170,9 @@ angular.module('myApp.fileBrowser', ['ngRoute', 'ui.bootstrap'])
     }, function() {
       // even if there is an error we change the current folder
       // the ui will show the error automatically
-      $scope.currentFolder = folder;
+      $scope.$apply(function() {
+        $scope.currentFolder = folder;
+      });
     });
   };
 
