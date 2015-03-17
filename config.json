@@ -14,7 +14,7 @@
   "bookmarks": [
   ],
   "actions": [
-      "new", "open", "save", "saveas", "bookmarks", "entities", "triples"
+      "new", "open", "save", "saveas", "bookmarks", "entities", "triples", "predicates"
   ],
   "defaultView": "entities",
   "labelProps": [
