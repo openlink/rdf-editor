@@ -82,7 +82,7 @@
               columns: [{
                 field: 'subject',
                 title: 'Subject',
-                aligh: 'left',
+                align: 'left',
                 sortable: true,
                 editable: function(triple) {
                   return {
