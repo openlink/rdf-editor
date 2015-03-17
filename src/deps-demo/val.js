@@ -1,16 +1,14 @@
-var VAL = function(config) {
-  this.config = jQuery.extend(
-    {
+(function($) {
+
+  VAL = function(config) {
+    this.config = jQuery.extend({
       "host": window.location.protocol + '//' + window.location.host,
       "valApi": "/val/api",
       "loginLink": "/val/authenticate.vsp",
       "logoutLink": "/val/logout.vsp"
     },
-    config
-  );
-};
-
-(function($) {
+    config);
+  };
 
   /**
    * Get the user profile. The only parameter is a callback function which
@@ -22,6 +20,8 @@ var VAL = function(config) {
    * the "nick" nickname, the "name" and an "image" url.
    */
   VAL.prototype.profile = function(cb) {
+    var self = this;
+
     $.get(this.config.host + this.config.valApi + "/profile").done(function(data) {
       var s = new rdfstore.Store();
       s.registerDefaultProfileNamespaces();
@@ -68,6 +68,7 @@ var VAL = function(config) {
                       }
                     }
 
+                    self.profileData = p;
                     cb(true, p);
                   });
                 });
