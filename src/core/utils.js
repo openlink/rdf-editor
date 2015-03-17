@@ -131,7 +131,7 @@ RDFE.Utils.resolveStorageLocations = function(uris, success) {
   //
   // check all uris to see what we get
   //
-  var files = new RDFE.IO.Folder();
+  var files = [];
   function findFiles(i) {
     if(i >= uris.length) {
       success(files);
@@ -143,9 +143,14 @@ RDFE.Utils.resolveStorageLocations = function(uris, success) {
 
     // we do not specifically check if the sparql endpoint works.
     if(sparqlEndpoint) {
-      var sf = new RDFE.IO.File(uri);
+      var sf = new RDFE.IO.Folder(sparqlEndpoint);
+      sf.ioType = "sparql";
       sf.sparqlEndpoint = sparqlEndpoint;
-      files.children.push(sf);
+      var gr = new RDFE.IO.File(uri);
+      gr.parent = sf;
+      gr.sparqlEndpoint = sparqlEndpoint;
+      sf.children.push(gr);
+      files.push(sf);
 
       findFiles(i+1);
       return;
@@ -154,12 +159,15 @@ RDFE.Utils.resolveStorageLocations = function(uris, success) {
     // check if we have an LDP container
     RDFE.IO.openFolder(uri, function(dir) {
       // success, we found a container
-      dir.parent = files;
-      files.children.push(dir);
+      files.push(dir);
       findFiles(i+1);
-    }, function() {
+    }, function(errMsg, status) {
       // not a folder, just add it as a simple url to fetch
-      files.children.push(new RDFE.IO.File(uri));
+      // but remember any error status we got
+      var f = new RDFE.IO.File(uri);
+      f.errorMessage = errMsg;
+      f.httpStatus = status;
+      files.push(f);
       findFiles(i+1);
     });
   };
