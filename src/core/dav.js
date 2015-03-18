@@ -307,7 +307,7 @@ RDFE.IO.WebDavFolder = (function() {
 
         /* type & length */
         tmp = $prop.find("getcontenttype");
-        if (tmp.length) { res.mimeType = tmp.text(); }
+        if (tmp.length) { res.contentType = tmp.text(); }
         tmp = $prop.find("getcontentlength");
         if (tmp.length) { res.size = parseInt(tmp.text()); }
 
@@ -488,10 +488,11 @@ RDFE.IO.LDPFolder = (function() {
  * Open a DAV or LDP folder at the given location.
  * @param url the Url to open
  * @param optional object with options like @p authFunction.
- * @param success Callback with the Folder instance on success.
+ * @param success Callback with the Folder instance on success. If @p options contains @p checkForFiles with value @p true
+ *        then the result can also be a file.
  * @param fail optional callback in the case of an error with an error message and an HTTP status code.
  */
-RDFE.IO.openFolder = function(url, options, success, fail) {
+RDFE.IO.openUrl = function(url, options, success, fail) {
   var _success = success,
       _fail = fail,
       _options = options;
@@ -513,7 +514,28 @@ RDFE.IO.openFolder = function(url, options, success, fail) {
       _success(dav);
     }, function(folder, errMsg, status) {
       // not a known folder
-      if(_fail) {
+      if(_options && _options.checkForFiles) {
+        $.ajax({
+          url: url,
+          headers: folder.standardAjaxHeaders() // use the headers from the folder for the basic auth info
+        }).done(function(data, textStatus, jqXHR) {
+          // create a new file and reuse the options for auth information
+          var f = new RDFE.IO.File(url, folder.options);
+          f.content = data;
+          f.contentType = jqXHR.getResponseHeader('Content-Type');
+          f.size = parseInt(jqXHR.getResponseHeader('Content-Length'));
+          f.dirty = false; // there is nothing more to get
+          f.ioType = "http";
+
+          _success(f);
+        }).fail(function(jqXHR) {
+          // nothing
+          if(_fail) {
+            _fail('Failed to get "' + url + '".', jqXHR.status);
+          }
+        });
+      }
+      else if(_fail) {
         _fail(errMsg, status);
       }
     });

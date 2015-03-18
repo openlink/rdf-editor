@@ -157,7 +157,9 @@ RDFE.Utils.resolveStorageLocations = function(uris, success) {
     }
 
     // check if we have an LDP container
-    RDFE.IO.openFolder(uri, function(dir) {
+    RDFE.IO.openUrl(uri, {
+      checkForFiles: true
+    }, function(dir) {
       // success, we found a container
       files.push(dir);
       findFiles(i+1);
