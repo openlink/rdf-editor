@@ -195,14 +195,6 @@ RDFE.IO.Folder = (function() {
     success();
   };
 
-  /**
-   * Filters the files and folders in this folder based on their mimetype.
-   * @p cb is a callback function which takes one parameter: a list of
-   * resources.
-   */
-  c.prototype.filterByMimetype = function(mt, cb) {
-  }
-
   var childrenDefaults = {
     sort: "name",
     foldersFirst: true,
