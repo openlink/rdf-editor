@@ -22,13 +22,13 @@ angular.module('myApp', [
   val.getProfile = function() {
     var self = this;
     if(self.profileData) {
-      return $q.when(self.profileData);
+      return $q.when(self);
     }
     else {
       return $q(function(resolve, reject) {
         self.profile(function(success, pd) {
           if(success) {
-            resolve(pd);
+            resolve(self);
           }
           else {
             reject();
@@ -77,9 +77,9 @@ angular.module('myApp', [
       ];
 
       return $q(function(resolve, reject) {
-        Profile.getProfile().then(function(pd) {
-          if(pd.storage) {
-            RDFE.Utils.resolveStorageLocations(pd.storage, function(files) {
+        Profile.getProfile().then(function(profile) {
+          if(profile.profileData.storage) {
+            RDFE.Utils.resolveStorageLocations(profile.profileData.storage, function(files) {
               $.merge(locations, files);
               resolve(locations);
             });
@@ -99,4 +99,12 @@ angular.module('myApp', [
   return {
     getLocations: getLocations
   };
+}])
+
+.controller('AuthHeaderCtrl', ['$scope', 'Profile', function($scope, Profile) {
+  Profile.getProfile().then(function(profile) {
+    $scope.profile = profile.profileData;
+    $scope.logoutLink = profile.config.host + profile.config.logoutLink + '?returnto=' + encodeURIComponent(window.location.href);
+    $scope.loginLink = profile.config.host + profile.config.loginLink + '?returnto=' + encodeURIComponent(window.location.href);
+  });
 }]);

@@ -17,7 +17,7 @@
 </head>
 
 <body>
-  <nav class="navbar navbar-default navbar-fixed-top" role="navigation">
+  <nav class="navbar navbar-default navbar-fixed-top" role="navigation" ng-controller="AuthHeaderCtrl">
     <div class="container-fluid">
       <div class="navbar-header">
         <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#rdfe-navbar-collapse">
@@ -34,10 +34,14 @@
           <li><a href="#configDialog" data-toggle="modal">Configure</a></li>
         </ul>
 
-        <p id="userLoginInfo" class="navbar-text navbar-right"></p>
+        <p class="navbar-text navbar-right">
+          <span ng-show="profile" ng-cloak class="ng-cloak">Logged in as <a class="navbar-link" ng-href="{{profile.uri}}">{{profile.name}}</a></span>
+          <span ng-hide="profile">Not logged in</span>
+        </p>
 
         <ul class="nav navbar-nav navbar-right">
-          <li><a id="loginoutLink" class="navbar-link" href="" style="display:none">Login</a></li>
+          <li ng-hide="profile"><a class="navbar-link" ng-href="{{loginLink}}">Login</a></li>
+          <li ng-show="profile"><a class="navbar-link" ng-href="{{logoutLink}}">Logout</a></li>
         </ul>
       </div>
     </div>
@@ -77,24 +81,5 @@
   <script src="../src/deps-demo/spin.js"></script>
   <script src="../src/deps-demo/jquery.spin.js"></script>
   <script src="../src/deps-demo/bootstrap-growl.min.js"></script>
-
-  <script>
-    var val = new VAL();
-
-    $(document).ready(function() {
-      val.profile(function (success, data) {
-        var $uli = $('#userLoginInfo'),
-            $lil = $('#loginoutLink');
-        if (success) {
-          $uli.html('Logged in as <a class="navbar-link" href="' + data.uri + '">' + (data.name ? data.name : (data.nick ? data.nick : data.uri)) + "</a>");
-          $lil.attr('href', val.config.host + val.config.logoutLink + '?returnto=' + encodeURIComponent(window.location.href)).text('Logout').show();
-        }
-        else {
-          $uli.text("Not logged in");
-          $lil.attr('href', val.config.host + val.config.loginLink + '?returnto=' + encodeURIComponent(window.location.href)).text('Login').show();
-        }
-      });
-    });
-  </script>
 </body>
 </html>
