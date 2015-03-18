@@ -269,7 +269,8 @@ RDFE.IO.WebDavFolder = (function() {
 
   function parseDavFolder(folder, data) {
     var urlBase = RDFE.Utils.getUrlBase(folder),
-        ress = [];
+        ress = [],
+        haveSelf = false;
 
     $(data).find('response').each(function() {
       var res = null,
@@ -312,7 +313,15 @@ RDFE.IO.WebDavFolder = (function() {
 
         ress.push(res);
       }
+      else {
+        haveSelf = true;
+      }
     });
+
+    // no children and no self reference means - not a folder
+    if(ress.length === 0 && !haveSelf) {
+      return null;
+    }
 
     return ress;
   }
