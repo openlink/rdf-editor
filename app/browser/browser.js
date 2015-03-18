@@ -96,8 +96,9 @@ angular.module('myApp.fileBrowser', ['ngRoute', 'ui.bootstrap'])
   $scope.setCurrentLocation = function(location) {
     if(location != $scope.currentLocation) {
       if(location.httpStatus) {
-        RDFE.IO.openFolder(location.url, {
-          authFunction: getAuthInfo
+        RDFE.IO.openUrl(location.url, {
+          authFunction: getAuthInfo,
+          checkForFiles: true
         }, function(dir) {
           // success, we found a container
           $scope.$apply(function() {

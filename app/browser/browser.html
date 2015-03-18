@@ -6,7 +6,8 @@
         ng-class="{selected: location === currentLocation, 'list-group-item-danger': location.httpStatus === 404}"
         ng-click="setCurrentLocation(location)">
       <div class="pull-right">
-        <span ng-show="location.ioType" class="badge">{{location.ioType | ioTypeLabel}}</span>
+        <span ng-show="location.ioType && location.type === 'folder'" class="badge">{{location.ioType | ioTypeLabel}}</span>
+        <span ng-show="location.contentType" class="badge">{{location.contentType}}</span>
         <span ng-show="location.httpStatus !== undefined" class="label label-danger label-as-badge" ng-attr-title="{{location.errorMessage}}">{{location.httpStatus | httpStatusLabel}}</span>
       </div>
       <a href="{{location.url}}" ng-click="$event.preventDefault();">
@@ -49,9 +50,13 @@
       </a>
     </li>
 
-    <li ng-hide="currentFolder.children.length" class="list-group-item">
+    <li ng-hide="currentFolder.children.length || currentFolder.type === 'file'" class="list-group-item">
       <span ng-hide="currentFolder.httpStatus !== undefined">empty folder</span>
       <span ng-show="currentFolder.httpStatus !== undefined" class="text-danger">{{currentFolder.errorMessage}}</span>
+    </li>
+
+    <li ng-show="currentFolder.type === 'file'" class="list-group-item">
+      <span>{{currentFolder.name}} is a file. <a ng-href="{{currentFolder.url}}" ng-click="$event.preventDefault(); open(currentFolder)">Open {{currentFolder.name}}</a></span>
     </li>
   </ul>
 </div>

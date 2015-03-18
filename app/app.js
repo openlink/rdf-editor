@@ -31,7 +31,7 @@ angular.module('myApp', [
             resolve(self);
           }
           else {
-            reject();
+            reject(self);
           }
         });
       });
@@ -102,9 +102,11 @@ angular.module('myApp', [
 }])
 
 .controller('AuthHeaderCtrl', ['$scope', 'Profile', function($scope, Profile) {
-  Profile.getProfile().then(function(profile) {
+  function updateProfileData(profile) {
     $scope.profile = profile.profileData;
     $scope.logoutLink = profile.config.host + profile.config.logoutLink + '?returnto=' + encodeURIComponent(window.location.href);
     $scope.loginLink = profile.config.host + profile.config.loginLink + '?returnto=' + encodeURIComponent(window.location.href);
-  });
+  }
+
+  Profile.getProfile().then(updateProfileData, updateProfileData);
 }]);
