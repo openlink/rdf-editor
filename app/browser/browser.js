@@ -58,43 +58,7 @@ angular.module('myApp.fileBrowser', ['ngRoute', 'ui.bootstrap'])
   };
 }])
 
-.controller('FileBrowserCtrl', ["$scope", "$modal", "Profile", function($scope, $modal, Profile) {
-
-  /**
-   * Our function which updates the storage locations from the profile.
-   * This needs to be triggered whenever the profile information changes.
-   */
-  $scope.updateProfileStorageLocations = function(storages) {
-    if(storages) {
-      RDFE.Utils.resolveStorageLocations(storages, function(files) {
-        // use Angular's apply to enforce the scope update after an async operation without user interaction
-        $scope.$apply(function() {
-          $.merge($scope.locations, files);
-        });
-      });
-    }
-  }
-
-  function loadRecentDocs() {
-    var r = new RDFE.IO.Folder();
-    r.name = r.path = "Recent Documents";
-
-    var recentDocs = $.jStorage.get('rdfe:recentDocuments');
-    if(recentDocs) {
-      for(var i = 0; i < recentDocs.length && i < 10; i++) {
-        if(recentDocs[i]) {
-          var d = new RDFE.IO.File(recentDocs[i].url);
-          d.ioType = recentDocs[i].ioType;
-          d.name = recentDocs[i].title || d.name;
-          d.sparqlEndpoint = recentDocs[i].sparqlEndpoint;
-          r.children.push(d);
-        }
-      }
-    }
-
-    return r;
-  }
-
+.controller('FileBrowserCtrl', ["$scope", "$modal", "DocumentTree", function($scope, $modal, DocumentTree) {
   /**
    * Authentication function which requests a username and pwd from the user
    * to provide to the @p success function. If the user canceles the @p fail
@@ -120,17 +84,13 @@ angular.module('myApp.fileBrowser', ['ngRoute', 'ui.bootstrap'])
   $scope.orderProp = "name";
 
   // array of default locations
-  $scope.locations = [
-    loadRecentDocs()
-  ];
+  $scope.locations = [];
+  DocumentTree.getLocations().then(function(locations) {
+    $scope.locations = locations;
 
-  // browser state
-  $scope.currentLocation = $scope.locations[0];
-  $scope.currentFolder = $scope.currentLocation;
-
-
-  Profile.profile(function(s, pd) {
-    $scope.updateProfileStorageLocations(pd.storage);
+    // browser state
+    $scope.currentLocation = $scope.locations[0];
+    $scope.currentFolder = $scope.currentLocation;
   });
 
   $scope.setCurrentLocation = function(location) {
