@@ -163,17 +163,22 @@ angular.module('myApp.fileBrowser', ['ngRoute', 'ui.bootstrap'])
   };
 
   $scope.changeDir = function(folder) {
-    folder.update(function() {
-      $scope.$apply(function() {
-        $scope.currentFolder = folder;
+    if(folder.dirty) {
+      folder.update(function() {
+        $scope.$apply(function() {
+          $scope.currentFolder = folder;
+        });
+      }, function() {
+        // even if there is an error we change the current folder
+        // the ui will show the error automatically
+        $scope.$apply(function() {
+          $scope.currentFolder = folder;
+        });
       });
-    }, function() {
-      // even if there is an error we change the current folder
-      // the ui will show the error automatically
-      $scope.$apply(function() {
-        $scope.currentFolder = folder;
-      });
-    });
+    }
+    else {
+      $scope.currentFolder = folder;
+    }
   };
 
   $scope.folderUp = function() {
