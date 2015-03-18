@@ -13,8 +13,11 @@ RDFE.IO.Resource = (function() {
   // constructor
   var c = function(url) {
     this.url = url || "";
-    this.path = decodeURIComponent(RDFE.Utils.splitUrl(url).path);
-    this.name = this.path.match(/([^\/]+)\/?$/)[1];
+    if(url) {
+      this.path = decodeURIComponent(RDFE.Utils.splitUrl(url).path);
+      this.host = RDFE.Utils.splitUrl(url).host;
+      this.name = this.path.match(/([^\/]+)\/?$/)[1];
+    }
     this.options = {};
   };
 
