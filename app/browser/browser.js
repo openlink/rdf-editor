@@ -167,4 +167,13 @@ angular.module('myApp.fileBrowser', ['ngRoute', 'ui.bootstrap'])
       '&ioType=' + encodeURIComponent(file.ioType) +
       '&sparqlEndpoint=' + encodeURIComponent(file.sparqlEndpoint);
   };
+
+  $scope.open = function(item) {
+    if(item.type === 'file') {
+      $scope.openFile(item);
+    }
+    else {
+      $scope.changeDir(item);
+    }
+  };
 }]);

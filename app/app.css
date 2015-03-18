@@ -1,30 +1,44 @@
-/* app css stylesheet */
-
-.menu {
-  list-style: none;
-  border-bottom: 0.1em solid black;
-  margin-bottom: 2em;
-  padding: 0 0 0.5em;
+body {
+  padding-top: 70px;
+}
+tr.triple td {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+#busyspinner {margin: 1em; }
+.fixed-table-body {
+  height: auto;
+  overflow: inherit;
+}
+.btn-text {
+  padding-left: 0px;
+}
+#docUrl {
+  font-weight: bold;
+}
+.accessError {
+  color: red;
+}
+[ng\:cloak], [ng-cloak], [data-ng-cloak], [x-ng-cloak], .ng-cloak, .x-ng-cloak {
+  display: none !important;
 }
 
-.menu:before {
-  content: "[";
+.resourceItem .resourceName {
+  text-weight: bold;
+  display: block;
+}
+.resourceItem .resourceUrl {
+  font-size: 0.8em;
+  color: gray;
+  display: block;
+}
+.resourceItem .resourceIcon {
+  float:left;
+}
+.resourceItem .resourceDetails {
+  margin-left: 20px;
 }
 
-.menu:after {
-  content: "]";
-}
-
-.menu > li {
-  display: inline;
-}
-
-.menu > li:before {
-  content: "|";
-  padding-right: 0.3em;
-}
-
-.menu > li:nth-child(1):before {
-  content: "";
-  padding: 0;
+.locationItem.selected {
+  background-color: #f1f1f1;
 }

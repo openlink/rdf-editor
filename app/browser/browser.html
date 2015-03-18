@@ -2,7 +2,7 @@
   <h3>Storage Locations</h3>
   <ul class="list-group">
     <li ng-repeat="location in locations"
-        class="list-group-item"
+        class="resourceItem locationItem list-group-item"
         ng-class="{selected: location === currentLocation, 'list-group-item-danger': location.httpStatus === 404}"
         ng-click="setCurrentLocation(location)">
       <div class="pull-right">
@@ -10,8 +10,8 @@
         <span ng-show="location.httpStatus !== undefined" class="label label-danger label-as-badge" ng-attr-title="{{location.errorMessage}}">{{location.httpStatus | httpStatusLabel}}</span>
       </div>
       <a href="{{location.url}}" ng-click="$event.preventDefault();">
-        <span>{{location.name}}</span>
-        <p><span ng-show="location.url.length">{{location.url}}</span></p>
+        <span class="resourceName">{{location.name}}</span>
+        <span class="resourceUrl" ng-show="location.url.length">{{location.url}}</span>
       </a>
       <!--<div ng-show="location.httpStatus !== undefined">{{location.errorMessage}}</div>-->
     </li>
@@ -37,20 +37,16 @@
       </a>
     </li>
 
-    <li ng-repeat='child in currentFolder.children | orderBy : orderProp | orderBy : "type" : true' class="list-group-item">
-      <div ng-switch on="child.type">
-        <a ng-switch-when="folder" href="{{child.url}}" ng-click="$event.preventDefault(); changeDir(child)">
-          <span class="glyphicon glyphicon-folder-close"></span>
-          <span>{{child.name}}</span>
-          <p><span ng-show="child.url.length">{{child.url}}</span></p>
-        </a>
-
-        <a ng-switch-when="file" href="{{child.url}}" ng-click="$event.preventDefault(); openFile(child)">
-        <span class="glyphicon glyphicon-file"></span>
-          <span>{{child.name}}</span>
-          <p><span ng-show="child.url.length">{{child.url}}</span></p>
-        </a>
-      </div>
+    <li ng-repeat='child in currentFolder.children | orderBy : orderProp | orderBy : "type" : true' class="resourceItem list-group-item">
+      <a href="{{child.url}}" ng-click="$event.preventDefault(); open(child)">
+        <div class="resourceIcon">
+          <span class="glyphicon" ng-class="{ 'glyphicon-file': child.type === 'file', 'glyphicon-folder-close': child.type === 'folder' }"></span>
+        </div>
+        <div class="resourceDetails">
+          <span class="resourceName">{{child.name}}</span>
+          <span class="resourceUrl" ng-show="child.url.length">{{child.url}}</span>
+        </div>
+      </a>
     </li>
 
     <li ng-hide="currentFolder.children.length" class="list-group-item">
