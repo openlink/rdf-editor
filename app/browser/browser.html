@@ -26,7 +26,7 @@
 
 <div id="folder" class="col-xs-8">
   <h3>
-    {{currentFolder.name}}
+    <span>{{currentFolder.path}}</span> <span ng-show="currentFolder.host">on {{currentFolder.host}}</span>
     <button class="btn btn-link pull-right" ng-click="refresh()" title="Refresh the contents of the folder"><span class="glyphicon glyphicon-refresh"></span> Refresh</button>
   </h3>
 

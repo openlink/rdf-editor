@@ -77,7 +77,7 @@ angular.module('myApp.fileBrowser', ['ngRoute', 'ui.bootstrap'])
 
   function loadRecentDocs() {
     var r = new RDFE.IO.Folder();
-    r.name = "Recent Documents";
+    r.name = r.path = "Recent Documents";
 
     var recentDocs = $.jStorage.get('rdfe:recentDocuments');
     if(recentDocs) {
