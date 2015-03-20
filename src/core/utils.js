@@ -148,6 +148,7 @@ RDFE.Utils.resolveStorageLocations = function(uris, success) {
       sf.sparqlEndpoint = sparqlEndpoint;
       var gr = new RDFE.IO.File(uri);
       gr.parent = sf;
+      gr.ioType = 'sparql';
       gr.sparqlEndpoint = sparqlEndpoint;
       sf.children.push(gr);
       files.push(sf);

@@ -87,6 +87,11 @@ String.prototype.format = function() {
       $(document).ajaxError(params.ajaxError);
       $(document).ajaxSuccess(params.ajaxSuccess);
 
+      // add auth info from self.options.username and .password via
+      if(params.username) {
+        (ajaxParams.headers = ajaxParams.headers || {})["Authorization"] = "Basic " + btoa(params.username + ":" + params.password);
+      }
+
       $.ajax(ajaxParams).done(function(data, status, xhr) {
         if (params && params.success) {
           params.success(data, status, xhr);
@@ -100,7 +105,19 @@ String.prototype.format = function() {
           if (this.crossDomain && (state.message = 'error') && (RDFE.Utils.extractDomain(this.url) !== window.location.hostname)) {
             state.message = "The Document failed to load - this could be related to missing CORS settings on the server."
           }
-          params.error(state, data, status, xhr);
+          if ((data.status === 401 || data.status === 403) && params.authFunction) {
+            params.authFunction(ajaxParams.url, function(r) {
+              params.username = r.username;
+              params.password = r.password;
+              self.baseExec(ajaxParams, params);
+            }, function() {
+              // user did not provide credentials
+              params.error(state, data, status, xhr);
+            });
+          }
+          else {
+            params.error(state, data, status, xhr);
+          }
         }
       });
     }
@@ -392,7 +409,7 @@ String.prototype.format = function() {
         params["ajaxError"] = null;
         params["ajaxSuccess"] = null;
       }
-      var headers;
+      var headers = {};
       if (this.type != 'webdav') {
         headers = {
           "Accept": 'text/turtle, */*;q=0.1'
