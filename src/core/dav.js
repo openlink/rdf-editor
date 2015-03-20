@@ -16,7 +16,13 @@ RDFE.IO.Resource = (function() {
     if(url) {
       this.path = decodeURIComponent(RDFE.Utils.splitUrl(url).path);
       this.host = RDFE.Utils.splitUrl(url).host;
-      this.name = this.path.match(/([^\/]+)\/?$/)[1];
+      this.name = this.path.match(/([^\/]+)\/?$/);
+      if(this.name && this.name.length > 1) {
+        this.name = this.name[1];
+      }
+      else {
+        this.name = this.url;
+      }
     }
     this.options = {};
   };
