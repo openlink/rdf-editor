@@ -174,9 +174,9 @@ RDFE.IO.Folder = (function() {
         // get auth information from the user if possible
         if((status === 401 || status === 403) &&
             self.options.authFunction) {
-          self.options.authFunction(self.url, function(uid, pwd) {
-            self.options.username = uid;
-            self.options.password = pwd;
+          self.options.authFunction(self.url, function(r) {
+            self.options.username = r.username;
+            self.options.password = r.password;
             self.update(_force, _success, _fail);
           }, function() {
             if(_fail) {
@@ -485,7 +485,7 @@ RDFE.IO.LDPFolder = (function() {
 /**
  * Open a DAV or LDP folder at the given location.
  * @param url the Url to open
- * @param optional object with options like @p authFunction.
+ * @param optional object with options like @p authFunction - a function with three param: @p url, @p success callback (one objet param with @p username and @p password) and @p error callback.
  * @param success Callback with the Folder instance on success. If @p options contains @p checkForFiles with value @p true
  *        then the result can also be a file.
  * @param fail optional callback in the case of an error with an error message and an HTTP status code.
