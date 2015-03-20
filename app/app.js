@@ -191,6 +191,29 @@ angular.module('myApp', [
   };
 }])
 
+.factory('RDFEConfig', ['$q', function($q) {
+  var config = null;
+
+  function getConfig() {
+    if(config) {
+      return $q.when(config);
+    }
+    else {
+      return $q(function(resolve, reject) {
+        var urlParams = RDFE.Utils.uriParams();
+        var configSource = (urlParams['config'])? urlParams['config']: 'config.json';
+        config = new RDFE.Config(configSource, function(config) {
+          resolve(config);
+        });
+      });
+    }
+  }
+
+  return {
+    getConfig: getConfig
+  };
+}])
+
 .controller('AuthHeaderCtrl', ['$scope', 'Profile', function($scope, Profile) {
   function updateProfileData(profile) {
     $scope.profile = profile.profileData;
