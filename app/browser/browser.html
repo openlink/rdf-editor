@@ -18,9 +18,29 @@
     </li>
 
     <li class="list-group-item">
-      <a href="" >
+      <a href="" ng-hide="addingLocation" ng-click="showNewLocationUi()">
         <span class="glyphicon glyphicon-plus"></span> Add Location
       </a>
+      <div ng-show="addingLocation" class="newLocationDlg">
+        <form ng-submit="addNewLocation()" class="form-horizontal">
+          <div class="form-group">
+            <label for="newLocationUrl">Add New Location</label>
+            <input class="form-control" type="text" name="newLocationUrl" ng-model="newLocationUrl" placeholder="Location URL"/>
+          </div>
+          <div class="form-group">
+            <div class="checkbox">
+              <label>
+                <input type="checkbox" ng-model="newLocationIsSparql"> Location is a SPARQL Endpoint
+              </label>
+            </div>
+          </div>
+        </form>
+        <div class="form-group">
+          <button class="btn btn-primary" ng-disabled="!newLocationUrl || newLocationUrl.length === 0" ng-click="addNewLocation()">Add Location</button>
+          <button class="btn btn-default" ng-click="addingLocation = false">Cancel</button>
+        </div>
+        <div class="clearfix"></div>
+      </div>
     </li>
   </ul>
 </div>
@@ -60,30 +80,3 @@
     </li>
   </ul>
 </div>
-
-<script type="text/ng-template" id="authInfoDialog.html">
-  <div class="modal-header">
-    <h3 class="modal-title">Authentication</h3>
-  </div>
-  <div class="modal-body">
-    <p>{{url}} is requesting authentication. Please provide a username and password.</p>
-    <form ng-submit="ok()" class="form-horizontal">
-      <div class="form-group">
-        <label for="username" class="col-sm-2 control-label">Username</label>
-        <div class="col-sm-10">
-          <input type="text" class="form-control" id="username" placeholder="Username" ng-model="username">
-        </div>
-      </div>
-      <div class="form-group">
-        <label for="password" class="col-sm-2 control-label">Password</label>
-        <div class="col-sm-10">
-          <input type="password" class="form-control" id="password" placeholder="Password" ng-model="password">
-        </div>
-      </div>
-    </form>
-  </div>
-  <div class="modal-footer">
-    <button class="btn btn-primary" ng-click="ok()">OK</button>
-    <button class="btn btn-warning" ng-click="cancel()">Cancel</button>
-  </div>
-</script>

@@ -84,7 +84,54 @@ angular.module('myApp', [
   return val;
 }])
 
-.factory('DocumentTree', ['$q', 'Profile', function($q, Profile) {
+.controller('AuthInfoDialogCtrl', ["$scope", "$modalInstance", "url", function($scope, $modalInstance, url) {
+  $scope.username = "";
+  $scope.password = "";
+  $scope.url = url;
+
+  $scope.ok = function() {
+    $modalInstance.close({
+      username: $scope.username,
+      password: $scope.password
+    });
+  };
+
+  $scope.cancel = function() {
+    $modalInstance.dismiss();
+  };
+}])
+
+.factory('DocumentTree', ['$q', "$modal", 'Profile', function($q, $modal, Profile) {
+  var locations = [],
+      authCache = {};
+
+  /**
+   * Authentication function which requests a username and pwd from the user
+   * to provide to the @p success function. If the user canceles the @p fail
+   * callback will be invoked instead.
+   */
+  function getAuthInfo(url, forceUpdate) {
+    if(forceUpdate !== false && (forceUpdate === true || !authCache[url])) {
+      return $q(function(resolve, reject) {
+        $modal.open({
+          templateUrl: 'browser/authinfodlg.html',
+          controller: 'AuthInfoDialogCtrl',
+          resolve: {
+            url: function() {
+              return url;
+            }
+          }
+        }).result.then(function(result) {
+          authCache[url] = result;
+          resolve(result);
+        }, reject);
+      });
+    }
+    else {
+      return $q.when(authCache[url]);
+    }
+  };
+
   function loadRecentDocs() {
     var r = new RDFE.IO.Folder();
     r.name = r.path = "Recent Documents";
@@ -105,7 +152,6 @@ angular.module('myApp', [
     return r;
   }
 
-  var locations = [];
 
   function getLocations() {
     // if we already extracted the profile locations just return them
@@ -140,7 +186,8 @@ angular.module('myApp', [
 
   // Service API
   return {
-    getLocations: getLocations
+    getLocations: getLocations,
+    getAuthInfo: getAuthInfo
   };
 }])
 

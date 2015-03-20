@@ -41,45 +41,7 @@ angular.module('myApp.fileBrowser', ['ngRoute', 'ui.bootstrap'])
   };
 })
 
-.controller('AuthInfoDialogCtrl', ["$scope", "$modalInstance", "url", function($scope, $modalInstance, url) {
-  $scope.username = "";
-  $scope.password = "";
-  $scope.url = url;
-
-  $scope.ok = function() {
-    $modalInstance.close({
-      uid: $scope.username,
-      pwd: $scope.password
-    });
-  };
-
-  $scope.cancel = function() {
-    $modalInstance.dismiss();
-  };
-}])
-
-.controller('FileBrowserCtrl', ["$scope", "$modal", "DocumentTree", function($scope, $modal, DocumentTree) {
-  /**
-   * Authentication function which requests a username and pwd from the user
-   * to provide to the @p success function. If the user canceles the @p fail
-   * callback will be invoked instead.
-   */
-  function getAuthInfo(url, success, fail) {
-    $modal.open({
-      templateUrl: 'authInfoDialog.html',
-      controller: 'AuthInfoDialogCtrl',
-      resolve: {
-        url: function() {
-          return url;
-        }
-      }
-    }).result.then(function(result) {
-      success(result.uid, result.pwd);
-    }, function() {
-      fail();
-    });
-  };
-
+.controller('FileBrowserCtrl', ["$scope", "DocumentTree", 'Notification', function($scope, DocumentTree, Notification) {
   // property to order files and folders by (fodlers are always first)
   $scope.orderProp = "name";
 
@@ -97,12 +59,13 @@ angular.module('myApp.fileBrowser', ['ngRoute', 'ui.bootstrap'])
     if(location != $scope.currentLocation) {
       if(location.httpStatus) {
         RDFE.IO.openUrl(location.url, {
-          authFunction: getAuthInfo,
+          authFunction: function(url, success, fail) {
+            DocumentTree.getAuthInfo(url, true).then(success, fail);
+          },
           checkForFiles: true
         }, function(dir) {
           // success, we found a container
           $scope.$apply(function() {
-            // FIXME: make sure that the location is actually a folder. If not, do sth.
             // replace the old location with the new one
             $scope.locations[$scope.locations.indexOf(location)] = dir;
             $scope.currentLocation = $scope.currentFolder = dir;
@@ -175,6 +138,53 @@ angular.module('myApp.fileBrowser', ['ngRoute', 'ui.bootstrap'])
     }
     else {
       $scope.changeDir(item);
+    }
+  };
+
+  $scope.addLocation = function(location) {
+    // replace the old location with the new one
+    var i = $scope.locations.indexOf(location);
+    if(i >= 0) {
+      $scope.locations[i] = location;
+    }
+    else {
+      $scope.locations.push(location);
+    }
+  };
+
+  // controls for the UI element to add new locations
+  $scope.addingLocation = false;
+  $scope.showNewLocationUi = function() {
+    $scope.addingLocation = true;
+    $scope.newLocationUrl = '';
+  };
+  $scope.addNewLocation = function() {
+    if($scope.newLocationUrl && $scope.newLocationUrl.length) {
+      if($scope.newLocationIsSparql) {
+        var sf = new RDFE.IO.Folder($scope.newLocationUrl);
+        sf.ioType = "sparql";
+        sf.sparqlEndpoint = $scope.newLocationUrl;
+        $scope.addLocation(sf);
+        $scope.addingLocation = false;
+      }
+      else {
+        RDFE.IO.openUrl($scope.newLocationUrl, {
+          authFunction: function(url, success, fail) {
+            DocumentTree.getAuthInfo(url, true).then(success, fail);
+          },
+          checkForFiles: true
+        }, function(dir) {
+          // success, we found a container
+          $scope.$apply(function() {
+            $scope.addingLocation = false;
+            $scope.addLocation(dir);
+            $scope.currentLocation = $scope.currentFolder = dir;
+          });
+        }, function(errMsg, status) {
+          // show a notification and let the user try again
+          Notification.notify('error', errMsg);
+        });
+      }
     }
   };
 }]);
