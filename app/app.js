@@ -13,6 +13,49 @@ angular.module('myApp', [
   $routeProvider.otherwise({redirectTo: '/welcome'});
 }])
 
+.factory('Notification', function() {
+  // set defaults
+  $.growl(false, {
+    placement: {
+      from: "top",
+      align: "center"
+    },
+    "z_index": 1050,
+    template: '<div data-growl="container" class="alert" role="alert"> \
+      <button type="button" class="close" data-growl="dismiss"> \
+        <span aria-hidden="true">×</span> \
+        <span class="sr-only">Close</span> \
+      </button> \
+      <span data-growl="icon"></span> \
+      <span data-growl="title"></span> \
+      &nbsp;<span data-growl="message"></span>&nbsp; \
+    </div>'
+  });
+
+  function notify(type, msg, icon) {
+    var o = {
+      message: msg
+    };
+    if(type === 'error') {
+      type = 'danger';
+    }
+    if(!icon && type === 'danger') {
+      icon = 'fire';
+    }
+    if(icon) {
+      o.icon = "glyphicon glyphicon-" + icon;
+    }
+
+    $.growl(o, {
+      type: type
+    });
+  }
+
+  return {
+    notify: notify
+  };
+})
+
 .factory('Profile', ['$q', function($q) {
   var val = new VAL();
 
