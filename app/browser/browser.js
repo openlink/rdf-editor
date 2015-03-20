@@ -165,6 +165,7 @@ angular.module('myApp.fileBrowser', ['ngRoute', 'ui.bootstrap'])
         sf.ioType = "sparql";
         sf.sparqlEndpoint = $scope.newLocationUrl;
         $scope.addLocation(sf);
+        $scope.currentLocation = $scope.currentFolder = sf;
         $scope.addingLocation = false;
       }
       else {
@@ -185,6 +186,26 @@ angular.module('myApp.fileBrowser', ['ngRoute', 'ui.bootstrap'])
           Notification.notify('error', errMsg);
         });
       }
+    }
+  };
+
+  // controls for the UI element to add new named graphs
+  $scope.addingGraph = false;
+  $scope.showNewGraphUi = function() {
+    $scope.addingGraph = true;
+    $scope.newGraphUri = '';
+  };
+  $scope.addNewGraph = function() {
+    if($scope.newGraphUri && $scope.newGraphUri.length) {
+      // add the new graph file item
+      var gr = new RDFE.IO.File($scope.newGraphUri);
+      gr.parent = $scope.currentFolder;
+      gr.sparqlEndpoint = $scope.currentFolder.sparqlEndpoint;
+      gr.ioType = 'sparql';
+      $scope.currentFolder.children.push(gr);
+
+      // open the file in the editor
+      $scope.openFile(gr);
     }
   };
 }]);

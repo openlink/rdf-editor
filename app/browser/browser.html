@@ -71,12 +71,31 @@
     </li>
 
     <li ng-hide="currentFolder.children.length || currentFolder.type === 'file'" class="list-group-item">
-      <span ng-hide="currentFolder.httpStatus !== undefined">empty folder</span>
+      <span ng-hide="currentFolder.httpStatus !== undefined && currentFolder.ioType !== 'sparql'">empty folder</span>
       <span ng-show="currentFolder.httpStatus !== undefined" class="text-danger">{{currentFolder.errorMessage}}</span>
     </li>
 
     <li ng-show="currentFolder.type === 'file'" class="list-group-item">
       <span>{{currentFolder.name}} is a file. <a ng-href="{{currentFolder.url}}" ng-click="$event.preventDefault(); open(currentFolder)">Open {{currentFolder.name}}</a></span>
+    </li>
+
+    <li ng-show="currentFolder.sparqlEndpoint" class="list-group-item">
+      <a href="" ng-hide="addingGraph" ng-click="showNewGraphUi()">
+        <span class="glyphicon glyphicon-plus"></span> Open Named Graph on this SPARQL Endpoint
+      </a>
+      <div ng-show="addingGraph" class="newLocationDlg">
+        <form ng-submit="addNewGraph()" class="form-horizontal">
+          <div class="form-group">
+            <label for="newGraphUri">Add Named Graph</label>
+            <input class="form-control" type="text" name="newGraphUri" ng-model="newGraphUri" placeholder="Graph URL"/>
+          </div>
+        </form>
+        <div class="form-group">
+          <button class="btn btn-primary" ng-disabled="!newGraphUri || newGraphUri.length === 0" ng-click="addNewGraph()">Add Named Graph</button>
+          <button class="btn btn-default" ng-click="addingGraph = false">Cancel</button>
+        </div>
+        <div class="clearfix"></div>
+      </div>
     </li>
   </ul>
 </div>
