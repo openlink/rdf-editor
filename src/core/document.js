@@ -673,7 +673,7 @@ RDFE.Document.prototype.addEntity = function(uri, name, type, cb, failCb) {
 };
 
 /**
- * List all entities by iterating over all triples in the store
+ * List all properties by iterating over all triples in the store
  *
  * @param success a function which takes an array of rdfstore nodes as input.
  * @param error a function in case an error occurs, takes error message as input.
