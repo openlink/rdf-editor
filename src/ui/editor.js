@@ -54,13 +54,17 @@ RDFE.Editor.prototype.currentView = function() {
  */
 RDFE.Editor.prototype.toggleView = function(view) {
   if(view !== this._currentView) {
-    if (view === 'triples') {
+    if (view === 'entities') {
+      this.createEntityList();
+      this._currentView = "entities";
+    }
+    else if (view === 'triples') {
       this.createTripleList();
       this._currentView = "triples";
     }
     else {
-      this.createEntityList();
-      this._currentView = "entities";
+      this.createPredicateList();
+      this._currentView = "predicates";
     }
   }
 };
@@ -69,11 +73,14 @@ RDFE.Editor.prototype.toggleView = function(view) {
  * Forcefully update the contents in the current view.
  */
 RDFE.Editor.prototype.updateView = function() {
-  if(this._currentView === 'triples') {
+  if (this._currentView === 'entities') {
+    this.createEntityList();
+  }
+  else if (this._currentView === 'triples') {
     this.createTripleList();
   }
-  else if(this._currentView === 'entities') {
-    this.createEntityList();
+  else {
+    this.createPredicateList();
   }
 };
 
@@ -169,6 +176,7 @@ RDFE.Editor.prototype.createNewStatementEditor = function() {
   });
 };
 
+// Entities
 RDFE.Editor.prototype.createNewEntityEditor = function(forcedType) {
   var self = this;
   var $ontologiesSelect, ontologiesSelect;
@@ -390,3 +398,59 @@ RDFE.Editor.prototype.editEntity = function(uri) {
     self.entityView.updateEntity(uri);
   });
 };
+
+// Predicates
+RDFE.Editor.prototype.createNewPredicateEditor = RDFE.Editor.prototype.createNewStatementEditor;
+
+RDFE.Editor.prototype.createPredicateList = function() {
+  var self = this;
+
+  $(self).trigger('rdf-editor-start', {
+    "id": "render-entity-list",
+    "message": "Loading Predicates..."
+  });
+
+  if (!self.predicateView) {
+    self.predicateView = new RDFE.PredicateView(this.doc, this.ontologyManager, {
+      editFct: function(predicate) {
+        self.editPredicate.call(self, predicate);
+      }
+    });
+    $(self.predicateView).on('rdf-editor-error', function(e) {
+      $(self).trigger('rdf-editor-error', d);
+    }).on('rdf-editor-success', function(e, d) {
+      $(self).trigger('rdf-editor-success', d);
+    });
+  }
+
+  self.formContainer.hide();
+  self.listContainer.empty().show();
+  self.predicateView.render(self.listContainer, function() {
+    $(self).trigger('rdf-editor-done', {
+      "id": "render-predicate-list"
+    });
+  });
+};
+
+RDFE.Editor.prototype.editPredicate = function(predicate) {
+  var self = this;
+  if(!self.predicateEditor) {
+    self.predicateEditor = new RDFE.PredicateEditor(self.doc, self.ontologyManager);
+    $(self.predicateEditor).on('rdf-editor-error', function(e) {
+      $(self).trigger('rdf-editor-error', d);
+    }).on('rdf-editor-success', function(e, d) {
+      $(self).trigger('rdf-editor-success', d);
+    });
+  }
+
+  // render the entity editor and re-create the entity list once the editor is done
+  self.listContainer.hide();
+  self.formContainer.show();
+  self.predicateEditor.predicate = predicate;
+  self.predicateEditor.render(self.formContainer, function() {
+    self.formContainer.hide();
+    self.listContainer.show();
+    self.predicateView.updatePredicate(predicate.uri);
+  });
+};
+

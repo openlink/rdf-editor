@@ -105,11 +105,14 @@
             <button id="action-saveas" type="button" class="btn btn-default" style="display:none" title="Save the current document to a new location"><span class="glyphicon glyphicon-save" aria-hidden="true"></span> Save As...</button>
           </div>
           <div class="btn-group" role="group" data-toggle="buttons">
-            <label id="action-entities" class="btn btn-default" title="Show the Entities in the Document" style="display:none">
+            <label id="action-entities" class="btn btn-default" title="Categories or Classes to which entity belongs" style="display:none">
               <input type="radio" name="view" id="view-entities" autocomplete="off"><span class="glyphicon glyphicon-list" aria-hidden="true"></span> Entities
             </label>
-            <label id="action-triples" class="btn btn-default" title="Show All Triples in the Document" style="display:none">
+            <label id="action-triples" class="btn btn-default" title="Relationship representation" style="display:none">
               <input type="radio" name="view" id="view-triples" autocomplete="off"><span class="glyphicon glyphicon-th" aria-hidden="true"></span><span class="label-triples"> Triples</span>
+            </label>
+            <label id="action-predicates" class="btn btn-default" title="How relationship subject and object are associated" style="display:none">
+              <input type="radio" name="view" id="view-predicates" autocomplete="off"><span class="glyphicon glyphicon-th" aria-hidden="true"></span> Predicates
             </label>
           </div>
           <div class="btn-group" role="group">
@@ -436,13 +439,20 @@
               editor.render($("#contents"));
 
               // initial state of the view button
-              if(editor.currentView() === 'triples') {
+              if (editor.currentView() === 'entities') {
+                $('#action-triples').removeClass('active').find('input').removeAttr('checked');
+                $('#action-entities').addClass('active').find('input').attr('checked', 'checked');
+                $('#action-predicates').removeClass('active').find('input').removeAttr('checked');
+              }
+              else if (editor.currentView() === 'triples') {
                 $('#action-triples').addClass('active').find('input').attr('checked', 'checked');
                 $('#action-entities').removeClass('active').find('input').removeAttr('checked');
+                $('#action-predicates').removeClass('active').find('input').removeAttr('checked');
               }
               else {
-                $('#action-entities').addClass('active').find('input').attr('checked', 'checked');
                 $('#action-triples').removeClass('active').find('input').removeAttr('checked');
+                $('#action-entities').removeClass('active').find('input').removeAttr('checked');
+                $('#action-predicates').addClass('active').find('input').attr('checked', 'checked');
               }
 
               $("#io_spq").val($.jStorage.get("editor-sparql-endpoint", config.options.sparqlEndpoint));
@@ -516,10 +526,14 @@
         });
 
         $('#action-add').click(function(e) {
-          if (editor.currentView() === 'triples') {
-            editor.createNewStatementEditor();
-          } else {
+          if (editor.currentView() === 'entities') {
             editor.createNewEntityEditor();
+          }
+          else if (editor.currentView() === 'triples') {
+            editor.createNewStatementEditor();
+          }
+          else {
+            editor.createNewPredicateEditor();
           }
         });
 
@@ -541,7 +555,7 @@
         });
 
         $('input[name="view"]').change(function(e) {
-          editor.toggleView(e.target.id === 'view-triples' ? 'triples' : 'entities');
+          editor.toggleView(e.target.id === 'view-triples' ? 'triples' : (e.target.id === 'view-entities' ? 'entities' : 'predicates'));
         });
       });
     </script>
