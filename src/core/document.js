@@ -571,7 +571,7 @@ RDFE.Document.prototype.listEntities = function(type, callback, errorCb) {
       // finally generate the labels from the values stored in the entities.
       // This allows to always choose the label value with the highest prio (highest up in the configured list of label props)
       for (var i = 0; i < sl.length; i++) {
-        self.getLabel(sl[i]);
+        sl[i].label = self.getEntityLabel(sl[i]);
       }
     }
     else if(errorCb) {
@@ -727,18 +727,16 @@ RDFE.Document.prototype.getPredicate = function(uri, success, error) {
   });
 };
 
-RDFE.Document.prototype.getLabel = function(e) {
+RDFE.Document.prototype.getEntityLabel = function(e) {
   var self = this;
 
   for (var j = 0; j < self.config.options.labelProps.length; j++) {
     if (e[self.config.options.labelProps[j]]) {
-      e.label = e[self.config.options.labelProps[j]];
-      break;
+      return  e[self.config.options.labelProps[j]];
     }
   }
-  if (!e.label) {
-    e.label = RDFE.Utils.uri2name(e.uri);
-  }
+
+  return RDFE.Utils.uri2name(e.uri);
 };
 
 RDFE.Document.prototype.getUniqueValue = function() {
