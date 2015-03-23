@@ -74,11 +74,14 @@
     </li>
 
     <li ng-hide="currentFolder.children.length || currentFolder.type === 'file'" class="list-group-item">
-      <span ng-hide="currentFolder.httpStatus !== undefined && currentFolder.ioType !== 'sparql'">empty folder</span>
-      <span ng-show="currentFolder.httpStatus !== undefined" class="text-danger">{{currentFolder.errorMessage}}</span>
+      <span ng-hide="currentFolder.httpStatus === undefined && currentFolder.ioType !== 'sparql'">empty folder</span>
     </li>
 
-    <li ng-show="currentFolder.type === 'file'" class="list-group-item">
+    <li ng-show="currentFolder.httpStatus !== undefined" class="list-group-item">
+      <span class="text-danger">{{currentFolder.errorMessage}}</span>
+    </li>
+
+    <li ng-show="currentFolder.type === 'file' && currentFolder.httpStatus === undefined" class="list-group-item">
       <span>{{currentFolder.name}} is a file. <a ng-href="{{currentFolder.url}}" ng-click="$event.preventDefault(); open(currentFolder)">Open {{currentFolder.name}}</a></span>
     </li>
 
@@ -96,6 +99,25 @@
         <div class="form-group">
           <button class="btn btn-primary" ng-disabled="!newGraphUri || newGraphUri.length === 0" ng-click="addNewGraph()">Add Named Graph</button>
           <button class="btn btn-default" ng-click="addingGraph = false">Cancel</button>
+        </div>
+        <div class="clearfix"></div>
+      </div>
+    </li>
+
+    <li ng-show="currentFolder.ioType && currentFolder.ioType !== 'sparql'" class="list-group-item">
+      <a href="" ng-hide="addingFile" ng-click="showNewFileUi()">
+        <span class="glyphicon glyphicon-plus"></span> Create new document here
+      </a>
+      <div ng-show="addingFile">
+        <form ng-submit="addNewLocation()" class="form-horizontal">
+          <div class="form-group">
+            <label for="newLocationUrl">Add New Document</label>
+            <input class="form-control" type="text" name="newFileName" ng-model="newFileName" placeholder="Document Name"/>
+          </div>
+        </form>
+        <div class="form-group">
+          <button class="btn btn-primary" ng-disabled="!newFileName || newFileName.length === 0" ng-click="addNewFile()">Add Document</button>
+          <button class="btn btn-default" ng-click="addingFile = false">Cancel</button>
         </div>
         <div class="clearfix"></div>
       </div>

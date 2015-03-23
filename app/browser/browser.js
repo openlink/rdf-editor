@@ -59,6 +59,7 @@ angular.module('myApp.fileBrowser', ['ngRoute', 'ui.bootstrap'])
 
   $scope.setCurrentLocation = function(location) {
     if(location != $scope.currentLocation) {
+      resetUi();
       if(location.httpStatus) {
         RDFE.IO.openUrl(location.url, {
           authFunction: function(url, success, fail) {
@@ -73,11 +74,11 @@ angular.module('myApp.fileBrowser', ['ngRoute', 'ui.bootstrap'])
             $scope.currentLocation = $scope.currentFolder = dir;
           });
         }, function(errMsg, status) {
-          // even if there is an error we change the current location
-          // the ui will show the error automatically
           location.httpStatus = status;
           location.errorMessage = errMsg;
-          $scope.$apply(function() {
+          // sadly we can get this error sync or async. Thus, we ensure async
+          // to avoid the $apply nesting
+          $timeout(function() {
             $scope.currentLocation = $scope.currentFolder = location;
           });
         });
@@ -89,6 +90,8 @@ angular.module('myApp.fileBrowser', ['ngRoute', 'ui.bootstrap'])
   };
 
   $scope.changeDir = function(folder) {
+    resetUi();
+
     if(folder.dirty) {
       folder.update(function() {
         $scope.$apply(function() {
@@ -110,10 +113,13 @@ angular.module('myApp.fileBrowser', ['ngRoute', 'ui.bootstrap'])
   $scope.folderUp = function() {
     if($scope.currentFolder.parent) {
       $scope.currentFolder = $scope.currentFolder.parent;
+      $scope.resetUi();
     }
   };
 
   $scope.refresh = function() {
+    resetUi();
+
     $scope.currentFolder.update(true, function() {
       $scope.$apply(function() {
         $scope.currentFolder = $scope.currentFolder;
@@ -124,14 +130,17 @@ angular.module('myApp.fileBrowser', ['ngRoute', 'ui.bootstrap'])
   };
 
   $scope.openFile = function(file) {
-    window.location.href =
-      window.location.protocol +
+    var uri = window.location.protocol +
       '//' +
       window.location.host +
       window.location.pathname +
       '#/editor?uri=' + encodeURIComponent(file.url) +
-      '&ioType=' + encodeURIComponent(file.ioType) +
-      '&sparqlEndpoint=' + encodeURIComponent(file.sparqlEndpoint);
+      '&ioType=' + encodeURIComponent(file.ioType);
+    if(file.sparqlEndpoint) {
+      uri += '&sparqlEndpoint=' + encodeURIComponent(file.sparqlEndpoint);
+    }
+
+    window.location.href = uri;
   };
 
   $scope.open = function(item) {
@@ -209,5 +218,37 @@ angular.module('myApp.fileBrowser', ['ngRoute', 'ui.bootstrap'])
       // open the file in the editor
       $scope.openFile(gr);
     }
+  };
+
+  // controls for the UI element to add new files
+  $scope.addingFile = false;
+  $scope.newFileName = "myDocument.ttl";
+  $scope.showNewFileUi = function() {
+    $scope.addingFile = true;
+    $scope.newFileName = "myDocument.ttl";
+  };
+  $scope.addNewFile = function() {
+    if($scope.newFileName && $scope.newFileName.length) {
+      // force reload next time in case the doc will be saved
+      $scope.currentFolder.dirty = true;
+
+      // build new file url
+      var uri = $scope.currentFolder.url + $scope.newFileName;
+
+      // hand it over to the editor
+      window.location.href = window.location.protocol +
+        '//' +
+        window.location.host +
+        window.location.pathname +
+        '#/editor?uri=' + encodeURIComponent(uri) +
+        '&ioType=' + encodeURIComponent($scope.currentFolder.ioType) +
+        '&newDocument=true';
+    }
+  };
+
+  $scope.resetUi = function() {
+    $scope.addingFile = false;
+    $scope.addingGraph = false;
+    $scope.addingLocation = false;
   };
 }]);
