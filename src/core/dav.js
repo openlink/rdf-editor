@@ -504,39 +504,46 @@ RDFE.IO.openUrl = function(url, options, success, fail) {
   ldp.update(function() {
     // success, we found an ldp container
     _success(ldp);
-  }, function() {
-    // not an ldp container, try webdav, reusing the auth info we might have gotten for ldp
-    var dav = new RDFE.IO.WebDavFolder(url, ldp.options);
-    dav.update(function() {
-      // success, we have a webdav folder
-      _success(dav);
-    }, function(folder, errMsg, status) {
-      // not a known folder
-      if(_options && _options.checkForFiles) {
-        $.ajax({
-          url: url,
-          headers: folder.standardAjaxHeaders() // use the headers from the folder for the basic auth info
-        }).done(function(data, textStatus, jqXHR) {
-          // create a new file and reuse the options for auth information
-          var f = new RDFE.IO.File(url, folder.options);
-          f.content = data;
-          f.contentType = jqXHR.getResponseHeader('Content-Type');
-          f.size = parseInt(jqXHR.getResponseHeader('Content-Length'));
-          f.dirty = false; // there is nothing more to get
-          f.ioType = "http";
+  }, function(folder, errMsg, status) {
+    // there is no need to continue if we get access denied. The only thing this will
+    // do is show the auth dlg twice.
+    if(status === 401 || status === 403) {
+      _fail(errMsg, status);
+    }
+    else {
+      // not an ldp container, try webdav, reusing the auth info we might have gotten for ldp
+      var dav = new RDFE.IO.WebDavFolder(url, ldp.options);
+      dav.update(function() {
+        // success, we have a webdav folder
+        _success(dav);
+      }, function(folder, errMsg, status) {
+        // not a known folder
+        if(_options && _options.checkForFiles) {
+          $.ajax({
+            url: url,
+            headers: folder.standardAjaxHeaders() // use the headers from the folder for the basic auth info
+          }).done(function(data, textStatus, jqXHR) {
+            // create a new file and reuse the options for auth information
+            var f = new RDFE.IO.File(url, folder.options);
+            f.content = data;
+            f.contentType = jqXHR.getResponseHeader('Content-Type');
+            f.size = parseInt(jqXHR.getResponseHeader('Content-Length'));
+            f.dirty = false; // there is nothing more to get
+            f.ioType = "http";
 
-          _success(f);
-        }).fail(function(jqXHR) {
-          // nothing
-          if(_fail) {
-            _fail('Failed to get "' + url + '".', jqXHR.status);
-          }
-        });
-      }
-      else if(_fail) {
-        _fail(errMsg, status);
-      }
-    });
+            _success(f);
+          }).fail(function(jqXHR) {
+            // nothing
+            if(_fail) {
+              _fail('Failed to get "' + url + '".', jqXHR.status);
+            }
+          });
+        }
+        else if(_fail) {
+          _fail(errMsg, status);
+        }
+      });
+    }
   });
 };
 
