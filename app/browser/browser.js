@@ -41,8 +41,8 @@ angular.module('myApp.fileBrowser', ['ngRoute', 'ui.bootstrap'])
   };
 })
 
-.controller('FileBrowserCtrl', ["$scope", "DocumentTree", 'Notification', function($scope, DocumentTree, Notification) {
-  // property to order files and folders by (fodlers are always first)
+.controller('FileBrowserCtrl', ["$scope", "$timeout", "usSpinnerService", "DocumentTree", 'Notification', function($scope, $timeout, usSpinnerService, DocumentTree, Notification) {
+  // property to order files and folders by (folders are always first)
   $scope.orderProp = "name";
 
   // array of default locations
@@ -53,6 +53,8 @@ angular.module('myApp.fileBrowser', ['ngRoute', 'ui.bootstrap'])
     // browser state
     $scope.currentLocation = $scope.locations[0];
     $scope.currentFolder = $scope.currentLocation;
+
+    usSpinnerService.stop('location-spinner');
   });
 
   $scope.setCurrentLocation = function(location) {

@@ -42,3 +42,7 @@ tr.triple td {
 .locationItem.selected {
   background-color: #f1f1f1;
 }
+
+li.spinner {
+  height: 50px;
+}

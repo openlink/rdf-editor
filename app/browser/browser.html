@@ -17,6 +17,9 @@
       <!--<div ng-show="location.httpStatus !== undefined">{{location.errorMessage}}</div>-->
     </li>
 
+    <li us-spinner="{ lines: 8, radius: 5, width: 3, length: 5 }" spinner-key="location-spinner" spinner-start-active="true" ng-hide="locations.length" class="list-group-item spinner">
+    </li>
+
     <li class="list-group-item">
       <a href="" ng-hide="addingLocation" ng-click="showNewLocationUi()">
         <span class="glyphicon glyphicon-plus"></span> Add Location
