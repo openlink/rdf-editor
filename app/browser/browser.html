@@ -12,7 +12,7 @@
       </div>
       <a href="{{location.url}}" ng-click="$event.preventDefault();">
         <span class="resourceName">{{location.name}}</span>
-        <span class="resourceUrl" ng-show="location.url.length">{{location.url}}</span>
+        <span class="resourceUrl">{{location.url || location.comment}}</span>
       </a>
       <!--<div ng-show="location.httpStatus !== undefined">{{location.errorMessage}}</div>-->
     </li>

@@ -136,6 +136,7 @@ angular.module('myApp', [
   function loadRecentDocs() {
     var r = new RDFE.IO.Folder();
     r.name = r.path = "Recent Documents";
+    r.comment = 'Documents you recently opened';
 
     var recentDocs = $.jStorage.get('rdfe:recentDocuments');
     if(recentDocs) {
