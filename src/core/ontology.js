@@ -873,7 +873,7 @@ RDFE.OntologyClass.prototype.getUniqueRestrictions = function() {
   if (this.restrictions) {
     for (var key in this.restrictions) {
       var property = this.restrictions[key];
-      if (property.uniqueIdRestriction === true) {
+      if (property.isUniqueId === true) {
         uniqueRestrictions.push(this.manager.ontologyPropertyByURI(key));
       }
     }
