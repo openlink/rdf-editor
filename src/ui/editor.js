@@ -149,6 +149,7 @@ RDFE.Editor.prototype.createNewStatementEditor = function() {
   });
 
   self.formContainer.find('a.triple-action-new-cancel').click(function(e) {
+    e.preventDefault();
     self.createTripleList();
   });
 
@@ -303,6 +304,7 @@ RDFE.Editor.prototype.createNewEntityEditor = function(forcedType) {
   }
 
   self.formContainer.find('a.triple-action-new-cancel').click(function(e) {
+    e.preventDefault();
     self.listContainer.show();
     self.formContainer.hide();
   });
