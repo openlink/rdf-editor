@@ -51,7 +51,22 @@ angular.module('myApp.editor', ['ngRoute'])
   };
 }])
 
-.controller('EditorCtrl', ['$scope', '$routeParams', 'RDFEditor', 'DocumentTree', function($scope, $routeParams, RDFEditor, DocumentTree) {
+.filter('viewModeLabel', function() {
+  return function(input) {
+    switch(input) {
+      case 'triples':
+        return 'Statement';
+      case 'predicates':
+        return 'Predicate';
+      case 'entities':
+        return 'Entity';
+      default:
+        return input;
+    }
+  };
+})
+
+.controller('EditorCtrl', ['$scope', '$routeParams', '$location', 'RDFEditor', 'DocumentTree', function($scope, $routeParams, $location, RDFEditor, DocumentTree) {
   function getIO(ioType, sparqlEndpoint) {
     var io = RDFE.IO.createIO(ioType, {
       "sparqlEndpoint": sparqlEndpoint,
@@ -115,5 +130,46 @@ angular.module('myApp.editor', ['ngRoute'])
     if($routeParams.uri) {
       ioRetrieve($routeParams.uri, $routeParams.ioType, $routeParams.sparqlEndpoint);
     }
+
+    // Editor view mode controls
+    // ----------------------------
+    // default view mode
+    $scope.viewMode = $scope.editor.currentView();
+
+    // watch changes in the view mode to update the editor
+    $scope.$watch(function(scope) {
+      return scope.viewMode;
+    }, function(mode) {
+      $scope.editor.toggleView(mode);
+    });
   });
+
+  $scope.newTripleEntityOrPredicate = function() {
+    if ($scope.editor.currentView() === 'entities') {
+      $scope.editor.createNewEntityEditor();
+    }
+    else if ($scope.editor.currentView() === 'triples') {
+      $scope.editor.createNewStatementEditor();
+    }
+    else {
+      $scope.editor.createNewPredicateEditor();
+    }
+  };
+
+  $scope.closeDocument = function() {
+    // return to welcome page
+    function doClose() {
+      $location.url('/');
+    };
+    if($scope.mainDoc.dirty) {
+      bootbox.confirm("Your document has unsaved changes. Do you really want to close the document?", function(r) {
+        if(r) {
+          $scope.$apply(doClose);
+        }
+      });
+    }
+    else {
+      doClose();
+    }
+  };
 }]);
