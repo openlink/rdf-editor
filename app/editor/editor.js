@@ -130,6 +130,18 @@ angular.module('myApp.editor', ['ngRoute'])
     if($routeParams.uri) {
       ioRetrieve($routeParams.uri, $routeParams.ioType, $routeParams.sparqlEndpoint);
     }
+    else if($routeParams.newDoc) {
+      $scope.mainDoc.new(function() {
+        $scope.editor.updateView();
+      }, function() {
+        $.growl({
+          message: "Failed to clear Document for unknown reasons.",
+          icon: "glyphicon glyphicon-fire"
+        }, {
+          type: 'danger'
+        });
+      });
+    }
 
     // Editor view mode controls
     // ----------------------------
