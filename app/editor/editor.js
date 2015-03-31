@@ -137,6 +137,10 @@ angular.module('myApp.editor', ['ngRoute'])
     else if($routeParams.newDocument) {
       $scope.mainDoc.new(function() {
         $scope.editor.updateView();
+
+        $scope.$apply(function() {
+          $scope.documentUrl = undefined;
+        });
       }, function() {
         Notification.notity('error', "Failed to clear Document for unknown reasons.");
       });
