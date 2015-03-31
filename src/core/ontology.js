@@ -265,7 +265,28 @@ RDFE.OntologyManager.prototype.ontologyByPrefix = function(prefix) {
 }
 
 RDFE.OntologyManager.prototype.ontologyRemove = function(URI) {
+  var ontology = this.ontologyByURI(URI);
+  if (ontology) {
   delete this.ontologies[URI];
+    var c = ontology.classesAsArray();
+    for (var i = 0; i < c.length; i++) {
+      this.ontologyClassRemove(c[i].URI);
+    }
+    var p = ontology.allProperties();
+    for (var i = 0; i < p.length; i++) {
+      this.ontologyPropertyRemove(p[i].URI);;
+    }
+
+    $(this).trigger('changed', [ this ]);
+  }
+}
+
+RDFE.OntologyManager.prototype.ontologyClassRemove = function(URI) {
+  delete this.ontologyClasses[URI];
+}
+
+RDFE.OntologyManager.prototype.ontologyPropertyRemove = function(URI) {
+  delete this.ontologyProperties[URI];
 }
 
 RDFE.OntologyManager.prototype.ontologyClassByURI = function(uri, create) {
