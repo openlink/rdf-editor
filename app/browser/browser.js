@@ -41,9 +41,17 @@ angular.module('myApp.fileBrowser', ['ngRoute', 'ui.bootstrap'])
   };
 })
 
-.controller('FileBrowserCtrl', ["$scope", "$timeout", "usSpinnerService", "DocumentTree", 'Notification', function($scope, $timeout, usSpinnerService, DocumentTree, Notification) {
+.controller('FileBrowserCtrl', ["$scope", '$routeParams', "$timeout", '$location', "usSpinnerService", "DocumentTree", 'Notification', function($scope, $routeParams, $timeout, $location, usSpinnerService, DocumentTree, Notification) {
   // property to order files and folders by (folders are always first)
   $scope.orderProp = "name";
+
+  // browser mode
+  $scope.mode = 'open';
+  $scope.title = 'Open a Document';
+  if($routeParams.mode === 'save') {
+    $scope.mode = $routeParams.mode;
+    $scope.title = 'Save Your Document';
+  }
 
   // array of default locations
   $scope.locations = [];
@@ -130,17 +138,22 @@ angular.module('myApp.fileBrowser', ['ngRoute', 'ui.bootstrap'])
   };
 
   $scope.openFile = function(file) {
-    var uri = window.location.protocol +
-      '//' +
-      window.location.host +
-      window.location.pathname +
-      '#/editor?uri=' + encodeURIComponent(file.url) +
+    var uri = '/editor?uri=' + encodeURIComponent(file.url) +
       '&ioType=' + encodeURIComponent(file.ioType);
     if(file.sparqlEndpoint) {
       uri += '&sparqlEndpoint=' + encodeURIComponent(file.sparqlEndpoint);
     }
 
-    window.location.href = uri;
+    // in save mode we need to tell the editor to save instead of loading
+    if($scope.mode === 'save') {
+      uri += '&saveDocument=true';
+    }
+    // check if this is a new dummy file as created below
+    else if(file.isNew) {
+      uri += '&newDocument=true';
+    }
+
+    $location.url(uri);
   };
 
   $scope.open = function(item) {
@@ -235,14 +248,12 @@ angular.module('myApp.fileBrowser', ['ngRoute', 'ui.bootstrap'])
       // build new file url
       var uri = $scope.currentFolder.url + $scope.newFileName;
 
-      // hand it over to the editor
-      window.location.href = window.location.protocol +
-        '//' +
-        window.location.host +
-        window.location.pathname +
-        '#/editor?uri=' + encodeURIComponent(uri) +
-        '&ioType=' + encodeURIComponent($scope.currentFolder.ioType) +
-        '&newDocument=true';
+      // create a fake file object marked as being new
+      var newF = new RDFE.IO.File(uri);
+      newF.isNew = true;
+      newF.ioType = $scope.currentFolder.ioType;
+
+      $scope.openFile(newF);
     }
   };
 
