@@ -94,38 +94,51 @@
             <button id="action-full-width" class="btn btn-default" title="Use the full width of the page"><span class="glyphicon glyphicon-resize-horizontal"></span></button>
           </div>
         </div>
+        <div class="btn-group" role="group">
+          <button id="action-save" type="button" class="btn btn-default" style="display:none" title="Save the current document"><span class="glyphicon glyphicon-save" aria-hidden="true"></span> Save</button>
+          <button id="action-saveas" type="button" class="btn btn-default" style="display:none" title="Save the current document to a new location"><span class="glyphicon glyphicon-save" aria-hidden="true"></span> Save As...</button>
+        </div>
+        <div class="btn-toolbar pull-right" role="toolbar">
+          <button id="action-close" class="btn btn-default" title="Close the document and return to the start page"><span class="glyphicon glyphicon-log-out"></span> Close</button>
+        </div>
 
         <div class="clearfix"></div>
 
         <hr />
 
-        <div class="btn-toolbar pull-left" role="toolbar">
-          <div class="btn-group" role="group">
-            <button id="action-save" type="button" class="btn btn-default" style="display:none" title="Save the current document"><span class="glyphicon glyphicon-save" aria-hidden="true"></span> Save</button>
-            <button id="action-saveas" type="button" class="btn btn-default" style="display:none" title="Save the current document to a new location"><span class="glyphicon glyphicon-save" aria-hidden="true"></span> Save As...</button>
-          </div>
-          <div class="btn-group" role="group" data-toggle="buttons">
-            <label id="action-entities" class="btn btn-default" title="Categories or Classes to which entity belongs" style="display:none">
-              <input type="radio" name="view" id="view-entities" autocomplete="off"><span class="glyphicon glyphicon-list" aria-hidden="true"></span> Entities
-            </label>
-            <label id="action-triples" class="btn btn-default" title="Relationship representation" style="display:none">
-              <input type="radio" name="view" id="view-triples" autocomplete="off"><span class="glyphicon glyphicon-th" aria-hidden="true"></span><span class="label-triples"> Triples</span>
-            </label>
-            <label id="action-predicates" class="btn btn-default" title="How relationship subject and object are associated" style="display:none">
-              <input type="radio" name="view" id="view-predicates" autocomplete="off"><span class="glyphicon glyphicon-th" aria-hidden="true"></span> Predicates
-            </label>
-          </div>
-          <div class="btn-group" role="group">
-            <button id="action-add" type="button" class="btn btn-default" title="Add a new entity or triple to the document"><span class="glyphicon glyphicon-plus" aria-hidden="true"></span> Add</button>
-          </div>
-          <div class="btn-group" role="group">
-            <div id="busyspinner">
+        <div class="row">
+          <div class="col-xs-7 col-md-6">
+            <div class="btn-toolbar pull-left" role="toolbar">
+              <div class="btn-group" role="group" data-toggle="buttons">
+                <label id="action-entities" class="btn btn-default" title="Categories or Classes to which entity belongs" style="display:none">
+                  <input type="radio" name="view" id="view-entities" autocomplete="off"><span class="glyphicon glyphicon-list" aria-hidden="true"></span> Entities
+                </label>
+                <label id="action-triples" class="btn btn-default" title="Relationship representation" style="display:none">
+                  <input type="radio" name="view" id="view-triples" autocomplete="off"><span class="glyphicon glyphicon-th" aria-hidden="true"></span><span class="label-triples"> Triples</span>
+                </label>
+                <label id="action-predicates" class="btn btn-default" title="How relationship subject and object are associated" style="display:none">
+                  <input type="radio" name="view" id="view-predicates" autocomplete="off"><span class="glyphicon glyphicon-th" aria-hidden="true"></span> Predicates
+                </label>
+              </div>
+              <div class="btn-group" role="group">
+                <button id="action-add" type="button" class="btn btn-default" title="Add a new entity or triple to the document"><span class="glyphicon glyphicon-plus" aria-hidden="true"></span> Add</button>
+              </div>
+              <div class="btn-group" role="group">
+                <div id="busyspinner">
+                </div>
+              </div>
             </div>
           </div>
-        </div>
-
-        <div class="btn-toolbar pull-right" role="toolbar">
-          <button id="action-close" class="btn btn-default" title="Close the document and return to the start page"><span class="glyphicon glyphicon-log-out"></span> Close</button>
+          <div class="col-xs-5 col-md-6">
+            <div id="panel-ontologies" class="panel panel-default" style="margin-bottom: 0px;">
+              <div class="panel-heading" style="padding: 6px 12px 6px 12px">
+                Ontologies&nbsp;<span class="dropup up" style="display: none;"><span class="caret"></span></span><span class="caret down"></span>
+                <span id="ontology-add" class="glyphicon glyphicon-plus pull-right" aria-hidden="true" style="display: none;"></span>
+              </div>
+              <div id="container-ontologies" class="panel-body" style="padding: 0; overflow: auto; display: none;">
+              </div>
+            </div>
+          </div>
         </div>
 
         <div class="clearfix"></div>
@@ -146,7 +159,6 @@
     <script src="src/deps-demo/spin.js"></script>
     <script src="src/deps-demo/jquery.spin.js"></script>
     <script src="src/deps-demo/bootstrap-growl.min.js"></script>
-
 
     <script>
       // The main document which contains the loaded data
@@ -411,7 +423,14 @@
 
               editor = new RDFE.Editor(config);
               mainDoc = editor.doc;
+
               ontologyManager = editor.ontologyManager;
+              var ontologyView = new RDFE.OntologyView(ontologyManager);
+              ontologyView.render($('#container-ontologies'));
+              $('#ontology-add').click(function (e) {
+                e.stopPropagation();
+                ontologyView.editor();
+              });
 
               // subscribe to editor events
               $(editor).on('rdf-editor-success', function(e, d) {
@@ -432,8 +451,6 @@
                 toggleSpinner(false);
               });
 
-
-              $('#action-triples').attr('title', 'Show All {0} in the Document'.replace('{0}', RDFE.Utils.getLabel(config.options.labels, 'Triples')));
               $('#action-triples').find('.label-triples').html(' {0}'.replace('{0}', RDFE.Utils.getLabel(config.options.labels, 'Triples')));
 
               editor.render($("#contents"));
@@ -535,6 +552,14 @@
           else {
             editor.createNewPredicateEditor();
           }
+        });
+
+        $('#panel-ontologies').find('.panel-heading').click(function(e) {
+          var $elHeading = $('#panel-ontologies').find('.panel-heading');
+          $elHeading.find('.up').toggle();
+          $elHeading.find('.down').toggle();
+          $('#container-ontologies').toggle();
+          $('#ontology-add').toggle();
         });
 
         $('#action-close').click(function(e) {
