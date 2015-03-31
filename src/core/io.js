@@ -441,7 +441,7 @@ String.prototype.format = function() {
       var headers;
       var method;
       if (this.type != 'webdav') {
-        method = 'POST';
+        method = 'PUT';
         headers = {
           "Content-Type": 'text/turtle'
         };
