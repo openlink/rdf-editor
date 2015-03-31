@@ -52,6 +52,7 @@
   <file source_uri="app/**/*.html" target_uri="rdf-editor/" />
   <file source_uri="app/**/*.js" target_uri="rdf-editor/" />
   <file source_uri="app/**/*.css" target_uri="rdf-editor/" />
+  <file source_uri="app/**/*.json" target_uri="rdf-editor/" />
 </resources>
 <registry>
 </registry>

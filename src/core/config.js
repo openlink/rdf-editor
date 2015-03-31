@@ -6,7 +6,7 @@ if(!window.RDFE)
  * Config class
  *
  */
-RDFE.Config = function(source, callback) {
+RDFE.Config = function(source, callback, fail) {
   var self = this;
   this.options = RDFE.Config.defaults;
 
@@ -29,6 +29,9 @@ RDFE.Config = function(source, callback) {
       })(callback),
       error: function(jqXHR, textStatus, errorThrown) {
         console.error('config load =>', errorThrown);
+        if(fail) {
+          fail();
+        }
       }
     });
   }

@@ -193,7 +193,7 @@ angular.module('myApp', [
   };
 }])
 
-.factory('RDFEConfig', ['$q', function($q) {
+.factory('RDFEConfig', ['$q', 'Notification', function($q, Notification) {
   var config = null;
 
   function getConfig() {
@@ -206,6 +206,8 @@ angular.module('myApp', [
         var configSource = (urlParams['config'])? urlParams['config']: 'config.json';
         config = new RDFE.Config(configSource, function(config) {
           resolve(config);
+        }, function() {
+          Notification.notify('error', 'Failed to load Editor configuration');
         });
       });
     }
