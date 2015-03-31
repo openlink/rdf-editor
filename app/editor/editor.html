@@ -1,3 +1,16 @@
+<button ng-click="openDocument()" class="btn btn-default" title="Open a Document"><span class="glyphicon glyphicon-open"></span> Open Document</button>
+<div class="btn-group" role="group">
+  <button ng-click="saveDocument()" type="button" class="btn btn-default" title="Save the current document"><span class="glyphicon glyphicon-save" aria-hidden="true"></span> Save</button>
+  <button ng-click="saveDocumentAs()" type="button" class="btn btn-default" title="Save the current document to a new location"><span class="glyphicon glyphicon-save" aria-hidden="true"></span> Save As...</button>
+</div>
+<button ng-click="closeDocument()" class="btn btn-default" title="Close the document and return to the start page"><span class="glyphicon glyphicon-log-out"></span> Close</button>
+
+<div us-spinner="{ length: 10, radius: 7, lines:10, width:2, shadow: true }" spinner-key="editor-spinner" class="pull-right">
+</div>
+
+<div class="clearfix"></div>
+
+<hr />
 
 <div class="btn-group">
 	<label class="btn btn-default" ng-model="viewMode" btn-radio="'triples'" title="Relationship representation"><span class="glyphicon glyphicon-th" aria-hidden="true"></span> Statements</label>
@@ -6,10 +19,6 @@
 </div>
 
 <button class="btn btn-primary" ng-click="newTripleEntityOrPredicate()" title="Add a new entity or triple to the document"><span class="glyphicon glyphicon-plus" aria-hidden="true"></span> New {{viewMode | viewModeLabel}}</button>
-
-<div class="btn-toolbar pull-right" role="toolbar">
-  <button ng-click="closeDocument()" class="btn btn-default" title="Close the document and return to the start page"><span class="glyphicon glyphicon-log-out"></span> Close</button>
-</div>
 
 <div class="clearfix"></div>
 

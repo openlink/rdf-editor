@@ -9,7 +9,7 @@ angular.module('myApp.editor', ['ngRoute'])
   });
 }])
 
-.factory('RDFEditor', ['$q', 'RDFEConfig', function($q, RDFEConfig) {
+.factory('RDFEditor', ['$q', "usSpinnerService", 'RDFEConfig', 'Notification', function($q, usSpinnerService, RDFEConfig, Notification) {
   var editor = null;
 
   function getEditor() {
@@ -23,22 +23,14 @@ angular.module('myApp.editor', ['ngRoute'])
 
           // subscribe to editor events FIXME: a service does not seem like the best place to do this
           $(editor).on('rdf-editor-success', function(e, d) {
-            $.growl({
-              message: d.message
-            }, {
-              type: "success"
-            });
+            Notification.notify('success', d.message);
           }).on('rdf-editor-error', function(e, d) {
-            $.growl({
-              message: d.message
-            }, {
-              type: "danger"
-            });
-          })/*.on('rdf-editor-start', function(e, d) {
-            toggleSpinner(true);
+            Notification.notify('error', d.message);
+          }).on('rdf-editor-start', function(e, d) {
+            usSpinnerService.spin('location-spinner');
           }).on('rdf-editor-done', function(e, d) {
-            toggleSpinner(false);
-          })*/;
+            usSpinnerService.stop('location-spinner');
+          });
 
           resolve(editor);
         });
@@ -66,7 +58,20 @@ angular.module('myApp.editor', ['ngRoute'])
   };
 })
 
-.controller('EditorCtrl', ['$scope', '$routeParams', '$location', 'RDFEditor', 'DocumentTree', function($scope, $routeParams, $location, RDFEditor, DocumentTree) {
+.controller(
+  'EditorCtrl', [
+  '$scope', '$routeParams', '$location', "usSpinnerService", 'RDFEditor', 'DocumentTree', 'Notification',
+  function($scope, $routeParams, $location, usSpinnerService, RDFEditor, DocumentTree, Notification) {
+
+  function toggleSpinner(on) {
+    if(on) {
+      usSpinnerService.spin('location-spinner');
+    }
+    else {
+      usSpinnerService.stop('location-spinner');
+    }
+  }
+
   function getIO(ioType, sparqlEndpoint) {
     var io = RDFE.IO.createIO(ioType, {
       "sparqlEndpoint": sparqlEndpoint,
@@ -91,31 +96,20 @@ angular.module('myApp.editor', ['ngRoute'])
           io_rdfe.options.password = authInfo.password;
         }
 
-        //toggleSpinner(true);
+        toggleSpinner(true);
         $scope.mainDoc.load(url, io_rdfe, function() {
           $scope.editor.updateView();
-          //$('#docUrl').text(url);
-          //toggleView("document");
-          //addRecentDoc(url, io_rdfe.type, sparqlEndpoint);
-          //$.jStorage.set("editor-document-url", url);
-          //$.jStorage.set("editor-document-io-type", type);
-        }, function() {
-          $.growl({
-            message: 'Failed to load document',
-            icon: "glyphicon glyphicon-fire"
-          }, {
-            type: 'danger'
+          $scope.$apply(function() {
+            $scope.documentUrl = url;
           });
-          //toggleSpinner(false);
+        }, function() {
+          Notification.notify('error', 'Failed to load document');
+          toggleSpinner(false);
         });
       });
     }
     catch(e) {
-      $.growl({
-        message: e
-      }, {
-        type: "danger"
-      });
+      Notification.notify('error', e);
       return;
     }
 
@@ -127,21 +121,28 @@ angular.module('myApp.editor', ['ngRoute'])
     $scope.ontologyManager = $scope.editor.ontologyManager;
     $scope.editor.render($("#contents"));
 
-    if($routeParams.uri) {
+    // the browser requested that we save the current document
+    if($routeParams.saveDocument) {
+      $scope.mainDoc.url = $routeParams.uri;
+      $scope.mainDoc.io = getIO($routeParams.ioType, $routeParams.sparqlEndpoint);
+      $scope.saveDocument();
+    }
+
+    // otherwise we try to load the requested document
+    else if($routeParams.uri) {
       ioRetrieve($routeParams.uri, $routeParams.ioType, $routeParams.sparqlEndpoint);
     }
-    else if($routeParams.newDoc) {
+
+    // and if we are told, then we create a new document by clearing the old one
+    else if($routeParams.newDocument) {
       $scope.mainDoc.new(function() {
         $scope.editor.updateView();
-      }, function() {
-        $.growl({
-          message: "Failed to clear Document for unknown reasons.",
-          icon: "glyphicon glyphicon-fire"
-        }, {
-          type: 'danger'
         });
+      }, function() {
+        Notification.notity('error', "Failed to clear Document for unknown reasons.");
       });
     }
+
 
     // Editor view mode controls
     // ----------------------------
@@ -165,6 +166,80 @@ angular.module('myApp.editor', ['ngRoute'])
     }
     else {
       $scope.editor.createNewPredicateEditor();
+    }
+  };
+
+  function saveCheck(cbSave, myUrl, myIo) {
+    if (!myUrl) {
+      myUrl = $scope.mainDoc.url;
+    }
+    if (!myIo) {
+      myIo = $scope.mainDoc.io;
+    }
+    var mySave = function (data, status, xhr) {
+      if (status === 'success') {
+        if ((!$scope.mainDoc.url || ($scope.mainDoc.io && ($scope.mainDoc.io !== myIo))) && data.length)  {
+          bootbox.confirm("Target document exists. Do you really want to overwrite it?", function(result) {
+            if (result)
+              cbSave(myUrl, myIo);
+          });
+
+          return;
+        }
+        if ($scope.mainDoc.srcParams && (($scope.mainDoc.srcParams.length !== data.length) || ($scope.mainDoc.srcParams.md5 !== $.md5(data)))) {
+          bootbox.confirm("Target document was updated after last open/save. Do you really want to overwrite it?", function(result) {
+            if (result)
+              cbSave(myUrl, myIo);
+          });
+
+          return;
+        }
+      }
+      cbSave(myUrl, myIo);
+    }
+    myIo.retrieve(myUrl, {
+      "success": mySave,
+      "error": mySave
+    });
+  }
+
+  $scope.saveDocument = function() {
+    if ($scope.mainDoc.url) {
+      var cbSave = function () {
+        toggleSpinner(true);
+        mainDoc.save(function() {
+          toggleSpinner(false);
+          Notification.notify('success', "Successfully saved document to <code>" + $scope.mainDoc.url + "</code>");
+        }, function(err) {
+          toggleSpinner(false);
+          Notification.notify('error', (err ? err.message || err : "An unknown error occured"));
+        });
+      };
+      saveCheck(cbSave);
+    }
+    else {
+      $scope.saveDocumentAs();
+    }
+  };
+
+  $scope.saveDocumentAs = function() {
+    // redirect to the browser and ask it for a uri to save to
+    $location.url('/browser?mode=save');
+  };
+
+  $scope.openDocument = function() {
+    function doOpen() {
+      $location.url('/browser');
+    };
+    if($scope.mainDoc.dirty) {
+      bootbox.confirm("Your document has unsaved changes. Do you really want to open another document?", function(r) {
+        if(r) {
+          $scope.$apply(doOpen);
+        }
+      });
+    }
+    else {
+      doOpen();
     }
   };
 
