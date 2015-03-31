@@ -340,6 +340,7 @@ RDFE.Editor.prototype.createNewEntityEditor = function(forcedType) {
   };
 
   self.formContainer.find('a.triple-action-new-save').click(function(e) {
+    e.preventDefault();
     saveFct();
   });
 
