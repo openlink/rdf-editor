@@ -27,9 +27,9 @@ angular.module('myApp.editor', ['ngRoute'])
           }).on('rdf-editor-error', function(e, d) {
             Notification.notify('error', d.message);
           }).on('rdf-editor-start', function(e, d) {
-            usSpinnerService.spin('location-spinner');
+            usSpinnerService.spin('editor-spinner');
           }).on('rdf-editor-done', function(e, d) {
-            usSpinnerService.stop('location-spinner');
+            usSpinnerService.stop('editor-spinner');
           });
 
           resolve(editor);
@@ -65,10 +65,10 @@ angular.module('myApp.editor', ['ngRoute'])
 
   function toggleSpinner(on) {
     if(on) {
-      usSpinnerService.spin('location-spinner');
+      usSpinnerService.spin('editor-spinner');
     }
     else {
-      usSpinnerService.stop('location-spinner');
+      usSpinnerService.stop('editor-spinner');
     }
   }
 
