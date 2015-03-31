@@ -129,14 +129,10 @@ angular.module('myApp.editor', ['ngRoute'])
       $scope.editor.updateView();
     }
 
-    // otherwise we try to load the requested document
-    else if($routeParams.uri) {
-      ioRetrieve($routeParams.uri, $routeParams.ioType, $routeParams.sparqlEndpoint);
-    }
-
     // and if we are told, then we create a new document by clearing the old one
     else if($routeParams.newDocument) {
       $scope.mainDoc.new(function() {
+        $csope.mainDoc.url = $routeParams.uri;
         $scope.editor.updateView();
 
         $scope.$apply(function() {
@@ -146,6 +142,12 @@ angular.module('myApp.editor', ['ngRoute'])
         Notification.notity('error', "Failed to clear Document for unknown reasons.");
       });
     }
+
+    // otherwise we try to load the requested document
+    else if($routeParams.uri) {
+      ioRetrieve($routeParams.uri, $routeParams.ioType, $routeParams.sparqlEndpoint);
+    }
+
 
 
     // Editor view mode controls
