@@ -443,10 +443,8 @@ String.prototype.format = function() {
       if (this.type != 'webdav') {
         method = 'POST';
         headers = {
-          "Content-Type": 'text/turtle',
-          "Slug": getFn(path)
+          "Content-Type": 'text/turtle'
         };
-        path = getFParent(path);
       } else {
         method = 'PUT';
       }
