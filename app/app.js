@@ -112,7 +112,12 @@ angular.module('myApp', [
    * callback will be invoked instead.
    */
   function getAuthInfo(url, forceUpdate) {
-    if(forceUpdate !== false && (forceUpdate === true || !authCache[url])) {
+    var cached = authCache[url];
+    // try the parent folder in case we have that
+    if(!cached && url[url.length-1] !== '/') {
+      cached = authCache[url.substring(0, url.lastIndexOf('/')+1)];
+    }
+    if(forceUpdate !== false && (forceUpdate === true || !cached)) {
       return $q(function(resolve, reject) {
         $modal.open({
           templateUrl: 'browser/authinfodlg.html',
@@ -129,7 +134,7 @@ angular.module('myApp', [
       });
     }
     else {
-      return $q.when(authCache[url]);
+      return $q.when(cached);
     }
   };
 

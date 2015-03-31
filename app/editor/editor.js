@@ -78,6 +78,9 @@ angular.module('myApp.editor', ['ngRoute'])
       "gspEndpoint": $('#gspEndpoint').val()
     });
     io.type = ioType;
+    io.options.authFunction = function(url, success, fail) {
+      DocumentTree.getAuthInfo(url, true).then(success, fail);
+    };
     return io;
   }
 
@@ -85,9 +88,6 @@ angular.module('myApp.editor', ['ngRoute'])
     var io_rdfe;
     try {
       io_rdfe = getIO(type || "sparql", sparqlEndpoint);
-      io_rdfe.options.authFunction = function(url, success, fail) {
-        DocumentTree.getAuthInfo(url, true).then(success, fail);
-      };
 
       // see if we have auth information cached
       DocumentTree.getAuthInfo(url, false).then(function(authInfo) {
@@ -132,7 +132,10 @@ angular.module('myApp.editor', ['ngRoute'])
     // and if we are told, then we create a new document by clearing the old one
     else if($routeParams.newDocument) {
       $scope.mainDoc.new(function() {
-        $scope.mainDoc.url = $routeParams.uri;
+        if($routeParams.uri) {
+          $scope.mainDoc.url = $routeParams.uri;
+          $scope.mainDoc.io = getIO($routeParams.ioType, $routeParams.sparqlEndpoint);
+        }
         $scope.editor.updateView();
 
         $scope.$apply(function() {
