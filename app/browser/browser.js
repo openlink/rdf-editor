@@ -67,7 +67,7 @@ angular.module('myApp.fileBrowser', ['ngRoute', 'ui.bootstrap'])
 
   $scope.setCurrentLocation = function(location) {
     if(location != $scope.currentLocation) {
-      resetUi();
+      $scope.resetUi();
       if(location.httpStatus) {
         RDFE.IO.openUrl(location.url, {
           authFunction: function(url, success, fail) {
@@ -98,7 +98,7 @@ angular.module('myApp.fileBrowser', ['ngRoute', 'ui.bootstrap'])
   };
 
   $scope.changeDir = function(folder) {
-    resetUi();
+    $scope.resetUi();
 
     if(folder.dirty) {
       folder.update(function() {
@@ -126,7 +126,7 @@ angular.module('myApp.fileBrowser', ['ngRoute', 'ui.bootstrap'])
   };
 
   $scope.refresh = function() {
-    resetUi();
+    $scope.resetUi();
 
     $scope.currentFolder.update(true, function() {
       $scope.$apply(function() {

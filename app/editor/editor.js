@@ -126,6 +126,7 @@ angular.module('myApp.editor', ['ngRoute'])
       $scope.mainDoc.url = $routeParams.uri;
       $scope.mainDoc.io = getIO($routeParams.ioType, $routeParams.sparqlEndpoint);
       $scope.saveDocument();
+      $scope.editor.updateView();
     }
 
     // otherwise we try to load the requested document
@@ -210,7 +211,7 @@ angular.module('myApp.editor', ['ngRoute'])
     if ($scope.mainDoc.url) {
       var cbSave = function () {
         toggleSpinner(true);
-        mainDoc.save(function() {
+        $scope.mainDoc.save(function() {
           toggleSpinner(false);
           Notification.notify('success', "Successfully saved document to <code>" + $scope.mainDoc.url + "</code>");
         }, function(err) {
