@@ -27,6 +27,7 @@ var jsRdfeUi = [
   "src/ui/entityview.js",
   "src/ui/predicateeditor.js",
   "src/ui/predicateview.js",
+  "src/ui/ontologyview.js",
   "src/ui/editor.js"
 ];
 
