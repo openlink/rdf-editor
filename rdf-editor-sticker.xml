@@ -23,7 +23,8 @@
       vhost_define (
         lpath=>'/rdf-editor',
         ppath=>'/DAV/VAD/rdf-editor/',
-        is_dav=>1
+        is_dav=>1,
+        def_page=>'index.html'
       );
     ]]>
   </sql>
@@ -34,25 +35,14 @@
   <sql purpose="pre-uninstall"></sql>
 </ddls>
 <resources>
-  <file source_uri="*.html" target_uri="rdf-editor/" />
-  <file source_uri="data/*.html" target_uri="rdf-editor/" />
-  <file source_uri="*.json" target_uri="rdf-editor/" />
-  <file source_uri="css/*.css" target_uri="rdf-editor/" />
-  <file source_uri="src/**/*.js" target_uri="rdf-editor/" />
-  <file source_uri="distribution/**/*.js" target_uri="rdf-editor/" />
-  <file source_uri="distribution/**/*.css" target_uri="rdf-editor/" />
-  <file source_uri="fonts/*" target_uri="rdf-editor/" />
-  <file source_uri="img/*.gif" target_uri="rdf-editor/" />
-  <file source_uri="img/*.png" target_uri="rdf-editor/" />
-  <file source_uri="test/*.ttl" target_uri="rdf-editor/" />
-  <file source_uri="test/*.rdf" target_uri="rdf-editor/" />
-  <file source_uri="bce/*.ttl" target_uri="rdf-editor/" />
-  <file source_uri="bce/*.rdf" target_uri="rdf-editor/" />
-
-  <file source_uri="app/**/*.html" target_uri="rdf-editor/" />
-  <file source_uri="app/**/*.js" target_uri="rdf-editor/" />
-  <file source_uri="app/**/*.css" target_uri="rdf-editor/" />
-  <file source_uri="app/**/*.json" target_uri="rdf-editor/" />
+  <file source_uri="dist/*.html" target_uri="rdf-editor/$f$" />
+  <file source_uri="dist/views/*.html" target_uri="rdf-editor/views/$f$" />
+  <file source_uri="dist/tmpl/*.html" target_uri="rdf-editor/tmpl/$f$" />
+  <file source_uri="dist/*.json" target_uri="rdf-editor/$f$" />
+  <file source_uri="dist/styles/*.css" target_uri="rdf-editor/styles/$f$" />
+  <file source_uri="dist/scripts/*.js" target_uri="rdf-editor/scripts/$f$" />
+  <file source_uri="dist/fonts/*" target_uri="rdf-editor/fonts/$f$" />
+  <file source_uri="dist/images/*" target_uri="rdf-editor/images/$f$" />
 </resources>
 <registry>
 </registry>

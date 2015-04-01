@@ -4,7 +4,7 @@ angular.module('myApp.fileBrowser', ['ngRoute', 'ui.bootstrap'])
 
 .config(['$routeProvider', function($routeProvider) {
   $routeProvider.when('/browser', {
-    templateUrl: 'browser/browser.html',
+    templateUrl: 'views/browser.html',
     controller: 'FileBrowserCtrl'
   });
 }])
