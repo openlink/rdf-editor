@@ -9,11 +9,24 @@
   <title>OpenLink Software RDF Editor</title>
   <meta name="description" content="">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <link rel="stylesheet" href="bower_components/html5-boilerplate/css/normalize.css">
-  <link rel="stylesheet" href="bower_components/html5-boilerplate/css/main.css">
-  <link rel="stylesheet" href="app.css">
-  <link href="../distribution/rdfe-standalone.min.css" rel="stylesheet">
-  <script src="bower_components/html5-boilerplate/js/vendor/modernizr-2.6.2.min.js"></script>
+  <!-- build:css(.) styles/vendor.css -->
+  <!-- bower:css -->
+  <link rel="stylesheet" href="bower_components/bootstrap/dist/css/bootstrap.css" />
+  <!-- endbower -->
+  <!-- endbuild -->
+  <!-- build:css(.tmp) styles/main.css -->
+  <link rel="stylesheet" href="styles/app.css">
+  <link rel="stylesheet" href="../css/jquery.rdfnodeinput.css">
+  <link rel="stylesheet" href="../css/bootstrap-fixes.css">
+  <link rel="stylesheet" href="../css/rdfe.css">
+  <link rel="stylesheet" href="../css/backbone-forms-bootstrap3.css">
+  <link rel="stylesheet" href="../css/bootstrap-datetimepicker.min.css">
+  <link rel="stylesheet" href="../css/bootstrap-editable.css">
+  <link rel="stylesheet" href="../css/bootstrap-theme.css">
+  <link rel="stylesheet" href="../css/bootstrap-table.min.css">
+  <link rel="stylesheet" href="../css/bootstrap-toggle.min.css">
+  <link rel="stylesheet" href="../css/selectize.bootstrap3.css">
+  <!-- endbuild -->
 </head>
 
 <body>
@@ -57,21 +70,28 @@
   <!-- In production use:
   <script src="//ajax.googleapis.com/ajax/libs/angularjs/x.x.x/angular.min.js"></script>
   -->
+  <!-- build:js(.) scripts/vendor.js -->
+  <!-- bower:js -->
+  <script src="bower_components/jquery/dist/jquery.js"></script>
   <script src="bower_components/angular/angular.js"></script>
+  <script src="bower_components/bootstrap/dist/js/bootstrap.js"></script>
   <script src="bower_components/angular-route/angular-route.js"></script>
+  <script src="bower_components/angular-loader/angular-loader.js"></script>
+  <script src="bower_components/angular-mocks/angular-mocks.js"></script>
   <script src="bower_components/angular-bootstrap/ui-bootstrap-tpls.js"></script>
   <script src="bower_components/spin.js/spin.js"></script>
-  <script src="bower_components/angular-spinner/angular-spinner.min.js"></script>
+  <script src="bower_components/angular-spinner/angular-spinner.js"></script>
+  <!-- endbower -->
+  <!-- endbuild -->
 
-  <script src="app.js"></script>
-  <script src="welcome/welcome.js"></script>
-  <script src="editor/editor.js"></script>
-  <script src="browser/browser.js"></script>
-  <script src="components/version/version.js"></script>
-  <script src="components/version/version-directive.js"></script>
-  <script src="components/version/interpolate-filter.js"></script>
+  <!-- build:js({.tmp,app}) scripts/scripts.js -->
+  <script src="scripts/app.js"></script>
+  <script src="scripts/controllers/welcome.js"></script>
+  <script src="scripts/controllers/editor.js"></script>
+  <script src="scripts/controllers/browser.js"></script>
+  <!-- endbuild -->
 
-  <script src="../src/deps-orig/jquery-1.11.1.min.js"></script>
+  <!-- build:js({.tmp,app}) scripts/rdfe.js -->
   <script src="../src/deps-orig/jquery.md5.js"></script>
   <script src="../src/deps-orig/underscore-min.js"></script>
   <script src="../src/deps-orig/backbone-min.js"></script>
@@ -89,7 +109,6 @@
 
   <script src="../src/deps-orig/selectize.js"></script>
   <script src="../src/deps-orig/backbone-forms.js"></script>
-  <script src="../src/deps-orig/bootstrap.js"></script>
   <script src="../src/deps-orig/bootstrap-editable.js"></script>
   <script src="../src/deps-orig/bootstrap-datetimepicker.min.js"></script>
   <script src="../src/deps-orig/bootstrap-toggle.min.js"></script>
@@ -120,5 +139,6 @@
   <script src="../src/deps-demo/jquery.cookie.js"></script>
   <script src="../src/deps-demo/jquery.spin.js"></script>
   <script src="../src/deps-demo/bootstrap-growl.min.js"></script>
+  <!-- endbuild -->
 </body>
 </html>

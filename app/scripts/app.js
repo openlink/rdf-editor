@@ -6,8 +6,7 @@ angular.module('myApp', [
   'angularSpinner',
   'myApp.welcome',
   'myApp.editor',
-  'myApp.fileBrowser',
-  'myApp.version'
+  'myApp.fileBrowser'
 ])
 
 .config(['$routeProvider', function($routeProvider) {
@@ -121,7 +120,7 @@ angular.module('myApp', [
     if(forceUpdate !== false && (forceUpdate === true || !cached)) {
       return $q(function(resolve, reject) {
         $modal.open({
-          templateUrl: 'browser/authinfodlg.html',
+          templateUrl: 'tmpl/authinfodlg.html',
           controller: 'AuthInfoDialogCtrl',
           resolve: {
             url: function() {
