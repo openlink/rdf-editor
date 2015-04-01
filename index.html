@@ -155,20 +155,72 @@
       var ontologyManager;
       var rdfeConfig;
 
+      function renderFolder(folder, $el) {
+        $el.empty();
+
+        function updateDir(dir) {
+          dir.update(function(dir) {
+            renderFolder(dir, $el);
+          }, function(err) {
+            $.growl({ message: err }, { type: "danger" });
+          });
+        };
+
+        if(folder.parent) {
+          $el.append(
+            $(document.createElement('a'))
+              .addClass('btn btn-default btn-block')
+              .attr('href', folder.parent.url)
+              .append('<span class="glyphicon glyphicon-circle-arrow-up"></span> Up')
+              .click(function(e) {
+                e.preventDefault();
+                updateDir(folder.parent);
+              })
+          );
+        }
+
+        var children = folder.getChildren();
+        for(var i = 0; i < children.length; i++) {
+          (function(res) {
+            if(res.type === 'folder') {
+              $el.append(
+                $(document.createElement('a'))
+                  .addClass('btn btn-default btn-block')
+                  .attr('href', res.url).text('Document Folder: ' + res.path)
+                  .click(function(e) {
+                    e.preventDefault();
+                    updateDir(res);
+                  })
+                );
+            }
+            else {
+              $el.append(
+                $(document.createElement('a'))
+                  .addClass('btn btn-default btn-block')
+                  .attr('href', res.url).text('Document: ' + res.path)
+                  .click(function(e) {
+                    e.preventDefault();
+                    if(res.sparqlEndpoint) {
+                      ioRetrieve(res.url, "sparql", res.sparqlEndpoint);
+                    }
+                    else {
+                      ioRetrieve(res.url, res.ioType);
+                    }
+                  })
+                );
+            }
+          })(children[i]);
+        }
+      }
+
       function loadLdpLocations(storages) {
         var $storageDocsEl = $('#storageDocs');
         if(storages) {
           RDFE.Utils.resolveStorageLocations(storages, function(files) {
-            if(files.length > 0) {
-              $storageDocsEl.append('<hr/><h3>Your Documents</h3>');
-              for(var i = 0; i < files.length; i++) {
-                $storageDocsEl.append('<p class="btn-group btn-group-justified" role="group"><a href="' + files[i].uri + '" data-io-type="' + files[i].ioType + '" data-sparql-endpoint="' + (files[i].sparqlEndpoint || "") + '" class="btn btn-default">Load ' + files[i].uri + '</a></p>');
-              }
-
-              $storageDocsEl.find('a').click(function(e) {
-                e.preventDefault();
-                ioRetrieve($(this).attr('href'), $(this).attr('data-io-type'), $(this).attr('data-sparql-endpoint'));
-              });
+            if(files.children.length > 0) {
+              var el = $(document.createElement('div'));
+              $storageDocsEl.append('<hr/><h3>Your Documents</h3>').append(el);
+              renderFolder(files, el);
             }
           });
         }

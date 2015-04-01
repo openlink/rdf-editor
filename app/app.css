@@ -1,0 +1,48 @@
+body {
+  padding-top: 70px;
+}
+tr.triple td {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+#busyspinner {margin: 1em; }
+.fixed-table-body {
+  height: auto;
+  overflow: inherit;
+}
+.btn-text {
+  padding-left: 0px;
+}
+#docUrl {
+  font-weight: bold;
+}
+.accessError {
+  color: red;
+}
+[ng\:cloak], [ng-cloak], [data-ng-cloak], [x-ng-cloak], .ng-cloak, .x-ng-cloak {
+  display: none !important;
+}
+
+.resourceItem .resourceName {
+  text-weight: bold;
+  display: block;
+}
+.resourceItem .resourceUrl {
+  font-size: 0.8em;
+  color: gray;
+  display: block;
+}
+.resourceItem .resourceIcon {
+  float:left;
+}
+.resourceItem .resourceDetails {
+  margin-left: 20px;
+}
+
+.locationItem.selected {
+  background-color: #f1f1f1;
+}
+
+li.spinner {
+  height: 50px;
+}

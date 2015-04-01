@@ -224,7 +224,6 @@ RDFE.EntityModel = Backbone.Model.extend({
     var self = this;
     self.schema = {};
     self.fields = [];
-    self.ontologyManager = ontologyManager;
 
     this.doc.getEntity(self.uri, function(entity) {
       // TODO: optionally load the ontologies for this.types. Ideally through a function in the ontology manager, something like getClass()

@@ -434,23 +434,30 @@ RDFE.Document.prototype.inverseTriples = function(triples) {
  * Get the label for the given resource using the configured label properties.
  * if no label can be found the last section of the url is used instead.
  */
-RDFE.Document.prototype.getEntityLabel = function(url, success) {
-  var self = this;
+RDFE.Document.prototype.getEntityLabel = function(url, properties, success) {
+  var self = this,
+      props = properties,
+      success_ = success;
+  if(typeof(props) == 'function') {
+    success_ = props;
+    props = undefined;
+  }
+
   var getLabel = function(lps, i) {
     // fall back to the last section of the uri
     if(i >= lps.length)
-      success(RDFE.Utils.uri2name(url));
+      success_(RDFE.Utils.uri2name(url), false);
     else
       self.store.execute('select ?l from <' + self.graph + '> where { <' + url + '> <' + lps[i] + '> ?l . }', function(s, r) {
         if(s && r.length > 0 && r[0].l.value.length > 0) {
-          success(r[0].l.value);
+          success_(r[0].l.value, true);
         }
         else {
           getLabel(lps, i+1);
         }
       });
   };
-  getLabel(self.config.options.labelProps, 0);
+  getLabel(props || self.config.options.labelProps, 0);
 };
 
 RDFE.Document.prototype.getEntity = function(url, success) {

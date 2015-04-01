@@ -149,10 +149,12 @@ RDFE.Editor.prototype.createNewStatementEditor = function() {
   });
 
   self.formContainer.find('a.triple-action-new-cancel').click(function(e) {
+    e.preventDefault();
     self.createTripleList();
   });
 
   self.formContainer.find('a.triple-action-new-save').click(function(e) {
+    e.preventDefault();
     var s = self.formContainer.find('input[name="subject"]').val();
     var p = propEd.selectedURI();
     var o = objEd.getValue();
@@ -303,6 +305,7 @@ RDFE.Editor.prototype.createNewEntityEditor = function(forcedType) {
   }
 
   self.formContainer.find('a.triple-action-new-cancel').click(function(e) {
+    e.preventDefault();
     self.listContainer.show();
     self.formContainer.hide();
   });
@@ -338,6 +341,7 @@ RDFE.Editor.prototype.createNewEntityEditor = function(forcedType) {
   };
 
   self.formContainer.find('a.triple-action-new-save').click(function(e) {
+    e.preventDefault();
     saveFct();
   });
 

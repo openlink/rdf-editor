@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<!--[if lt IE 7]>      <html lang="en" ng-app="myApp" class="no-js lt-ie9 lt-ie8 lt-ie7"> <![endif]-->
+<!--[if IE 7]>         <html lang="en" ng-app="myApp" class="no-js lt-ie9 lt-ie8"> <![endif]-->
+<!--[if IE 8]>         <html lang="en" ng-app="myApp" class="no-js lt-ie9"> <![endif]-->
+<!--[if gt IE 8]><!--> <html lang="en" ng-app="myApp" class="no-js"> <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <title>OpenLink Software RDF Editor</title>
+  <meta name="description" content="">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="bower_components/html5-boilerplate/css/normalize.css">
+  <link rel="stylesheet" href="bower_components/html5-boilerplate/css/main.css">
+  <link rel="stylesheet" href="app.css">
+  <link href="../distribution/rdfe-standalone.min.css" rel="stylesheet">
+  <script src="bower_components/html5-boilerplate/js/vendor/modernizr-2.6.2.min.js"></script>
+</head>
+
+<body>
+  <nav class="navbar navbar-default navbar-fixed-top" role="navigation" ng-controller="AuthHeaderCtrl">
+    <div class="container-fluid">
+      <div class="navbar-header">
+        <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#rdfe-navbar-collapse">
+          <span class="sr-only">Toggle navigation</span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+        </button>
+        <a class="navbar-brand" style="padding: 5px 15px" href=""><img src="../img/oplogo_std_100x40.png" alt="OpenLink Software RDF Editor" /></a></li>
+      </div>
+
+      <div class="collapse navbar-collapse" id="rdfe-navbar-collapse">
+        <p class="navbar-text navbar-right">
+          <span ng-show="profile" ng-cloak class="ng-cloak">Logged in as <a class="navbar-link" ng-href="{{profile.uri}}">{{profile.name || profile.nick}}</a></span>
+          <span ng-hide="profile">Not logged in</span>
+        </p>
+
+        <ul class="nav navbar-nav navbar-right">
+          <li ng-hide="profile"><a class="navbar-link" ng-href="{{loginLink}}">Login</a></li>
+          <li ng-show="profile"><a class="navbar-link" ng-href="{{logoutLink}}">Logout</a></li>
+        </ul>
+      </div>
+    </div>
+  </nav>
+
+
+  <!--[if lt IE 7]>
+      <p class="browsehappy">You are using an <strong>outdated</strong> browser. Please <a href="http://browsehappy.com/">upgrade your browser</a> to improve your experience.</p>
+  <![endif]-->
+
+  <div class="container-fluid">
+    <div ng-view></div>
+  </div>
+
+  <!--<div>OpenLink RDF Editor version <span app-version></span></div>-->
+
+  <!-- In production use:
+  <script src="//ajax.googleapis.com/ajax/libs/angularjs/x.x.x/angular.min.js"></script>
+  -->
+  <script src="bower_components/angular/angular.js"></script>
+  <script src="bower_components/angular-route/angular-route.js"></script>
+  <script src="bower_components/angular-bootstrap/ui-bootstrap-tpls.js"></script>
+  <script src="bower_components/spin.js/spin.js"></script>
+  <script src="bower_components/angular-spinner/angular-spinner.min.js"></script>
+
+  <script src="app.js"></script>
+  <script src="welcome/welcome.js"></script>
+  <script src="editor/editor.js"></script>
+  <script src="browser/browser.js"></script>
+  <script src="components/version/version.js"></script>
+  <script src="components/version/version-directive.js"></script>
+  <script src="components/version/interpolate-filter.js"></script>
+
+  <script src="../src/deps-orig/jquery-1.11.1.min.js"></script>
+  <script src="../src/deps-orig/jquery.md5.js"></script>
+  <script src="../src/deps-orig/underscore-min.js"></script>
+  <script src="../src/deps-orig/backbone-min.js"></script>
+  <script src="../src/deps-orig/n3-browser.min.js"></script>
+  <script src="../src/deps/rdf_store.js"></script>
+
+  <script src="../src/core/utils.js"></script>
+  <script src="../src/core/rdf_store_ext.js"></script>
+  <script src="../src/core/io.js"></script>
+  <script src="../src/core/dav.js"></script>
+  <script src="../src/core/config.js"></script>
+  <script src="../src/core/rdfnode.js"></script>
+  <script src="../src/core/ontology.js"></script>
+  <script src="../src/core/document.js"></script>
+
+  <script src="../src/deps-orig/selectize.js"></script>
+  <script src="../src/deps-orig/backbone-forms.js"></script>
+  <script src="../src/deps-orig/bootstrap.js"></script>
+  <script src="../src/deps-orig/bootstrap-editable.js"></script>
+  <script src="../src/deps-orig/bootstrap-datetimepicker.min.js"></script>
+  <script src="../src/deps-orig/bootstrap-toggle.min.js"></script>
+  <script src="../src/deps/backbone-forms-list.js"></script>
+  <script src="../src/deps/backbone-forms-bootstrap3.js"></script>
+  <script src="../src/deps/bootstrap-table.js"></script>
+  <script src="../src/deps-orig/bootstrap-table-editable.js"></script>
+
+  <script src="../src/ui/jquery.rdfnodeinput.js"></script>
+  <script src="../src/ui/editable-rdfnode.js"></script>
+  <script src="../src/ui/jquery.ontobox.js"></script>
+  <script src="../src/ui/jquery.propertybox.js"></script>
+  <script src="../src/ui/editable-propertybox.js"></script>
+  <script src="../src/ui/tripleview.js"></script>
+  <script src="../src/ui/backbone-forms-rdfnode.js"></script>
+  <script src="../src/ui/backbone-forms-nestedrdf.js"></script>
+  <script src="../src/ui/entitymodel.js"></script>
+  <script src="../src/ui/entityeditor.js"></script>
+  <script src="../src/ui/entityview.js"></script>
+  <script src="../src/ui/predicateeditor.js"></script>
+  <script src="../src/ui/predicateview.js"></script>
+  <script src="../src/ui/editor.js"></script>
+
+  <script src="../src/deps-demo/val.js"></script>
+  <script src="../src/deps-demo/jstorage.js"></script>
+  <script src="../src/deps-demo/bootbox.min.js"></script>
+  <script src="../src/deps-demo/jquery-deparam.min.js"></script>
+  <script src="../src/deps-demo/jquery.cookie.js"></script>
+  <script src="../src/deps-demo/jquery.spin.js"></script>
+  <script src="../src/deps-demo/bootstrap-growl.min.js"></script>
+</body>
+</html>
