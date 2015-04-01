@@ -39,6 +39,7 @@
   <file source_uri="dist/views/*.html" target_uri="rdf-editor/views/$f$" />
   <file source_uri="dist/tmpl/*.html" target_uri="rdf-editor/tmpl/$f$" />
   <file source_uri="dist/*.json" target_uri="rdf-editor/$f$" />
+  <file source_uri="dist/data/*.ttl" target_uri="rdf-editor/data/$f$" />
   <file source_uri="dist/styles/*.css" target_uri="rdf-editor/styles/$f$" />
   <file source_uri="dist/scripts/*.js" target_uri="rdf-editor/scripts/$f$" />
   <file source_uri="dist/fonts/*" target_uri="rdf-editor/fonts/$f$" />
