@@ -23,7 +23,8 @@
       vhost_define (
         lpath=>'/rdf-editor',
         ppath=>'/DAV/VAD/rdf-editor/',
-        is_dav=>1
+        is_dav=>1,
+        def_page=>'index.html'
       );
     ]]>
   </sql>
