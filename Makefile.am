@@ -2,8 +2,6 @@ RDF_EDITOR_FILES = \
   *.html \
   css/*.css \
   fonts/* \
-  img/*.gif \
-  img/*.png \
   src/core/*.js \
   src/ui/*.js \
   src/deps/*.js \
