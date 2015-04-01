@@ -164,6 +164,10 @@ angular.module('myApp.editor', ['ngRoute'])
     }, function(mode) {
       $scope.editor.toggleView(mode);
     });
+
+
+    $scope.ontologyView = new RDFE.OntologyView($scope.ontologyManager);
+    $scope.ontologyView.render($('#container-ontologies'));
   });
 
   $scope.newTripleEntityOrPredicate = function() {
@@ -267,5 +271,17 @@ angular.module('myApp.editor', ['ngRoute'])
     else {
       doClose();
     }
+  };
+
+  $scope.toggleOntologyView = function() {
+    var $elHeading = $('#panel-ontologies').find('.panel-heading');
+    $elHeading.find('.up').toggle();
+    $elHeading.find('.down').toggle();
+    $('#container-ontologies').toggle();
+    $('#ontology-add').toggle();
+  };
+
+  $scope.showOntologyAddUi = function() {
+    $scope.ontologyView.editor();
   };
 }]);
