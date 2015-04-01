@@ -168,6 +168,10 @@ angular.module('myApp.editor', ['ngRoute'])
 
     $scope.ontologyView = new RDFE.OntologyView($scope.ontologyManager);
     $scope.ontologyView.render($('#container-ontologies'));
+    $('#ontology-add').click(function (e) {
+      e.stopPropagation();
+      $scope.ontologyView.editor();
+    });
   });
 
   $scope.newTripleEntityOrPredicate = function() {
@@ -279,9 +283,5 @@ angular.module('myApp.editor', ['ngRoute'])
     $elHeading.find('.down').toggle();
     $('#container-ontologies').toggle();
     $('#ontology-add').toggle();
-  };
-
-  $scope.showOntologyAddUi = function() {
-    $scope.ontologyView.editor();
   };
 }]);
