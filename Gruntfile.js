@@ -345,7 +345,8 @@ module.exports = function (grunt) {
             'tmpl/{,*/}*.html',
             'images/{,*/}*.{webp}',
             'styles/fonts/{,*/}*.*',
-            '*.json'
+            'config.json',
+            'data/*.ttl'
           ]
         }, {
           expand: true,

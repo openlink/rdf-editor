@@ -5,17 +5,12 @@
     "fresnelFormats": true,
     "fresnelGroups": true,
     "preloadOntologies": [
-      "../bce/rdf.ttl",
-      "../bce/rdfs.ttl",
-      "../bce/skos.ttl",
-      "../test/foaf-restrictions.ttl"
+      "data/rdf.ttl",
+      "data/rdfs.ttl",
+      "data/skos.ttl",
+      "data/foaf.ttl"
     ]
   },
-  "bookmarks": [
-  ],
-  "actions": [
-      "new", "open", "save", "saveas", "bookmarks", "entities", "triples"
-  ],
   "defaultView": "entities",
   "labelProps": [
     "http://www.w3.org/2004/02/skos/core#prefLabel",
