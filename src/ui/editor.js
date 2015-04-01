@@ -154,6 +154,7 @@ RDFE.Editor.prototype.createNewStatementEditor = function() {
   });
 
   self.formContainer.find('a.triple-action-new-save').click(function(e) {
+    e.preventDefault();
     var s = self.formContainer.find('input[name="subject"]').val();
     var p = propEd.selectedURI();
     var o = objEd.getValue();
