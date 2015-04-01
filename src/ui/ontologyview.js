@@ -109,10 +109,12 @@
         '</div>\n'
       );
       $form.find('.cancel').click(function (e) {
+        e.preventDefault();
         self.formContainer.hide();
         self.tableContainer.show();
       });
       $form.find('.ok').click(function (e) {
+        e.preventDefault();
         self.ontologyManager.parseOntologyFile(self.formContainer.find('#uri').val(), {});
 
         self.formContainer.hide();

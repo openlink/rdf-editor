@@ -100,7 +100,8 @@ angular.module('myApp.editor', ['ngRoute'])
         $scope.mainDoc.load(url, io_rdfe, function() {
           $scope.editor.updateView();
           $scope.$apply(function() {
-            $scope.documentUrl = url;
+            // this is essentially a no-op to force the ui to update the url view
+            $scope.mainDoc.url = url;
           });
         }, function() {
           Notification.notify('error', 'Failed to load document');
@@ -137,10 +138,6 @@ angular.module('myApp.editor', ['ngRoute'])
           $scope.mainDoc.io = getIO($routeParams.ioType, $routeParams.sparqlEndpoint);
         }
         $scope.editor.updateView();
-
-        $scope.$apply(function() {
-          $scope.documentUrl = undefined;
-        });
       }, function() {
         Notification.notity('error', "Failed to clear Document for unknown reasons.");
       });
@@ -163,6 +160,14 @@ angular.module('myApp.editor', ['ngRoute'])
       return scope.viewMode;
     }, function(mode) {
       $scope.editor.toggleView(mode);
+    });
+
+
+    $scope.ontologyView = new RDFE.OntologyView($scope.ontologyManager);
+    $scope.ontologyView.render($('#container-ontologies'));
+    $('#ontology-add').click(function (e) {
+      e.stopPropagation();
+      $scope.ontologyView.editor();
     });
   });
 
@@ -267,5 +272,13 @@ angular.module('myApp.editor', ['ngRoute'])
     else {
       doClose();
     }
+  };
+
+  $scope.toggleOntologyView = function() {
+    var $elHeading = $('#panel-ontologies').find('.panel-heading');
+    $elHeading.find('.up').toggle();
+    $elHeading.find('.down').toggle();
+    $('#container-ontologies').toggle();
+    $('#ontology-add').toggle();
   };
 }]);

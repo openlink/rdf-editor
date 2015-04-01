@@ -27,13 +27,28 @@
 
 <hr />
 
-<div class="btn-group">
-	<label class="btn btn-default" ng-model="viewMode" btn-radio="'triples'" title="Relationship representation"><span class="glyphicon glyphicon-th" aria-hidden="true"></span> Statements</label>
-	<label class="btn btn-default" ng-model="viewMode" btn-radio="'predicates'"title="How relationship subject and object are associated"><span class="glyphicon glyphicon-list" aria-hidden="true"></span> Properties</label>
-	<label class="btn btn-default" ng-model="viewMode" btn-radio="'entities'" title="All entitites/instances in the document"><span class="glyphicon glyphicon-list" aria-hidden="true"></span> Entities</label>
-</div>
+<div class="row">
+  <div class="col-xs-7 col-md-6">
+    <div class="btn-group">
+	    <label class="btn btn-default" ng-model="viewMode" btn-radio="'triples'" title="Relationship representation"><span class="glyphicon glyphicon-th" aria-hidden="true"></span> Statements</label>
+	    <label class="btn btn-default" ng-model="viewMode" btn-radio="'predicates'"title="How relationship subject and object are associated"><span class="glyphicon glyphicon-list" aria-hidden="true"></span> Properties</label>
+	    <label class="btn btn-default" ng-model="viewMode" btn-radio="'entities'" title="All entitites/instances in the document"><span class="glyphicon glyphicon-list" aria-hidden="true"></span> Entities</label>
+    </div>
 
-<button class="btn btn-primary" ng-click="newTripleEntityOrPredicate()" title="Add a new entity or triple to the document"><span class="glyphicon glyphicon-plus" aria-hidden="true"></span> New {{viewMode | viewModeLabel}}</button>
+    <button class="btn btn-primary" ng-click="newTripleEntityOrPredicate()" title="Add a new entity or triple to the document"><span class="glyphicon glyphicon-plus" aria-hidden="true"></span> New {{viewMode | viewModeLabel}}</button>
+  </div>
+
+  <div class="col-xs-5 col-md-6">
+    <div id="panel-ontologies" class="panel panel-default" style="margin-bottom: 0px;">
+      <div class="panel-heading" style="padding: 6px 12px 6px 12px" ng-click="toggleOntologyView()">
+        Ontologies&nbsp;<span class="dropup up" style="display: none;"><span class="caret"></span></span><span class="caret down"></span>
+        <span id="ontology-add" class="glyphicon glyphicon-plus pull-right" aria-hidden="true" style="display: none;"></span>
+      </div>
+      <div id="container-ontologies" class="panel-body" style="padding: 0; overflow: auto; display: none;">
+      </div>
+    </div>
+  </div>
+</div>
 
 <div class="clearfix"></div>
 
