@@ -100,6 +100,7 @@ angular.module('myApp.fileBrowser', ['ngRoute', 'ui.bootstrap'])
   $scope.changeDir = function(folder) {
     $scope.resetUi();
 
+    // FIXME: apparently this update does not always work after having created a new file via addFile()
     if(folder.dirty) {
       folder.update(function() {
         $scope.$apply(function() {

@@ -114,6 +114,7 @@ angular.module('myApp', [
   function getAuthInfo(url, forceUpdate) {
     var cached = authCache[url];
     // try the parent folder in case we have that
+    // FIXME: how about mapping into locations and then attaching the cached auth info directly to the RDFE.IO.Resource objects
     if(!cached && url[url.length-1] !== '/') {
       cached = authCache[url.substring(0, url.lastIndexOf('/')+1)];
     }
