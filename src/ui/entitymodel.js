@@ -274,7 +274,7 @@ RDFE.EntityModel = Backbone.Model.extend({
       }
       else {
         // replace fresnel:allProperties with the missing properties, rather than appending them
-        var j = self.fields.indexOf(self.ontologyManager.uriDenormalize('fresnel:allProperties'));
+        var j = self.fields.indexOf(self.doc.ontologyManager.uriDenormalize('fresnel:allProperties'));
         if(j >= 0) {
           // only chow the "Add Property" button if we have fresnel:allProperties in the lens or we have no lens
           self.allowAddProperty = true;
