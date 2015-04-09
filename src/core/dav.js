@@ -353,7 +353,7 @@ RDFE.IO.WebDavFolder = (function() {
       dataType: "xml",
       headers: this.standardAjaxHeaders()
     }).done(ref).fail(function(xhr) {
-      fail('Failed to list WebDAV folder for "' + self.url + '".', xhr.status);
+      fail(RDFE.IO.ajaxFailMessage(xhr, 'Failed to list WebDAV folder for "{0}"', self.url), xhr.status);
     });
   }
 
@@ -474,7 +474,7 @@ RDFE.IO.LDPFolder = (function() {
       }
     }).fail(function(jqXHR) {
       if(fail) {
-        fail('Failed to fetch Turtle content from ' + self.url + '.', jqXHR.status);
+        fail(RDFE.IO.ajaxFailMessage(jqXHR, 'Failed to fetch Turtle content from "{0}"', self.url), jqXHR.status);
       }
     });
   };
@@ -535,7 +535,7 @@ RDFE.IO.openUrl = function(url, options, success, fail) {
           }).fail(function(jqXHR) {
             // nothing
             if(_fail) {
-              _fail('Failed to get "' + url + '".', jqXHR.status);
+              _fail(RDFE.IO.ajaxFailMessage(jqXHR, 'Failed to get "{0}"', url), jqXHR.status);
             }
           });
         }
@@ -545,6 +545,13 @@ RDFE.IO.openUrl = function(url, options, success, fail) {
       });
     }
   });
+};
+
+RDFE.IO.ajaxFailMessage = function(jqXHR, message, url) {
+  if ((jqXHR.statusText = 'error') && (RDFE.Utils.extractDomain(url) !== window.location.hostname)) {
+    return message.format(url) + ' - this could be related to missing CORS settings on the server.';
+  }
+  return message.format(url) + '.';
 };
 
 })(jQuery);
