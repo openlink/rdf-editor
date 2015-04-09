@@ -81,12 +81,14 @@ RDFE.Utils.uriParams = function() {
  * either the fragment or the last path section.
  */
 RDFE.Utils.uri2name = function(u) {
-  var m = u.lastIndexOf('#');
-  if(m < 0) {
-    m = u.lastIndexOf('/');
-  }
-  if (m >= 0) {
-    return u.substring(m+1, u.length);
+  if(u) {
+    var m = u.lastIndexOf('#');
+    if(m < 0) {
+      m = u.lastIndexOf('/');
+    }
+    if (m >= 0) {
+      return u.substring(m+1, u.length);
+    }
   }
   return u;
 }
