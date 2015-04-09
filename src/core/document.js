@@ -261,6 +261,21 @@ RDFE.Document.prototype.deleteEntity = function(uri, success, fail) {
   }
 };
 
+RDFE.Document.prototype.deleteEntities = function(uris, success, fail) {
+  var self = this;
+  function delUri(i) {
+    if(i < uris.length) {
+      self.deleteEntity(uris[i], function() {
+        delUri(i+1);
+      }, fail);
+    }
+    else {
+      success();
+    }
+  }
+  delUri(0);
+};
+
 // delete all triplets of predicate
 RDFE.Document.prototype.deletePredicate = function(uri, success, fail) {
   var self = this;
