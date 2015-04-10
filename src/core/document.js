@@ -667,7 +667,7 @@ RDFE.Document.prototype.addEntity = function(uri, name, type, cb, failCb) {
   }
 
   var ontologyClass = self.ontologyManager.ontologyClassByURI(type);
-  var uniqueRestrictions = ontologyClass.getUniqueRestrictions();
+  var uniqueRestrictions = (ontologyClass ? ontologyClass.getUniqueRestrictions() : []);
   for (var i = 0; i < uniqueRestrictions.length; i++) {
     var property = uniqueRestrictions[i];
     var uniqueValue = self.getUniqueValue(uri, property);
