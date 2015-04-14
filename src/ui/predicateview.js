@@ -72,7 +72,7 @@
           idField: 'uri',
           columns: [{
             field: 'label',
-            title: 'Predicate Name',
+            title: 'Attribute Name',
             align: 'left',
             sortable: true,
             formatter: labelFormatter

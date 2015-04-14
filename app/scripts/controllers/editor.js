@@ -49,9 +49,24 @@ angular.module('myApp.editor', ['ngRoute'])
       case 'triples':
         return 'Statement';
       case 'predicates':
-        return 'Predicate';
+        return 'Attribute';
       case 'entities':
         return 'Entity';
+      default:
+        return input;
+    }
+  };
+})
+
+.filter('viewModeTitle', function() {
+  return function(input) {
+    switch(input) {
+      case 'triples':
+        return 'Add a new statement to the document';
+      case 'predicates':
+        return 'Add one or more entity and value pairs for this attribute to this document';
+      case 'entities':
+        return 'Add a new entity to the document';
       default:
         return input;
     }
@@ -239,6 +254,28 @@ angular.module('myApp.editor', ['ngRoute'])
   $scope.saveDocumentAs = function() {
     // redirect to the browser and ask it for a uri to save to
     $location.url('/browser?mode=save');
+  };
+
+  $scope.downloadDocumentAs = function() {
+    // redirect to the browser and ask it for a uri to save to
+    function download(filename, text) {
+      var pom = document.createElement('a');
+      pom.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(text));
+      pom.setAttribute('download', filename);
+
+      if (document.createEvent) {
+        var event = document.createEvent('MouseEvents');
+        event.initEvent('click', true, true);
+        pom.dispatchEvent(event);
+      }
+      else {
+        pom.click();
+      }
+    }
+    $scope.mainDoc.store.graph($scope.mainDoc.graph, function(success, graph){
+      var serialized = graph.toNT();
+      download('document.ttl', serialized);
+    });
   };
 
   $scope.openDocument = function() {

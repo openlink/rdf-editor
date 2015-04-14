@@ -117,7 +117,7 @@ RDFE.Editor.prototype.createNewStatementEditor = function() {
   self.listContainer.hide();
   self.formContainer.html(' \
       <div class="panel panel-default"> \
-      <div class="panel-heading"><h3 class="panel-title">Add new Triple</h3></div> \
+      <div class="panel-heading"><h3 class="panel-title">Add new Statement</h3></div> \
       <div class="panel-body"><div class="form-horizontal"> \
       <div class="form-group"><label for="subject" class="col-sm-2 control-label">Subject</label> \
       <div class="col-sm-10"><input name="subject" class="form-control" /></div></div> \
