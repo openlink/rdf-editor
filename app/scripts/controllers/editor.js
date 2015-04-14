@@ -241,6 +241,28 @@ angular.module('myApp.editor', ['ngRoute'])
     $location.url('/browser?mode=save');
   };
 
+  $scope.downloadDocumentAs = function() {
+    // redirect to the browser and ask it for a uri to save to
+    function download(filename, text) {
+      var pom = document.createElement('a');
+      pom.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(text));
+      pom.setAttribute('download', filename);
+
+      if (document.createEvent) {
+        var event = document.createEvent('MouseEvents');
+        event.initEvent('click', true, true);
+        pom.dispatchEvent(event);
+      }
+      else {
+        pom.click();
+      }
+    }
+    $scope.mainDoc.store.graph($scope.mainDoc.graph, function(success, graph){
+      var serialized = graph.toNT();
+      download('document.ttl', serialized);
+    });
+  };
+
   $scope.openDocument = function() {
     function doOpen() {
       $location.url('/browser');
