@@ -44,7 +44,7 @@
 
       <div class="collapse navbar-collapse" id="rdfe-navbar-collapse">
         <p class="navbar-text navbar-right">
-          <span ng-show="profile" ng-cloak class="ng-cloak">Logged in as <a class="navbar-link" ng-href="{{profile.uri}}">{{profile.name || profile.nick}}</a></span>
+          <span ng-show="profile" ng-cloak class="ng-cloak">Logged in as <a class="navbar-link" ng-href="{{profile.uri}}">{{profile.name || profile.nick || profile.uri}}</a></span>
           <span ng-hide="profile">Not logged in</span>
         </p>
 
