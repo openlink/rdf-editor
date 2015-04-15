@@ -110,6 +110,7 @@
             title: 'Actions',
             align: 'center',
             valign: 'middle',
+            class: 'actions-column',
             clickToSelect: false,
             editable: false,
             formatter: function(value, row, index) {

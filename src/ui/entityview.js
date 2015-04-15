@@ -98,6 +98,7 @@
             title: 'Actions',
             align: 'center',
             valign: 'middle',
+            class: 'actions-column',
             clickToSelect: false,
             formatter: entityListActionsFormatter,
             events: {
