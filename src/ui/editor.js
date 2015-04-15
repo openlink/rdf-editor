@@ -118,16 +118,27 @@ RDFE.Editor.prototype.createNewStatementEditor = function() {
   self.formContainer.html(' \
       <div class="panel panel-default"> \
       <div class="panel-heading"><h3 class="panel-title">Add new Statement</h3></div> \
-      <div class="panel-body"><div class="form-horizontal"> \
-      <div class="form-group"><label for="subject" class="col-sm-2 control-label">Subject</label> \
-      <div class="col-sm-10"><input name="subject" class="form-control" /></div></div> \
-      <div class="form-group"><label for="predicate" class="col-sm-2 control-label">Predicate</label> \
-      <div class="col-sm-10"><select name="predicate" class="form-control"></select></div></div> \
-      <div class="form-group"><label for="object" class="col-sm-2 control-label">Object</label> \
-      <div class="col-sm-10"><input name="object" class="form-control" /></div></div> \
-      <div class="form-group"><div class="col-sm-10 col-sm-offset-2"><a href="#" class="btn btn-default triple-action triple-action-new-cancel">Cancel</a> \
-        <a href="#" class="btn btn-primary triple-action triple-action-new-save">OK</a></div></div> \
-      </form></div></div>\n').show();
+      <div class="panel-body"> \
+        <form class="form-horizontal"> \
+          <div class="form-group"><label for="subject" class="col-sm-2 control-label">Entity</label> \
+            <div class="col-sm-10"><input name="subject" class="form-control" /></div> \
+          </div> \
+          <div class="form-group"><label for="predicate" class="col-sm-2 control-label">Attribute</label> \
+            <div class="col-sm-10"><select name="predicate" class="form-control"></select></div> \
+          </div> \
+          <div class="form-group"><label for="object" class="col-sm-2 control-label">Value</label> \
+            <div class="col-sm-10"><input name="object" class="form-control" /></div> \
+          </div> \
+          <div class="form-group"> \
+            <div class="col-sm-10 col-sm-offset-2"> \
+              <a href="#" class="btn btn-default triple-action triple-action-new-cancel">Cancel</a> \
+              <a href="#" class="btn btn-primary triple-action triple-action-new-save">OK</a> \
+            </div> \
+          </div> \
+        </form> \
+      </div> \
+    </div>\n'
+  ).show();
 
   var objEd = self.formContainer.find('input[name="object"]').rdfNodeEditor();
   var propEd = self.formContainer.find('select[name="predicate"]').propertyBox({

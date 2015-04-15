@@ -50,7 +50,7 @@
             $(self).trigger('rdf-editor-success', {
               "type": 'predicate-delete-done',
               "uri": predicate.uri,
-              "message": "Successfully deleted predicate " + uri + "."
+              "message": "Successfully deleted attribute " + uri + "."
             });
           }, function(msg) {
             $(self).trigger('rdf-editor-error', {

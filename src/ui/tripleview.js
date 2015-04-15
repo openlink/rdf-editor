@@ -81,7 +81,7 @@
               dataSetter: tripleEditorDataSetter,
               columns: [{
                 field: 'subject',
-                title: 'Subject',
+                title: 'Entity',
                 align: 'left',
                 sortable: true,
                 editable: function(triple) {
@@ -97,7 +97,7 @@
                 formatter: nodeFormatter
               }, {
                 field: 'predicate',
-                title: 'Predicate',
+                title: 'Attribute',
                 align: 'left',
                 sortable: true,
                 editable: function(triple) {
@@ -113,7 +113,7 @@
                 formatter: nodeFormatter
               }, {
                 field: 'object',
-                title: 'Object',
+                title: 'Value',
                 align: 'left',
                 sortable: true,
                 editable: function(triple) {

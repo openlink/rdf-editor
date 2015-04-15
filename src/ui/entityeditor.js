@@ -15,7 +15,7 @@
       // Add a "new property" button to the default Backbone-Forms form
       template: _.template('\
         <form class="form-horizontal clearfix" role="form">\
-          <a href="#" class="btn btn-default btn-xs pull-right addProp">Add Property</a>\
+          <a href="#" class="btn btn-default btn-xs pull-right addProp">Add Attribute</a>\
           <div data-fieldsets></div>\
           <% if (submitButton) { %>\
             <button type="submit" class="btn"><%= submitButton %></button>\
@@ -42,7 +42,7 @@
               cnclBtn = $(document.createElement('button')).addClass('btn').addClass('btn-default').text('Cancel');
 
           var c = $(document.createElement('div'))
-            .append($(document.createElement('span')).text('New Property:'))
+            .append($(document.createElement('span')).text('New Attribute:'))
             .append(ps)
             .append(addBtn)
             .append(cnclBtn);
