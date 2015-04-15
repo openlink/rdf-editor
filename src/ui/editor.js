@@ -116,7 +116,7 @@ RDFE.Editor.prototype.createNewStatementEditor = function() {
 
   self.listContainer.hide();
   self.formContainer.html(' \
-      <div class="panel panel-default"> \
+    <div class="panel panel-default"> \
       <div class="panel-heading"><h3 class="panel-title">Add new Statement</h3></div> \
       <div class="panel-body"> \
         <form class="form-horizontal"> \
@@ -462,7 +462,7 @@ RDFE.Editor.prototype.editPredicate = function(predicate) {
   self.listContainer.hide();
   self.formContainer.show();
   self.predicateEditor.predicate = predicate;
-  self.predicateEditor.render(self.formContainer, function() {
+  self.predicateEditor.render(self, self.formContainer, function() {
     self.formContainer.hide();
     self.listContainer.show();
     self.predicateView.updatePredicate(predicate.uri);

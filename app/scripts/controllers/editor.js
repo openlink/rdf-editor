@@ -194,7 +194,7 @@ angular.module('myApp.editor', ['ngRoute'])
       $scope.editor.createNewStatementEditor();
     }
     else {
-      $scope.editor.createNewPredicateEditor();
+      $scope.editor.editPredicate();
     }
   };
 
