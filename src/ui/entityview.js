@@ -12,12 +12,11 @@
     };
 
     var labelFormatter = function(value, row, index) {
+      var s = '<span title="' + row.uri + '">' + row.label + '</span>';
       if(row.types && row.types.length) {
-        return row.label + ' <small>(' + row.types + ')</small>';
+        s += ' <small>(' + row.types + ')</small>';
       }
-      else {
-        return row.label;
-      }
+      return s;
     };
 
     var entityListActionsFormatter = function(value, row, index) {
