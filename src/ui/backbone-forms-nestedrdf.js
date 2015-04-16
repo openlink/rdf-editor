@@ -42,9 +42,28 @@ Backbone.Form.editors.NestedRdf = Backbone.Form.editors.Object.extend({
   },
 
   getValue: function() {
+    var v = this.nestedForm.getValue();
+    if(this.nestedForm.model.defaults) {
+      // we only merge defaults if there is any value at all
+      var haveVal = false;
+      for(var p in v) {
+        if(v[p]) {
+          for(var i = 0; i < v[p].length; i++) {
+            if(v[p][i].value) {
+              haveVal = true;
+              break;
+            }
+          }
+        }
+      }
+      if(haveVal) {
+        v = _.extend({}, this.nestedForm.model.defaults, v);
+      }
+    }
+
     return {
       "uri": this.nestedForm.model.uri,
-      "values": this.nestedForm.getValue()
+      "values": v
     };
   }
 

@@ -131,7 +131,7 @@ RDFE.EntityModel = Backbone.Model.extend({
         item.itemType = "NestedRdf";
         item.model = RDFE.EntityModel.extend({
           defaults: {
-            'http://www.w3.org/1999/02/22-rdf-syntax-ns#type': [ property.getRange() ]
+            'http://www.w3.org/1999/02/22-rdf-syntax-ns#type': [ new RDFE.RdfNode('uri', property.getRange()) ]
           },
           initialize: function(options) {
             RDFE.EntityModel.prototype.initialize.call(this, options);
