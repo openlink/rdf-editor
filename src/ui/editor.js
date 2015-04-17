@@ -465,7 +465,9 @@ RDFE.Editor.prototype.editPredicate = function(predicate) {
   self.predicateEditor.render(self, self.formContainer, function() {
     self.formContainer.hide();
     self.listContainer.show();
-    self.predicateView.updatePredicate(predicate.uri);
+    if (predicate && predicate.uri) {
+      self.predicateView.updatePredicate(predicate.uri);
+    }
   });
 };
 
