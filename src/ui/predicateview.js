@@ -7,6 +7,7 @@
     // constructor
     var c = function(doc, ontoMan, params) {
       this.doc = doc;
+      this.namingSchema = doc.config.options[doc.config.options["namingSchema"]];
       this.ontologyManager = ontoMan;
       this.editFct = params.editFct;
     };
@@ -72,7 +73,7 @@
           idField: 'uri',
           columns: [{
             field: 'label',
-            title: 'Attribute Name',
+            title: RDFE.Utils.namingSchemaLabel('p', self.namingSchema) + ' Name',
             align: 'left',
             sortable: true,
             formatter: labelFormatter

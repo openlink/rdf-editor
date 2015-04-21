@@ -43,21 +43,6 @@ angular.module('myApp.editor', ['ngRoute'])
   };
 }])
 
-.filter('viewModeLabel', function() {
-  return function(input) {
-    switch(input) {
-      case 'triples':
-        return 'Statement';
-      case 'predicates':
-        return 'Attribute';
-      case 'entities':
-        return 'Entity';
-      default:
-        return input;
-    }
-  };
-})
-
 .filter('viewModeTitle', function() {
   return function(input) {
     switch(input) {
@@ -67,6 +52,30 @@ angular.module('myApp.editor', ['ngRoute'])
         return 'Add one or more entity and value pairs for this attribute to this document';
       case 'entities':
         return 'Add a new entity to the document';
+      default:
+        return input;
+    }
+  };
+})
+
+.filter('namingSchemaLabel', function() {
+  return function(input, scope, plural, lowercase) {
+    if (scope.namingSchema) {
+      var ndx = (plural === true) ? 1 : 0;
+      return scope.namingSchema[input][ndx];
+    }
+  };
+})
+
+.filter('viewModeKey', function() {
+  return function(input) {
+    switch(input) {
+      case 'triples':
+        return 'spo';
+      case 'predicates':
+        return 'p';
+      case 'entities':
+        return 's';
       default:
         return input;
     }
@@ -133,6 +142,7 @@ angular.module('myApp.editor', ['ngRoute'])
 
   RDFEditor.getEditor().then(function(editor) {
     $scope.editor = editor;
+    $scope.namingSchema = editor.config.options[editor.config.options["namingSchema"]];
     $scope.mainDoc = $scope.editor.doc;
     $scope.ontologyManager = $scope.editor.ontologyManager;
     $scope.editor.render($("#contents"));

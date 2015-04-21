@@ -7,6 +7,7 @@
     // constructor
     var c = function(doc, ontoMan) {
       this.doc = doc;
+      this.namingSchema = doc.config.options[doc.config.options["namingSchema"]];
       this.ontologyManager = ontoMan;
     };
 
@@ -81,7 +82,7 @@
               dataSetter: tripleEditorDataSetter,
               columns: [{
                 field: 'subject',
-                title: 'Entity',
+                title: RDFE.Utils.namingSchemaLabel('s', self.namingSchema),
                 align: 'left',
                 sortable: true,
                 editable: function(triple) {
@@ -97,7 +98,7 @@
                 formatter: nodeFormatter
               }, {
                 field: 'predicate',
-                title: 'Attribute',
+                title: RDFE.Utils.namingSchemaLabel('p', self.namingSchema),
                 align: 'left',
                 sortable: true,
                 editable: function(triple) {
@@ -113,7 +114,7 @@
                 formatter: nodeFormatter
               }, {
                 field: 'object',
-                title: 'Value',
+                title: RDFE.Utils.namingSchemaLabel('o', self.namingSchema),
                 align: 'left',
                 sortable: true,
                 editable: function(triple) {
@@ -148,7 +149,7 @@
                         values: [row.id]
                       });
                     }, function() {
-                      $(self).trigger('rdf-editor-error', { "type": 'triple-delete-failed', "message": 'Failed to delete triple.' });
+                      $(self).trigger('rdf-editor-error', { "type": 'triple-delete-failed', "message": 'Failed to delete ' + RDFE.Utils.namingSchemaLabel('spo', self.namingSchema, false, true) + '.' });
                     });
                   }
                 }
@@ -160,7 +161,7 @@
             if (callback)
               callback();
           } else {
-            $(self).trigger('rdf-editor-error', 'Failed to query triples from doc.');
+            $(self).trigger('rdf-editor-error', 'Failed to query ' + RDFE.Utils.namingSchemaLabel('spo', self.namingSchema, true, true) + ' from document.');
           }
         });
       });

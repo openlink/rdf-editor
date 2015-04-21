@@ -37,6 +37,12 @@ RDFE.Utils.escapeXml = function (str) {
   });
 }
 
+RDFE.Utils.namingSchemaLabel = function (input, namingSchema, plural, lowercase) {
+  var ndx = (plural === true) ? 1 : 0;
+  var value = namingSchema[input][ndx]
+  return (lowercase === true) ? value.toLowerCase : value;
+}
+
 RDFE.Utils.uriParams = function() {
   var result = {};
   var s = location.search;

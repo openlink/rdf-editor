@@ -7,6 +7,7 @@
     // constructor
     var c = function(doc, ontologyManager, predicate) {
       this.doc = doc;
+      this.namingSchema = doc.config.options[doc.config.options["namingSchema"]];
       this.ontologyManager = ontologyManager;
       this.predicate = predicate;
     };
@@ -28,7 +29,7 @@
         <div class="panel-heading clearfix"> \
           <div class="pull-left" style="width: 80%;"> \
             <h3 class="panel-title"> \
-              Editing Attribute <a href="<%= obj.uri %>" target="_blank" title="<%= obj.uri %>"><span class="entity-label"><%= RDFE.Utils.uri2name(obj.uri) %><span></a> \
+              Editing <%= RDFE.Utils.namingSchemaLabel("p", this.namingSchema) %> <a href="<%= obj.uri %>" target="_blank" title="<%= obj.uri %>"><span class="entity-label"><%= RDFE.Utils.uri2name(obj.uri) %><span></a> \
             </h3> \
           </div> \
           <div class="btn-group pull-right" role="group"> \
@@ -42,7 +43,7 @@
         <div class="panel-heading clearfix"> \
           <form class="form-inline"> \
             <div class="form-group" style="width: 80%;"> \
-              <label>Add Attribute</label> \
+              <label>Add <%= RDFE.Utils.namingSchemaLabel("p", this.namingSchema) %> </label> \
               <select name="predicate" class="form-control" style="width: 85%;"></select> \
             </div> \
             <div class="btn-group" role="group">\
@@ -78,7 +79,7 @@
           dataSetter: predicateEditorDataSetter,
           columns: [{
             field: 'subject',
-            title: 'Entity',
+            title: RDFE.Utils.namingSchemaLabel('s', self.namingSchema),
             aligh: 'left',
             sortable: true,
             editable: function(triple) {
@@ -94,7 +95,7 @@
             formatter: nodeFormatter
           }, {
             field: 'object',
-            title: 'Value',
+            title: RDFE.Utils.namingSchemaLabel('o', self.namingSchema),
             align: 'left',
             sortable: true,
             editable: function(triple) {
@@ -227,28 +228,28 @@
       var self = this;
 
       self.predicateTableContainer.hide();
-      self.predicateFormContainer.html(' \
-        <div class="panel panel-default"> \
-          <div class="panel-heading"><h3 class="panel-title">Add Relation</h3></div> \
-          <div class="panel-body"> \
-            <form class="form-horizontal"> \
-              <div class="form-group">\
-                <label for="subject" class="col-sm-2 control-label">Entity</label> \
-                <div class="col-sm-10"><input name="subject" class="form-control" /></div>\
-              </div> \
-              <div class="form-group">\
-                <label for="object" class="col-sm-2 control-label">Value</label> \
-                <div class="col-sm-10"><input name="object" class="form-control" /></div>\
-              </div> \
-              <div class="form-group">\
-                <div class="col-sm-10 col-sm-offset-2">\
-                  <button type="button" class="btn btn-default predicate-action predicate-action-new-cancel">Cancel</button> \
-                  <button type="button" class="btn btn-primary predicate-action predicate-action-new-save">OK</button>\
-                </div>\
-              </div> \
-            </form>\
-          </div>\
-        </div>'
+      self.predicateFormContainer.html(
+        '<div class="panel panel-default"> ' +
+        '  <div class="panel-heading"><h3 class="panel-title">Add Relation</h3></div> ' +
+        '  <div class="panel-body"> ' +
+        '    <form class="form-horizontal"> ' +
+        '      <div class="form-group"> ' +
+        '        <label for="subject" class="col-sm-2 control-label">' + RDFE.Utils.namingSchemaLabel('s', self.namingSchema) + '</label> ' +
+        '        <div class="col-sm-10"><input name="subject" class="form-control" /></div> ' +
+        '      </div> ' +
+        '      <div class="form-group"> ' +
+        '        <label for="object" class="col-sm-2 control-label">' + RDFE.Utils.namingSchemaLabel('o', self.namingSchema) + '</label> ' +
+        '        <div class="col-sm-10"><input name="object" class="form-control" /></div> ' +
+        '      </div> ' +
+        '      <div class="form-group"> ' +
+        '        <div class="col-sm-10 col-sm-offset-2"> ' +
+        '          <button type="button" class="btn btn-default predicate-action predicate-action-new-cancel">Cancel</button> ' +
+        '          <button type="button" class="btn btn-primary predicate-action predicate-action-new-save">OK</button> ' +
+        '        </div> ' +
+        '      </div> ' +
+        '    </form> ' +
+        '  </div> ' +
+        '</div>'
       ).show();
 
       var property = self.ontologyManager.ontologyProperties[self.predicate.uri];
