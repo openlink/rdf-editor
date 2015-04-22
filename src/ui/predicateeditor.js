@@ -25,34 +25,20 @@
 
     c.prototype.template = _.template(' \
       <div class="panel panel-default"> \
-        <% if (obj) { %> \
         <div class="panel-heading clearfix"> \
-          <div class="pull-left" style="width: 80%;"> \
-            <h3 class="panel-title"> \
-              Editing <%= RDFE.Utils.namingSchemaLabel("p", this.namingSchema) %> <a href="<%= obj.uri %>" target="_blank" title="<%= obj.uri %>"><span class="entity-label"><%= RDFE.Utils.uri2name(obj.uri) %><span></a> \
-            </h3> \
-          </div> \
-          <div class="btn-group pull-right" role="group"> \
-            <button type="button" class="btn btn-default btn-sm" id="backButton">Back</button> \
-          </div> \
+          <form class="form-inline"> \
+            <div class="form-group" style="width: 80%;"> \
+              <label>Select <%= RDFE.Utils.namingSchemaLabel("p", this.namingSchema) %> </label> \
+              <select name="predicate" class="form-control" style="width: 85%;"></select> \
+            </div> \
+            <div class="btn-group pull-right" role="group"> \
+              <button type="button" class="btn btn-default btn-sm" id="backButton">Back</button> \
+            </div> \
+          </form> \
         </div> \
         <div class="panel-body" id="predicateTable"> \
         </div> \
         <div class="panel-body" id="predicateForm" style="display: none;"> \
-        <% } else { %> \
-        <div class="panel-heading clearfix"> \
-          <form class="form-inline"> \
-            <div class="form-group" style="width: 80%;"> \
-              <label>Add <%= RDFE.Utils.namingSchemaLabel("p", this.namingSchema) %> </label> \
-              <select name="predicate" class="form-control" style="width: 85%;"></select> \
-            </div> \
-            <div class="btn-group" role="group">\
-              <button type="button" class="btn btn-primary btn-sm predicate-action predicate-new-ok">OK</button> \
-              <button type="button" class="btn btn-default btn-sm" id="backButton">Cancel</button> \
-            </div> \
-          </form> \
-        </div> \
-        <% } %> \
       </div>'
     );
 
@@ -60,13 +46,6 @@
       var self = this;
 
       var predicateEditorData = function(container, backCallback) {
-        var predicates = self.predicate.items;
-        for(var i = 0; i < predicates.length; i++) {
-          predicates[i].id = i;
-        }
-        // remember last index for predicate adding
-        $list.data('maxindex', i);
-
         $list.bootstrapTable({
           striped:true,
           sortName:'subject',
@@ -75,7 +54,7 @@
           searchAlign: 'left',
           showHeader: true,
           editable: true,
-          data: predicates,
+          data: [],
           dataSetter: predicateEditorDataSetter,
           columns: [{
             field: 'subject',
@@ -137,7 +116,7 @@
         });
         container.find('.fixed-table-toolbar').append(
          '<div class="pull-right search">\
-            <button id="addButton" type="button" class="btn btn-default" aria-label="Add Relation">\
+            <button id="addButton" type="button" class="btn btn-default" aria-label="Add Relation" style="display: none;">\
               <span class="glyphicon glyphicon-plus" aria-hidden="true"></span>\
             </button>\
           </div>'
@@ -146,11 +125,10 @@
         self.predicateTable = $list;
         self.predicateTableContainer = container.find('#predicateTable');
         self.predicateFormContainer = container.find('#predicateForm');
+        self.addButton = container.find('button#addButton');
 
-        var addButton = container.find('button#addButton');
-        addButton.click(function() {
-          self.createNewRelationEditor();
-        });
+        // reftersh predicates data
+        self.renderData();
       };
 
       var predicateEditorDataSetter = function(triple, field, newValue) {
@@ -197,24 +175,41 @@
         backCallback();
       });
 
+      var predicateSelect = container.find('select[name="predicate"]').propertyBox({
+        ontoManager: self.ontologyManager
+      });
       if (self.predicate) {
-        predicateEditorData(container, backCallback);
+        predicateSelect.setPropertyURI(self.predicate.uri);
+      }
+      predicateSelect.sel.on('change', function(predicateUri) {
+        if (predicateUri) {
+          self.doc.getPredicate(predicateUri, function (predicate) {
+            editor.predicateView.addPredicate(predicate);
+
+            self.predicate = predicate;
+            self.renderData();
+          });
+        }
+      });
+      predicateEditorData(container, backCallback);
+    };
+
+    c.prototype.renderData = function() {
+      var self = this;
+
+      var predicates = (self.predicate) ? self.predicate.items : [];
+      for(var i = 0; i < predicates.length; i++) {
+        predicates[i].id = i;
+      }
+      self.predicateTable.data('maxindex', i);
+      self.predicateTable.bootstrapTable('load', predicates);;
+      if (self.predicate) {
+        self.addButton.show();
       }
       else {
-        var predicateSelect = container.find('select[name="predicate"]').propertyBox({
-          ontoManager: self.ontologyManager
-        });
-        container.find('button.predicate-new-ok').click(function(e) {
-          var predicateUri = predicateSelect.selectedURI();
-          if (predicateUri) {
-            self.doc.getPredicate(predicateUri, function (predicate) {
-              editor.predicateView.addPredicate(predicate);
-              editor.editPredicate(predicate);
-            });
-          }
-        });
+        self.addButton.hide();
       }
-    };
+    },
 
     c.prototype.addTriple = function(triple) {
       var i = this.predicateTable.data('maxindex');

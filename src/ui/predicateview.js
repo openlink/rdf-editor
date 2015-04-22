@@ -34,7 +34,8 @@
     c.prototype.render = function(container, callback) {
       var self = this;
 
-      self.doc.listPredicates(function(el) {
+      self.doc.listPredicates(function(predicates) {
+        self.predicates = predicates;
         self.predicateTable = null;
         container.empty();
 
@@ -69,7 +70,7 @@
           searchAlign: 'left',
           trimOnSearch: false,
           showHeader: true,
-          data: el,
+          data: predicates,
           idField: 'uri',
           columns: [{
             field: 'label',
@@ -115,7 +116,11 @@
     };
 
     c.prototype.addPredicate = function(predicate) {
-      this.predicateTable.bootstrapTable('append', predicate);
+      var self = this;
+
+      if (!_.find(self.predicates, function(p){ return p.uri === predicate.uri; })) {
+        this.predicateTable.bootstrapTable('append', predicate);
+      }
     };
 
     /**
@@ -123,6 +128,7 @@
      */
     c.prototype.updatePredicate = function(uri) {
       var self = this;
+
       self.doc.getPredicate(uri, function(predicate) {
         self.predicateTable.bootstrapTable('update', {
           field: 'uri',
