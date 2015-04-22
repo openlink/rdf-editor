@@ -43,21 +43,6 @@ angular.module('myApp.editor', ['ngRoute'])
   };
 }])
 
-.filter('viewModeTitle', function() {
-  return function(input) {
-    switch(input) {
-      case 'triples':
-        return 'Add a new statement to the document';
-      case 'predicates':
-        return 'Add one or more entity and value pairs for this attribute to this document';
-      case 'entities':
-        return 'Add a new entity to the document';
-      default:
-        return input;
-    }
-  };
-})
-
 .filter('namingSchemaLabel', function() {
   return function(input, scope, plural, lowercase) {
     if (scope.namingSchema) {
@@ -195,18 +180,6 @@ angular.module('myApp.editor', ['ngRoute'])
       $scope.ontologyView.editor();
     });
   });
-
-  $scope.newTripleEntityOrPredicate = function() {
-    if ($scope.editor.currentView() === 'entities') {
-      $scope.editor.createNewEntityEditor();
-    }
-    else if ($scope.editor.currentView() === 'triples') {
-      $scope.editor.createNewStatementEditor();
-    }
-    else {
-      $scope.editor.editPredicate();
-    }
-  };
 
   function saveCheck(cbSave, myUrl, myIo) {
     if (!myUrl) {
