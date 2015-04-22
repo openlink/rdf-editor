@@ -93,17 +93,17 @@ RDFE.Editor.prototype.createTripleList = function() {
     "message": "Loading Triples..."
   });
 
-  if(!this.tripleView) {
-    this.tripleView = new RDFE.TripleView(this.doc, this.ontologyManager);
+  if (!self.tripleView) {
+    self.tripleView = new RDFE.TripleView(self.doc, self.ontologyManager, self);
     $(self.tripleView).on('rdf-editor-error', function(e, d) {
       $(self).trigger('rdf-editor-error', d);
     }).on('rdf-editor-success', function(e, d) {
       $(self).trigger('rdf-editor-success', d);
     });
   }
-  this.formContainer.hide();
-  this.listContainer.empty().show();
-  this.tripleView.render(self.listContainer, function() {
+  self.formContainer.hide();
+  self.listContainer.empty().show();
+  self.tripleView.render(self.listContainer, function() {
     $(self).trigger('rdf-editor-done', { "id": "render-triple-list" });
   });
 };
@@ -193,6 +193,7 @@ RDFE.Editor.prototype.createNewStatementEditor = function() {
 // Entities
 RDFE.Editor.prototype.createNewEntityEditor = function(forcedType) {
   var self = this;
+
   var $ontologiesSelect, ontologiesSelect;
   var $classesSelect, classesSelect;
 
@@ -202,13 +203,13 @@ RDFE.Editor.prototype.createNewEntityEditor = function(forcedType) {
     classesSelect.addOption(ontology ? ontology.classesAsArray() : self.ontologyManager.allClasses());
   };
 
-  if (!this.doc) {
+  if (!self.doc) {
     return false;
   }
 
 
-  this.listContainer.hide();
-  this.formContainer.show();
+  self.listContainer.hide();
+  self.formContainer.show();
 
   if (!forcedType) {
     self.formContainer.html(
@@ -372,8 +373,8 @@ RDFE.Editor.prototype.createEntityList = function() {
     "message": "Loading Entities..."
   });
 
-  if(!self.entityView) {
-    self.entityView = new RDFE.EntityView(this.doc, this.ontologyManager, {
+  if (!self.entityView) {
+    self.entityView = new RDFE.EntityView(self.doc, self.ontologyManager, self, {
       editFct: function(uri) {
         self.editEntity.call(self, uri);
       }
@@ -396,7 +397,8 @@ RDFE.Editor.prototype.createEntityList = function() {
 
 RDFE.Editor.prototype.editEntity = function(uri) {
   var self = this;
-  if(!self.entityEditor) {
+
+  if (!self.entityEditor) {
     self.entityEditor = new RDFE.EntityEditor(self.doc, self.ontologyManager);
     $(self.entityEditor).on('rdf-editor-error', function(e) {
       $(self).trigger('rdf-editor-error', d);
@@ -427,7 +429,7 @@ RDFE.Editor.prototype.createPredicateList = function() {
   });
 
   if (!self.predicateView) {
-    self.predicateView = new RDFE.PredicateView(this.doc, this.ontologyManager, {
+    self.predicateView = new RDFE.PredicateView(self.doc, self.ontologyManager, self, {
       editFct: function(predicate) {
         self.editPredicate.call(self, predicate);
       }
@@ -450,6 +452,7 @@ RDFE.Editor.prototype.createPredicateList = function() {
 
 RDFE.Editor.prototype.editPredicate = function(predicate) {
   var self = this;
+
   if(!self.predicateEditor) {
     self.predicateEditor = new RDFE.PredicateEditor(self.doc, self.ontologyManager);
     $(self.predicateEditor).on('rdf-editor-error', function(e) {

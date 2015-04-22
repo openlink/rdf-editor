@@ -87,7 +87,7 @@
             formatter: nodeFormatter
           }, {
             field: 'actions',
-            title: 'Actions',
+            title: '<button class="add btn btn-default" title="Add Relation" style="display: none;"><span class="glyphicon glyphicon-plus" aria-hidden="true"></span> New</button>',
             align: 'center',
             valign: 'middle',
             class: 'actions-column',
@@ -114,18 +114,14 @@
             }
           }]
         });
-        container.find('.fixed-table-toolbar').append(
-         '<div class="pull-right search">\
-            <button id="addButton" type="button" class="btn btn-default" aria-label="Add Relation" style="display: none;">\
-              <span class="glyphicon glyphicon-plus" aria-hidden="true"></span>\
-            </button>\
-          </div>'
-        );
 
         self.predicateTable = $list;
         self.predicateTableContainer = container.find('#predicateTable');
         self.predicateFormContainer = container.find('#predicateForm');
-        self.addButton = container.find('button#addButton');
+        self.addButton = $($list).find('.add');
+        self.addButton.click(function() {
+          self.createNewRelationEditor();
+        });
 
         // reftersh predicates data
         self.renderData();

@@ -5,10 +5,11 @@
 
   RDFE.TripleView = (function() {
     // constructor
-    var c = function(doc, ontoMan) {
+    var c = function(doc, ontologyManager, editor) {
       this.doc = doc;
       this.namingSchema = doc.config.options[doc.config.options["namingSchema"]];
-      this.ontologyManager = ontoMan;
+      this.ontologyManager = ontologyManager;
+      this.editor = editor;
     };
 
     var nodeFormatter = function(value) {
@@ -127,7 +128,7 @@
                 formatter: nodeFormatter
               }, {
                 field: 'actions',
-                title: 'Actions',
+                title: '<button class="add btn btn-default" title="Add a new statement to the document"><span class="glyphicon glyphicon-plus" aria-hidden="true"></span> New</button>',
                 align: 'center',
                 valign: 'middle',
                 class: 'actions-column',
@@ -155,7 +156,9 @@
                 }
               }]
             });
-
+            $($list).find('.add').on('click', function(e) {
+              self.editor.createNewStatementEditor();
+            });
             self.tripleTable = $list;
 
             if (callback)
@@ -169,11 +172,8 @@
 
     c.prototype.addTriple = function(t) {
       var i = this.tripleTable.data('maxindex');
-      i += 1;
-      this.tripleTable.bootstrapTable('append', $.extend(t, {
-        id: i
-      }));
-      this.tripleTable.data('maxindex', i);
+      this.tripleTable.bootstrapTable('append', $.extend(t, { id: i}));
+      this.tripleTable.data('maxindex', i+1);
     };
 
     return c;
