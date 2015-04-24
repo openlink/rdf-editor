@@ -7,6 +7,12 @@
   font-style: italic;
 }
 
+.actions-column {
+  white-space: nowrap;
+  padding-right: 1em;
+  width: 1%;
+}
+
 textarea {
   min-height: 5em;
   resize: vertical;

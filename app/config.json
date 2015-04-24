@@ -17,6 +17,19 @@
     "http://www.w3.org/2000/01/rdf-schema#label",
     "http://xmlns.com/foaf/0.1/name"
   ],
+  "namingSchema": "eavSchema",
+  "eavSchema": {
+    "spo": ["Statement", "Statements"],
+    "s": ["Entity", "Entities"],
+    "p": ["Attribute", "Attributes"],
+    "o": ["Value", "Values"]
+  },
+  "spoSchema": {
+    "spo": ["Triple", "Triples"],
+    "s": ["Subject", "Subjects"],
+    "p": ["Predicate", "Predicates"],
+    "o": ["Object", "Objects"]
+  },
   "labels": {
     "Triples": "Statements"
   },

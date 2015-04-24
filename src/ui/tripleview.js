@@ -5,9 +5,11 @@
 
   RDFE.TripleView = (function() {
     // constructor
-    var c = function(doc, ontoMan) {
+    var c = function(doc, ontologyManager, editor) {
       this.doc = doc;
-      this.ontologyManager = ontoMan;
+      this.namingSchema = doc.config.options[doc.config.options["namingSchema"]];
+      this.ontologyManager = ontologyManager;
+      this.editor = editor;
     };
 
     var nodeFormatter = function(value) {
@@ -81,7 +83,7 @@
               dataSetter: tripleEditorDataSetter,
               columns: [{
                 field: 'subject',
-                title: 'Subject',
+                title: RDFE.Utils.namingSchemaLabel('s', self.namingSchema),
                 align: 'left',
                 sortable: true,
                 editable: function(triple) {
@@ -97,7 +99,7 @@
                 formatter: nodeFormatter
               }, {
                 field: 'predicate',
-                title: 'Predicate',
+                title: RDFE.Utils.namingSchemaLabel('p', self.namingSchema),
                 align: 'left',
                 sortable: true,
                 editable: function(triple) {
@@ -113,7 +115,7 @@
                 formatter: nodeFormatter
               }, {
                 field: 'object',
-                title: 'Object',
+                title: RDFE.Utils.namingSchemaLabel('o', self.namingSchema),
                 align: 'left',
                 sortable: true,
                 editable: function(triple) {
@@ -126,9 +128,10 @@
                 formatter: nodeFormatter
               }, {
                 field: 'actions',
-                title: 'Actions',
+                title: '<button class="add btn btn-default" title="Add a new statement to the document"><span class="glyphicon glyphicon-plus" aria-hidden="true"></span> New</button>',
                 align: 'center',
                 valign: 'middle',
+                class: 'actions-column',
                 clickToSelect: false,
                 editable: false,
                 formatter: function(value, row, index) {
@@ -147,19 +150,21 @@
                         values: [row.id]
                       });
                     }, function() {
-                      $(self).trigger('rdf-editor-error', { "type": 'triple-delete-failed', "message": 'Failed to delete triple.' });
+                      $(self).trigger('rdf-editor-error', { "type": 'triple-delete-failed', "message": 'Failed to delete ' + RDFE.Utils.namingSchemaLabel('spo', self.namingSchema, false, true) + '.' });
                     });
                   }
                 }
               }]
             });
-
+            $($list).find('.add').on('click', function(e) {
+              self.editor.createNewStatementEditor();
+            });
             self.tripleTable = $list;
 
             if (callback)
               callback();
           } else {
-            $(self).trigger('rdf-editor-error', 'Failed to query triples from doc.');
+            $(self).trigger('rdf-editor-error', 'Failed to query ' + RDFE.Utils.namingSchemaLabel('spo', self.namingSchema, true, true) + ' from document.');
           }
         });
       });
@@ -167,11 +172,8 @@
 
     c.prototype.addTriple = function(t) {
       var i = this.tripleTable.data('maxindex');
-      i += 1;
-      this.tripleTable.bootstrapTable('append', $.extend(t, {
-        id: i
-      }));
-      this.tripleTable.data('maxindex', i);
+      this.tripleTable.bootstrapTable('append', $.extend(t, { id: i}));
+      this.tripleTable.data('maxindex', i+1);
     };
 
     return c;

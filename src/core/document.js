@@ -741,7 +741,9 @@ RDFE.Document.prototype.getPredicate = function(uri, success, error) {
           sl.items.push(triples[i]);
         }
       }
-      success(sl);
+      if (success) {
+        success(sl);
+      }
     }
     else if (error) {
       error(result);

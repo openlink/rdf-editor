@@ -23,6 +23,7 @@ RDFE.Editor = function(config, options) {
 
   // store the config for future access
   this.config = config;
+  this.namingSchema = config.options[config.options["namingSchema"]];
 };
 
 RDFE.Editor.prototype.render = function(container) {
@@ -92,17 +93,17 @@ RDFE.Editor.prototype.createTripleList = function() {
     "message": "Loading Triples..."
   });
 
-  if(!this.tripleView) {
-    this.tripleView = new RDFE.TripleView(this.doc, this.ontologyManager);
+  if (!self.tripleView) {
+    self.tripleView = new RDFE.TripleView(self.doc, self.ontologyManager, self);
     $(self.tripleView).on('rdf-editor-error', function(e, d) {
       $(self).trigger('rdf-editor-error', d);
     }).on('rdf-editor-success', function(e, d) {
       $(self).trigger('rdf-editor-success', d);
     });
   }
-  this.formContainer.hide();
-  this.listContainer.empty().show();
-  this.tripleView.render(self.listContainer, function() {
+  self.formContainer.hide();
+  self.listContainer.empty().show();
+  self.tripleView.render(self.listContainer, function() {
     $(self).trigger('rdf-editor-done', { "id": "render-triple-list" });
   });
 };
@@ -115,19 +116,30 @@ RDFE.Editor.prototype.createNewStatementEditor = function() {
   }
 
   self.listContainer.hide();
-  self.formContainer.html(' \
-      <div class="panel panel-default"> \
-      <div class="panel-heading"><h3 class="panel-title">Add new Statement</h3></div> \
-      <div class="panel-body"><div class="form-horizontal"> \
-      <div class="form-group"><label for="subject" class="col-sm-2 control-label">Subject</label> \
-      <div class="col-sm-10"><input name="subject" class="form-control" /></div></div> \
-      <div class="form-group"><label for="predicate" class="col-sm-2 control-label">Predicate</label> \
-      <div class="col-sm-10"><select name="predicate" class="form-control"></select></div></div> \
-      <div class="form-group"><label for="object" class="col-sm-2 control-label">Object</label> \
-      <div class="col-sm-10"><input name="object" class="form-control" /></div></div> \
-      <div class="form-group"><div class="col-sm-10 col-sm-offset-2"><a href="#" class="btn btn-default triple-action triple-action-new-cancel">Cancel</a> \
-        <a href="#" class="btn btn-primary triple-action triple-action-new-save">OK</a></div></div> \
-      </form></div></div>\n').show();
+  self.formContainer.html(
+    '<div class="panel panel-default">' +
+    '  <div class="panel-heading"><h3 class="panel-title">Add new ' + RDFE.Utils.namingSchemaLabel('spo', self.namingSchema) + '</h3></div>' +
+    '  <div class="panel-body">' +
+    '    <form class="form-horizontal">' +
+    '      <div class="form-group"><label for="subject" class="col-sm-2 control-label">' + RDFE.Utils.namingSchemaLabel('s', self.namingSchema) + '</label>' +
+    '        <div class="col-sm-10"><input name="subject" class="form-control" /></div>' +
+    '      </div>' +
+    '      <div class="form-group"><label for="predicate" class="col-sm-2 control-label">' + RDFE.Utils.namingSchemaLabel('p', self.namingSchema) + '</label>' +
+    '        <div class="col-sm-10"><select name="predicate" class="form-control"></select></div>' +
+    '      </div>' +
+    '      <div class="form-group"><label for="object" class="col-sm-2 control-label">' + RDFE.Utils.namingSchemaLabel('o', self.namingSchema) + '</label>' +
+    '        <div class="col-sm-10"><input name="object" class="form-control" /></div>' +
+    '      </div>' +
+    '      <div class="form-group">' +
+    '        <div class="col-sm-10 col-sm-offset-2">' +
+    '          <a href="#" class="btn btn-default triple-action triple-action-new-cancel">Cancel</a>' +
+    '          <a href="#" class="btn btn-primary triple-action triple-action-new-save">OK</a>' +
+    '        </div>' +
+    '      </div>' +
+    '    </form>' +
+    '  </div>' +
+    '</div>'
+  ).show();
 
   var objEd = self.formContainer.find('input[name="object"]').rdfNodeEditor();
   var propEd = self.formContainer.find('select[name="predicate"]').propertyBox({
@@ -181,6 +193,7 @@ RDFE.Editor.prototype.createNewStatementEditor = function() {
 // Entities
 RDFE.Editor.prototype.createNewEntityEditor = function(forcedType) {
   var self = this;
+
   var $ontologiesSelect, ontologiesSelect;
   var $classesSelect, classesSelect;
 
@@ -190,18 +203,18 @@ RDFE.Editor.prototype.createNewEntityEditor = function(forcedType) {
     classesSelect.addOption(ontology ? ontology.classesAsArray() : self.ontologyManager.allClasses());
   };
 
-  if (!this.doc) {
+  if (!self.doc) {
     return false;
   }
 
 
-  this.listContainer.hide();
-  this.formContainer.show();
+  self.listContainer.hide();
+  self.formContainer.show();
 
   if (!forcedType) {
     self.formContainer.html(
       '<div class="panel panel-default">' +
-      '<div class="panel-heading"><h3 class="panel-title">Add new Entity</h3></div>' +
+      '<div class="panel-heading"><h3 class="panel-title">Add new ' + RDFE.Utils.namingSchemaLabel('s', self.namingSchema) + '</h3></div>' +
       '<div class="panel-body"><div class="form-horizontal"> ' +
       '  <div class="form-group"> ' +
       '    <label for="ontology" class="col-sm-2 control-label">Ontology</label> ' +
@@ -216,7 +229,7 @@ RDFE.Editor.prototype.createNewEntityEditor = function(forcedType) {
       '    </div> ' +
       '  </div> ' +
       '  <div class="form-group"> ' +
-      '     <label for="subject" class="col-sm-2 control-label">Entity URI</label> ' +
+      '     <label for="subject" class="col-sm-2 control-label">' + RDFE.Utils.namingSchemaLabel('s', self.namingSchema) + ' URI</label> ' +
       '     <div class="col-sm-10"> ' +
       '       <input name="subject" id="subject" class="form-control" /> ' +
       '     </div> ' +
@@ -275,7 +288,7 @@ RDFE.Editor.prototype.createNewEntityEditor = function(forcedType) {
     var forcedTypeLabel = forcedTypeRes ? forcedTypeRes.label : RDFE.Utils.uri2name(forcedType);
     self.formContainer.html(
       '<div class="panel panel-default">' +
-      '<div class="panel-heading"><h3 class="panel-title">Add new Entity</h3></div>' +
+      '<div class="panel-heading"><h3 class="panel-title">Add new ' + RDFE.Utils.namingSchemaLabel('s', self.namingSchema) + '</h3></div>' +
       '<div class="panel-body"><div class="form-horizontal"> ' +
       '  <div class="form-group"> ' +
       '    <label for="class" class="col-sm-2 control-label">Type</label> ' +
@@ -284,7 +297,7 @@ RDFE.Editor.prototype.createNewEntityEditor = function(forcedType) {
       '    </div> ' +
       '  </div> ' +
       '  <div class="form-group"> ' +
-      '     <label for="subject" class="col-sm-2 control-label">Entity URI</label> ' +
+      '     <label for="subject" class="col-sm-2 control-label">' + RDFE.Utils.namingSchemaLabel('s', self.namingSchema) + ' URI</label> ' +
       '     <div class="col-sm-10"> ' +
       '       <input name="subject" id="subject" class="form-control" /> ' +
       '     </div> ' +
@@ -301,7 +314,7 @@ RDFE.Editor.prototype.createNewEntityEditor = function(forcedType) {
 
   // if we have an entity uri template we ask the user to provide a nem instead of the uri
   if(this.config.options.entityUriTmpl) {
-    self.formContainer.find('label[for="subject"]').text('Entity Name');
+    self.formContainer.find('label[for="subject"]').text(RDFE.Utils.namingSchemaLabel('s', self.namingSchema) + ' Name');
   }
 
   self.formContainer.find('a.triple-action-new-cancel').click(function(e) {
@@ -360,8 +373,8 @@ RDFE.Editor.prototype.createEntityList = function() {
     "message": "Loading Entities..."
   });
 
-  if(!self.entityView) {
-    self.entityView = new RDFE.EntityView(this.doc, this.ontologyManager, {
+  if (!self.entityView) {
+    self.entityView = new RDFE.EntityView(self.doc, self.ontologyManager, self, {
       editFct: function(uri) {
         self.editEntity.call(self, uri);
       }
@@ -384,7 +397,8 @@ RDFE.Editor.prototype.createEntityList = function() {
 
 RDFE.Editor.prototype.editEntity = function(uri) {
   var self = this;
-  if(!self.entityEditor) {
+
+  if (!self.entityEditor) {
     self.entityEditor = new RDFE.EntityEditor(self.doc, self.ontologyManager);
     $(self.entityEditor).on('rdf-editor-error', function(e) {
       $(self).trigger('rdf-editor-error', d);
@@ -415,7 +429,7 @@ RDFE.Editor.prototype.createPredicateList = function() {
   });
 
   if (!self.predicateView) {
-    self.predicateView = new RDFE.PredicateView(this.doc, this.ontologyManager, {
+    self.predicateView = new RDFE.PredicateView(self.doc, self.ontologyManager, self, {
       editFct: function(predicate) {
         self.editPredicate.call(self, predicate);
       }
@@ -438,6 +452,7 @@ RDFE.Editor.prototype.createPredicateList = function() {
 
 RDFE.Editor.prototype.editPredicate = function(predicate) {
   var self = this;
+
   if(!self.predicateEditor) {
     self.predicateEditor = new RDFE.PredicateEditor(self.doc, self.ontologyManager);
     $(self.predicateEditor).on('rdf-editor-error', function(e) {
@@ -451,10 +466,12 @@ RDFE.Editor.prototype.editPredicate = function(predicate) {
   self.listContainer.hide();
   self.formContainer.show();
   self.predicateEditor.predicate = predicate;
-  self.predicateEditor.render(self.formContainer, function() {
+  self.predicateEditor.render(self, self.formContainer, function() {
     self.formContainer.hide();
     self.listContainer.show();
-    self.predicateView.updatePredicate(predicate.uri);
+    if (predicate && predicate.uri) {
+      self.predicateView.updatePredicate(predicate.uri);
+    }
   });
 };
 

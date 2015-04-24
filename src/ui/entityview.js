@@ -5,9 +5,11 @@
 
   RDFE.EntityView = (function() {
     // constructor
-    var c = function(doc, ontoMan, params) {
+    var c = function(doc, ontologyManager, editor, params) {
       this.doc = doc;
-      this.ontologyManager = ontoMan;
+      this.namingSchema = doc.config.options[doc.config.options["namingSchema"]];
+      this.ontologyManager = ontologyManager;
+      this.editor = editor;
       this.editFct = params.editFct;
     };
 
@@ -89,15 +91,16 @@
           idField: 'uri',
           columns: [{
             field: 'label',
-            title: 'Entity Name',
+            title: RDFE.Utils.namingSchemaLabel('s', self.namingSchema) + ' Name',
             aligh: 'left',
             sortable: true,
             formatter: labelFormatter
           }, {
             field: 'actions',
-            title: 'Actions',
+            title: '<button class="add btn btn-default" title="Add a new entity to the document"><span class="glyphicon glyphicon-plus" aria-hidden="true"></span> New</button>',
             align: 'center',
             valign: 'middle',
+            class: 'actions-column',
             clickToSelect: false,
             formatter: entityListActionsFormatter,
             events: {
@@ -109,6 +112,9 @@
               }
             }
           }]
+        });
+        $($list).find('.add').on('click', function(e) {
+          self.editor.createNewEntityEditor();
         });
         self.entityTable = $list;
 

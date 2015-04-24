@@ -7,25 +7,27 @@
     // constructor
     var c = function(doc, ontoMan) {
       this.doc = doc;
+      this.namingSchema = doc.config.options[doc.config.options["namingSchema"]];
       this.ontologyManager = ontoMan;
     };
 
     // custom form which allows adding new properties
     var EntityForm = Backbone.Form.extend({
       // Add a "new property" button to the default Backbone-Forms form
-      template: _.template('\
-        <form class="form-horizontal clearfix" role="form">\
-          <a href="#" class="btn btn-default btn-xs pull-right addProp">Add Property</a>\
-          <div data-fieldsets></div>\
-          <% if (submitButton) { %>\
-            <button type="submit" class="btn"><%= submitButton %></button>\
-          <% } %>\
-        </form>\
-      '),
+      template: _.template(
+        '<form class="form-horizontal clearfix" role="form">' +
+        '  <a href="#" class="btn btn-default btn-xs pull-right addProp">Add <%= RDFE.Utils.namingSchemaLabel("p", this.namingSchema) %></a>' +
+        '  <div data-fieldsets></div>' +
+        '  <% if (submitButton) { %>' +
+        '    <button type="submit" class="btn"><%= submitButton %></button>' +
+        '  <% } %>' +
+        '</form>'
+      ),
 
       render: function() {
         var self = this;
 
+        self.namingSchema = self.model.doc.config.options[self.model.doc.config.options["namingSchema"]];
         Backbone.Form.prototype.render.call(this);
 
         if(!self.model.allowAddProperty) {
@@ -42,7 +44,7 @@
               cnclBtn = $(document.createElement('button')).addClass('btn').addClass('btn-default').text('Cancel');
 
           var c = $(document.createElement('div'))
-            .append($(document.createElement('span')).text('New Property:'))
+            .append($(document.createElement('span')).text('New ' + RDFE.Utils.namingSchemaLabel('p', self.namingSchema) + ':'))
             .append(ps)
             .append(addBtn)
             .append(cnclBtn);
@@ -107,6 +109,7 @@
 
     c.prototype.render = function(container, url, closeCb) {
       var self = this;
+
       var model = new RDFE.EntityModel();
       model.setEntity(this.doc, url);
       model.docToModel(function() {

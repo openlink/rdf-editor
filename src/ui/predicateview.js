@@ -5,9 +5,11 @@
 
   RDFE.PredicateView = (function() {
     // constructor
-    var c = function(doc, ontoMan, params) {
+    var c = function(doc, ontologyManager, editor, params) {
       this.doc = doc;
-      this.ontologyManager = ontoMan;
+      this.namingSchema = doc.config.options[doc.config.options["namingSchema"]];
+      this.ontologyManager = ontologyManager;
+      this.editor = editor;
       this.editFct = params.editFct;
     };
 
@@ -33,7 +35,8 @@
     c.prototype.render = function(container, callback) {
       var self = this;
 
-      self.doc.listPredicates(function(el) {
+      self.doc.listPredicates(function(predicates) {
+        self.predicates = predicates;
         self.predicateTable = null;
         container.empty();
 
@@ -50,7 +53,7 @@
             $(self).trigger('rdf-editor-success', {
               "type": 'predicate-delete-done',
               "uri": predicate.uri,
-              "message": "Successfully deleted predicate " + uri + "."
+              "message": "Successfully deleted attribute " + uri + "."
             });
           }, function(msg) {
             $(self).trigger('rdf-editor-error', {
@@ -68,11 +71,11 @@
           searchAlign: 'left',
           trimOnSearch: false,
           showHeader: true,
-          data: el,
+          data: predicates,
           idField: 'uri',
           columns: [{
             field: 'label',
-            title: 'Attribute Name',
+            title: RDFE.Utils.namingSchemaLabel('p', self.namingSchema) + ' Name',
             align: 'left',
             sortable: true,
             formatter: labelFormatter
@@ -84,9 +87,10 @@
             formatter: countFormatter
           }, {
             field: 'actions',
-            title: 'Actions',
+            title: '<button class="add btn btn-default" title="Add one or more entity and value pairs for this attribute to this document"><span class="glyphicon glyphicon-plus" aria-hidden="true"></span> New</button>',
             align: 'center',
             valign: 'middle',
+            class: 'actions-column',
             clickToSelect: false,
             formatter: predicateListActionsFormatter,
             events: {
@@ -98,6 +102,9 @@
               }
             }
           }]
+        });
+        $($list).find('.add').on('click', function(e) {
+          self.editor.editPredicate();
         });
         self.predicateTable = $list;
 
@@ -113,7 +120,11 @@
     };
 
     c.prototype.addPredicate = function(predicate) {
-      this.predicateTable.bootstrapTable('append', predicate);
+      var self = this;
+
+      if (!_.find(self.predicates, function(p){ return p.uri === predicate.uri; })) {
+        this.predicateTable.bootstrapTable('append', predicate);
+      }
     };
 
     /**
@@ -121,6 +132,7 @@
      */
     c.prototype.updatePredicate = function(uri) {
       var self = this;
+
       self.doc.getPredicate(uri, function(predicate) {
         self.predicateTable.bootstrapTable('update', {
           field: 'uri',
