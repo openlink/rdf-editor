@@ -1,3 +1,8 @@
+0.14
+  * New UI using AngularJs
+  * New File browser with support for WebDAV and LDP
+  * Improved UI for editing attributes
+
 0.13
   * Performance improvements in the ontology manager.
   * Beautification in the entity editor.
