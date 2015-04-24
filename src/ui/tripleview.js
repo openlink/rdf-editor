@@ -12,19 +12,19 @@
       this.editor = editor;
     };
 
-    var nodeFormatter = function(value) {
-      if (value.interfaceName == "Literal") {
-        if (value.datatype == 'http://www.w3.org/2001/XMLSchema#dateTime')
-          return (new Date(value.nominalValue)).toString();
-        else
-          return value.nominalValue;
-      } else {
-        return value.toString();
-      }
-    };
-
     c.prototype.render = function(container, callback) {
       var self = this;
+      var maxLength = self.doc.config.options["maxLabelLength"];
+
+      var nodeFormatter = function(value) {
+        if (value.interfaceName == "Literal") {
+          if (value.datatype == 'http://www.w3.org/2001/XMLSchema#dateTime') {
+            return (new Date(value.nominalValue)).toString();
+          }
+          return RDFE.Utils.strAbbreviate(value.nominalValue, maxLength);
+        }
+        return RDFE.Utils.uriAbbreviate(value.toString(), maxLength);
+      };
 
       var tripleEditorDataSetter = function(triple, field, newValue) {
         var newNode = newValue;
@@ -57,7 +57,6 @@
       };
 
       self.doc.listProperties(function (pl) {
-        console.log('Found existing predicates: ', pl);
         self.doc.store.graph(self.doc.graph, function(success, g) {
           if(success) {
             container.empty();
