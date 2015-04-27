@@ -41,7 +41,8 @@
             },
             "error": function(state) {
               if (state && state.message) {
-                $.growl({message: state.message}, {type: 'danger'});
+                console.log(state.message);
+                // $.growl({message: state.message}, {type: 'danger'});
               }
               cb(that.settings.createProperty(input, true));
             }

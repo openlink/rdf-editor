@@ -145,7 +145,7 @@
         return (elem.is(":checked") ? "true" : "false");
       },
       setValue: function(elem, val) {
-        if(parseInt(val) == 1 || (typeof val == "string" && val.toLowerCase() == 'true'))
+        if(parseInt(val) === 1 || (typeof val === "string" && val.toLowerCase() === 'true'))
           elem.attr('checked', 'checked');
         else
           elem.removeAttr('checked');
@@ -245,10 +245,10 @@
           }
         });
       };
-      if(typeof(self.options.choices) == 'object') {
+      if(typeof(self.options.choices) === 'object') {
         selectizeSetup(self.options.choices);
       }
-      else if(typeof(self.options.choices) == 'function') {
+      else if(typeof(self.options.choices) === 'function') {
         self.options.choices(function (items) {
           selectizeSetup(items);
         });
@@ -258,9 +258,10 @@
     // create language input
     self.langElem = $(document.createElement('input')).addClass('form-control').attr('placeholder', 'Language');
     self.langContainer = $(document.createElement('div')).addClass('rdfNodeLangContainer');
+    self.langContainer.css('vertical-align', 'top');
     self.langContainer.append(self.langElem);
     self.container.append(self.langContainer);
-    if(self.currentType != 'http://www.w3.org/2000/01/rdf-schema#Literal')
+    if(self.currentType !== 'http://www.w3.org/2000/01/rdf-schema#Literal')
       self.langContainer.hide();
     self.langElem.on('input', function() {
       self.lang = self.langElem.val();
@@ -273,6 +274,7 @@
 
     // create type-selection
     self.typeContainer = $(document.createElement('div')).addClass('rdfNodeTypeContainer');
+    self.typeContainer.css('vertical-align', 'top');
     self.typeElem = $(document.createElement('select')).addClass('form-control');
     for(t in nodeTypes) {
       self.typeElem.append($(document.createElement('option')).attr('value', t).text(nodeTypes[t].label));
@@ -305,7 +307,7 @@
   };
 
   RdfNodeEditor.prototype.change = function() {
-    $(this).trigger('change', this);
+    $(this).trigger('changed', this);
   };
 
   /**
@@ -331,16 +333,12 @@
     if(checkTypeComp(this.options.type, this.currentType)) {
       this.typeContainer.hide();
     }
-    else {
-      this.typeContainer.css('display', 'table-cell');
+
+    if(!this.options.showLangSelect || this.currentType !== 'http://www.w3.org/2000/01/rdf-schema#Literal') {
+      this.langContainer.hide();
     }
 
-    if(!this.options.showLangSelect || this.currentType != 'http://www.w3.org/2000/01/rdf-schema#Literal')
-      this.langContainer.hide();
-    else
-      this.langContainer.css('display', 'table-cell');
-
-    if(initial || this.lastType != this.currentType) {
+    if (initial || this.lastType !== this.currentType) {
       if(this.lastType && nodeTypes[this.lastType].setup)
         nodeTypes[this.lastType].setup(this.mainElem, true);
       if(nodeTypes[this.currentType].setup)
@@ -349,7 +347,7 @@
   };
 
   RdfNodeEditor.prototype.getValue = function() {
-    if(this.currentType == 'http://www.w3.org/1999/02/22-rdf-syntax-ns#Resource')
+    if(this.currentType === 'http://www.w3.org/1999/02/22-rdf-syntax-ns#Resource')
       return new RDFE.RdfNode(
         'uri',
         this.mainElem.val()
@@ -358,7 +356,7 @@
       return new RDFE.RdfNode(
         'literal',
         (nodeTypes[this.currentType].getValue ? nodeTypes[this.currentType].getValue(this.mainElem) : this.mainElem.val()),
-        (this.currentType != 'http://www.w3.org/2000/01/rdf-schema#Literal' ? this.currentType : undefined),
+        (this.currentType !== 'http://www.w3.org/2000/01/rdf-schema#Literal' ? this.currentType : undefined),
         (this.lang ? this.lang : undefined)
       );
   };
@@ -399,7 +397,8 @@
       if(this.options.selectize)
         this.typeElem[0].selectize.setValue(this.currentType);
 
-      this.updateEditor();
+      this.updateEditor(this.lastType !== this.currentType);
+      this.lastType = this.currentType;
     }
   };
 

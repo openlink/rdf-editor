@@ -145,7 +145,7 @@ RDFE.Editor.prototype.createNewStatementEditor = function() {
   var propEd = self.formContainer.find('select[name="predicate"]').propertyBox({
     ontoManager: self.ontologyManager
   }).on('changed', function(e, p) {
-    console.log('changed', p)
+    // console.log('changed', p)
     var cn = objEd.getValue(), n;
     var range = p.getRange();
     if(objEd.isLiteralType(range)) {
