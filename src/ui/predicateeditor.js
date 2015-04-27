@@ -90,7 +90,7 @@
             title: '<button class="add btn btn-default" title="Add Relation" style="display: none;"><span class="glyphicon glyphicon-plus" aria-hidden="true"></span> New</button>',
             align: 'center',
             valign: 'middle',
-            class: 'actions-column',
+            class: 'small-column',
             clickToSelect: false,
             editable: false,
             formatter: function(value, row, index) {
