@@ -90,7 +90,7 @@
             title: '<button class="add btn btn-default" title="Add one or more entity and value pairs for this attribute to this document"><span class="glyphicon glyphicon-plus" aria-hidden="true"></span> New</button>',
             align: 'center',
             valign: 'middle',
-            class: 'actions-column',
+            class: 'small-column',
             clickToSelect: false,
             formatter: predicateListActionsFormatter,
             events: {
