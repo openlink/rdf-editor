@@ -89,5 +89,22 @@ RDFE.Config.defaults = {
   entityUriTmpl: "{DOC-URI}#{NAME}",
 
   // if true then the editor will take owl:inverseOf into account and create or delete the values properly
-  autoInverseOfHandling: false
+  autoInverseOfHandling: false,
+
+  // A list of entity type URIs which when set will be used to filter the entity view
+  entityTypesFiler: null,
+
+  "namingSchema": "eavSchema",
+  "eavSchema": {
+    "spo": ["Statement", "Statements"],
+    "s": ["Entity", "Entities"],
+    "p": ["Attribute", "Attributes"],
+    "o": ["Value", "Values"]
+  },
+  "spoSchema": {
+    "spo": ["Triple", "Triples"],
+    "s": ["Subject", "Subjects"],
+    "p": ["Predicate", "Predicates"],
+    "o": ["Object", "Objects"]
+  }
 };

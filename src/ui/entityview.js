@@ -14,11 +14,16 @@
     };
 
     var labelFormatter = function(value, row, index) {
-      var s = '<span title="' + row.uri + '">' + row.label + '</span>';
+      return '<span title="' + row.uri + '">' + row.label + '</span>';
+    };
+
+    var typeFormatter = function(value, row, index) {
       if(row.types && row.types.length) {
-        s += ' <small>(' + row.types + ')</small>';
+        return row.types;
       }
-      return s;
+      else {
+        return "<em>none</em>";
+      }
     };
 
     var entityListActionsFormatter = function(value, row, index) {
@@ -47,7 +52,7 @@
     c.prototype.render = function(container, callback) {
       var self = this;
 
-      self.doc.listEntities(function(el) {
+      self.doc.listEntities(self.editor.config.options.entityTypesFiler, function(el) {
         self.entityTable = null;
         container.empty();
 
@@ -96,11 +101,18 @@
             sortable: true,
             formatter: labelFormatter
           }, {
+            field: 'types',
+            title: 'Entity Types',
+            aligh: 'left',
+            class: 'small-column',
+            sortable: true,
+            formatter: typeFormatter
+          }, {
             field: 'actions',
             title: '<button class="add btn btn-default" title="Add a new entity to the document"><span class="glyphicon glyphicon-plus" aria-hidden="true"></span> New</button>',
             align: 'center',
             valign: 'middle',
-            class: 'actions-column',
+            class: 'small-column',
             clickToSelect: false,
             formatter: entityListActionsFormatter,
             events: {
