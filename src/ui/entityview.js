@@ -52,7 +52,7 @@
     c.prototype.render = function(container, callback) {
       var self = this;
 
-      self.doc.listEntities(function(el) {
+      self.doc.listEntities(self.editor.config.options.entityTypesFiler, function(el) {
         self.entityTable = null;
         container.empty();
 

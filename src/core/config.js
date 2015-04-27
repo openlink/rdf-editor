@@ -91,6 +91,9 @@ RDFE.Config.defaults = {
   // if true then the editor will take owl:inverseOf into account and create or delete the values properly
   autoInverseOfHandling: false,
 
+  // A list of entity type URIs which when set will be used to filter the entity view
+  entityTypesFiler: null,
+
   "namingSchema": "eavSchema",
   "eavSchema": {
     "spo": ["Statement", "Statements"],
