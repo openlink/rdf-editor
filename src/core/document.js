@@ -695,6 +695,63 @@ RDFE.Document.prototype.addEntity = function(uri, name, type, cb, failCb) {
 };
 
 /**
+ * List all subjects by iterating over all triples in the store
+ *
+ * @param success a function which takes an array of rdfstore nodes as input.
+ * @param error a function in case an error occurs, takes error message as input.
+ */
+RDFE.Document.prototype.listSubjects = function(success, error) {
+  var self = this;
+
+  self.store.graph(self.graph, function(s, result) {
+    if (s) {
+      var sl = {};
+      var triples = result.toArray();
+      for (var i = 0; i < triples.length; i+=1) {
+        var x = triples[i].subject.toString();
+        if (!sl[x]) {
+          sl[x] = {
+            "uri": x,
+            "items": []
+          };
+        }
+        sl[x].items.push(triples[i]);
+      }
+      sl = _.values(sl);
+      success(sl);
+    }
+    else if (error) {
+      error(result);
+    }
+  });
+};
+
+RDFE.Document.prototype.getSubject = function(uri, success, error) {
+  var self = this;
+
+  self.store.graph(self.graph, function(s, result) {
+    if (s) {
+      var sl = {
+        "uri": uri,
+        "items": []
+      };
+      var triples = result.toArray();
+      for (var i = 0; i < triples.length; i+=1) {
+        if (triples[i].subject.toString() === uri) {
+          sl.items.push(triples[i]);
+        }
+      }
+      if (success) {
+        success(sl);
+      }
+    }
+    else if (error) {
+      error(result);
+    }
+  });
+};
+
+/**
  * List all properties by iterating over all triples in the store
  *
  * @param success a function which takes an array of rdfstore nodes as input.
