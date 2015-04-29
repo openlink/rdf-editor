@@ -444,13 +444,16 @@ RDFE.IO.LDPFolder = (function() {
       })
     }).done(function(data, textStatus, jqXHR) {
       // check if we have a BasicContainer which is what we currently support
-      var lh = jqXHR.getResponseHeader('Link').split(','),
-          haveBasicContainer = false;
-      for(var i = 0; i < lh.length; i++) {
-        if(lh[i].replace(/ /g, '').toLowerCase().indexOf('rel="type"') >= 0 &&
-          lh[i].indexOf('http://www.w3.org/ns/ldp#BasicContainer') >= 0) {
-          haveBasicContainer = true;
-          break;
+      var haveBasicContainer = false;
+      var lnk = jqXHR.getResponseHeader('Link');
+      if (lnk) {
+        var lh = lnk.split(',');
+        for(var i = 0; i < lh.length; i++) {
+          if(lh[i].replace(/ /g, '').toLowerCase().indexOf('rel="type"') >= 0 &&
+            lh[i].indexOf('http://www.w3.org/ns/ldp#BasicContainer') >= 0) {
+            haveBasicContainer = true;
+            break;
+          }
         }
       }
 
