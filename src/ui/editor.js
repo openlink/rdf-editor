@@ -56,7 +56,7 @@ RDFE.Editor.prototype.currentView = function() {
 RDFE.Editor.prototype.toggleView = function(view) {
   if (view !== this._currentView) {
     if (view === 'entities') {
-      if (this.config.options['oldEntityView'] === true) {
+      if (this.config.options['useEntityEditor'] === true) {
         this.createEntityList();
       }
       else {
@@ -80,7 +80,7 @@ RDFE.Editor.prototype.toggleView = function(view) {
  */
 RDFE.Editor.prototype.updateView = function() {
   if (this._currentView === 'entities') {
-    if (this.config.options['oldEntityView'] === true) {
+    if (this.config.options['useEntityEditor'] === true) {
       this.createEntityList();
     }
     else {
