@@ -104,10 +104,10 @@
 
   PropertyBox.prototype.setPropertyURI = function(uri) {
     console.log('PropertyBox.setPropertyURI', uri);
-    if(uri) {
+    if (uri) {
       var u = this.options.ontoManager.uriDenormalize(uri);
-      if(!this.sel.options[u])
-        this.sel.addOption(this.options.ontoManager.OntologyProperty(null, u));
+      if (!this.sel.options[u])
+        this.sel.addOption(this.options.ontoManager.ontologyPropertyByURI(u, true));
       this.sel.setValue(u);
     }
     else {
