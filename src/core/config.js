@@ -106,5 +106,8 @@ RDFE.Config.defaults = {
     "s": ["Subject", "Subjects"],
     "p": ["Predicate", "Predicates"],
     "o": ["Object", "Objects"]
-  }
+  },
+
+  // If true, then the entity editor with template and OWL restriction support is used to edit entities
+  useEntityEditor: false
 };
