@@ -330,12 +330,18 @@
   RdfNodeEditor.prototype.updateEditor = function(initial) {
     // always show the type selection field if the type differs
     // typed string and plain literal without lang should be treated as similar
-    if(checkTypeComp(this.options.type, this.currentType)) {
+    if (checkTypeComp(this.options.type, this.currentType)) {
       this.typeContainer.hide();
     }
+    else {
+      this.typeContainer.css('display', 'table-cell');
+    }
 
-    if(!this.options.showLangSelect || this.currentType !== 'http://www.w3.org/2000/01/rdf-schema#Literal') {
+    if (!this.options.showLangSelect || this.currentType != 'http://www.w3.org/2000/01/rdf-schema#Literal') {
       this.langContainer.hide();
+    }
+    else {
+      this.langContainer.css('display', 'table-cell');
     }
 
     if (initial || this.lastType !== this.currentType) {
