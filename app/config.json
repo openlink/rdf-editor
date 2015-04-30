@@ -30,6 +30,5 @@
     "p": ["Predicate", "Predicates"],
     "o": ["Object", "Objects"]
   },
-  "maxLabelLength": 0,
   "autoInverseOfHandling": true
 }
