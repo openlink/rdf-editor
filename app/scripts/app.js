@@ -68,16 +68,19 @@ angular.module('myApp', [
       return $q.when(self);
     }
     else {
-      return $q(function(resolve, reject) {
-        self.profile(function(success, pd) {
-          if(success) {
-            resolve(self);
-          }
-          else {
-            reject(self);
-          }
+      if (!self.promise) {
+        self.promise = $q(function(resolve, reject) {
+          self.profile(function(success, pd) {
+            if(success) {
+              resolve(self);
+            }
+            else {
+              reject(self);
+            }
+          });
         });
-      });
+      }
+      return self.promise;
     }
   };
 
