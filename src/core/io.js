@@ -88,9 +88,10 @@ String.prototype.format = function() {
       $(document).ajaxSuccess(params.ajaxSuccess);
 
       // add auth info from self.options.username and .password via
-      if(params.username) {
+      if (params.username) {
         (ajaxParams.headers = ajaxParams.headers || {})["Authorization"] = "Basic " + btoa(params.username + ":" + params.password);
       }
+      ajaxParams = $.extend({"withCredentials": true}, ajaxParams);
 
       $.ajax(ajaxParams).done(function(data, status, xhr) {
         if (params && params.success) {
