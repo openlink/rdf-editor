@@ -255,22 +255,6 @@
       }
     }
 
-    // create language input
-    self.langElem = $(document.createElement('input')).addClass('form-control').attr('placeholder', 'Language');
-    self.langContainer = $(document.createElement('div')).addClass('rdfNodeLangContainer');
-    self.langContainer.append(self.langElem);
-    self.container.append(self.langContainer);
-    if(self.currentType != 'http://www.w3.org/2000/01/rdf-schema#Literal')
-      self.langContainer.hide();
-    self.langElem.on('input', function() {
-      self.lang = self.langElem.val();
-      self.verifyInput();
-      self.change();
-    });
-    if (!self.options.showLangSelect) {
-      self.langContainer.hide();
-    }
-
     // create type-selection
     self.typeContainer = $(document.createElement('div')).addClass('rdfNodeTypeContainer');
     self.typeElem = $(document.createElement('select')).addClass('form-control');
@@ -299,6 +283,22 @@
     if(self.options.type) {
       self.typeElem.val(self.options.type);
       self.typeContainer.hide();
+    }
+
+    // create language input
+    self.langElem = $(document.createElement('input')).addClass('form-control').attr('placeholder', 'Language');
+    self.langContainer = $(document.createElement('div')).addClass('rdfNodeLangContainer');
+    self.langContainer.append(self.langElem);
+    self.container.append(self.langContainer);
+    if(self.currentType != 'http://www.w3.org/2000/01/rdf-schema#Literal')
+      self.langContainer.hide();
+    self.langElem.on('input', function() {
+      self.lang = self.langElem.val();
+      self.verifyInput();
+      self.change();
+    });
+    if (!self.options.showLangSelect) {
+      self.langContainer.hide();
     }
 
     self.updateEditor(true);
