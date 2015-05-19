@@ -62,6 +62,25 @@
       </a>
     </li>
 
+    <li ng-show="currentFolder.ioType && currentFolder.ioType !== 'sparql'" class="list-group-item">
+      <a href="" ng-hide="addingFile" ng-click="showNewFileUi()">
+        <span class="glyphicon glyphicon-plus"></span> Create new document here
+      </a>
+      <div ng-show="addingFile">
+        <form ng-submit="addNewFile()" class="form-horizontal">
+          <div class="form-group">
+            <label for="newLocationUrl">Add New Document</label>
+            <input class="form-control" type="text" name="newFileName" ng-model="newFileName" placeholder="Document Name"/>
+          </div>
+        </form>
+        <div class="form-group">
+          <button class="btn btn-primary" ng-disabled="!newFileName || newFileName.length === 0" ng-click="addNewFile()">Add Document</button>
+          <button class="btn btn-default" ng-click="addingFile = false">Cancel</button>
+        </div>
+        <div class="clearfix"></div>
+      </div>
+    </li>
+
     <li ng-repeat='child in currentFolder.children | orderBy : orderProp | orderBy : "type" : true' class="resourceItem list-group-item">
       <a href="{{child.url}}" ng-click="$event.preventDefault(); open(child)">
         <div class="resourceIcon">
@@ -105,23 +124,5 @@
       </div>
     </li>
 
-    <li ng-show="currentFolder.ioType && currentFolder.ioType !== 'sparql'" class="list-group-item">
-      <a href="" ng-hide="addingFile" ng-click="showNewFileUi()">
-        <span class="glyphicon glyphicon-plus"></span> Create new document here
-      </a>
-      <div ng-show="addingFile">
-        <form ng-submit="addNewFile()" class="form-horizontal">
-          <div class="form-group">
-            <label for="newLocationUrl">Add New Document</label>
-            <input class="form-control" type="text" name="newFileName" ng-model="newFileName" placeholder="Document Name"/>
-          </div>
-        </form>
-        <div class="form-group">
-          <button class="btn btn-primary" ng-disabled="!newFileName || newFileName.length === 0" ng-click="addNewFile()">Add Document</button>
-          <button class="btn btn-default" ng-click="addingFile = false">Cancel</button>
-        </div>
-        <div class="clearfix"></div>
-      </div>
-    </li>
   </ul>
 </div>
