@@ -146,9 +146,9 @@
       },
       setValue: function(elem, val) {
         if(parseInt(val) == 1 || (typeof val == "string" && val.toLowerCase() == 'true'))
-          elem.attr('checked', 'checked');
+          elem.bootstrapToggle('on');
         else
-          elem.removeAttr('checked');
+          elem.bootstrapToggle('off');
       }
     },
     "http://www.w3.org/2001/XMLSchema#string": {
@@ -375,9 +375,9 @@
       else {
         this.currentType = node.datatype || 'http://www.w3.org/2000/01/rdf-schema#Literal';
 
-        // special case for boolean where we support 0 and 1
+        // special case for boolean where we support 0 and 1 and true and false
         if(this.options.type === "http://www.w3.org/2001/XMLSchema#boolean" &&
-           (node.value === "0" || node.value === "1")) {
+           (node.value === "0" || node.value === "1" || node.value.toLowerCase() === "true" || node.value.toLowerCase() === "false")) {
           this.currentType = "http://www.w3.org/2001/XMLSchema#boolean";
         }
       }
