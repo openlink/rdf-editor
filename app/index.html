@@ -49,8 +49,8 @@
         </p>
 
         <ul class="nav navbar-nav navbar-right">
-          <li ng-hide="profile"><a class="navbar-link" ng-href="{{loginLink}}">Login</a></li>
-          <li ng-show="profile"><a class="navbar-link" ng-href="{{logoutLink}}">Logout</a></li>
+          <li ng-hide="profile"><a class="navbar-link" ng-click="login();" href="">Login</a></li>
+          <li ng-show="profile"><a class="navbar-link" ng-click="logout();" href="">Logout</a></li>
         </ul>
       </div>
     </div>

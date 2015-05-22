@@ -226,11 +226,32 @@ angular.module('myApp', [
   };
 }])
 
-.controller('AuthHeaderCtrl', ['$scope', 'Profile', function($scope, Profile) {
+.controller('AuthHeaderCtrl', ['$rootScope', '$scope', '$window', 'Profile', function($rootScope, $scope, $window, Profile) {
   function updateProfileData(profile) {
-    $scope.profile = profile.profileData;
-    $scope.logoutLink = profile.config.host + profile.config.logoutLink + '?returnto=' + encodeURIComponent(window.location.href);
-    $scope.loginLink = profile.config.host + profile.config.loginLink + '?returnto=' + encodeURIComponent(window.location.href);
+    $scope.userProfile = profile
+    $scope.profile = profile.profileData
+  }
+
+  function saveDocument() {
+    if ($rootScope.editor.doc.dirty) {
+      var doc = $rootScope.editor.doc;
+      doc.store.graph(doc.graph, function(success, result) {
+        if (success) {
+          var content = result.toNT();
+          $.jStorage.set('rdfe:savedDocument', content);
+        }
+      });
+    }
+  }
+
+  $scope.login = function(e) {
+    saveDocument();
+    $window.location = $scope.userProfile.config.host + $scope.userProfile.config.loginLink + '?returnto=' + encodeURIComponent(window.location.href);
+  }
+
+  $scope.logout = function(e) {
+    saveDocument();
+    $window.location = $scope.userProfile.config.host + $scope.userProfile.config.logoutLink + '?returnto=' + encodeURIComponent(window.location.href);
   }
 
   Profile.getProfile().then(updateProfileData, updateProfileData);

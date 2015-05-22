@@ -69,8 +69,8 @@ angular.module('myApp.editor', ['ngRoute'])
 
 .controller(
   'EditorCtrl', [
-  '$scope', '$routeParams', '$location', "usSpinnerService", 'RDFEditor', 'DocumentTree', 'Notification',
-  function($scope, $routeParams, $location, usSpinnerService, RDFEditor, DocumentTree, Notification) {
+  '$rootScope', '$scope', '$routeParams', '$location', "usSpinnerService", 'RDFEditor', 'DocumentTree', 'Notification',
+  function($rootScope, $scope, $routeParams, $location, usSpinnerService, RDFEditor, DocumentTree, Notification) {
 
   function toggleSpinner(on) {
     if(on) {
@@ -126,6 +126,7 @@ angular.module('myApp.editor', ['ngRoute'])
   }
 
   RDFEditor.getEditor().then(function(editor) {
+    $rootScope.editor = editor;
     $scope.editor = editor;
     $scope.namingSchema = editor.config.options[editor.config.options["namingSchema"]];
     $scope.mainDoc = $scope.editor.doc;
@@ -155,10 +156,27 @@ angular.module('myApp.editor', ['ngRoute'])
 
     // otherwise we try to load the requested document
     else if($routeParams.uri) {
-      ioRetrieve($routeParams.uri, $routeParams.ioType, $routeParams.sparqlEndpoint);
+      var content = $.jStorage.get('rdfe:savedDocument', null);
+      if (content) {
+        $scope.mainDoc.store.clear(function() {
+          $scope.mainDoc.store.loadTurtle(content, $scope.mainDoc.graph, $scope.mainDoc.graph, function(success, r) {
+            if (success) {
+              $scope.editor.updateView();
+              $scope.$apply(function() {
+                // this is essentially a no-op to force the ui to update the url view
+                $scope.mainDoc.dirty = true;
+                $scope.mainDoc.url = $routeParams.uri;
+                $scope.mainDoc.io = getIO($routeParams.ioType, $routeParams.sparqlEndpoint);
+              });
+            }
+          });
+        });
+      }
+      else {
+        ioRetrieve($routeParams.uri, $routeParams.ioType, $routeParams.sparqlEndpoint);
+      }
     }
-
-
+    $.jStorage.deleteKey('rdfe:savedDocument');
 
     // Editor view mode controls
     // ----------------------------
@@ -171,7 +189,6 @@ angular.module('myApp.editor', ['ngRoute'])
     }, function(mode) {
       $scope.editor.toggleView(mode);
     });
-
 
     $scope.ontologyView = new RDFE.OntologyView($scope.ontologyManager);
     $scope.ontologyView.render($('#container-ontologies'));
