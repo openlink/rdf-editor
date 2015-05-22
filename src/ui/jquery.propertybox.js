@@ -26,11 +26,15 @@
       create: function(input, cb) {
         // search for and optionally create a new property
         var that = this;
+
+        if (input === 'a') {
+          input = 'http://www.w3.org/1999/02/22-rdf-syntax-ns#type';
+        }
         var property = this.settings.createProperty(input);
         if (property) {
           cb(property);
         }
-        else {
+        else if ((input.length > 1) && (input.indexOf(':') !== -1)) {
           var url = self.options.ontoManager.ontologyDetermine(input);
           if (!url) {
             url = self.options.ontoManager.prefixes[input] || input;
@@ -82,19 +86,21 @@
   };
 
   PropertyBox.prototype.setOntology = function(onto) {
-    console.log('setOntology', onto);
+    // console.log('setOntology', onto);
     this.options.ontology = onto;
     this.updateOptions();
   };
 
   PropertyBox.prototype.propertyList = function() {
-    console.log('propertyList', this.options);
-    if(this.options.ontology) {
-      return this.options.ontology.allProperties();
+    // console.log('propertyList', this.options);
+    var list;
+    if (this.options.ontology) {
+      list = this.options.ontology.allProperties();
     }
     else {
-      return this.options.ontoManager.allProperties();
+      list = this.options.ontoManager.allProperties();
     }
+    return list;
   };
 
   PropertyBox.prototype.updateOptions = function() {
@@ -104,7 +110,7 @@
   };
 
   PropertyBox.prototype.setPropertyURI = function(uri) {
-    console.log('PropertyBox.setPropertyURI', uri);
+    // console.log('PropertyBox.setPropertyURI', uri);
     if (uri) {
       var u = this.options.ontoManager.uriDenormalize(uri);
       if (!this.sel.options[u])
