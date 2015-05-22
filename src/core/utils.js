@@ -87,16 +87,96 @@ RDFE.Utils.uriParams = function() {
  * either the fragment or the last path section.
  */
 RDFE.Utils.uri2name = function(u) {
-  if(u) {
+  if (u) {
     var m = u.lastIndexOf('#');
-    if(m < 0) {
+    if ((m < 0) || (['this', 'me', 'i'].indexOf(u.substring(m+1, u.length)) !== -1)) {
       m = u.lastIndexOf('/');
+      if (m+1 === u.length) {
+        u = u.substring(0, u.length-1);
+        m = u.lastIndexOf('/');
+      }
     }
+    if (m >= 0) {
+      return u.substring(m+1, u.length);
+    }
+    var m = u.lastIndexOf(':');
     if (m >= 0) {
       return u.substring(m+1, u.length);
     }
   }
   return u;
+}
+
+/**
+ * Abbreviate URI.
+ */
+RDFE.Utils.uriAbbreviate = function(u, l) {
+  if (u && l) {
+    if (u.length <= l) {
+      return u;
+    }
+    var prefix = '';
+    var middle = '...';
+    var suffix = RDFE.Utils.uri2name(u);
+    if (suffix.length > l-3) {
+      return suffix;
+    }
+    u = u.substring(0, u.length-suffix.length);
+    if (u.match(/http:\/\/.*/)) {
+      prefix = 'http://';
+      u = u.substring(prefix.length, u.length);
+      if (u.length <= 3) {
+        middle = u;
+      }
+      else {
+        prefix += u.substring(0, l-3-prefix.length-suffix.length);
+      }
+    }
+    else {
+      var m = u.indexOf(':');
+      if (m > 0) {
+        if (m === u.length-1) {
+          prefix = u;
+          middle = '';
+        }
+        else {
+          prefix = u.substring(0, m+1);
+          u = u.substring(prefix.length, u.length);
+          if (u.length <= 3) {
+            middle = u;
+          }
+          else {
+            prefix += u.substring(0, l-3-prefix.length-suffix.length);
+          }
+        }
+      }
+      else {
+        prefix += u.substring(0, l-3-prefix.length-suffix.length);
+      }
+    }
+    return prefix+middle+suffix;
+  }
+  return u;
+}
+
+/**
+ * Abbreviate string.
+ */
+RDFE.Utils.strAbbreviate = function(s, l) {
+  if (s && l) {
+    var middle = '...';
+    if ((s.length <= l) || (s.length <= middle.length+2)) {
+      return s;
+    }
+    if (l < middle.length+2) {
+      l = middle.length+2;
+    }
+    var prefix = s.substring(0, Math.ceil((l-3)/2));
+    var suffix = s.substr(-(l-prefix.length-middle.length));
+
+    return prefix+middle+suffix;
+  }
+  return s;
 }
 
 RDFE.Utils.getLabel = function(labels, key) {

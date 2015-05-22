@@ -11,7 +11,7 @@
       "data/foaf.ttl"
     ]
   },
-  "defaultView": "entities",
+  "defaultView": "triples",
   "labelProps": [
     "http://www.w3.org/2004/02/skos/core#prefLabel",
     "http://www.w3.org/2000/01/rdf-schema#label",
@@ -29,9 +29,6 @@
     "s": ["Subject", "Subjects"],
     "p": ["Predicate", "Predicates"],
     "o": ["Object", "Objects"]
-  },
-  "labels": {
-    "Triples": "Statements"
   },
   "autoInverseOfHandling": true
 }
