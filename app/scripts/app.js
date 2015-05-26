@@ -233,7 +233,7 @@ angular.module('myApp', [
   }
 
   function saveDocument() {
-    if ($rootScope.editor.doc.dirty) {
+    if ($rootScope.editor && $rootScope.editor.doc && $rootScope.editor.doc.dirty) {
       var doc = $rootScope.editor.doc;
       doc.store.graph(doc.graph, function(success, result) {
         if (success) {
