@@ -55,7 +55,7 @@
       },
       render: {
         item: function(item, escape) {
-          var x = item.title || item.label || name.curi || item.name;
+          var x = item.title || item.label || item.curi || item.name;
           if(item.curi && item.curi != x) {
             x = escape(x) + ' <small>(' + escape(item.curi) + ')</small>';
           }
@@ -65,7 +65,7 @@
           return '<div>' + x + '</div>';
         },
         option: function(item, escape) {
-          return '<div>' + escape(item.title || item.label || name.curi || item.name) + '<br/><small>(' + escape(item.URI) + ')</small></div>';
+          return '<div>' + escape(item.title || item.label || item.curi || item.name) + '<br/><small>(' + escape(item.URI) + ')</small></div>';
         },
         'option_create': function(data, escape) {
           var url = self.options.ontoManager.uriDenormalize(data.input);
