@@ -27,6 +27,7 @@
         // search for and optionally create a new property
         var that = this;
 
+        input = RDFE.Utils.trim(RDFE.Utils.trim(input, '<'), '>');
         if (input === 'a') {
           input = 'http://www.w3.org/1999/02/22-rdf-syntax-ns#type';
         }
@@ -68,7 +69,9 @@
           return '<div>' + escape(item.title || item.label || item.curi || item.name) + '<br/><small>(' + escape(item.URI) + ')</small></div>';
         },
         'option_create': function(data, escape) {
-          var url = self.options.ontoManager.uriDenormalize(data.input);
+          var url = data.input;
+          url = RDFE.Utils.trim(RDFE.Utils.trim(url, '<'), '>');
+          url = self.options.ontoManager.uriDenormalize(url);
           if (url != data.input)
             return '<div class="create">Add <strong>' + escape(data.input) + '</strong> <small>(' + escape(url) + ')</small>&hellip;</div>';
           else
@@ -113,6 +116,7 @@
     // console.log('PropertyBox.setPropertyURI', uri);
     if (uri) {
       var u = this.options.ontoManager.uriDenormalize(uri);
+      u = RDFE.Utils.trim(RDFE.Utils.trim(u, '<'), '>');
       if (!this.sel.options[u])
         this.sel.addOption(this.options.ontoManager.ontologyPropertyByURI(u, true));
       this.sel.setValue(u);

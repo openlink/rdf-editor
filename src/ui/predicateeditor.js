@@ -269,13 +269,12 @@
 
       self.predicateFormContainer.find('button.predicate-action-new-save').click(function(e) {
         var s = self.predicateFormContainer.find('input[name="subject"]').val();
+        s = RDFE.Utils.trim(RDFE.Utils.trim(s, '<'), '>')
         var p = self.predicate.uri;
         var o = objectEdit.getValue();
         var t = self.doc.store.rdf.createTriple(self.doc.store.rdf.createNamedNode(s), self.doc.store.rdf.createNamedNode(p), o.toStoreNode(self.doc.store));
         self.doc.addTriples([t], function() {
-          if (!self.predicateView) {
-            self.addTriple(t);
-          }
+          self.addTriple(t);
           $(self).trigger('rdf-editor-success', {
             "type": "triple-insert-success",
             "message": "Successfully added new statement."
