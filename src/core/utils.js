@@ -37,6 +37,21 @@ RDFE.Utils.escapeXml = function (str) {
   });
 }
 
+RDFE.Utils.trim = function(str, ch) {
+  if (str) {
+    if (!ch)
+      ch = ' ';
+
+    while (str.substring(0, 1) == ch) {
+      str = str.substring(1, str.length);
+    }
+    while (str.substring(str.length - 1, str.length) == ch) {
+      str = str.substring(0, str.length - 1);
+    }
+  }
+  return str;
+}
+
 RDFE.Utils.namingSchemaLabel = function (input, namingSchema, plural, lowercase) {
   var ndx = (plural === true) ? 1 : 0;
   var value = namingSchema[input][ndx]
