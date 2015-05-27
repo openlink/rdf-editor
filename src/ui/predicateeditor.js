@@ -115,6 +115,7 @@
           }]
         });
 
+        self.predicateView = editor.predicateView;
         self.predicateTable = $list;
         self.predicateTableContainer = container.find('#predicateTable');
         self.predicateFormContainer = container.find('#predicateForm');
@@ -180,7 +181,7 @@
       predicateSelect.sel.on('change', function(predicateUri) {
         if (predicateUri) {
           self.doc.getPredicate(predicateUri, function (predicate) {
-            editor.predicateView.addPredicate(predicate);
+            self.predicateView.addPredicate(predicate);
 
             self.predicate = predicate;
             self.renderData();
@@ -208,11 +209,14 @@
     },
 
     c.prototype.addTriple = function(triple) {
-      var i = this.predicateTable.data('maxindex');
-      this.predicateTable.bootstrapTable('append', $.extend(triple, {
+      var self = this;
+
+      var i = self.predicateTable.data('maxindex');
+      self.predicateTable.bootstrapTable('append', $.extend(triple, {
         id: i
       }));
-      this.predicateTable.data('maxindex', ++i);
+      self.predicateTable.data('maxindex', ++i);
+      self.predicateView.updatePredicate(self.predicate.uri);
     };
 
     c.prototype.createNewRelationEditor = function() {
