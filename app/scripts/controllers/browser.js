@@ -129,9 +129,13 @@ angular.module('myApp.fileBrowser', ['ngRoute', 'ui.bootstrap'])
   $scope.refresh = function() {
     $scope.resetUi();
 
+    usSpinnerService.spin('refresh-spinner');
     $scope.currentFolder.update(true, function() {
-      $scope.$apply(function() {
+      $scope.$evalAsync(function() {
         $scope.currentFolder = $scope.currentFolder;
+        $timeout(function() {
+          usSpinnerService.stop('refresh-spinner');
+        }, 1000);
       });
     }, function() {
       // do nothing

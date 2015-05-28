@@ -52,7 +52,10 @@
 <div id="folder" class="col-xs-8">
   <h3>
     <span>{{currentFolder.path}}</span> <span ng-show="currentFolder.host">on {{currentFolder.host}}</span>
-    <button class="btn btn-link pull-right" ng-click="refresh()" title="Refresh the contents of the folder"><span class="glyphicon glyphicon-refresh"></span> Refresh</button>
+    <button class="btn btn-link pull-right" ng-click="refresh()" title="Refresh the contents of the folder">
+      <span us-spinner="{ lines: 8, radius: 5, width: 3, length: 5 }" spinner-key="refresh-spinner"></span>
+      <span class="glyphicon glyphicon-refresh"></span> Refresh
+    </button>
   </h3>
 
   <ul class="list-group">
