@@ -162,7 +162,7 @@ RDFE.Editor.prototype.createNewStatementEditor = function() {
       n = new RDFE.RdfNode('literal', cn.value, range, cn.language);
     }
     else if(self.ontologyManager.ontologyClassByURI(range)) {
-      n = new RDFE.RdfNode('uri', cn.value);
+      n = new RDFE.RdfNode('uri', RDFE.Utils.trim(RDFE.Utils.trim(cn.value, '<'), '>'));
     }
     else {
       n = new RDFE.RdfNode('literal', cn.value, null, '');
@@ -178,7 +178,9 @@ RDFE.Editor.prototype.createNewStatementEditor = function() {
   self.formContainer.find('a.triple-action-new-save').click(function(e) {
     e.preventDefault();
     var s = self.formContainer.find('input[name="subject"]').val();
+    s = RDFE.Utils.trim(RDFE.Utils.trim(s, '<'), '>')
     var p = propEd.selectedURI();
+    p = RDFE.Utils.trim(RDFE.Utils.trim(p, '<'), '>')
     var o = objEd.getValue();
     var t = self.doc.store.rdf.createTriple(self.doc.store.rdf.createNamedNode(s), self.doc.store.rdf.createNamedNode(p), o.toStoreNode(self.doc.store));
     self.doc.addTriples([t], function() {
@@ -338,6 +340,7 @@ RDFE.Editor.prototype.createNewEntityEditor = function(forcedType) {
         name = null,
         type = forcedType || self.formContainer.find('#class')[0].selectize.getValue();
 
+    uri = RDFE.Utils.trim(RDFE.Utils.trim(uri, '<'), '>')
     if(self.config.options.entityUriTmpl) {
       name = uri;
       uri = null;

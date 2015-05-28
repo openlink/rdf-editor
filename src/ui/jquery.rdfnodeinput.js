@@ -356,7 +356,7 @@
     if(this.currentType === 'http://www.w3.org/1999/02/22-rdf-syntax-ns#Resource')
       return new RDFE.RdfNode(
         'uri',
-        this.mainElem.val()
+        RDFE.Utils.trim(RDFE.Utils.trim(this.mainElem.val(), '<'), '>')
       );
     else
       return new RDFE.RdfNode(

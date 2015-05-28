@@ -123,7 +123,8 @@
       var self = this;
 
       if (!_.find(self.predicates, function(p){ return p.uri === predicate.uri; })) {
-        this.predicateTable.bootstrapTable('append', predicate);
+        self.predicateTable.bootstrapTable('append', predicate);
+        self.predicates.push(predicate);
       }
     };
 
