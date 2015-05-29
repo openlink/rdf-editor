@@ -104,7 +104,7 @@ angular.module('myApp', [
   };
 }])
 
-.factory('DocumentTree', ['$q', "$modal", 'Profile', function($q, $modal, Profile) {
+.factory('DocumentTree', ['$q', "$modal", 'Profile', 'RDFEConfig', function($q, $modal, Profile, RDFEConfig) {
   var locations = [],
       authCache = {};
 
@@ -165,20 +165,31 @@ angular.module('myApp', [
 
   function getLocations() {
     // if we already extracted the profile locations just return them
-    if(locations.length) {
+    if (locations.length) {
       return $q.when(locations);
     }
 
     // extract the locations from the profile
     else {
+      var storage;
       locations = [
         loadRecentDocs()
       ];
 
       return $q(function(resolve, reject) {
-        Profile.getProfile().then(function(profile) {
-          if(profile.profileData.storage) {
-            RDFE.Utils.resolveStorageLocations(profile.profileData.storage, function(files) {
+        RDFEConfig.getConfig().then(function(config) {
+          storage = config.options.storage || [];
+
+          return Profile.getProfile();
+        }).then(function(profile) {
+          var profileStorage = profile.profileData.storage || [];
+          for (var i = 0; i < profileStorage.length; i++) {
+            if (_.isEmpty(_.where(storage, {"uri": profileStorage[i].uri}))) {
+              storage = storage.concat(profileStorage[i]);
+            }
+          }
+          if (storage.length) {
+            RDFE.Utils.resolveStorageLocations(storage, function(files) {
               $.merge(locations, files);
               resolve(locations);
             });

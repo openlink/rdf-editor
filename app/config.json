@@ -30,5 +30,6 @@
     "p": ["Predicate", "Predicates"],
     "o": ["Object", "Objects"]
   },
-  "autoInverseOfHandling": true
+  "autoInverseOfHandling": true,
+  "storage": []
 }
