@@ -3,7 +3,7 @@
 <sticker version="1.0.010505A" xml:lang="en-UK">
 <caption>
   <name package="rdf-editor">
-    <prop name="Title" value="OpenLink Virtuoso RDF Editor Demo"/>
+    <prop name="Title" value="OpenLink RDF Editor"/>
     <prop name="Developer" value="OpenLink Software"/>
     <prop name="Copyright" value="(C) 2015 OpenLink Software"/>
     <prop name="Download" value="http://www.openlinksw.com/virtuoso"/>
