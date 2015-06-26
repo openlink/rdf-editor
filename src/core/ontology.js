@@ -315,9 +315,25 @@ RDFE.OntologyManager.prototype.individualByURI = function(URI) {
 
 RDFE.OntologyManager.prototype.load = function(URI, params) {
   var self = this;
+
   var ioType = (params.ioType)? params.ioType: 'http';
   var IO = RDFE.IO.createIO(ioType);
   IO.type = ioType;
+
+  params.__success = params.success;
+  params.success = function(data, status, xhr) {
+    if (self.options.proxy !== self.options.nonTTLProxy) {
+      var contentType = (xhr.getResponseHeader('content-type') || '').split(';')[0];
+      if (contentType.length > 0 && contentType.indexOf('turtle') < 0) {
+        IO.retrieve(URI, $.extend({"proxy": self.options.nonTTLProxy}, params));
+        return;
+      }
+    }
+    if (params.__success) {
+      params.__success(data, status, xhr);
+    }
+  };
+
   IO.retrieve(URI, $.extend({"proxy": self.options.proxy}, params));
 }
 

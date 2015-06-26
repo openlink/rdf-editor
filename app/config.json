@@ -1,6 +1,7 @@
 {
   "ontology": {
     "proxy": false,
+    "nonTTLProxy": true,
     "fresnelLenses": true,
     "fresnelFormats": true,
     "fresnelGroups": true,
