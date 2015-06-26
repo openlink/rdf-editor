@@ -46,3 +46,8 @@ tr.triple td {
 li.spinner {
   height: 50px;
 }
+
+hr.editor {
+  margin-top: 10px;
+  margin-bottom: 10px;
+}
