@@ -215,7 +215,7 @@ RDFE.Document.prototype.deleteByPredicate = function(uri, success, fail) {
 };
 
 // delete all triplets based on object URI
-RDFE.Document.prototype.deleteByObject = function(uri, success, fail) {
+RDFE.Document.prototype.deleteByObjectIRI = function(uri, success, fail) {
   var self = this;
 
   if (self.config.options.autoInverseOfHandling) {
@@ -242,6 +242,29 @@ RDFE.Document.prototype.deleteByObject = function(uri, success, fail) {
   }
 };
 
+// delete all triplets based on object
+RDFE.Document.prototype.deleteByObject = function(object, success, fail) {
+  var self = this;
+
+  var sparql;
+  if (object.interfaceName === "Literal") {
+    var sparql = 'construct { ?s ?p ?o } FROM <{0}> WHERE { ?s ?p ?o. FILTER (str(?o) = "{1}"). } '.format(self.graph, (object.datatype == 'http://www.w3.org/2001/XMLSchema#dateTime')? (new Date(object.nominalValue)).toString(): object.nominalValue);
+  }
+  else {
+    var sparql = 'construct { ?s ?p <{1}> } FROM <{0}> WHERE { ?s ?p <{1}> . } '.format(self.graph, object.toString());
+  }
+
+  self.store.execute(sparql, function(s, results) {
+    if (!s) {
+      if (fail) {
+        fail(results);
+      }
+    } else {
+      self.deleteTriples(results.triples, success, fail);
+    }
+  });
+};
+
 // delete all triplets of entity
 RDFE.Document.prototype.deleteEntity = function(uri, success, fail) {
   var self = this;
@@ -254,7 +277,7 @@ RDFE.Document.prototype.deleteEntity = function(uri, success, fail) {
     self.deleteBySubject(
       uri,
       function () {
-        self.deleteByObject(uri, success, fail);
+        self.deleteByObjectIRI(uri, success, fail);
       },
       fail
     )
@@ -287,6 +310,23 @@ RDFE.Document.prototype.deletePredicate = function(uri, success, fail) {
   } else {
     self.deleteByPredicate (
       uri,
+      success,
+      fail
+    )
+  }
+};
+
+// delete all triplets of predicate
+RDFE.Document.prototype.deleteObject = function(object, success, fail) {
+  var self = this;
+
+  if (!object) {
+    if (fail) {
+      fail('Need object for deletion.');
+    }
+  } else {
+    self.deleteByObject (
+      object,
       success,
       fail
     )
@@ -806,6 +846,94 @@ RDFE.Document.prototype.getPredicate = function(uri, success, error) {
       error(result);
     }
   });
+};
+
+/**
+ * List all objects by iterating over all triples in the store
+ *
+ * @param success a function which takes an array of rdfstore nodes as input.
+ * @param error a function in case an error occurs, takes error message as input.
+ */
+RDFE.Document.prototype.listObjects = function(success, error) {
+  var self = this;
+
+  self.store.graph(self.graph, function(s, result) {
+    if (s) {
+      var sl = {};
+      var triples = result.toArray();
+      for (var i = 0; i < triples.length; i+=1) {
+        var o = triples[i].object;
+        var id = self.formatObjectID(o);
+        if (!sl[id]) {
+          sl[id] = {
+            "id": id,
+            "label": self.formatObjectLabel(o),
+            "type": self.formatObjectType(o),
+            "object": o,
+            "items": []
+          };
+        }
+        sl[id].items.push(triples[i]);
+      }
+      sl = _.values(sl);
+      success(sl);
+    }
+    else if (error) {
+      error(result);
+    }
+  });
+};
+
+RDFE.Document.prototype.getObject = function(object, success, error) {
+  var self = this;
+
+  self.store.graph(self.graph, function(s, result) {
+    if (s) {
+      var sl = {
+        "id": self.formatObjectID(object),
+        "label": self.formatObjectLabel(object),
+        "type": self.formatObjectType(object),
+        "object": object,
+        "items": []
+      };
+      var triples = result.toArray();
+      for (var i = 0; i < triples.length; i+=1) {
+        if (self.formatObjectID(triples[i].object) === sl.id) {
+          sl.items.push(triples[i]);
+        }
+      }
+      if (success) {
+        success(sl);
+      }
+    }
+    else if (error) {
+      error(result);
+    }
+  });
+};
+
+RDFE.Document.prototype.formatObjectID = function(o) {
+  if (o.interfaceName == "Literal") {
+    var v = (o.datatype == 'http://www.w3.org/2001/XMLSchema#dateTime')? (new Date(o.nominalValue)).toString(): o.nominalValue;
+    var dt = (o.datatype)? o.datatype: 'literal';
+
+    return dt + ' - ' + v;
+  }
+  return o.toString();
+};
+
+RDFE.Document.prototype.formatObjectLabel = function(o) {
+  if (o.interfaceName === "Literal") {
+    return (o.datatype == 'http://www.w3.org/2001/XMLSchema#dateTime')? (new Date(o.nominalValue)).toString(): o.nominalValue;
+  }
+  return o.toString();
+};
+
+RDFE.Document.prototype.formatObjectType = function(o) {
+  if (o.interfaceName === "Literal") {
+    return (o.datatype)? o.datatype: 'http://www.w3.org/2000/01/rdf-schema#Literal';
+  }
+  return 'IRI';
 };
 
 RDFE.Document.prototype.getEntityLabel = function(e) {
