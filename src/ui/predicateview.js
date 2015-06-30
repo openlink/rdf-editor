@@ -17,6 +17,17 @@
       return '{0} (<small>{1}</small>)'.format(RDFE.Utils.uri2name(row.uri), row.uri);
     };
 
+    var labelSorter = function(a, b) {
+      function format(v) {
+        return '{0} (<small>{1}</small>)'.format(RDFE.Utils.uri2name(v), v);
+      }
+      a = format(a);
+      b = format(b);
+      if (a > b) return 1;
+      if (a < b) return -1;
+      return 0;
+    };
+
     var countFormatter = function(value, row, index) {
       return row.items.length;
     };
@@ -65,7 +76,7 @@
 
         $list.bootstrapTable({
           striped: true,
-          sortName: 'label',
+          sortName: 'uri',
           pagination: true,
           search: true,
           searchAlign: 'left',
@@ -74,16 +85,16 @@
           data: predicates,
           idField: 'uri',
           columns: [{
-            field: 'label',
-            title: RDFE.Utils.namingSchemaLabel('p', self.namingSchema) + ' Name',
-            align: 'left',
+            field: 'uri',
+            title: RDFE.Utils.namingSchemaLabel('p', self.namingSchema),
             sortable: true,
+            sorter: labelSorter,
             formatter: labelFormatter
           }, {
             field: 'count',
             title: 'Count',
             align: 'right',
-            sortable: true,
+            class: 'small-column',
             formatter: countFormatter
           }, {
             field: 'actions',
