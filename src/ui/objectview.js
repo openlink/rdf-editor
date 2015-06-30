@@ -91,6 +91,7 @@
             field: 'count',
             title: 'Count',
             align: 'right',
+            class: 'small-column',
             formatter: countFormatter
           }, {
             field: 'actions',

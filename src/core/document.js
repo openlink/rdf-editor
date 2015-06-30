@@ -316,7 +316,7 @@ RDFE.Document.prototype.deletePredicate = function(uri, success, fail) {
   }
 };
 
-// delete all triplets of predicate
+// delete all triplets of object
 RDFE.Document.prototype.deleteObject = function(object, success, fail) {
   var self = this;
 
