@@ -92,6 +92,9 @@ String.prototype.format = function() {
         (ajaxParams.headers = ajaxParams.headers || {})["Authorization"] = "Basic " + btoa(params.username + ":" + params.password);
       }
       ajaxParams = $.extend({"withCredentials": true}, ajaxParams);
+      if (self.options["ioTimeout"]) {
+        ajaxParams = $.extend({"timeout": self.options["ioTimeout"]}, ajaxParams);
+      }
 
       $.ajax(ajaxParams).done(function(data, status, xhr) {
         if (params && params.success) {
@@ -115,6 +118,13 @@ String.prototype.format = function() {
               // user did not provide credentials
               params.error(state, data, status, xhr);
             });
+          }
+          else if (status === 'timeout') {
+            var state = {
+              "httpCode": status,
+              "message": 'Failed from timeout'
+            }
+            params.error(state, data, status, xhr);
           }
           else {
             params.error(state, data, status, xhr);

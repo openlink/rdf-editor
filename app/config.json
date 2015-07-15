@@ -31,5 +31,6 @@
     "o": ["Object", "Objects"]
   },
   "autoInverseOfHandling": true,
-  "storage": []
+  "storage": [],
+  "ioTimeout": 3000
 }

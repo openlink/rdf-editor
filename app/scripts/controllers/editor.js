@@ -81,10 +81,11 @@ angular.module('myApp.editor', ['ngRoute'])
     }
   }
 
-  function getIO(ioType, sparqlEndpoint) {
+  function getIO(ioType, sparqlEndpoint, ioTimeout) {
     var io = RDFE.IO.createIO(ioType, {
       "sparqlEndpoint": sparqlEndpoint,
-      "gspEndpoint": $('#gspEndpoint').val()
+      "gspEndpoint": $('#gspEndpoint').val(),
+      "ioTimeout": ioTimeout
     });
     io.type = ioType;
     io.options.authFunction = function(url, success, fail) {
@@ -93,10 +94,10 @@ angular.module('myApp.editor', ['ngRoute'])
     return io;
   }
 
-  function ioRetrieve(url, type, sparqlEndpoint) {
+  function ioRetrieve(url, type, sparqlEndpoint, ioTimeout) {
     var io_rdfe;
     try {
-      io_rdfe = getIO(type || "sparql", sparqlEndpoint);
+      io_rdfe = getIO(type || "sparql", sparqlEndpoint, ioTimeout);
 
       // see if we have auth information cached
       DocumentTree.getAuthInfo(url, false).then(function(authInfo) {
@@ -136,7 +137,7 @@ angular.module('myApp.editor', ['ngRoute'])
     // the browser requested that we save the current document
     if($routeParams.saveDocument) {
       $scope.mainDoc.url = $routeParams.uri;
-      $scope.mainDoc.io = getIO($routeParams.ioType, $routeParams.sparqlEndpoint);
+      $scope.mainDoc.io = getIO($routeParams.ioType, $routeParams.sparqlEndpoint, editor.config.options['ioTimeout']);
       $scope.saveDocument();
       $scope.editor.updateView();
     }
@@ -146,7 +147,7 @@ angular.module('myApp.editor', ['ngRoute'])
       $scope.mainDoc.new(function() {
         if($routeParams.uri) {
           $scope.mainDoc.url = $routeParams.uri;
-          $scope.mainDoc.io = getIO($routeParams.ioType, $routeParams.sparqlEndpoint);
+          $scope.mainDoc.io = getIO($routeParams.ioType, $routeParams.sparqlEndpoint, editor.config.options['ioTimeout']);
         }
         $scope.editor.updateView();
       }, function() {
@@ -166,14 +167,14 @@ angular.module('myApp.editor', ['ngRoute'])
                 // this is essentially a no-op to force the ui to update the url view
                 $scope.mainDoc.dirty = true;
                 $scope.mainDoc.url = $routeParams.uri;
-                $scope.mainDoc.io = getIO($routeParams.ioType, $routeParams.sparqlEndpoint);
+                $scope.mainDoc.io = getIO($routeParams.ioType, $routeParams.sparqlEndpoint, editor.config.options['ioTimeout']);
               });
             }
           });
         });
       }
       else {
-        ioRetrieve($routeParams.uri, $routeParams.ioType, $routeParams.sparqlEndpoint);
+        ioRetrieve($routeParams.uri, $routeParams.ioType, $routeParams.sparqlEndpoint, editor.config.options['ioTimeout']);
       }
     }
     $.jStorage.deleteKey('rdfe:savedDocument');
