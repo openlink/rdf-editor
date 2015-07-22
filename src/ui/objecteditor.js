@@ -3,13 +3,13 @@
     window.RDFE = {};
   }
 
-  RDFE.PredicateEditor = (function() {
+  RDFE.ObjectEditor = (function() {
     // constructor
-    var c = function(doc, ontologyManager, predicate) {
+    var c = function(doc, ontologyManager, object) {
       this.doc = doc;
       this.namingSchema = doc.config.options[doc.config.options["namingSchema"]];
       this.ontologyManager = ontologyManager;
-      this.predicate = predicate;
+      this.object = object;
     };
 
     var nodeFormatter = function(value) {
@@ -26,26 +26,28 @@
     c.prototype.template = _.template(' \
       <div class="panel panel-default"> \
         <div class="panel-heading clearfix"> \
-          <form class="form-inline"> \
-            <div class="form-group" style="width: 80%;"> \
-              <label><%= RDFE.Utils.namingSchemaLabel("p", this.namingSchema) %> </label> \
-              <select name="predicate" class="form-control" style="width: 85%;"></select> \
+          <div class="form-group"> \
+            <div class="col-sm-1"> \
+              <label for="object" class="control-label pull-right" style="padding-top: 5px"><%= RDFE.Utils.namingSchemaLabel("o", this.namingSchema) %> </label> \
             </div> \
-            <div class="btn-group pull-right" role="group"> \
-              <button type="button" class="btn btn-default btn-sm" id="backButton">Back</button> \
+            <div class="col-sm-10"> \
+              <input name="object" class="form-control" /> \
             </div> \
-          </form> \
+            <div class="col-sm-1"> \
+              <button type="button" class="btn btn-default btn-sm pull-right" id="backButton">Back</button> \
+            </div> \
+          </div> \
         </div> \
-        <div class="panel-body" id="predicateTable"> \
+        <div class="panel-body" id="objectTable"> \
         </div> \
-        <div class="panel-body" id="predicateForm" style="display: none;"> \
+        <div class="panel-body" id="objectForm" style="display: none;"> \
       </div>'
     );
 
     c.prototype.render = function(editor, container, backCallback) {
       var self = this;
 
-      var predicateEditorData = function(container, backCallback) {
+      var objectEditorData = function(container, backCallback) {
         $list.bootstrapTable({
           striped:true,
           sortName:'subject',
@@ -55,7 +57,7 @@
           showHeader: true,
           editable: true,
           data: [],
-          dataSetter: predicateEditorDataSetter,
+          dataSetter: objectEditorDataSetter,
           columns: [{
             field: 'subject',
             title: RDFE.Utils.namingSchemaLabel('s', self.namingSchema),
@@ -73,15 +75,18 @@
             },
             formatter: nodeFormatter
           }, {
-            field: 'object',
-            title: RDFE.Utils.namingSchemaLabel('o', self.namingSchema),
+            field: 'predicate',
+            title: RDFE.Utils.namingSchemaLabel('p', self.namingSchema),
             align: 'left',
             sortable: true,
             editable: function(triple) {
               return {
                 mode: "inline",
                 type: "rdfnode",
-                value: triple.object
+                rdfnode: {
+                  type: 'http://www.w3.org/1999/02/22-rdf-syntax-ns#Resource'
+                },
+                value: triple.predicate
               };
             },
             formatter: nodeFormatter
@@ -115,41 +120,30 @@
           }]
         });
 
-        self.predicateView = editor.predicateView;
-        self.predicateTable = $list;
-        self.predicateTableContainer = container.find('#predicateTable');
-        self.predicateFormContainer = container.find('#predicateForm');
+        self.objectView = editor.objectView;
+        self.objectTable = $list;
+        self.objectTableContainer = container.find('#objectTable');
+        self.objectFormContainer = container.find('#objectForm');
         self.addButton = $($list).find('.add');
         self.addButton.click(function() {
           self.createNewRelationEditor();
         });
 
-        // reftersh predicates data
+        // reftersh objects data
         self.renderData();
       };
 
-      var predicateEditorDataSetter = function(triple, field, newValue) {
+      var objectEditorDataSetter = function(triple, field, newValue) {
         var newNode = newValue;
 
-        if (field === 'predicate') {
+        if (field === 'subject') {
           newNode = self.doc.store.rdf.createNamedNode(newValue);
         }
-        if (newValue.toStoreNode) {
-          newNode = newValue.toStoreNode(self.doc.store);
-        }
-        else if (field != 'object' ||
-          triple.object.interfaceName == 'NamedNode') {
+        else if (field === 'predicate') {
           newNode = self.doc.store.rdf.createNamedNode(newValue);
-        }
-        else if (triple.object.datatype == 'http://www.w3.org/2001/XMLSchema#dateTime') {
-          var d = new Date(newValue);
-          newNode = self.doc.store.rdf.createLiteral(d.toISOString(), triple.object.language, triple.object.datatype);
-        }
-        else {
-          newNode = self.doc.store.rdf.createLiteral(newValue, triple.object.language, triple.object.datatype);
         }
 
-        var newTriple = self.doc.store.rdf.createTriple(triple.subject, triple.predicate, triple.object);
+        var newTriple = self.doc.store.rdf.createTriple(triple.subject, triple.object, triple.object);
         newTriple[field] = newNode;
         self.doc.updateTriple(triple, newTriple, function(success) {
           // do nothing
@@ -161,46 +155,48 @@
       container.empty();
 
       // create the basic entity editor layout using the template above
-      container.append(self.template(self.predicate));
+      container.append(self.template(self.object));
 
       var $list = $(document.createElement('table')).addClass('table');
-      container.find('#predicateTable').append($list);
+      container.find('#objectTable').append($list);
 
       // add click handlers to our buttons (we have three handlers because we used to have three buttons)
       var backButton = container.find('button#backButton');
       backButton.click(function() {
+        self.objectView.removeObject(self.object);
         backCallback();
       });
 
-      var predicateSelect = container.find('select[name="predicate"]').propertyBox({
-        ontoManager: self.ontologyManager
-      });
-      if (self.predicate) {
-        predicateSelect.setPropertyURI(self.predicate.uri);
+      var objectInput = container.find('input[name="object"]').rdfNodeEditor();
+      if (self.object) {
+        objectInput.setValue(self.object.object);
       }
-      predicateSelect.sel.on('change', function(predicateUri) {
-        if (predicateUri) {
-          self.doc.getPredicate(predicateUri, function (predicate) {
-            self.predicateView.addPredicate(predicate);
+      $(objectInput).on('changed', function(e, value) {
+        var node = value.getValue();
+        if (node.value) {
+          var o = node.toStoreNode(self.doc.store);
+          self.doc.getObject(o, function (object) {
+            self.objectView.removeObject(self.object);
+            self.objectView.addObject(object);
 
-            self.predicate = predicate;
+            self.object = object;
             self.renderData();
           });
         }
       });
-      predicateEditorData(container, backCallback);
+      objectEditorData(container, backCallback);
     };
 
     c.prototype.renderData = function() {
       var self = this;
 
-      var predicates = (self.predicate) ? self.predicate.items : [];
-      for(var i = 0; i < predicates.length; i++) {
-        predicates[i].id = i;
+      var objects = (self.object) ? self.object.items : [];
+      for(var i = 0; i < objects.length; i++) {
+        objects[i].id = i;
       }
-      self.predicateTable.data('maxindex', i);
-      self.predicateTable.bootstrapTable('load', predicates);;
-      if (self.predicate) {
+      self.objectTable.data('maxindex', i);
+      self.objectTable.bootstrapTable('load', objects);;
+      if (self.object) {
         self.addButton.show();
       }
       else {
@@ -211,19 +207,19 @@
     c.prototype.addTriple = function(triple) {
       var self = this;
 
-      var i = self.predicateTable.data('maxindex');
-      self.predicateTable.bootstrapTable('append', $.extend(triple, {
+      var i = self.objectTable.data('maxindex');
+      self.objectTable.bootstrapTable('append', $.extend(triple, {
         id: i
       }));
-      self.predicateTable.data('maxindex', ++i);
-      self.predicateView.updatePredicate(self.predicate.uri);
+      self.objectTable.data('maxindex', ++i);
+      self.objectView.updateObject(self.object.object);
     };
 
     c.prototype.createNewRelationEditor = function() {
       var self = this;
 
-      self.predicateTableContainer.hide();
-      self.predicateFormContainer.html(
+      self.objectTableContainer.hide();
+      self.objectFormContainer.html(
         '<div class="panel panel-default"> ' +
         '  <div class="panel-heading"><h3 class="panel-title">Add Relation</h3></div> ' +
         '  <div class="panel-body"> ' +
@@ -233,13 +229,13 @@
         '        <div class="col-sm-10"><input name="subject" class="form-control" /></div> ' +
         '      </div> ' +
         '      <div class="form-group"> ' +
-        '        <label for="object" class="col-sm-2 control-label">' + RDFE.Utils.namingSchemaLabel('o', self.namingSchema) + '</label> ' +
-        '        <div class="col-sm-10"><input name="object" class="form-control" /></div> ' +
+        '        <label for="predicate" class="col-sm-2 control-label">' + RDFE.Utils.namingSchemaLabel('p', self.namingSchema) + '</label> ' +
+        '        <div class="col-sm-10"><select name="predicate" class="form-control"></select></div> ' +
         '      </div> ' +
         '      <div class="form-group"> ' +
         '        <div class="col-sm-10 col-sm-offset-2"> ' +
-        '          <button type="button" class="btn btn-default predicate-action predicate-action-new-cancel">Cancel</button> ' +
-        '          <button type="button" class="btn btn-primary predicate-action predicate-action-new-save">OK</button> ' +
+        '          <button type="button" class="btn btn-default object-action object-action-new-cancel">Cancel</button> ' +
+        '          <button type="button" class="btn btn-primary object-action object-action-new-save">OK</button> ' +
         '        </div> ' +
         '      </div> ' +
         '    </form> ' +
@@ -247,40 +243,29 @@
         '</div>'
       ).show();
 
-      var property = self.ontologyManager.ontologyProperties[self.predicate.uri];
-      var objectEdit = self.predicateFormContainer.find('input[name="object"]').rdfNodeEditor();
-      var objectType;
-      var range = property.getRange();
-      if (objectEdit.isLiteralType(range)) {
-        objectType = new RDFE.RdfNode('literal', '', range, '');
-      }
-      else if (self.ontologyManager.ontologyClassByURI(range)) {
-        objectType = new RDFE.RdfNode('uri', '');
-      }
-      else {
-        objectType = new RDFE.RdfNode('literal', '', null, '');
-      }
-      objectEdit.setValue(objectType);
-
-      self.predicateFormContainer.find('button.predicate-action-new-cancel').click(function(e) {
-        self.predicateFormContainer.hide();
-        self.predicateTableContainer.show();
+      self.predicateEdit = self.objectFormContainer.find('select[name="predicate"]').propertyBox({
+        ontoManager: self.ontologyManager
       });
 
-      self.predicateFormContainer.find('button.predicate-action-new-save').click(function(e) {
-        var s = self.predicateFormContainer.find('input[name="subject"]').val();
+      self.objectFormContainer.find('button.object-action-new-cancel').click(function(e) {
+        self.objectFormContainer.hide();
+        self.objectTableContainer.show();
+      });
+
+      self.objectFormContainer.find('button.object-action-new-save').click(function(e) {
+        var s = self.objectFormContainer.find('input[name="subject"]').val();
         s = RDFE.Utils.trim(RDFE.Utils.trim(s, '<'), '>')
-        var p = self.predicate.uri;
-        var o = objectEdit.getValue();
-        var t = self.doc.store.rdf.createTriple(self.doc.store.rdf.createNamedNode(s), self.doc.store.rdf.createNamedNode(p), o.toStoreNode(self.doc.store));
+        var p = self.predicateEdit.selectedURI();
+        p = RDFE.Utils.trim(RDFE.Utils.trim(p, '<'), '>')
+        var t = self.doc.store.rdf.createTriple(self.doc.store.rdf.createNamedNode(s), self.doc.store.rdf.createNamedNode(p), self.object.object);
         self.doc.addTriples([t], function() {
           self.addTriple(t);
           $(self).trigger('rdf-editor-success', {
             "type": "triple-insert-success",
             "message": "Successfully added new statement."
           });
-          self.predicateFormContainer.hide();
-          self.predicateTableContainer.show();
+          self.objectFormContainer.hide();
+          self.objectTableContainer.show();
         }, function() {
           $(self).trigger('rdf-editor-error', {
             "type": 'triple-insert-failed',

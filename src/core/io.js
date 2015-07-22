@@ -502,7 +502,7 @@ String.prototype.format = function() {
         url: path,
         type: method,
         headers: headers,
-        contentType: 'application/octet-stream',
+        contentType: 'text/turtle',
         processData: false,
         data: content,
         dataType: params.dataType

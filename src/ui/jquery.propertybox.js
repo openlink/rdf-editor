@@ -14,7 +14,7 @@
 
     $(self.mainElem).selectize({
       valueField: "URI",
-      searchField: [ "title", "label", "prefix", "URI" ],
+      searchField: [ "title", "label", "prefix", "curi", "URI" ],
       sortField: [ "prefix", "URI" ],
       options: self.propertyList(),
       onChange: function(value) {
@@ -35,7 +35,7 @@
         if (property) {
           cb(property);
         }
-        else if ((input.length > 1) && (input.indexOf(':') !== -1)) {
+        else {
           var url = self.options.ontoManager.ontologyDetermine(input);
           if (!url) {
             url = self.options.ontoManager.prefixes[input] || input;
@@ -45,11 +45,24 @@
               cb(that.settings.createProperty(input, true));
             },
             "error": function(state) {
-              if (state && state.message) {
-                console.log(state.message);
-                // $.growl({message: state.message}, {type: 'danger'});
-              }
-              cb(that.settings.createProperty(input, true));
+              var message = (state && state.message)? state.message: 'Error loading ontology';
+
+              console.log(message);
+              bootbox.confirm(message + '. Do you want to create new property?', function(result) {
+                if (result) {
+                  var ontology = self.options.ontoManager.ontologyByURI(url);
+                  if (!ontology) {
+                    var ontology = self.options.ontoManager.ontologyByURI(url);
+                    if (!ontology) {
+                      ontology = new RDFE.Ontology(self.options.ontoManager, url);
+                    }
+                    cb(that.settings.createProperty(input, true));
+                  }
+                }
+                else {
+                  that.unlock()
+                }
+              });
             }
           });
         }
@@ -117,8 +130,9 @@
     if (uri) {
       var u = this.options.ontoManager.uriDenormalize(uri);
       u = RDFE.Utils.trim(RDFE.Utils.trim(u, '<'), '>');
-      if (!this.sel.options[u])
+      if (!this.sel.options[u]) {
         this.sel.addOption(this.options.ontoManager.ontologyPropertyByURI(u, true));
+      }
       this.sel.setValue(u);
     }
     else {

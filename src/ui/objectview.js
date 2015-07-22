@@ -3,7 +3,7 @@
     window.RDFE = {};
   }
 
-  RDFE.PredicateView = (function() {
+  RDFE.ObjectView = (function() {
     // constructor
     var c = function(doc, ontologyManager, editor, params) {
       this.doc = doc;
@@ -14,25 +14,18 @@
     };
 
     var labelFormatter = function(value, row, index) {
-      return '{0} (<small>{1}</small>)'.format(RDFE.Utils.uri2name(row.uri), row.uri);
+      return row.label;
     };
 
-    var labelSorter = function(a, b) {
-      function format(v) {
-        return '{0} (<small>{1}</small>)'.format(RDFE.Utils.uri2name(v), v);
-      }
-      a = format(a);
-      b = format(b);
-      if (a > b) return 1;
-      if (a < b) return -1;
-      return 0;
+    var typeFormatter = function(value, row, index) {
+      return row.type;
     };
 
     var countFormatter = function(value, row, index) {
       return row.items.length;
     };
 
-    var predicateListActionsFormatter = function(value, row, index) {
+    var objectListActionsFormatter = function(value, row, index) {
       return [
         '<a class="edit ml10" href="javascript:void(0)" title="Edit">',
         '  <i class="glyphicon glyphicon-edit"></i>',
@@ -46,29 +39,29 @@
     c.prototype.render = function(container, callback) {
       var self = this;
 
-      self.doc.listPredicates(function(predicates) {
-        self.predicates = predicates;
-        self.predicateTable = null;
+      self.doc.listObjects(function(objects) {
+        self.objects = objects;
+        self.objectsTable = null;
         container.empty();
 
         var $list = $(document.createElement('table')).addClass('table');
         container.append($list);
 
         // create entries
-        var deleteFct = function(predicate) {
-          self.doc.deletePredicate(predicate.uri, function() {
+        var deleteFct = function(row) {
+          self.doc.deleteObject(row.object, function() {
             $list.bootstrapTable('remove', {
-              field: 'uri',
-              values: [predicate.uri]
+              field: 'id',
+              values: [row.id]
             });
             $(self).trigger('rdf-editor-success', {
-              "type": 'predicate-delete-done',
-              "uri": predicate.uri,
-              "message": "Successfully deleted attribute " + uri + "."
+              "type": 'object-delete-done',
+              "uri": row.id,
+              "message": "Successfully deleted attribute " + row.id + "."
             });
           }, function(msg) {
             $(self).trigger('rdf-editor-error', {
-              "type": 'predicate-delete-failed',
+              "type": 'object-delete-failed',
               "message": msg
             });
           });
@@ -76,20 +69,24 @@
 
         $list.bootstrapTable({
           striped: true,
-          sortName: 'uri',
+          sortName: 'label',
           pagination: true,
           search: true,
           searchAlign: 'left',
           trimOnSearch: false,
           showHeader: true,
-          data: predicates,
-          idField: 'uri',
+          data: objects,
+          idField: 'id',
           columns: [{
-            field: 'uri',
-            title: RDFE.Utils.namingSchemaLabel('p', self.namingSchema),
+            field: 'label',
+            title: RDFE.Utils.namingSchemaLabel('o', self.namingSchema),
             sortable: true,
-            sorter: labelSorter,
             formatter: labelFormatter
+          }, {
+            field: 'type',
+            title: 'Type',
+            sortable: true,
+            formatter: typeFormatter
           }, {
             field: 'count',
             title: 'Count',
@@ -98,12 +95,12 @@
             formatter: countFormatter
           }, {
             field: 'actions',
-            title: '<button class="add btn btn-default" title="Add one or more entity and value pairs for this attribute to this document"><span class="glyphicon glyphicon-plus" aria-hidden="true"></span> New</button>',
+            title: '<button class="add btn btn-default" title="Add one or more entity and predicate pairs for this attribute to this document"><span class="glyphicon glyphicon-plus" aria-hidden="true"></span> New</button>',
             align: 'center',
             valign: 'middle',
             class: 'small-column',
             clickToSelect: false,
-            formatter: predicateListActionsFormatter,
+            formatter: objectListActionsFormatter,
             events: {
               'click .edit': function(e, value, row, index) {
                 self.editFct(row);
@@ -115,41 +112,59 @@
           }]
         });
         $($list).find('.add').on('click', function(e) {
-          self.editor.editPredicate();
+          self.editor.editObject();
         });
-        self.predicateTable = $list;
+        self.objectsTable = $list;
 
         if (callback) {
           callback();
         }
       }, function(r) {
         $(self).trigger('rdf-editor-error', {
-          "type": 'predicate-list-failed',
+          "type": 'object-list-failed',
           "message": r
         });
       });
     };
 
-    c.prototype.addPredicate = function(predicate) {
+    /**
+     * Add given object to the view.
+     */
+    c.prototype.addObject = function(object) {
       var self = this;
 
-      if (!_.find(self.predicates, function(p){ return p.uri === predicate.uri; })) {
-        self.predicateTable.bootstrapTable('append', predicate);
-        self.predicates.push(predicate);
+      if (!_.find(self.objects, function(o){ return o.id === object.id; })) {
+        self.objectsTable.bootstrapTable('append', object);
+        self.objects.push(object);
       }
     };
 
     /**
-     * Fetch details about the given predicate from the document and update them in the table.
+     * Fetch details about the given object from the document and update them in the table.
      */
-    c.prototype.updatePredicate = function(uri) {
+    c.prototype.updateObject = function(object) {
       var self = this;
 
-      self.doc.getPredicate(uri, function(predicate) {
-        self.predicateTable.bootstrapTable('update', {
-          field: 'uri',
-          data: predicate
+      self.doc.getObject(object, function(object) {
+        self.objectsTable.bootstrapTable('update', {
+          field: 'id',
+          data: object
         });
+      });
+    };
+
+    /**
+     * Remove given object from the view.
+     */
+    c.prototype.removeObject = function(object) {
+      var self = this;
+
+      if (!object || object.items.length !== 0) {
+        return;
+      }
+      self.objectsTable.bootstrapTable('remove', {
+        field: 'id',
+        values: [object.id]
       });
     };
 

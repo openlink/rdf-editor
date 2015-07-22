@@ -61,6 +61,8 @@ angular.module('myApp.editor', ['ngRoute'])
         return 'p';
       case 'entities':
         return 's';
+      case 'values':
+        return 'o';
       default:
         return input;
     }
