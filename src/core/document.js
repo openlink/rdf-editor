@@ -1,11 +1,12 @@
-if(!window.RDFE)
+if (!window.RDFE)
   window.RDFE = {};
 
-RDFE.Document = function(ontoMan, config) {
+RDFE.Document = function(ontologyManager, config, documentTree) {
   var self = this;
 
-  self.ontologyManager = ontoMan;
+  self.ontologyManager = ontologyManager;
   self.config = config;
+  self.documentTree = documentTree;
   self.store = rdfstore.create();
   self.store.registerDefaultNamespace('skos', 'http://www.w3.org/2004/02/skos/core#');
   self.graph = 'urn:graph:default';
@@ -26,7 +27,6 @@ RDFE.Document.prototype.load = function(url, io, success, fail) {
         self.url = url;
         self.io = io;
         self.setChanged(false);
-
 
         // store document identification properties after load
         self.srcParams = {
@@ -117,6 +117,9 @@ RDFE.Document.prototype.save = function(url, io, success, fail) {
             self.url = myUrl;
             self.io = myIo;
             self.setChanged(false);
+
+            // add current recent doc to the list
+            self.documentTree.addRecentDoc(self.url, self.io.type);
 
             // refresh document identification properties after save
             myIo.retrieve(myUrl, {

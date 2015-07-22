@@ -143,23 +143,32 @@ angular.module('myApp', [
 
   function loadRecentDocs() {
     var r = new RDFE.IO.Folder();
+
     r.name = r.path = "Recent Documents";
     r.comment = 'Documents you recently opened';
-
-    var recentDocs = $.jStorage.get('rdfe:recentDocuments');
-    if(recentDocs) {
-      for(var i = 0; i < recentDocs.length && i < 10; i++) {
-        if(recentDocs[i]) {
-          var d = new RDFE.IO.File(recentDocs[i].url);
-          d.ioType = recentDocs[i].ioType;
-          d.name = recentDocs[i].title || d.name;
-          d.sparqlEndpoint = recentDocs[i].sparqlEndpoint;
-          r.children.push(d);
-        }
-      }
-    }
+    r.children = getRecentDocs();
 
     return r;
+  }
+
+
+  function getRecentDocs() {
+    var items = []
+    var recentDocs = $.jStorage.get('rdfe:recentDocuments');
+
+    if (recentDocs) {
+      for (var i = 0; i < recentDocs.length && i < 10; i++) {
+        var recentDoc = recentDocs[i];
+        if (recentDoc) {
+          var item = new RDFE.IO.File(recentDoc.url);
+          item.ioType = recentDoc.ioType;
+          item.name = recentDoc.title || item.name;
+          item.sparqlEndpoint = recentDoc.sparqlEndpoint;
+          items.push(item);
+    }
+      }
+    }
+    return items;
   }
 
 
@@ -205,10 +214,44 @@ angular.module('myApp', [
     }
   }
 
+  function addRecentDoc(url, ioType) {
+    var notFound = true;
+    var recentDoc;
+
+    var recentDocs = $.jStorage.get('rdfe:recentDocuments');
+    if (!recentDocs) {
+      recentDocs = [];
+    }
+
+    for (var i = 0; i < recentDocs.length; i++) {
+      recentDoc = recentDocs[i];
+      if ((recentDoc.url === url) && (recentDoc.ioType === ioType)) {
+        notFound = false;
+        recentDocs.splice(i, 1);
+        recentDocs.unshift(recentDoc);
+        break;
+      }
+    }
+
+    if (notFound) {
+      recentDoc = new RDFE.IO.File(url);
+      recentDoc.ioType = ioType;
+      recentDocs.unshift(recentDoc);
+      if (recentDocs.length > 10) {
+        recentDocs.splice(recentDocs.length-1, 1);
+      }
+    }
+
+    $.jStorage.set('rdfe:recentDocuments', recentDocs);
+  }
+
+
   // Service API
   return {
     getLocations: getLocations,
-    getAuthInfo: getAuthInfo
+    getAuthInfo: getAuthInfo,
+    getRecentDocs: getRecentDocs,
+    addRecentDoc: addRecentDoc
   };
 }])
 

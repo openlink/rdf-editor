@@ -9,7 +9,7 @@ angular.module('myApp.editor', ['ngRoute'])
   });
 }])
 
-.factory('RDFEditor', ['$q', "usSpinnerService", 'RDFEConfig', 'Notification', function($q, usSpinnerService, RDFEConfig, Notification) {
+.factory('RDFEditor', ['$q', "usSpinnerService", 'RDFEConfig', 'Notification', 'DocumentTree', function($q, usSpinnerService, RDFEConfig, Notification, DocumentTree) {
   var editor = null;
 
   function getEditor() {
@@ -19,7 +19,7 @@ angular.module('myApp.editor', ['ngRoute'])
     else {
       return $q(function(resolve, reject) {
         RDFEConfig.getConfig().then(function(config) {
-          editor = new RDFE.Editor(config);
+          editor = new RDFE.Editor(config, DocumentTree);
 
           // subscribe to editor events FIXME: a service does not seem like the best place to do this
           $(editor).on('rdf-editor-success', function(e, d) {

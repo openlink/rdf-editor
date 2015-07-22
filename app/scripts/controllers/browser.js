@@ -42,9 +42,6 @@ angular.module('myApp.fileBrowser', ['ngRoute', 'ui.bootstrap'])
 })
 
 .controller('FileBrowserCtrl', ["$scope", '$routeParams', "$timeout", '$location', "usSpinnerService", "DocumentTree", 'Notification', function($scope, $routeParams, $timeout, $location, usSpinnerService, DocumentTree, Notification) {
-  // property to order files and folders by (folders are always first)
-  $scope.orderProp = "name";
-
   // browser mode
   $scope.mode = 'open';
   $scope.title = 'Open a Document';
@@ -59,7 +56,7 @@ angular.module('myApp.fileBrowser', ['ngRoute', 'ui.bootstrap'])
     $scope.locations = locations;
 
     // browser state
-    $scope.currentLocation = $scope.locations[0];
+    $scope.updateCurrentLocation($scope.locations[0]);
     $scope.currentFolder = $scope.currentLocation;
 
     usSpinnerService.stop('location-spinner');
@@ -79,7 +76,8 @@ angular.module('myApp.fileBrowser', ['ngRoute', 'ui.bootstrap'])
           $scope.$apply(function() {
             // replace the old location with the new one
             $scope.locations[$scope.locations.indexOf(location)] = dir;
-            $scope.currentLocation = $scope.currentFolder = dir;
+            $scope.updateCurrentLocation(dir);
+            $scope.currentFolder = dir;
           });
         }, function(errMsg, status) {
           location.httpStatus = status;
@@ -87,14 +85,23 @@ angular.module('myApp.fileBrowser', ['ngRoute', 'ui.bootstrap'])
           // sadly we can get this error sync or async. Thus, we ensure async
           // to avoid the $apply nesting
           $timeout(function() {
-            $scope.currentLocation = $scope.currentFolder = location;
-          });
+            $scope.updateCurrentLocation(location);
+            $scope.currentFolder = location;
+        });
         });
       }
       else {
-        $scope.currentLocation = $scope.currentFolder = location;
+        $scope.updateCurrentLocation(location);
+        $scope.currentFolder = location;
       }
     }
+  };
+
+  $scope.updateCurrentLocation = function(location) {
+    $scope.currentLocation = location;
+
+    // property to order files and folders by (folders are always first)
+    $scope.orderProp = (location.name === "Recent Documents")? null: "name";
   };
 
   $scope.changeDir = function(folder) {
@@ -129,10 +136,15 @@ angular.module('myApp.fileBrowser', ['ngRoute', 'ui.bootstrap'])
   $scope.refresh = function() {
     $scope.resetUi();
 
-    usSpinnerService.spin('refresh-spinner');
-    $scope.currentFolder.update(true, function() {
-      $scope.$evalAsync(function() {
+    if ($scope.currentLocation.name === "Recent Documents") {
+      $scope.currentLocation.children = DocumentTree.getRecentDocs();
         $scope.currentFolder = $scope.currentFolder;
+    }
+    else {
+      usSpinnerService.spin('refresh-spinner');
+      $scope.currentFolder.update(true, function() {
+        $scope.$evalAsync(function() {
+          $scope.currentFolder = $scope.currentFolder;
         $timeout(function() {
           usSpinnerService.stop('refresh-spinner');
         }, 1000);
@@ -140,6 +152,7 @@ angular.module('myApp.fileBrowser', ['ngRoute', 'ui.bootstrap'])
     }, function() {
       // do nothing
     });
+    }
   };
 
   $scope.openFile = function(file) {
@@ -194,7 +207,8 @@ angular.module('myApp.fileBrowser', ['ngRoute', 'ui.bootstrap'])
         sf.ioType = "sparql";
         sf.sparqlEndpoint = $scope.newLocationUrl;
         $scope.addLocation(sf);
-        $scope.currentLocation = $scope.currentFolder = sf;
+        $scope.updateCurrentLocation(sf);
+        $scope.currentFolder = sf;
         $scope.addingLocation = false;
       }
       else {
@@ -208,7 +222,8 @@ angular.module('myApp.fileBrowser', ['ngRoute', 'ui.bootstrap'])
           $scope.$apply(function() {
             $scope.addingLocation = false;
             $scope.addLocation(dir);
-            $scope.currentLocation = $scope.currentFolder = dir;
+            $scope.updateCurrentLocation(dir);
+            $scope.currentFolder = dir;
           });
         }, function(errMsg, status) {
           // show a notification and let the user try again

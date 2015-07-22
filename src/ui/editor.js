@@ -8,7 +8,7 @@ if (typeof String.prototype.startsWith != 'function') {
 if(!window.RDFE)
   window.RDFE = {};
 
-RDFE.Editor = function(config, options) {
+RDFE.Editor = function(config, documentTree, options) {
   var self = this;
   var options = $.extend({"initOntologyManager": true}, options);
 
@@ -19,7 +19,7 @@ RDFE.Editor = function(config, options) {
   }
 
   // create our main document
-  this.doc = new RDFE.Document(this.ontologyManager, config);
+  this.doc = new RDFE.Document(this.ontologyManager, config, documentTree);
 
   // store the config for future access
   this.config = config;
