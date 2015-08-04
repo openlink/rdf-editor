@@ -107,7 +107,7 @@ String.prototype.format = function() {
             "message": data.statusText
           }
           if (this.crossDomain && (state.message = 'error') && (RDFE.Utils.extractDomain(this.url) !== window.location.hostname)) {
-            state.message = "The Document failed to load - this could be related to missing CORS settings on the server."
+            state.message = "The document failed to load - this could be related to missing CORS settings on the server."
           }
           if ((data.status === 401 || data.status === 403) && params.authFunction) {
             params.authFunction(ajaxParams.url, function(r) {
@@ -122,7 +122,7 @@ String.prototype.format = function() {
           else if (status === 'timeout') {
             var state = {
               "httpCode": status,
-              "message": 'Failed from timeout'
+              "message": 'Failed to load document because of timeout'
             }
             params.error(state, data, status, xhr);
           }

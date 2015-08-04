@@ -33,5 +33,5 @@
   },
   "autoInverseOfHandling": true,
   "storage": [],
-  "ioTimeout": 3000
+  "ioTimeout": 60000
 }
