@@ -115,8 +115,9 @@ angular.module('myApp.editor', ['ngRoute'])
             // this is essentially a no-op to force the ui to update the url view
             $scope.mainDoc.url = url;
           });
-        }, function() {
-          Notification.notify('error', 'Failed to load document');
+        }, function(state) {
+          var msg = (state && state.message)? state.message: 'Failed to load document';
+          Notification.notify('error', msg);
           toggleSpinner(false);
         });
       });

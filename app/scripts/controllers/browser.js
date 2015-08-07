@@ -63,9 +63,9 @@ angular.module('myApp.fileBrowser', ['ngRoute', 'ui.bootstrap'])
   });
 
   $scope.setCurrentLocation = function(location) {
-    if(location != $scope.currentLocation) {
-      $scope.resetUi();
-      if(location.httpStatus) {
+    $scope.resetUi();
+    if (location != $scope.currentLocation) {
+      if (location.httpStatus) {
         RDFE.IO.openUrl(location.url, {
           authFunction: function(url, success, fail) {
             DocumentTree.getAuthInfo(url, true).then(success, fail);
@@ -156,18 +156,17 @@ angular.module('myApp.fileBrowser', ['ngRoute', 'ui.bootstrap'])
   };
 
   $scope.openFile = function(file) {
-    var uri = '/editor?uri=' + encodeURIComponent(file.url) +
-      '&ioType=' + encodeURIComponent(file.ioType);
-    if(file.sparqlEndpoint) {
+    var uri = '/editor?uri=' + encodeURIComponent(file.url) + '&ioType=' + encodeURIComponent(file.ioType);
+    if (file.sparqlEndpoint) {
       uri += '&sparqlEndpoint=' + encodeURIComponent(file.sparqlEndpoint);
     }
 
     // in save mode we need to tell the editor to save instead of loading
-    if($scope.mode === 'save') {
+    if ($scope.mode === 'save') {
       uri += '&saveDocument=true';
     }
     // check if this is a new dummy file as created below
-    else if(file.isNew) {
+    else if (file.isNew) {
       uri += '&newDocument=true';
     }
 
@@ -185,21 +184,35 @@ angular.module('myApp.fileBrowser', ['ngRoute', 'ui.bootstrap'])
 
   $scope.addLocation = function(location) {
     // replace the old location with the new one
-    var i = $scope.locations.indexOf(location);
-    if(i >= 0) {
-      $scope.locations[i] = location;
+    for (var i = 0; i < $scope.locations.length; i++) {
+      if ($scope.locations[i].url === location.url) {
+        $scope.locations[i] = location;
+        return;
+      }
     }
-    else {
-      $scope.locations.push(location);
+    $scope.locations.push(location);
+  };
+
+  $scope.removeLocation = function(location) {
+    for (var i = 0; i < $scope.locations.length; i++) {
+      if ($scope.locations[i].url === location.url) {
+        $scope.locations.splice(i, 1);
+        if (location === $scope.currentLocation) {
+          $scope.setCurrentLocation($scope.locations[0]);
+        }
+        return;
+      }
     }
   };
 
   // controls for the UI element to add new locations
   $scope.addingLocation = false;
+
   $scope.showNewLocationUi = function() {
     $scope.addingLocation = true;
     $scope.newLocationUrl = '';
   };
+
   $scope.addNewLocation = function() {
     if($scope.newLocationUrl && $scope.newLocationUrl.length) {
       if($scope.newLocationIsSparql) {
@@ -212,6 +225,7 @@ angular.module('myApp.fileBrowser', ['ngRoute', 'ui.bootstrap'])
         $scope.addingLocation = false;
       }
       else {
+        usSpinnerService.spin('location-spinner');
         RDFE.IO.openUrl($scope.newLocationUrl, {
           authFunction: function(url, success, fail) {
             DocumentTree.getAuthInfo(url, true).then(success, fail);
@@ -225,10 +239,12 @@ angular.module('myApp.fileBrowser', ['ngRoute', 'ui.bootstrap'])
             $scope.updateCurrentLocation(dir);
             $scope.currentFolder = dir;
           });
+          usSpinnerService.stop('location-spinner');
         }, function(errMsg, status) {
           // show a notification and let the user try again
           Notification.notify('error', errMsg);
-        });
+          usSpinnerService.stop('location-spinner');
+      });
       }
     }
   };
