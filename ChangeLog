@@ -1,3 +1,7 @@
+0.15
+  * New repository
+  * New UI for open documents
+
 0.14
   * New UI using AngularJs
   * New File browser with support for WebDAV and LDP
