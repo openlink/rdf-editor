@@ -55,7 +55,7 @@ RDFE.Utils.trim = function(str, ch) {
 RDFE.Utils.namingSchemaLabel = function (input, namingSchema, plural, lowercase) {
   var ndx = (plural === true) ? 1 : 0;
   var value = namingSchema[input][ndx]
-  return (lowercase === true) ? value.toLowerCase : value;
+  return (lowercase === true) ? value.toLowerCase() : value;
 }
 
 RDFE.Utils.uriParams = function() {

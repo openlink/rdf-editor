@@ -127,7 +127,7 @@
                 formatter: nodeFormatter
               }, {
                 field: 'actions',
-                title: '<button class="add btn btn-default" title="Add a new statement to the document"><span class="glyphicon glyphicon-plus" aria-hidden="true"></span> New</button>',
+                title: '<button class="add btn btn-default" title="Add a new '+RDFE.Utils.namingSchemaLabel('spo', self.namingSchema, false, true)+' to the document"><span class="glyphicon glyphicon-plus" aria-hidden="true"></span> New</button>',
                 align: 'center',
                 valign: 'middle',
                 class: 'small-column',
@@ -135,7 +135,7 @@
                 editable: false,
                 formatter: function(value, row, index) {
                   return [
-                    '<a class="remove ml10" href="javascript:void(0)" title="Remove">',
+                    '<a class="remove ml10" href="javascript:void(0)" title="Remove this '+RDFE.Utils.namingSchemaLabel('spo', self.namingSchema, false, true)+' from the document">',
                     '<i class="glyphicon glyphicon-remove"></i>',
                     '</a>'
                   ].join('');

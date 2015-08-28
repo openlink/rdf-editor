@@ -32,21 +32,21 @@
       return row.items.length;
     };
 
-    var predicateListActionsFormatter = function(value, row, index) {
-      return [
-        '<a class="edit ml10" href="javascript:void(0)" title="Edit">',
-        '  <i class="glyphicon glyphicon-edit"></i>',
-        '</a>',
-        '<a class="remove ml10" href="javascript:void(0)" title="Remove">',
-        '  <i class="glyphicon glyphicon-remove"></i>',
-        '</a>'
-      ].join('');
-    };
-
     c.prototype.render = function(container, callback) {
       var self = this;
 
       self.doc.listPredicates(function(predicates) {
+        var predicateListActionsFormatter = function(value, row, index) {
+          return [
+            '<a class="edit ml10" href="javascript:void(0)" title="Edit or add a new '+RDFE.Utils.namingSchemaLabel('s', self.namingSchema, false, true)+' and '+RDFE.Utils.namingSchemaLabel('o', self.namingSchema, false, true)+' pairs associated with this '+RDFE.Utils.namingSchemaLabel('p', self.namingSchema, false, true)+'">',
+            '  <i class="glyphicon glyphicon-edit"></i>',
+            '</a>',
+            '<a class="remove ml10" href="javascript:void(0)" title="Remove all '+RDFE.Utils.namingSchemaLabel('spo', self.namingSchema, true, true)+' associated with this '+RDFE.Utils.namingSchemaLabel('p', self.namingSchema, false, true)+'">',
+            '  <i class="glyphicon glyphicon-remove"></i>',
+            '</a>'
+          ].join('');
+        };
+
         self.predicates = predicates;
         self.predicateTable = null;
         container.empty();
@@ -98,7 +98,7 @@
             formatter: countFormatter
           }, {
             field: 'actions',
-            title: '<button class="add btn btn-default" title="Add one or more entity and value pairs for this attribute to this document"><span class="glyphicon glyphicon-plus" aria-hidden="true"></span> New</button>',
+            title: '<button class="add btn btn-default" title="Click to create a new '+RDFE.Utils.namingSchemaLabel('p', self.namingSchema, false, true)+'"><span class="glyphicon glyphicon-plus" aria-hidden="true"></span> New</button>',
             align: 'center',
             valign: 'middle',
             class: 'small-column',

@@ -26,17 +26,6 @@
       }
     };
 
-    var entityListActionsFormatter = function(value, row, index) {
-      return [
-        '<a class="edit ml10" href="javascript:void(0)" title="Edit">',
-        '  <i class="glyphicon glyphicon-edit"></i>',
-        '</a>',
-        '<a class="remove ml10" href="javascript:void(0)" title="Remove">',
-        '  <i class="glyphicon glyphicon-remove"></i>',
-        '</a>'
-      ].join('');
-    };
-
     /**
      * Convert an entity object as returns by Document.listEntities or
      * Document.getEntity into a row for the entity table.
@@ -51,6 +40,17 @@
 
     c.prototype.render = function(container, callback) {
       var self = this;
+
+      var entityListActionsFormatter = function(value, row, index) {
+        return [
+          '<a class="edit ml10" href="javascript:void(0)" title="Edit this '+RDFE.Utils.namingSchemaLabel('spo', self.namingSchema, false, true)+'">',
+          '  <i class="glyphicon glyphicon-edit"></i>',
+          '</a>',
+          '<a class="remove ml10" href="javascript:void(0)" title="Remove this '+RDFE.Utils.namingSchemaLabel('spo', self.namingSchema, false, true)+' from the document">',
+          '  <i class="glyphicon glyphicon-remove"></i>',
+          '</a>'
+        ].join('');
+      };
 
       self.doc.listEntities(self.editor.config.options.entityTypesFiler, function(el) {
         self.entityTable = null;
@@ -109,7 +109,7 @@
             formatter: typeFormatter
           }, {
             field: 'actions',
-            title: '<button class="add btn btn-default" title="Add a new entity to the document"><span class="glyphicon glyphicon-plus" aria-hidden="true"></span> New</button>',
+            title: '<button class="add btn btn-default" title="Click to create a new '+RDFE.Utils.namingSchemaLabel('spo', self.namingSchema, false, true)+' to the document"><span class="glyphicon glyphicon-plus" aria-hidden="true"></span> New</button>',
             align: 'center',
             valign: 'middle',
             class: 'small-column',
