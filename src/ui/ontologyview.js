@@ -33,6 +33,18 @@
       var $form = $(document.createElement('div'));
       container.append($form);
 
+      var editableSetter = function(ontology, field, newValue) {
+        newValue = $.trim(newValue);
+        if (ontology.prefix === newValue) {
+          return;
+        }
+        delete self.ontologyManager.prefixes[ontology.prefix];
+        delete RDFE.prefixes[ontology.prefix];
+        ontology.prefix = newValue;
+        self.ontologyManager.prefixes[ontology.prefix] = ontology.URI;
+        RDFE.prefixes[ontology.prefix] = ontology.URI;
+      };
+
       var el = self.ontologyManager.allOntologies();
 
       $table.bootstrapTable({
@@ -43,17 +55,39 @@
         "height": 157,
         "data": el,
         "idField": 'uri',
+        "dataSetter": editableSetter,
         "columns": [{
           "field": 'prefix',
           "title": 'Prefix',
+          "editable": function(ontology) {
+            return {
+              "mode": "inline",
+              "type": "text",
+              "value": ontology.prefix,
+              "emptytext": "empty",
+              "validate": function(value) {
+                var v = $.trim(value);
+                if (v == '') {
+                  return 'This field is required';
+                }
+                if (self.ontologyManager.ontologyByPrefix(v)) {
+                  return 'This prefix is used';
+                }
+              }
+            }
+          },
           "formatter": function(value, ontology, index) {
-            return ontology.prefix;
+            return (ontology.prefix)? ontology.prefix: '';
           }
         }, {
           "field": 'uri',
           "title": 'URI',
           "formatter": function(value, ontology, index) {
-            return '{0} - {1}/{2}'.format(ontology.URI, ontology.classesLength(), ontology.propertiesLength());
+            return [
+              '<span title="Ontology {0} - {1} classes, {2} properties">'.format(ontology.URI, ontology.classesLength(), ontology.propertiesLength()),
+              '{0} - {1}/{2}'.format(ontology.URI, ontology.classesLength(), ontology.propertiesLength()),
+              '</span>',
+            ].join('');
           }
         }, {
           "field": 'actions',

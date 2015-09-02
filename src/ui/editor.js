@@ -189,6 +189,9 @@ RDFE.Editor.prototype.createNewStatementEditor = function() {
     var p = propEd.selectedURI();
     p = RDFE.Utils.trim(RDFE.Utils.trim(p, '<'), '>')
     var o = objEd.getValue();
+    if (o.type == 'uri') {
+      o.value = self.ontologyManager.uriDenormalize(o.value);
+    }
     var t = self.doc.store.rdf.createTriple(self.doc.store.rdf.createNamedNode(s), self.doc.store.rdf.createNamedNode(p), o.toStoreNode(self.doc.store));
     self.doc.addTriples([t], function() {
       if (self.tripleView) {
