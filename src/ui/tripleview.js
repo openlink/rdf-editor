@@ -33,6 +33,9 @@
           newNode = self.doc.store.rdf.createNamedNode(newValue);
         }
         if (newValue.toStoreNode) {
+          if (newValue.type == 'uri') {
+            newValue.value = self.ontologyManager.uriDenormalize(newValue.value);
+          }
           newNode = newValue.toStoreNode(self.doc.store);
         }
         else if (field != 'object' ||

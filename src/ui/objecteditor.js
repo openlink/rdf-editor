@@ -174,6 +174,9 @@
       $(objectInput).on('changed', function(e, value) {
         var node = value.getValue();
         if (node.value) {
+          if (node.type == 'uri') {
+            node.value = self.ontologyManager.uriDenormalize(node.value);
+          }
           var o = node.toStoreNode(self.doc.store);
           self.doc.getObject(o, function (object) {
             self.objectView.removeObject(self.object);

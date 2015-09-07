@@ -33,6 +33,18 @@
       var $form = $(document.createElement('div'));
       container.append($form);
 
+      var editableSetter = function(ontology, field, newValue) {
+        newValue = $.trim(newValue);
+        if (ontology.prefix === newValue) {
+          return;
+        }
+        delete self.ontologyManager.prefixes[ontology.prefix];
+        delete RDFE.prefixes[ontology.prefix];
+        ontology.prefix = newValue;
+        self.ontologyManager.prefixes[ontology.prefix] = ontology.URI;
+        RDFE.prefixes[ontology.prefix] = ontology.URI;
+      };
+
       var el = self.ontologyManager.allOntologies();
 
       $table.bootstrapTable({
@@ -43,17 +55,39 @@
         "height": 157,
         "data": el,
         "idField": 'uri',
+        "dataSetter": editableSetter,
         "columns": [{
           "field": 'prefix',
           "title": 'Prefix',
+          "editable": function(ontology) {
+            return {
+              "mode": "inline",
+              "type": "text",
+              "value": ontology.prefix,
+              "emptytext": "empty",
+              "validate": function(value) {
+                var v = $.trim(value);
+                if (v == '') {
+                  return 'This field is required';
+                }
+                if (self.ontologyManager.ontologyByPrefix(v)) {
+                  return 'This prefix is used';
+                }
+              }
+            }
+          },
           "formatter": function(value, ontology, index) {
-            return ontology.prefix;
+            return (ontology.prefix)? ontology.prefix: '';
           }
         }, {
           "field": 'uri',
           "title": 'URI',
           "formatter": function(value, ontology, index) {
-            return ontology.URI;
+            return [
+              '<span title="Ontology {0} - {1} classes, {2} properties">'.format(ontology.URI, ontology.classesLength(), ontology.propertiesLength()),
+              '{0} - {1}/{2}'.format(ontology.URI, ontology.classesLength(), ontology.propertiesLength()),
+              '</span>',
+            ].join('');
           }
         }, {
           "field": 'actions',
@@ -63,17 +97,35 @@
           "clickToSelect": false,
           "formatter": function(value, row, index) {
             return [
-              '<a class="refresh ml10" href="javascript:void(0)" title="Refresh">',
+              '<a class="refresh ml10" href="javascript:void(0)" title="Refresh ontology">',
               '  <i class="glyphicon glyphicon-refresh"></i>',
               '</a>',
-              '<a class="remove ml10" href="javascript:void(0)" title="Remove">',
+              '<a class="remove ml10" href="javascript:void(0)" title="Remove ontology">',
               '  <i class="glyphicon glyphicon-remove"></i>',
               '</a>'
             ].join('');
           },
           "events": {
             'click .refresh': function(e, value, ontology, index) {
-              self.ontologyManager.parseOntologyFile(ontology.URI, {"ioType": 'http'});
+              var $loading = $('#ontology-loading');
+              if ($loading.is(":visible"))
+                return;
+
+              $loading.show();
+              var params = {
+                "success":  function () {
+                  $(self.ontologyManager).trigger('loadingFinished', [self.ontologyManager]);
+                  $loading.hide();
+                },
+
+                "error": function (state) {
+                  $(self.ontologyManager).trigger('loadingFailed', [self.ontologyManager]);
+                  $loading.hide();
+                },
+
+                "ioType": 'http'
+              };
+              self.ontologyManager.parseOntologyFile(ontology.URI, params);
             },
             'click .remove': function(e, value, ontology, index) {
               self.ontologyManager.ontologyRemove(ontology.URI);
@@ -109,7 +161,6 @@
         '      <div class="col-sm-10 col-sm-offset-2"> ' +
         '        <a href="#" class="btn btn-default cancel">Cancel</a> ' +
         '        <a href="#" class="btn btn-primary ok">OK</a> ' +
-        '        <img src="images/loading.gif" class="loading" style="display: none;"/> ' +
         '      </div> ' +
         '    </div> ' +
         '  </div> ' +
@@ -117,8 +168,8 @@
       );
       $form.find('.cancel').click(function (e) {
         e.preventDefault();
-        var $loading = $form.find('.loading');
-        if ($form.find('.loading').is(":visible"))
+        var $loading = $('#ontology-loading')
+        if ($loading.is(":visible"))
           return;
 
         self.formContainer.hide();
@@ -128,7 +179,7 @@
       $form.find('.ok').click(function (e) {
         e.preventDefault();
 
-        var $loading = $form.find('.loading');
+        var $loading = $('#ontology-loading');
         if ($loading.is(":visible"))
           return;
 
@@ -167,11 +218,15 @@
         var uri = self.formContainer.find('#uri').val();
         var ontology = self.ontologyManager.ontologyByURI(uri);
         if (ontology) {
-          bootbox.alert('This ontology is loaded yet.');
+          bootbox.alert('This ontology is loaded. Please, use \'Refresh\' action!');
           return;
         }
 
         $loading.show();
+        if (!self.ontologyManager.prefixByOntology(uri)) {
+          var prefix = self.formContainer.find('#prefix').val();
+          self.ontologyManager.prefixes[prefix] = uri;
+        }
         self.ontologyManager.parseOntologyFile(self.formContainer.find('#uri').val(), params);
       });
 

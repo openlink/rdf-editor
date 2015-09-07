@@ -92,6 +92,7 @@ String.prototype.format = function() {
         (ajaxParams.headers = ajaxParams.headers || {})["Authorization"] = "Basic " + btoa(params.username + ":" + params.password);
       }
       ajaxParams = $.extend({"withCredentials": true}, ajaxParams);
+      ajaxParams = $.extend({"crossDomain": true}, ajaxParams);
       if (self.options["ioTimeout"]) {
         ajaxParams = $.extend({"timeout": self.options["ioTimeout"]}, ajaxParams);
       }
