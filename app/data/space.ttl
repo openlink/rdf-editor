@@ -1,0 +1,120 @@
+     @prefix : <http://www.w3.org/2000/01/rdf-schema#> .
+    @prefix dc: <http://purl.org/dc/elements/1.1/> .
+    @prefix doc: <http://www.w3.org/2000/10/swap/pim/doc#> .
+    @prefix foaf: <http://xmlns.com/foaf/0.1/> .
+    @prefix gen: <http://www.w3.org/2006/gen/ont#> .
+    @prefix owl: <http://www.w3.org/2002/07/owl#> .
+    @prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+    @prefix ui: <http://www.w3.org/ns/ui#> .
+    @prefix ws: <http://www.w3.org/ns/pim/space#> .
+    
+    <>     dc:title "Workspace Ontology";
+         :comment """This ontology is for use in describing 
+Workspaces.  Workspaces are place where data is stored and asscoiated prolices of privacy.
+A given application typically stores information in several different
+workspaces, some being user private, some shared, and some public.
+it is crucial that the user has easy control over the destiny of information.
+
+Goals then are that the user can
+
+      - create workspaces
+      - easily understand which workspace data is going into
+      - understand what the implications of that are
+      - (later) set ACLS on them
+      - publish apropriate use policies for them
+
+""";
+         doc:version "$Id: space.ttl,v 1.2 2015/06/24 18:42:14 asambra Exp $" .
+    
+    ws:ConfigurationFile     :subClassOf gen:InformationResource .
+    
+    ws:ControlledStorage     a :Class;
+         :comment """A  storage is a space of URIs in which you can individually control for each resource
+    who has access to it.
+""";
+         :label "access controlled storage";
+         :subClassOf ws:Storage .
+    
+    ws:MasterWorkspace     :comment """This is a workspace for storing the 
+    information about the other workspaces.
+    As a user, you normally don't have to worry about it.""";
+         :label "Master Workspace"@en;
+         :subClassOf ws:PrivateWorkspace .
+    
+    ws:PersonalStorage     a :Class;
+         :comment """A personal storage is a space of URIs in which you and only you have access to data,
+    you cannot give access to anyone else.
+""";
+         :label "personal storage";
+         :subClassOf ws:Storage .
+    
+    ws:PrivateWorkspace     :comment "Access only by the you, the user.";
+         :label "Private workspace";
+         :subClassOf ws:Workspace .
+    
+    ws:PublicStorage     a :Class;
+         :comment """A public storage is a space of URIs in which you have access to data,
+    and all data is accessible to anyone without control.
+""";
+         :label "public storage";
+         :subClassOf ws:Storage .
+    
+    ws:PublicWorkspace     :comment """Aceess is open to the public. Anything in a public workspace
+    can be accesed by anyone.""";
+         :label "Public workspace";
+         :subClassOf ws:Workspace .
+
+    ws:PreferencesWorkspace     :comment """AAceess may not be open to the public. 
+    Contains preferences resources""";
+         :label "Preferences workspace";
+         :subClassOf ws:Workspace .
+    
+    ws:SharedWorkspace     :comment "Access is to some but not all people.";
+         :label "Shared workspace";
+         :subClassOf ws:Workspace .
+    
+    ws:Storage     a :Class;
+         :comment """A storage is a space of URIs in which you have access to data.
+""";
+         :label "storage" .
+    
+    ws:Workspace     a :Class;
+         :comment """Workspaces are place where data is stored, and associated polices of privacy.
+A given application typically stores information in several different
+workspaces, some being user private, some shared, and some public.
+""";
+         :label "workspace";
+         owl:disjointUnionOf  (
+        ws:PrivateWorkspace
+        ws:SharedWorkspace
+        ws:PublicWorkspace ) .
+    
+    ws:masterWorkspace     a rdf:Property;
+         :domain foaf:Agent;
+         :label "master workspace"@en;
+         :range ws:MasterWorkspace .
+    
+    ws:preferencesFile     a rdf:Property;
+         :domain foaf:Agent;
+         :label "preferences file";
+         :range ws:ConfigurationFile .
+    
+    ws:storage     a rdf:Property;
+         :comment "The storage in which this workspace is";
+         :label "storage";
+         :range ws:Storage;
+         owl:inverse  [
+             :label "workspace included" ] .
+    
+    ws:uriPrefix     a rdf:Property,
+                owl:DatatypeProperty;
+         :comment """URIs which start with this string are in this workspace or storage.
+This may be used for constructing URIs for new storage resources.
+""";
+         :label "URI prefix";
+         ui:prompt "Give the first part of the URis in this workspace" .
+    
+    ws:workspace     a rdf:Property;
+         :label "workspace"@en;
+         :range ws:Workspace .
+    
