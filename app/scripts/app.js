@@ -145,6 +145,7 @@ angular.module('myApp', [
     var r = new RDFE.IO.Folder();
 
     r.name = r.path = "Recent Documents";
+    r.ioType = 'recent';
     r.comment = 'Documents you recently opened';
     r.children = getRecentDocs();
 
@@ -218,6 +219,7 @@ angular.module('myApp', [
     var notFound = true;
     var recentDoc;
 
+    // $.jStorage.deleteKey('rdfe:recentDocuments');
     var recentDocs = $.jStorage.get('rdfe:recentDocuments');
     if (!recentDocs) {
       recentDocs = [];

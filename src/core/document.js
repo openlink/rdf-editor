@@ -65,8 +65,8 @@ RDFE.Document.prototype.verifyData = function(callback, fail) {
 
   // check if there are any invalid uris in the document
   self.store.execute("select * from <" + self.graph + "> where {{ <> ?p ?o } union { ?s2 ?p2 <> }}", function(s,r) {
-    if(s) {
-      if(r.length > 0) {
+    if (s) {
+      if (r.length > 0) {
         callback(false, "The document is not valid. It contains empty URI nodes.");
         return false;
       }
@@ -76,7 +76,7 @@ RDFE.Document.prototype.verifyData = function(callback, fail) {
       }
     }
     else {
-      if(fail) {
+      if (fail) {
         fail();
       }
       return false;
@@ -92,25 +92,30 @@ RDFE.Document.prototype.save = function(url, io, success, fail) {
         myFail = fail;
 
      // url is optional
-     if(typeof(url) != 'string') {
-       myUrl = self.url;
-       myIo = url;
-       mySuccess = io;
-       myFail = success;
-     }
+    if (typeof(url) != 'string') {
+      myUrl = self.url;
+      myIo = url;
+      mySuccess = io;
+      myFail = success;
+    }
 
     // io is optional
-    if(typeof(myIo) == 'function' || !myIo) {
-        myFail = mySuccess
-        mySuccess = myIo;
-        myIo = self.io;
+    if (typeof(myIo) == 'function' || !myIo) {
+      myFail = mySuccess
+      mySuccess = myIo;
+      myIo = self.io;
     }
 
-    if(!myUrl) {
-      if (myFail)
+    if (!myUrl) {
+      if (myFail) {
         myFail("No document loaded");
+      }
     }
     else {
+      if (!myIo.insertFromStore) {
+        myIo = RDFE.IO.createIO('webdav', myIo.options);
+        myIo.type = 'webdav';
+      }
       self.verifyData(function(s, m) {
         if(s) {
           var __success = function() {
@@ -142,7 +147,7 @@ RDFE.Document.prototype.save = function(url, io, success, fail) {
             "error": myFail
           });
         }
-        else if(myFail) {
+        else if (myFail) {
           myFail(m);
         }
       }, myFail);
