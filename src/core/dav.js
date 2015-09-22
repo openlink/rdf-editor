@@ -266,62 +266,104 @@ RDFE.IO.WebDavFolder = (function() {
   });
 
   function parseDavFolder(folder, data) {
-    var urlBase = RDFE.Utils.getUrlBase(folder),
-        ress = [],
+    var urlBase = RDFE.Utils.getUrlBase(folder);
+    var items = [],
         haveSelf = false;
 
-    $(data).find('response').each(function() {
-      var res = null,
-          $this = $(this);
-      var url = urlBase + $this.find('href').text();
+    var getElementsByLocalName = function(data, tagName) {
+      var result = [];
+      var all = data.getElementsByTagName("*");
+      for (var i = 0; i < all.length; i++) {
+        if (all[i].localName === tagName || all[i].baseName === tagName) {
+          result.push(all[i]);
+        }
+      }
+      return result;
+    };
 
-      // ignore the details of the listed url itself
-      if(url != folder) {
+    var getTextByLocalName = function(data, tagName) {
+      var tmp = getElementsByLocalName(data, tagName);
+      if (tmp.length) {
+         return $(tmp[0]).text();
+      }
+
+      return null;
+    }
+
+    var responses = getElementsByLocalName(data, 'response');
+    for (var i = 0; i < responses.length; i++) {
+      var item = null;
+      var response = responses[i];
+      var href = getElementsByLocalName(response, 'href');
+      if (!href.length)
+        continue;
+
+      var url = urlBase + $(href[0]).text();
+      if (url !== folder) {
         // the first propstat contains http/200
-        var $prop = $($(this).find('propstat').find('prop')[0]);
+        var propstat = getElementsByLocalName(response, 'propstat');
+        if (!propstat.length)
+          continue;
 
-        if($prop.find('collection').length > 0) {
-          res = new RDFE.IO.WebDavFolder(url);
+        var prop = getElementsByLocalName(propstat[0], 'prop');
+        if (!prop.length)
+          continue;
+
+        if (getElementsByLocalName(prop[0], 'collection').length) {
+          item = new RDFE.IO.WebDavFolder(url);
         }
         else {
-          res = new RDFE.IO.File(url);
-          res.size = parseInt($prop.find('getcontentlength').text());
-          res.dirty = false; // we already got all the properties below
-          res.ioType = "dav";
+          item = new RDFE.IO.File(url);
+          var size = getTextByLocalName(prop[0], 'getcontentlength')
+          if (size)
+            item.size = parseInt($(size[0]).text());
+
+          item.dirty = false; // we already got all the properties below
+          item.ioType = "dav";
         }
 
-        var tmp = $prop.find('creationdate');
-        if (tmp.length) { res.creationDate = new Date(tmp.text()); }
-        tmp = $prop.find("getlastmodified");
-        if (tmp.length) { res.modificationDate = new Date(tmp.text()); }
+        var tmp = getTextByLocalName(prop[0], 'creationdate');
+        if (tmp) {
+          item.creationDate = new Date(tmp);
+        }
+        tmp = getTextByLocalName(prop[0], 'getlastmodified');
+        if (tmp) {
+          item.modificationDate = new Date(tmp);
+        }
 
         /* perms, uid, gid */
-        tmp = $prop.find("virtpermissions");
-        if (tmp.length) { res.permissions = tmp.text(); }
-        tmp = $prop.find("virtowneruid");
-        if (tmp.length) { res.uid = tmp.text(); }
-        tmp = $prop.find("virtownergid");
-        if (tmp.length) { res.gid = tmp.text(); }
+        tmp = getTextByLocalName(prop[0], 'virtpermissions');
+        if (tmp) {
+          item.permissions = tmp;
+        }
+        tmp = getTextByLocalName(prop[0], 'virtowneruid');
+        if (tmp) {
+          item.uid = tmp;
+        }
+        tmp = getTextByLocalName(prop[0], 'virtownergid');
+        if (tmp) {
+          item.gid = tmp;
+        }
 
-        /* type & length */
-        tmp = $prop.find("getcontenttype");
-        if (tmp.length) { res.contentType = tmp.text(); }
-        tmp = $prop.find("getcontentlength");
-        if (tmp.length) { res.size = parseInt(tmp.text()); }
+        /* type */
+        tmp = getTextByLocalName(prop[0], 'getcontenttype');
+        if (tmp) {
+          item.contentType = tmp;
+        }
 
-        ress.push(res);
+        items.push(item);
       }
       else {
         haveSelf = true;
       }
-    });
+    }
 
     // no children and no self reference means - not a folder
-    if(ress.length === 0 && !haveSelf) {
+    if (items.length === 0 && !haveSelf) {
       return null;
     }
 
-    return ress;
+    return items;
   }
 
   c.prototype.listDir = function(success, fail) {
