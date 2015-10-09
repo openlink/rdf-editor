@@ -93,23 +93,23 @@ RDFE.Document.prototype.save = function(url, io, success, fail) {
 
      // url is optional
     if (typeof(url) != 'string') {
-      myUrl = self.url;
-      myIo = url;
-      mySuccess = io;
-      myFail = success;
-    }
+       myUrl = self.url;
+       myIo = url;
+       mySuccess = io;
+       myFail = success;
+     }
 
     // io is optional
     if (typeof(myIo) == 'function' || !myIo) {
-      myFail = mySuccess
-      mySuccess = myIo;
-      myIo = self.io;
+        myFail = mySuccess
+        mySuccess = myIo;
+        myIo = self.io;
     }
 
     if (!myUrl) {
       if (myFail) {
         myFail("No document loaded");
-      }
+    }
     }
     else {
       if (!myIo.insertFromStore) {
@@ -650,6 +650,32 @@ RDFE.Document.prototype.listEntities = function(type, callback, errorCb) {
 
     cb(sl);
   });
+};
+
+RDFE.Document.prototype.itemsByRange = function(range) {
+  var self = this;
+
+  var nodeItems = [];
+  var tmpItems = _.values(self.ontologyManager.ontologyClassByURI(range).getIndividuals());
+  for (var i = 0; i < tmpItems.length; i++) {
+    var nodeItem = RDFE.RdfNode.fromStoreNode(tmpItems[i].URI)
+    nodeItem.label = tmpItems[i].curi || tmpItems[i].URI;
+    nodeItems.push(nodeItem);
+  }
+  self.listEntities(
+    range,
+    function(tmpItems) {
+      for (var i = 0; i < tmpItems.length; i++) {
+        var nodeItem = RDFE.RdfNode.fromStoreNode(tmpItems[i].uri)
+        nodeItem.label = tmpItems[i].label || tmpItems[i].uri;
+        nodeItems.push(nodeItem);
+      }
+    }
+  );
+  if (!nodeItems.length) {
+    nodeItems = null;
+  }
+  return nodeItems;
 };
 
 RDFE.Document.prototype.buildEntityUri = function(name) {
