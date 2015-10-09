@@ -211,6 +211,11 @@
               return {
                 "mode": "inline",
                 "type": "rdfnode",
+                "rdfnode": {
+                  "predicate": triple.predicate.toString(),
+                  "document": self.doc,
+                  "ontologyManager": self.ontologyManager
+                },
                 "value": triple.object
               };
             },
@@ -264,9 +269,6 @@
           newNode = self.doc.store.rdf.createNamedNode(newValue);
         }
         if (newValue.toStoreNode) {
-          if (newValue.type == 'uri') {
-            newValue.value = self.ontologyManager.uriDenormalize(newValue.value);
-          }
           newNode = newValue.toStoreNode(self.doc.store);
         }
         else if (field != 'object' ||
@@ -374,20 +376,22 @@
       var predicateEdit = self.subjectFormContainer.find('select[name="predicate"]').propertyBox({
         ontoManager: self.ontologyManager
       }).on('changed', function(e, predicate) {
-        var newNode;
+        var node;
+        var nodeItems;
         var currentNode = objectEdit.getValue();
         var range = predicate.getRange();
 
         if (objectEdit.isLiteralType(range)) {
-          newNode = new RDFE.RdfNode('literal', currentNode.value, range, currentNode.language);
+          node = new RDFE.RdfNode('literal', currentNode.value, range, currentNode.language);
         }
         else if (self.ontologyManager.ontologyClassByURI(range)) {
-          newNode = new RDFE.RdfNode('uri', currentNode.value);
+          node = new RDFE.RdfNode('uri', currentNode.value);
+          nodeItems = self.doc.itemsByRange(range);
         }
         else {
-          newNode = new RDFE.RdfNode('literal', currentNode.value, null, '');
+          node = new RDFE.RdfNode('literal', currentNode.value, null, '');
         }
-        objectEdit.setValue(newNode);
+        objectEdit.setValue(node, nodeItems);
       });
 
       self.subjectFormContainer.find('button.subject-action-new-cancel').click(function(e) {
@@ -399,9 +403,6 @@
         var s = self.subject.uri;
         var p = predicateEdit.selectedURI();
         var o = objectEdit.getValue();
-        if (o.type == 'uri') {
-          o.value = self.ontologyManager.uriDenormalize(o.value);
-        }
         var t = self.doc.store.rdf.createTriple(self.doc.store.rdf.createNamedNode(s), self.doc.store.rdf.createNamedNode(p), o.toStoreNode(self.doc.store));
         self.doc.addTriples([t], function() {
           if (!self.subjectView) {

@@ -33,9 +33,6 @@
           newNode = self.doc.store.rdf.createNamedNode(newValue);
         }
         if (newValue.toStoreNode) {
-          if (newValue.type == 'uri') {
-            newValue.value = self.ontologyManager.uriDenormalize(newValue.value);
-          }
           newNode = newValue.toStoreNode(self.doc.store);
         }
         else if (field != 'object' ||
@@ -122,15 +119,20 @@
                 sortable: true,
                 editable: function(triple) {
                   return {
-                    mode: "inline",
-                    type: "rdfnode",
-                    value: triple.object
+                    "mode": "inline",
+                    "type": "rdfnode",
+                    "rdfnode": {
+                      "predicate": triple.predicate.toString(),
+                      "document": self.doc,
+                      "ontologyManager": self.ontologyManager
+                    },
+                    "value": triple.object
                   };
                 },
                 formatter: nodeFormatter
               }, {
                 field: 'actions',
-                title: '<button class="add btn btn-default" title="Add a new '+RDFE.Utils.namingSchemaLabel('spo', self.namingSchema, false, true)+' to the document"><span class="glyphicon glyphicon-plus" aria-hidden="true"></span> New</button>',
+                title: '<button class="add btn btn-default" title="Add a new statement to the document"><span class="glyphicon glyphicon-plus" aria-hidden="true"></span> New</button>',
                 align: 'center',
                 valign: 'middle',
                 class: 'small-column',
@@ -138,7 +140,7 @@
                 editable: false,
                 formatter: function(value, row, index) {
                   return [
-                    '<a class="remove ml10" href="javascript:void(0)" title="Remove this '+RDFE.Utils.namingSchemaLabel('spo', self.namingSchema, false, true)+' from the document">',
+                    '<a class="remove ml10" href="javascript:void(0)" title="Remove">',
                     '<i class="glyphicon glyphicon-remove"></i>',
                     '</a>'
                   ].join('');
