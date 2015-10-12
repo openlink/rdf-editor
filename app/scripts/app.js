@@ -283,9 +283,10 @@ angular.module('myApp', [
 }])
 
 .controller('AuthHeaderCtrl', ['$rootScope', '$scope', '$window', 'Profile', function($rootScope, $scope, $window, Profile) {
+
   function updateProfileData(profile) {
-    $scope.userProfile = profile
-    $scope.profile = profile.profileData
+    $scope.userProfile = profile;
+    $scope.profile = profile.profileData;
   }
 
   function saveDocument() {
@@ -301,13 +302,17 @@ angular.module('myApp', [
   }
 
   $scope.login = function(e) {
-    saveDocument();
-    $window.location = $scope.userProfile.config.host + $scope.userProfile.config.loginLink + '?returnto=' + encodeURIComponent(window.location.href);
+    if ($scope.userProfile.config.valInstalled) {
+      saveDocument();
+      $window.location = $scope.userProfile.config.host + $scope.userProfile.config.loginLink + '?returnto=' + encodeURIComponent(window.location.href);
+    }
   }
 
   $scope.logout = function(e) {
-    saveDocument();
-    $window.location = $scope.userProfile.config.host + $scope.userProfile.config.logoutLink + '?returnto=' + encodeURIComponent(window.location.href);
+    if ($scope.userProfile.config.valInstalled) {
+      saveDocument();
+      $window.location = $scope.userProfile.config.host + $scope.userProfile.config.logoutLink + '?returnto=' + encodeURIComponent(window.location.href);
+    }
   }
 
   Profile.getProfile().then(updateProfileData, updateProfileData);
