@@ -66,10 +66,14 @@ angular.module('myApp.fileBrowser', ['ngRoute', 'ui.bootstrap'])
     $scope.resetUi();
     if (location != $scope.currentLocation) {
       if (location.httpStatus) {
-        RDFE.IO.openUrl(location.url, {
-          authFunction: function(url, success, fail) {
+        var authFunction;
+        if (DocumentTree.getAuthInfo) {
+          authFunction = function(url, success, fail) {
             DocumentTree.getAuthInfo(url, true).then(success, fail);
-          },
+          };
+        }
+        RDFE.IO.openUrl(location.url, {
+          authFunction: authFunction,
           checkForFiles: true
         }, function(dir) {
           // success, we found a container
@@ -87,7 +91,7 @@ angular.module('myApp.fileBrowser', ['ngRoute', 'ui.bootstrap'])
           $timeout(function() {
             $scope.updateCurrentLocation(location);
             $scope.currentFolder = location;
-        });
+          });
         });
       }
       else {
@@ -226,10 +230,14 @@ angular.module('myApp.fileBrowser', ['ngRoute', 'ui.bootstrap'])
       }
       else {
         usSpinnerService.spin('location-spinner');
-        RDFE.IO.openUrl($scope.newLocationUrl, {
-          authFunction: function(url, success, fail) {
+        var authFunction;
+        if (DocumentTree.getAuthInfo) {
+          authFunction = function(url, success, fail) {
             DocumentTree.getAuthInfo(url, true).then(success, fail);
-          },
+          };
+        }
+        RDFE.IO.openUrl($scope.newLocationUrl, {
+          authFunction: authFunction,
           checkForFiles: true
         }, function(dir) {
           // success, we found a container

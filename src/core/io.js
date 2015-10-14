@@ -88,10 +88,14 @@ String.prototype.format = function() {
       $(document).ajaxSuccess(params.ajaxSuccess);
 
       // add auth info from self.options.username and .password via
+      ajaxParams.headers = ajaxParams.headers || {};
       if (params.username) {
-        (ajaxParams.headers = ajaxParams.headers || {})["Authorization"] = "Basic " + btoa(params.username + ":" + params.password);
+        ajaxParams.headers["Authorization"] = "Basic " + btoa(params.username + ":" + params.password);
+        ajaxParams = $.extend({"withCredentials": true}, ajaxParams);
       }
-      ajaxParams = $.extend({"withCredentials": true}, ajaxParams);
+      if (params.authFunction) {
+        ajaxParams.headers["X-Requested-With"] = 'XMLHttpRequest';
+      }
       ajaxParams = $.extend({"crossDomain": true}, ajaxParams);
       if (self.options["ioTimeout"]) {
         ajaxParams = $.extend({"timeout": self.options["ioTimeout"]}, ajaxParams);
@@ -117,6 +121,7 @@ String.prototype.format = function() {
               self.baseExec(ajaxParams, params);
             }, function() {
               // user did not provide credentials
+              state = 'Error: ' + data.status + ' (' + data.statusText + ')';
               params.error(state, data, status, xhr);
             });
           }

@@ -104,7 +104,7 @@ angular.module('myApp', [
   };
 }])
 
-.factory('DocumentTree', ['$q', "$modal", 'Profile', 'RDFEConfig', function($q, $modal, Profile, RDFEConfig) {
+.factory('DocumentTree', ['$q', "$modal", 'usSpinnerService', 'Profile', 'RDFEConfig', function($q, $modal, usSpinnerService, Profile, RDFEConfig) {
   var locations = [],
       authCache = {};
 
@@ -122,6 +122,7 @@ angular.module('myApp', [
     }
     if(forceUpdate !== false && (forceUpdate === true || !cached)) {
       return $q(function(resolve, reject) {
+        usSpinnerService.stop('editor-spinner');
         $modal.open({
           templateUrl: 'tmpl/authinfodlg.html',
           controller: 'AuthInfoDialogCtrl',
@@ -250,10 +251,10 @@ angular.module('myApp', [
 
   // Service API
   return {
-    getLocations: getLocations,
-    getAuthInfo: getAuthInfo,
-    getRecentDocs: getRecentDocs,
-    addRecentDoc: addRecentDoc
+    "getLocations": getLocations,
+    "getAuthInfo": getAuthInfo,
+    "getRecentDocs": getRecentDocs,
+    "addRecentDoc": addRecentDoc
   };
 }])
 
