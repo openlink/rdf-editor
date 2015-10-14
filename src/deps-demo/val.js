@@ -46,6 +46,7 @@
       var s = new rdfstore.Store();
       s.registerDefaultProfileNamespaces();
       s.load('text/turtle', data, function(success, result) {
+        self.config.valInstalled = true;
         if(success) {
           s.execute(
             "select ?uri ?name ?img ?nick where { [] foaf:topic ?uri . ?uri a foaf:Agent . optional { ?uri foaf:name ?name . } . optional { ?uri foaf:nick ?nick . } . optional { ?uri foaf:img ?img . } . }",
