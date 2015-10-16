@@ -369,13 +369,19 @@ RDFE.IO.WebDavFolder = (function() {
   c.prototype.listDir = function(success, fail) {
     var self = this,
         body = '<?xml version="1.0" encoding="utf-8" ?>' +
-      '<propfind xmlns="DAV:"><prop>' +
-      '<creationdate/><getlastmodified/><href/>' +
-      '<resourcetype/><getcontentlength/><getcontenttype/>' +
-      '<virtpermissions xmlns="http://www.openlinksw.com/virtuoso/webdav/1.0/"/>' +
-      '<virtowneruid xmlns="http://www.openlinksw.com/virtuoso/webdav/1.0/"/>' +
-      '<virtownergid xmlns="http://www.openlinksw.com/virtuoso/webdav/1.0/"/>' +
-      '</prop></propfind>';
+               '<propfind xmlns="DAV:">' +
+               '  <prop>' +
+               '    <creationdate />' +
+               '    <getlastmodified />' +
+               '    <href />' +
+               '    <resourcetype />' +
+               '    <getcontentlength />' +
+               '    <getcontenttype />' +
+               '    <virtpermissions xmlns="http://www.openlinksw.com/virtuoso/webdav/1.0/" />' +
+               '    <virtowneruid xmlns="http://www.openlinksw.com/virtuoso/webdav/1.0/" />' +
+               '    <virtownergid xmlns="http://www.openlinksw.com/virtuoso/webdav/1.0/" />' +
+               '  </prop>';
+               '</propfind>';
 
     var ref = function(data) {
       self.children = parseDavFolder(self.url, data);
@@ -420,27 +426,39 @@ RDFE.IO.LDPFolder = (function() {
 
     store.registerDefaultNamespace('rdfs', 'http://www.w3.org/2000/01/rdf-schema#');
     store.registerDefaultNamespace('posix', 'http://www.w3.org/ns/posix/stat#');
+    store.registerDefaultNamespace('ldp', 'http://www.w3.org/ns/ldp#');
 
     var files = [];
 
     // query files
-    store.execute('select distinct ?s ?size ?mtime from <urn:default> where { ?s a ?t . FILTER(?t in (posix:File, rdfs:Resource)) . optional { ?s posix:size ?size . } . optional { ?s posix:mtime ?mtime . } }', function(s,r) {
-      if(!s) {
+    store.execute(
+      ' select distinct ?s ?size ?mtime ' +
+      '   from <urn:default>  ' +
+      '  where {  ' +
+      '          ?s a ?t .  ' +
+      '          FILTER(?t in (posix:File, rdfs:Resource, ldp:Resource)) .  ' +
+      '          optional { ?s posix:size ?size . } .  ' +
+      '          optional { ?s posix:mtime ?mtime . }  ' +
+      '        }',
+      function(status, result) {
+        if (!status) {
         fail('Failed to query LDP the container at ' + baseUrl + '.');
-      }
-      else {
-        for(var i = 0; i < r.length; i++) {
-          var uri = r[i].s.value;
-          if(!uri.startsWith('http')) {
+          return;
+        }
+
+        // files
+        for (var i = 0; i < result.length; i++) {
+          var uri = result[i].s.value;
+          if (!uri.startsWith('http')) {
             uri = baseUrl + uri;
           }
 
           var file = new RDFE.IO.File(uri);
-          if(r[i].mtime) {
-            file.modificationDate = new Date(r[i].mtime.value*1000);
+          if (result[i].mtime) {
+            file.modificationDate = new Date(result[i].mtime.value*1000);
           }
-          if(r[i].size) {
-            file.size = r[i].size.value;
+          if (result[i].size) {
+            file.size = result[i].size.value;
           }
           file.dirty = false;
           file.ioType = "ldp";
@@ -449,31 +467,38 @@ RDFE.IO.LDPFolder = (function() {
         }
 
         // query folders
-        store.execute('select distinct ?s ?size ?mtime from <urn:default> where { ?s a posix:Directory . optional { ?s posix:mtime ?mtime } }', function(s,r) {
-          if(!s) {
+        store.execute(
+          ' select distinct ?s ?mtime ' +
+          '   from <urn:default>  ' +
+          '  where {  ' +
+          '          ?s a ?t .  ' +
+          '          FILTER(?t in (posix:Directory, ldp:Container, ldp:BasicContainer)) .  ' +
+          '          optional { ?s posix:mtime ?mtime }  ' +
+          '        }',
+          function(status, result) {
+            if (!status) {
             fail('Failed to query LDP the container at ' + baseUrl + '.');
-          }
-          else {
-            for(var i = 0; i < r.length; i++) {
-              var uri = r[i].s.value;
-              if(!uri.startsWith('http')) {
+              return;
+            }
+            for (var i = 0; i < result.length; i++) {
+              var uri = result[i].s.value;
+              if (!uri.startsWith('http')) {
                 uri = baseUrl + uri;
               }
 
-              if(uri != baseUrl) {
+              if (uri != baseUrl) {
                 var dir = new RDFE.IO.LDPFolder(uri);
-                if(r[i].mtime) {
-                  dir.modificationDate = new Date(r[i].mtime.value*1000);
+                if (result[i].mtime) {
+                  dir.modificationDate = new Date(result[i].mtime.value*1000);
                 }
                 files.push(dir);
               }
             }
-
             success(files);
           }
-        });
+        );
       }
-    });
+    );
   };
 
   c.prototype.listDir = function(success, fail) {
