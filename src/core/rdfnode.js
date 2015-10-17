@@ -14,8 +14,8 @@ RDFE.RdfNode = function(t, v, dt, l) {
 RDFE.RdfNode.prototype.toStoreNode = function(store) {
   if(this.type == 'uri')
     return store.rdf.createNamedNode(this.value);
-  else
-    return store.rdf.createLiteral(this.value, this.language, this.datatype);
+
+  return store.rdf.createLiteral(this.value, this.language, this.datatype);
 };
 
 RDFE.RdfNode.prototype.toString = function() {
@@ -33,40 +33,41 @@ RDFE.RdfNode.prototype.toString = function() {
  */
 RDFE.RdfNode.fromStoreNode = function(node) {
   // plain string
-  if(typeof(node) == 'string') {
+  if (typeof(node) === 'string') {
     return new RDFE.RdfNode('uri', node);
   }
 
   // already an RdfNode
-  else if(node instanceof RDFE.RdfNode) {
+  if (node instanceof RDFE.RdfNode) {
     return node;
   }
 
   // rdfstore nodes
-  else if(node.token) {
+  if (node.token) {
     return new RDFE.RdfNode(node.token, node.value, node.type, node.lang);
   }
 
   // rdfstore.rdf nodes
-  else if(node.interfaceName) {
+  if (node.interfaceName) {
     var t;
-    if(node.interfaceName === 'NamedNode')
-      t = 'uri';
-    else if(node.interfaceName === 'Literal')
-      t = 'literal'
-    else
-      throw "Blank nodes cannot be converted into RDFE.RdfNode values.";
 
+    if (node.interfaceName === 'NamedNode') {
+      t = 'uri';
+    }
+    else if(node.interfaceName === 'Literal') {
+      t = 'literal'
+    }
+    else {
+      throw "Blank nodes cannot be converted into RDFE.RdfNode values.";
+    }
     return new RDFE.RdfNode(t, node.nominalValue, node.datatype, node.language);
   }
 
   // entities
-  else if(node.uri) {
+  if (node.uri) {
     return new RDFE.RdfNode('uri', node.uri);
   }
 
   // unknown
-  else {
-    throw "Unsupported node type for RDFE.RdfNode conversion.";
-  }
+  throw "Unsupported node type for RDFE.RdfNode conversion.";
 };

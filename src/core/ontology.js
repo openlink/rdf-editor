@@ -946,7 +946,7 @@ RDFE.OntologyClass.prototype.getUniqueRestrictions = function() {
   return uniqueRestrictions;
 };
 
-RDFE.OntologyClass.prototype.getIndividuals = function(includeSuper, cc) {
+RDFE.OntologyClass.prototype.getIndividuals = function(includeSuper) {
   var individuals = this.individuals;
   if(includeSuper) {
     var subClasses = this.getSubClasses(true);

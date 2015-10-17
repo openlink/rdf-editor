@@ -47,60 +47,65 @@
 
       var predicateEditorData = function(container, backCallback) {
         $list.bootstrapTable({
-          striped:true,
-          sortName:'subject',
-          pagination:true,
-          search:true,
-          searchAlign: 'left',
-          showHeader: true,
-          editable: true,
-          data: [],
-          dataSetter: predicateEditorDataSetter,
-          columns: [{
-            field: 'subject',
-            title: RDFE.Utils.namingSchemaLabel('s', self.namingSchema),
-            aligh: 'left',
-            sortable: true,
-            editable: function(triple) {
+          "striped": true,
+          "sortName": 'subject',
+          "pagination": true,
+          "search": true,
+          "searchAlign": 'left',
+          "showHeader": true,
+          "editable": true,
+          "data": [],
+          "dataSetter": predicateEditorDataSetter,
+          "columns": [{
+            "field": 'subject',
+            "title": RDFE.Utils.namingSchemaLabel('s', self.namingSchema),
+            "aligh": 'left',
+            "sortable": true,
+            "editable": function(triple) {
               return {
-                mode: "inline",
-                type: "rdfnode",
-                rdfnode: {
-                  type: 'http://www.w3.org/1999/02/22-rdf-syntax-ns#Resource'
+                "mode": "inline",
+                "type": "rdfnode",
+                "rdfnode": {
+                  "type": 'http://www.w3.org/1999/02/22-rdf-syntax-ns#Resource'
                 },
-                value: triple.subject
+                "value": triple.subject
               }
             },
             formatter: nodeFormatter
           }, {
-            field: 'object',
-            title: RDFE.Utils.namingSchemaLabel('o', self.namingSchema),
-            align: 'left',
-            sortable: true,
-            editable: function(triple) {
+            "field": 'object',
+            "title": RDFE.Utils.namingSchemaLabel('o', self.namingSchema),
+            "align": 'left',
+            "sortable": true,
+            "editable": function(triple) {
               return {
-                mode: "inline",
-                type: "rdfnode",
-                value: triple.object
+                "mode": "inline",
+                "type": "rdfnode",
+                "rdfnode": {
+                  "predicate": self.predicate.uri,
+                  "document": self.doc,
+                  "ontologyManager": self.ontologyManager
+                },
+                "value": triple.object
               };
             },
             formatter: nodeFormatter
           }, {
-            field: 'actions',
-            title: '<button class="add btn btn-default" title="Add Relation" style="display: none;"><span class="glyphicon glyphicon-plus" aria-hidden="true"></span> New</button>',
-            align: 'center',
-            valign: 'middle',
-            class: 'small-column',
-            clickToSelect: false,
-            editable: false,
-            formatter: function(value, row, index) {
+            "field": 'actions',
+            "title": '<button class="add btn btn-default" title="Add Relation" style="display: none;"><span class="glyphicon glyphicon-plus" aria-hidden="true"></span> New</button>',
+            "align": 'center',
+            "valign": 'middle',
+            "class": 'small-column',
+            "clickToSelect": false,
+            "editable": false,
+            "formatter": function(value, row, index) {
               return [
                 '<a class="remove ml10" href="javascript:void(0)" title="Remove">',
                 '<i class="glyphicon glyphicon-remove"></i>',
                 '</a>'
               ].join('');
             },
-            events: {
+            "events": {
               'click .remove': function (e, value, row, index) {
                 self.doc.deleteTriple(row, function() {
                   $list.bootstrapTable('remove', {
@@ -135,9 +140,6 @@
           newNode = self.doc.store.rdf.createNamedNode(newValue);
         }
         if (newValue.toStoreNode) {
-          if (newValue.type == 'uri') {
-            newValue.value = self.ontologyManager.uriDenormalize(newValue.value);
-          }
           newNode = newValue.toStoreNode(self.doc.store);
         }
         else if (field != 'object' ||
@@ -252,18 +254,20 @@
 
       var property = self.ontologyManager.ontologyProperties[self.predicate.uri];
       var objectEdit = self.predicateFormContainer.find('input[name="object"]').rdfNodeEditor();
-      var objectType;
+      var node;
+      var nodeItems;
       var range = property.getRange();
       if (objectEdit.isLiteralType(range)) {
-        objectType = new RDFE.RdfNode('literal', '', range, '');
+        node = new RDFE.RdfNode('literal', '', range, '');
       }
       else if (self.ontologyManager.ontologyClassByURI(range)) {
-        objectType = new RDFE.RdfNode('uri', '');
+        node = new RDFE.RdfNode('uri', '');
+        nodeItems = self.doc.itemsByRange(range);
       }
       else {
-        objectType = new RDFE.RdfNode('literal', '', null, '');
+        node = new RDFE.RdfNode('literal', '', null, '');
       }
-      objectEdit.setValue(objectType);
+      objectEdit.setValue(node, nodeItems);
 
       self.predicateFormContainer.find('button.predicate-action-new-cancel').click(function(e) {
         self.predicateFormContainer.hide();
@@ -275,9 +279,6 @@
         s = RDFE.Utils.trim(RDFE.Utils.trim(s, '<'), '>')
         var p = self.predicate.uri;
         var o = objectEdit.getValue();
-        if (o.type == 'uri') {
-          o.value = self.ontologyManager.uriDenormalize(o.value);
-        }
         var t = self.doc.store.rdf.createTriple(self.doc.store.rdf.createNamedNode(s), self.doc.store.rdf.createNamedNode(p), o.toStoreNode(self.doc.store));
         self.doc.addTriples([t], function() {
           self.addTriple(t);

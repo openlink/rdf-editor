@@ -5,7 +5,7 @@ if (typeof String.prototype.startsWith != 'function') {
   };
 }
 
-if(!window.RDFE)
+if (!window.RDFE)
   window.RDFE = {};
 
 RDFE.Editor = function(config, documentTree, options) {
@@ -163,18 +163,21 @@ RDFE.Editor.prototype.createNewStatementEditor = function() {
     ontoManager: self.ontologyManager
   }).on('changed', function(e, p) {
     // console.log('changed', p)
-    var cn = objEd.getValue(), n;
-    var range = p.getRange();
-    if(objEd.isLiteralType(range)) {
-      n = new RDFE.RdfNode('literal', cn.value, range, cn.language);
+    var node;
+    var nodeItems;
+    var cn = objEd.getValue();
+    var range = (p)? p.getRange(): null;
+    if (objEd.isLiteralType(range)) {
+      node = new RDFE.RdfNode('literal', cn.value, range, cn.language);
     }
-    else if(self.ontologyManager.ontologyClassByURI(range)) {
-      n = new RDFE.RdfNode('uri', RDFE.Utils.trim(RDFE.Utils.trim(cn.value, '<'), '>'));
+    else if (self.ontologyManager.ontologyClassByURI(range)) {
+      node = new RDFE.RdfNode('uri', RDFE.Utils.trim(RDFE.Utils.trim(cn.value, '<'), '>'));
+      nodeItems = self.doc.itemsByRange(range);
     }
     else {
-      n = new RDFE.RdfNode('literal', cn.value, null, '');
+      node = new RDFE.RdfNode('literal', cn.value, null, '');
     }
-    objEd.setValue(n);
+    objEd.setValue(node, nodeItems);
   });
 
   self.formContainer.find('a.triple-action-new-cancel').click(function(e) {
@@ -228,7 +231,6 @@ RDFE.Editor.prototype.createNewEntityEditor = function(forcedType) {
   if (!self.doc) {
     return false;
   }
-
 
   self.listContainer.hide();
   self.formContainer.show();
@@ -586,7 +588,7 @@ RDFE.Editor.prototype.createObjectList = function() {
 RDFE.Editor.prototype.editObject = function(object) {
   var self = this;
 
-  if(!self.objectEditor) {
+  if (!self.objectEditor) {
     self.objectEditor = new RDFE.ObjectEditor(self.doc, self.ontologyManager);
     $(self.objectEditor).on('rdf-editor-error', function(e, d) {
       $(self).trigger('rdf-editor-error', d);
