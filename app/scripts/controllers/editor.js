@@ -84,15 +84,21 @@ angular.module('myApp.editor', ['ngRoute'])
   }
 
   function getIO(ioType, sparqlEndpoint, ioTimeout) {
+    var authFunction;
+    if (DocumentTree.getAuthInfo) {
+      authFunction = function(url, success, fail) {
+        DocumentTree.getAuthInfo(url, true).then(success, fail);
+      };
+    }
+
     var io = RDFE.IO.createIO(ioType, {
       "sparqlEndpoint": sparqlEndpoint,
       "gspEndpoint": $('#gspEndpoint').val(),
       "ioTimeout": ioTimeout
     });
     io.type = ioType;
-    io.options.authFunction = function(url, success, fail) {
-      DocumentTree.getAuthInfo(url, true).then(success, fail);
-    };
+    io.options.authFunction = authFunction;
+
     return io;
   }
 
@@ -102,12 +108,7 @@ angular.module('myApp.editor', ['ngRoute'])
       io_rdfe = getIO(type || "sparql", sparqlEndpoint, ioTimeout);
 
       // see if we have auth information cached
-      DocumentTree.getAuthInfo(url, false).then(function(authInfo) {
-        if(authInfo) {
-          io_rdfe.options.username = authInfo.username;
-          io_rdfe.options.password = authInfo.password;
-        }
-
+      var loadUrl= function(url, io_rdfe) {
         toggleSpinner(true);
         $scope.mainDoc.load(url, io_rdfe, function() {
           $scope.editor.updateView();
@@ -120,7 +121,19 @@ angular.module('myApp.editor', ['ngRoute'])
           Notification.notify('error', msg);
           toggleSpinner(false);
         });
-      });
+      };
+      if (DocumentTree.getAuthInfo) {
+        DocumentTree.getAuthInfo(url, false).then(function(authInfo) {
+          if(authInfo) {
+            io_rdfe.options.username = authInfo.username;
+            io_rdfe.options.password = authInfo.password;
+          }
+          loadUrl(url, io_rdfe);
+        });
+      }
+      else {
+        loadUrl(url, io_rdfe);
+      }
     }
     catch(e) {
       Notification.notify('error', e);

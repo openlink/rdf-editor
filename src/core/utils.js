@@ -203,8 +203,7 @@ RDFE.Utils.getLabel = function(labels, key) {
 }
 
 RDFE.Utils.getUrlBase = function(url) {
-  var parser = document.createElement('a');
-  parser.href = url;
+  var parser = RDFE.Utils.splitUrl(url);
   return parser.protocol + '//' + parser.host;
 };
 

@@ -172,8 +172,7 @@ RDFE.IO.Folder = (function() {
         }
       }, function(err, status) {
         // get auth information from the user if possible
-        if((status === 401 || status === 403) &&
-            self.options.authFunction) {
+        if((status === 401 || status === 403) && self.options.authFunction) {
           self.options.authFunction(self.url, function(r) {
             self.options.username = r.username;
             self.options.password = r.password;

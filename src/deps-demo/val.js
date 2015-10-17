@@ -19,13 +19,34 @@
    * The profile object contains at least the personal "uri" and optionally
    * the "nick" nickname, the "name" and an "image" url.
    */
+  VAL.prototype.installed = function(cb) {
+    var self = this;
+
+    $.get(this.config.host + this.config.logoutLink).done(function() {
+      cb(true);
+    }).fail(function() {
+      cb(false);
+    });
+  }
+
+  /**
+   * Get the user profile. The only parameter is a callback function which
+   * takes two parameters: a boolean indicating success and a second which
+   * in the case of success contains the profile as an object (see below)
+   * and in the case of an error contains the error message.
+   *
+   * The profile object contains at least the personal "uri" and optionally
+   * the "nick" nickname, the "name" and an "image" url.
+   */
   VAL.prototype.profile = function(cb) {
     var self = this;
 
     $.get(this.config.host + this.config.valApi + "/profile").done(function(data) {
+      self.config.valInstalled = false;
       var s = new rdfstore.Store();
       s.registerDefaultProfileNamespaces();
       s.load('text/turtle', data, function(success, result) {
+        self.config.valInstalled = true;
         if(success) {
           s.execute(
             "select ?uri ?name ?img ?nick where { [] foaf:topic ?uri . ?uri a foaf:Agent . optional { ?uri foaf:name ?name . } . optional { ?uri foaf:nick ?nick . } . optional { ?uri foaf:img ?img . } . }",
@@ -83,7 +104,8 @@
           cb(false, "Failed to load the profile contents.");
         }
       });
-    }).fail(function() {
+    }).fail(function(data, status, xhr) {
+      self.config.valInstalled = (data.status !== 404);
       cb(false);
     });
   }
