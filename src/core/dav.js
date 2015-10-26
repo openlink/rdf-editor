@@ -441,7 +441,7 @@ RDFE.IO.LDPFolder = (function() {
       '        }',
       function(status, result) {
         if (!status) {
-        fail('Failed to query LDP the container at ' + baseUrl + '.');
+          fail('Failed to query LDP the container at ' + baseUrl + '.');
           return;
         }
 
@@ -467,19 +467,23 @@ RDFE.IO.LDPFolder = (function() {
 
         // query folders
         store.execute(
-          ' select distinct ?s ?mtime ' +
+          ' select distinct ?s ?mtime ?contains' +
           '   from <urn:default>  ' +
           '  where {  ' +
           '          ?s a ?t .  ' +
           '          FILTER(?t in (posix:Directory, ldp:Container, ldp:BasicContainer)) .  ' +
           '          optional { ?s posix:mtime ?mtime }  ' +
+          '          optional { ?s ldp:contains ?contains }  ' +
           '        }',
           function(status, result) {
             if (!status) {
-            fail('Failed to query LDP the container at ' + baseUrl + '.');
+              fail('Failed to query LDP the container at ' + baseUrl + '.');
               return;
             }
             for (var i = 0; i < result.length; i++) {
+              if (result[i].contains) {
+                continue;
+              }
               var uri = result[i].s.value;
               if (!uri.startsWith('http')) {
                 uri = baseUrl + uri;
