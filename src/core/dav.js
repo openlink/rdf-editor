@@ -13,11 +13,11 @@ RDFE.IO.Resource = (function() {
   // constructor
   var c = function(url) {
     this.url = url || "";
-    if(url) {
+    if (url) {
       this.path = decodeURIComponent(RDFE.Utils.splitUrl(url).path);
       this.host = RDFE.Utils.splitUrl(url).host;
       this.name = this.path.match(/([^\/]+)\/?$/);
-      if(this.name && this.name.length > 1) {
+      if (this.name && this.name.length > 1) {
         this.name = this.name[1];
       }
       else {
@@ -33,6 +33,7 @@ RDFE.IO.Resource = (function() {
     // inheritance chain, because using the super class' constructor
     // might have side effects.
     var construct = function () {};
+
     construct.prototype = this.prototype;
     cls.prototype = new construct;
     cls.prototype.constructor = cls;
@@ -55,10 +56,10 @@ RDFE.IO.Resource = (function() {
    * it checked instead.
    */
   c.prototype.getOption = function(key) {
-    if(this.options[key]) {
+    if (this.options[key]) {
       return this.options[key];
     }
-    else if(this.parent) {
+    else if (this.parent) {
       return this.parent.getOption(key);
     }
     else {
@@ -76,7 +77,7 @@ RDFE.IO.Resource = (function() {
   c.prototype.standardAjaxHeaders = function(headers) {
     var uid = this.getOption('username');
     headers = headers || {};
-    if(uid) {
+    if (uid) {
       headers["Authorization"] = "Basic " + btoa(uid + ":" + this.getOption('password'));
     }
     return headers;
@@ -98,9 +99,7 @@ RDFE.IO.File = (function() {
     self.type = "file";
     self.dirty = true;
 
-    var defaults = {
-    }
-
+    var defaults = {};
     self.options = $.extend({}, defaults, options);
   });
 
@@ -134,9 +133,7 @@ RDFE.IO.Folder = (function() {
 
     self.children = [];
 
-    var defaults = {
-    }
-
+    var defaults = {};
     self.options = $.extend({}, defaults, options);
   });
 
@@ -151,12 +148,13 @@ RDFE.IO.Folder = (function() {
     var _force = force,
         _success = success,
         _fail = fail;
-    if(typeof(_force) === 'function') {
+
+    if (typeof(_force) === 'function') {
       _fail = _success;
       _success = _force;
       _force = false;
     }
-    if(_force || this.dirty) {
+    if (_force || this.dirty) {
       var self = this;
       this.listDir(function() {
         // update the root dir of all children
@@ -170,7 +168,8 @@ RDFE.IO.Folder = (function() {
         if(_success) {
           _success(self);
         }
-      }, function(err, status) {
+      },
+      function(err, status) {
         // get auth information from the user if possible
         if((status === 401 || status === 403) && self.options.authFunction) {
           self.options.authFunction(self.url, function(r) {
@@ -220,7 +219,7 @@ RDFE.IO.Folder = (function() {
         folders = [];
 
     for(var i = 0; i < this.children.length; i++) {
-      if((o.type !== 'folder' && this.children[i].type === "file") || (o.type !== 'file' && !o.foldersFirst)) {
+      if ((o.type !== 'folder' && this.children[i].type === "file") || (o.type !== 'file' && !o.foldersFirst)) {
         files.push(this.children[i]);
       }
       else if (o.type !== 'file') {
@@ -230,15 +229,13 @@ RDFE.IO.Folder = (function() {
 
     var desc = (o.sortOrder.toLowerCase() === 'desc');
     var sorter = function(a, b) {
-      if(desc) {
+      if (desc) {
         return a[o.sort] > b[o.sort];
       }
-      else {
-         return a[o.sort] < b[o.sort];
-      }
+      return a[o.sort] < b[o.sort];
     };
 
-    if(o.sort) {
+    if (o.sort) {
       files.sort(sorter);
       folders.sort(sorter);
     }
@@ -283,7 +280,7 @@ RDFE.IO.WebDavFolder = (function() {
     var getTextByLocalName = function(data, tagName) {
       var tmp = getElementsByLocalName(data, tagName);
       if (tmp.length) {
-         return $(tmp[0]).text();
+        return $(tmp[0]).text();
       }
 
       return null;
@@ -379,7 +376,7 @@ RDFE.IO.WebDavFolder = (function() {
                '    <virtpermissions xmlns="http://www.openlinksw.com/virtuoso/webdav/1.0/" />' +
                '    <virtowneruid xmlns="http://www.openlinksw.com/virtuoso/webdav/1.0/" />' +
                '    <virtownergid xmlns="http://www.openlinksw.com/virtuoso/webdav/1.0/" />' +
-               '  </prop>';
+               '  </prop>' +
                '</propfind>';
 
     var ref = function(data) {
@@ -414,10 +411,8 @@ RDFE.IO.LDPFolder = (function() {
     // call super-constructor
     self.constructor.super.call(this, url);
 
-    var defaults = {
-    }
-
     self.ioType = 'ldp';
+    var defaults = {};
     self.options = $.extend({}, defaults, options);
   });
 
@@ -441,7 +436,7 @@ RDFE.IO.LDPFolder = (function() {
       '        }',
       function(status, result) {
         if (!status) {
-        fail('Failed to query LDP the container at ' + baseUrl + '.');
+          fail('Failed to query LDP the container at ' + baseUrl + '.');
           return;
         }
 
@@ -467,19 +462,23 @@ RDFE.IO.LDPFolder = (function() {
 
         // query folders
         store.execute(
-          ' select distinct ?s ?mtime ' +
+          ' select distinct ?s ?mtime ?contains' +
           '   from <urn:default>  ' +
           '  where {  ' +
           '          ?s a ?t .  ' +
           '          FILTER(?t in (posix:Directory, ldp:Container, ldp:BasicContainer)) .  ' +
           '          optional { ?s posix:mtime ?mtime }  ' +
+          '          optional { ?s ldp:contains ?contains }  ' +
           '        }',
           function(status, result) {
             if (!status) {
-            fail('Failed to query LDP the container at ' + baseUrl + '.');
+              fail('Failed to query LDP the container at ' + baseUrl + '.');
               return;
             }
             for (var i = 0; i < result.length; i++) {
+              if (result[i].contains) {
+                continue;
+              }
               var uri = result[i].s.value;
               if (!uri.startsWith('http')) {
                 uri = baseUrl + uri;
@@ -514,19 +513,18 @@ RDFE.IO.LDPFolder = (function() {
       var lnk = jqXHR.getResponseHeader('Link');
       if (lnk) {
         var lh = lnk.split(',');
-        for(var i = 0; i < lh.length; i++) {
-          if(lh[i].replace(/ /g, '').toLowerCase().indexOf('rel="type"') >= 0 &&
-            lh[i].indexOf('http://www.w3.org/ns/ldp#BasicContainer') >= 0) {
+        for (var i = 0; i < lh.length; i++) {
+          if (lh[i].replace(/ /g, '').toLowerCase().indexOf('rel="type"') >= 0 && lh[i].indexOf('http://www.w3.org/ns/ldp#BasicContainer') >= 0) {
             haveBasicContainer = true;
             break;
           }
         }
       }
 
-      if(!haveBasicContainer) {
+      if (!haveBasicContainer) {
         fail('Only LDP Basic containers are supported at the moment.');
       }
-      else if(jqXHR.getResponseHeader('Content-Type').indexOf('turtle') < 0) {
+      else if (jqXHR.getResponseHeader('Content-Type').indexOf('turtle') < 0) {
         fail('The LDP container at ' + self.url + ' does not return Turtle content.');
       }
       else {
@@ -542,7 +540,7 @@ RDFE.IO.LDPFolder = (function() {
         });
       }
     }).fail(function(jqXHR) {
-      if(fail) {
+      if (fail) {
         fail(RDFE.IO.ajaxFailMessage(jqXHR, 'Failed to fetch Turtle content from "{0}"', self.url), jqXHR.status);
       }
     });

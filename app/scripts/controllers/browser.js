@@ -218,8 +218,8 @@ angular.module('myApp.fileBrowser', ['ngRoute', 'ui.bootstrap'])
   };
 
   $scope.addNewLocation = function() {
-    if($scope.newLocationUrl && $scope.newLocationUrl.length) {
-      if($scope.newLocationIsSparql) {
+    if ($scope.newLocationUrl && $scope.newLocationUrl.length) {
+      if ($scope.newLocationIsSparql) {
         var sf = new RDFE.IO.Folder($scope.newLocationUrl);
         sf.ioType = "sparql";
         sf.sparqlEndpoint = $scope.newLocationUrl;
@@ -239,7 +239,8 @@ angular.module('myApp.fileBrowser', ['ngRoute', 'ui.bootstrap'])
         RDFE.IO.openUrl($scope.newLocationUrl, {
           authFunction: authFunction,
           checkForFiles: true
-        }, function(dir) {
+        },
+        function(dir) {
           // success, we found a container
           $scope.$apply(function() {
             $scope.addingLocation = false;
@@ -248,11 +249,12 @@ angular.module('myApp.fileBrowser', ['ngRoute', 'ui.bootstrap'])
             $scope.currentFolder = dir;
           });
           usSpinnerService.stop('location-spinner');
-        }, function(errMsg, status) {
+        },
+        function(errMsg, status) {
           // show a notification and let the user try again
           Notification.notify('error', errMsg);
           usSpinnerService.stop('location-spinner');
-      });
+        });
       }
     }
   };
@@ -264,7 +266,7 @@ angular.module('myApp.fileBrowser', ['ngRoute', 'ui.bootstrap'])
     $scope.newGraphUri = '';
   };
   $scope.addNewGraph = function() {
-    if($scope.newGraphUri && $scope.newGraphUri.length) {
+    if ($scope.newGraphUri && $scope.newGraphUri.length) {
       // add the new graph file item
       var gr = new RDFE.IO.File($scope.newGraphUri);
       gr.parent = $scope.currentFolder;

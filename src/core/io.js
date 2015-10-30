@@ -94,7 +94,9 @@ String.prototype.format = function() {
         ajaxParams = $.extend({"withCredentials": true}, ajaxParams);
       }
       if (params.authFunction) {
-        ajaxParams.headers["X-Requested-With"] = 'XMLHttpRequest';
+        if (RDFE.Utils.getUrlBase(ajaxParams.url) === RDFE.Utils.getUrlBase(window.location.href)) {
+          ajaxParams.headers["X-Requested-With"] = 'XMLHttpRequest';
+        }
       }
       ajaxParams = $.extend({"crossDomain": true}, ajaxParams);
       if (self.options["ioTimeout"]) {
