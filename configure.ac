@@ -1,4 +1,4 @@
-AC_INIT([rdf-editor], m4_esyscmd([./version | tr -d '\n']), [ods@openlinksw.com])
+AC_INIT([rdf-editor], m4_esyscmd([./gen_version.sh | tr -d '\n']), [ods@openlinksw.com])
 AM_INIT_AUTOMAKE
 
 # --------------------------------------------------------------

@@ -14,7 +14,7 @@ GRUNT_FILES = \
 
 RDF_EDITOR_FILES = dist/index.html
 
-VERSION=`./version`
+VERSION=`./gen_version.sh`
 
 vad_DATA = rdf_editor_dav.vad
 
