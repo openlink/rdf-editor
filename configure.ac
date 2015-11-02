@@ -16,14 +16,12 @@ AC_ARG_WITH(
   [AS_HELP_STRING(
     [--with-vadpacker=PATH],
     [Specify the full path to the vadpacker script to use. If not provided configure will search the PATH.])],
-  [VADPACKER=${withval}],
+  [VADPACKER="${withval}"],
   [
-    if test [ -f vadpacker/vadpacker.py ]; then
-      VADPACKER=`pwd`/vadpacker/vadpacker.py
-    fi
+    AC_PATH_PROG([VADPACKER], [vadpacker.py], notfound, ["./vadpacker:$PATH"])
   ])
-AC_PATH_PROG([VADPACKER], [vadpacker.py],,)
-if test "x$VADPACKER" = "x"; then
+
+if test \! -x "$VADPACKER" ; then
   AC_MSG_ERROR([cannot find vadpacker.py. Consider using --with-vadpacker=<PATH>.])
 fi
 
