@@ -3,7 +3,7 @@
   "description": "OpenLink RDF Editor",
   "version": "0.15.0",
   "homepage": "http://www.openlinksw.com",
-  "license": "MIT",
+  "license": "GPL-2.0",
   "private": true,
   "dependencies": {
     "angular": "1.3.x",
