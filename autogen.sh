@@ -1,4 +1,7 @@
 #!/bin/sh
+echo "Initializing git submodules"
+
+git submodule update --init
 
 echo "Generating configure files... may take a while."
 
