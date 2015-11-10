@@ -47,11 +47,30 @@ app/bower_components: node_modules bower.json
 dist/index.html: $(GRUNT_FILES)
 	grunt build
 
-# Rule to create our vad
+
+#
+#  Build Virtuoso vad packge
+#
 rdf_editor_dav.vad: $(RDF_EDITOR_FILES) rdf-editor-sticker.xml Makefile vad_version
 	@PYTHON@ @VADPACKER@ -o rdf_editor_dav.vad --var="VERSION=$(VAD_VERSION)" rdf-editor-sticker.xml
 
+
+#
+#  Cleanup
+#
 CLEANFILES = *.vad
+
+
+clean-local: clean-local-check
+.PHONY: clean-local-check
+clean-local-check:
+	-rm -rf dist .tmp
+
+
+distclean-local: distclean-local-check
+.PHONY: distclean-local-check
+distclean-local-check:
+	-rm -rf node_modules app/bower_components
 
 
 #
