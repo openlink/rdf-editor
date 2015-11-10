@@ -14,3 +14,5 @@ install-sh
 missing
 node_modules/
 rdf_editor_dav.vad
+rdf_editor_pkg.tar.gz
+rdf_editor_pkg.zip

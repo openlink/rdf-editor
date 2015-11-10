@@ -23,7 +23,7 @@
 #
 BOWER_DIR	= app/bower_components
 MODULE_DIR	= node_modules
-PKG_NAME	= rdf_editor_app
+PKG_NAME	= rdf_editor_pkg
 
 
 #
