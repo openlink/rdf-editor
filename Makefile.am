@@ -23,6 +23,7 @@
 #
 BOWER_DIR	= app/bower_components
 MODULE_DIR	= node_modules
+PKG_NAME	= rdf_editor_app
 
 
 #
@@ -36,6 +37,7 @@ VERSION		= `./gen_version.sh`
 #
 vad_DATA 	= rdf_editor_dav.vad
 
+noinst_DATA 	= $(PKG_NAME).tar.gz $(PKG_NAME).zip
 
 
 #
@@ -74,11 +76,25 @@ rdf_editor_dav.vad: $(RDF_EDITOR_FILES) rdf-editor-sticker.xml Makefile vad_vers
 	@PYTHON@ @VADPACKER@ -o rdf_editor_dav.vad --var="VERSION=$(VERSION)" rdf-editor-sticker.xml
 
 
+#
+#  Build tar and zip versions of runtime packages for standalone usage
+#
+
+$(PKG_NAME).tar.gz: rdf_editor_dav.vad
+	-@ln -s dist @PACKAGE@
+	-tar cfLz $(PKG_NAME).tar.gz @PACKAGE@
+	-@rm -f @PACKAGE@
+
+$(PKG_NAME).zip: rdf_editor_dav.vad
+	-@ln -s dist @PACKAGE@
+	-zip -9qr $(PKG_NAME).zip @PACKAGE@
+	-@rm -f @PACKAGE@
+
 
 #
 #  Cleanup
 #
-CLEANFILES = *.vad
+CLEANFILES = *.vad $(PKG_NAME).tar.gz $(PKG_NAME).zip
 
 
 clean-local: clean-local-check
