@@ -53,4 +53,67 @@ rdf_editor_dav.vad: $(RDF_EDITOR_FILES) rdf-editor-sticker.xml Makefile vad_vers
 
 CLEANFILES = *.vad
 
-EXTRA_DIST = $(RDF_EDITOR_FILES) rdf-editor-sticker.xml
+
+#
+#  List all files in distribution
+#
+RDF_EDITOR_DIST = \
+	AUTHORS \
+	COPYING \
+	CREDITS \
+	ChangeLog \
+	LICENSE \
+	Makefile.am \
+	NEWS \
+	README \
+	README.GIT \
+	.bowerrc \
+	.gitignore \
+	.gitmodules \
+	.jshintrc \
+	.travis.yml \
+	autogen.sh \
+	bower.json \
+	configure.ac \
+	gen_version.sh \
+	Gruntfile.js \
+	karma.conf.js \
+	package.json \
+	rdf-editor-sticker.xml \
+	vad_version \
+	app/*.json \
+	app/data/*.ttl \
+	app/*.html \
+	app/images/*.gif \
+	app/images/*.png \
+	app/scripts/controllers/*.js \
+	app/scripts/*.js \
+	app/styles/*.css \
+	app/tmpl/*.html \
+	app/views/*.html \
+	css/bootstrap.css.map \
+	css/bootstrap-theme.css.map \
+	css/*.css \
+	e2e-tests/*.js \
+	src/core/*.js \
+	src/deps-demo/*.js \
+	src/deps/*.js \
+	src/deps-orig/backbone-min.map \
+	src/deps-orig/*.js \
+	src/deps-orig/underscore-min.map \
+	src/ui/*.js 
+
+VADPACKER = \
+	vadpacker/*.py \
+	vadpacker/AUTHORS \
+	vadpacker/ChangeLog \
+	vadpacker/COPYING \
+	vadpacker/elementtree/*.py \
+	vadpacker/elementtree/ElementPath.pyc \
+	vadpacker/elementtree/ElementTree.pyc \
+	vadpacker/elementtree/__init__.pyc \
+	vadpacker/NEWS \
+	vadpacker/README \
+	vadpacker/README-elementtree
+
+EXTRA_DIST = $(RDF_EDITOR_DIST) $(VADPACKER)
