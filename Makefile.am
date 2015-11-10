@@ -111,6 +111,15 @@ distclean-local-check:
 
 realclean: clean-local-check distclean-local-check
 
+
+#
+#  Generate ChangeLog
+#
+.PHONY: changelog
+changelog:
+	git2cl --format='%s%n%n%b%n' --strip-tab --strip-cherry-pick > ChangeLog
+
+
 #
 #  List all files in distribution
 #
