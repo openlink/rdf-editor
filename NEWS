@@ -1,3 +1,20 @@
+v0.16:
+  * Publish the RDF Editor project to github
+  * Added dcterms, vcard, cert, pim, void. sioc, skos, schema, and gr to preloaded ontologies
+  * Added support for new RdfNode editor
+  * Added new version of Selectize library
+  * Added option for add/change prefixes in the ontology view
+  * Upgraded grunt-contrib-imagemin to ^1.0.0
+  * Upgraded angular-bootstrap to version 0.14.x
+  * Downgraded bootstrap to 3.3.4 due to problems with bootstrap.css in later version
+  * Fixed CORS bug with not allowed header properties
+  * Fixed issues with custom authentication form
+  * Fixed issues with LDP folders
+  * Fixed issues with VAL
+  * Fixed issue with open and save documents
+  * Fixed IE bur related to open locations
+  * Fixed labels
+
 v0.15:
   * New repository
   * New UI for open documents
