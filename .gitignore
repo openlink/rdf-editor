@@ -6,6 +6,7 @@ aclocal.m4
 app/bower_components/
 autom4te.cache/
 config.log
+config.nice
 config.status
 configure
 dist/
