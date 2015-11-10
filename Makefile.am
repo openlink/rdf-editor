@@ -18,8 +18,32 @@
 #
 #
 
-GRUNT_FILES = \
-	app/bower_components \
+#
+#  Settings
+#
+BOWER_DIR	= app/bower_components
+MODULE_DIR	= node_modules
+
+
+#
+#  Get current version
+#
+VERSION		= `./gen_version.sh`
+
+
+#
+#  What packages to build
+#
+vad_DATA 	= rdf_editor_dav.vad
+
+
+
+#
+#  Download all the dependency packages and build the app
+#
+RDF_EDITOR_FILES = dist/index.html
+
+GRUNT_FILES 	= \
 	app/styles/*.css \
 	css/*.css \
 	app/scripts/*.js \
@@ -32,27 +56,23 @@ GRUNT_FILES = \
 	app/data/*.ttl \
 	app/config.json
 
-RDF_EDITOR_FILES = dist/index.html
-
-VAD_VERSION=`./gen_version.sh`
-
-vad_DATA = rdf_editor_dav.vad
-
-node_modules: package.json
-	npm install
-
-app/bower_components: node_modules bower.json
-	bower install
-
-dist/index.html: $(GRUNT_FILES)
+dist/index.html: $(GRUNT_FILES) $(BOWER_DIR)
 	grunt build
 
+$(BOWER_DIR): $(MODULE_DIR) bower.json
+	bower install
+
+$(MODULE_DIR): package.json
+	npm install
+
+
 
 #
-#  Build Virtuoso vad packge
+#  Build Virtuoso vad package
 #
-rdf_editor_dav.vad: $(RDF_EDITOR_FILES) rdf-editor-sticker.xml Makefile vad_version
-	@PYTHON@ @VADPACKER@ -o rdf_editor_dav.vad --var="VERSION=$(VAD_VERSION)" rdf-editor-sticker.xml
+rdf_editor_dav.vad: $(RDF_EDITOR_FILES) rdf-editor-sticker.xml Makefile vad_version gen_version.sh
+	@PYTHON@ @VADPACKER@ -o rdf_editor_dav.vad --var="VERSION=$(VERSION)" rdf-editor-sticker.xml
+
 
 
 #
@@ -70,8 +90,10 @@ clean-local-check:
 distclean-local: distclean-local-check
 .PHONY: distclean-local-check
 distclean-local-check:
-	-rm -rf node_modules app/bower_components
+	-rm -rf $(MODULE_DIR) $(BOWER_DIR)
 
+
+realclean: clean-local-check distclean-local-check
 
 #
 #  List all files in distribution
