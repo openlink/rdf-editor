@@ -1,0 +1,52 @@
+v0.15:
+  * New repository
+  * New UI for open documents
+
+v0.14:
+  * New UI using AngularJs
+  * New File browser with support for WebDAV and LDP
+  * Improved UI for editing attributes
+
+v0.13:
+  * Performance improvements in the ontology manager.
+  * Beautification in the entity editor.
+
+v0.12.1:
+  * Included bce:Highlights into the individuals query of the touchpoint document config.
+
+v0.12:
+  * Performance improvements.
+  * Show loading messages which initializing the ontology manager.
+
+v0.11.1:
+  * Fixed creation of multiple new aggregate resources. They used to have the same URI.
+  * Fixed deletion of triples by subject or object in RDFE.Document.
+  * Disable caching for all ajax requests.
+
+v0.11:
+  * Added missing Daimler BCE templates
+  * Added specialized Daimler BCE editor page.
+  * Improved template handling
+  * Individuals loading in the ontology manager.
+  * many fixes and improvements.
+
+v0.10:
+  * Small design improvements in the entity editor
+  * subPropertyOf handling for ranges in the ontology manger
+  * Honor config.labelProps in entity view
+  * Document data verification before saving
+  * Custom config loading via URL parameters
+
+v0.9:
+  * Aggregate handling in the editor
+  * Error handling
+  * Improved property selection in triple view
+  * Add property action in entity view
+  * URI template for entity creation
+  * Ontology mangement fixes
+
+v0.8.1:
+  * Several fixes and improvements.
+
+v0.8:
+  * Initial "public" release
