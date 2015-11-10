@@ -1,0 +1,3 @@
+[submodule "vadpacker"]
+	path = vadpacker
+	url = https://github.com/openlink/vadpacker

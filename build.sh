@@ -1,9 +1,8 @@
-#
-#  List of Authors/Contributors
+#!/bin/sh
 #
 #  This file is part of the OpenLink RDF Editor
 #
-#  Copyright (C) 2014-2015 OpenLink Software
+#  Copyright (C) 2015 OpenLink Software
 #
 #  This project is free software; you can redistribute it and/or modify it
 #  under the terms of the GNU General Public License as published by the
@@ -20,24 +19,11 @@
 #
 #
 
-Current Maintainer
-------------------
-Patrick van Kleef		opensource{at}openlinksw.com
+LC_ALL=C
+export LC_ALL
 
+npm install
 
-Author
--------
-Sebastian Trueg 		trueg{at}openlinksw.com
+bower install
 
-
-Contributors
-------------
-Aziz Baktiev 			abaktief{at}openlinksw.com
-Dimitar Dimitrov 		ddimitrov{at}openlinksw.com
-Kingsley Idehen			kidehen{at}openlinksw.com
-Patrick van Kleef 		pkleef{at}openlinksw.com
-Tim Haynes 			thaynes{at}openlinksw.com
-
-
-This list may not complete. If you have contributed to this project and want to appear on this list,
-please email the current maintainer.
+grunt build

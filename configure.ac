@@ -1,5 +1,44 @@
-AC_INIT([rdf-editor], m4_esyscmd([./gen_version.sh | tr -d '\n']), [ods@openlinksw.com])
-AM_INIT_AUTOMAKE
+define([RDF_EDITOR_VERSION], [esyscmd([./gen_version.sh | sed -e 's/_git.*//' | tr -d '\n'])])
+
+AC_INIT([rdf-editor], [RDF_EDITOR_VERSION], [opensource@openlinksw.com])
+AM_INIT_AUTOMAKE([foreign])
+
+# --------------------------------------------------------------
+#  Save configuration for later reuse
+# --------------------------------------------------------------
+echo creating config.nice
+rm -f config.nice
+cat >config.nice<<CONFIG_NICE_EOF
+#!${SHELL-/bin/sh}
+#
+# Created by configure for $PACKAGE_STRING
+#
+
+# Environment
+CONFIG_NICE_EOF
+for var in SHELL CFLAGS CXXFLAGS CPPFLAGS LDFLAGS INCLUDES LIBS CC CXX
+do
+    eval val=\$$var
+    if test -n "$val"
+    then
+        echo "$var=\"$val\"; export $var" >> config.nice
+    fi
+done
+
+echo "" >> config.nice
+echo ${SHELL} "\"$0\" \\" >> config.nice
+
+eval "set -- $ac_configure_args"
+
+for arg
+do
+    echo "\"$arg\" \\" >> config.nice
+done
+
+echo '"$@"' >> config.nice
+chmod +x config.nice
+
+
 
 # --------------------------------------------------------------
 # Check for python (vadpacker)

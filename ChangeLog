@@ -1,52 +1,3027 @@
-0.15
-  * New repository
-  * New UI for open documents
+2015-11-10  Patrick van Kleef  <pkleef@openlinksw.com>
 
-0.14
-  * New UI using AngularJs
-  * New File browser with support for WebDAV and LDP
-  * Improved UI for editing attributes
+	Fixed deployment package names
 
-0.13
-  * Performance improvements in the ontology manager.
-  * Beautification in the entity editor.
+	Fixed tell automake this package will not follow the full GNU Standards
 
-0.12.1
-  * Included bce:Highlights into the individuals query of the touchpoint document config.
+	Added initial README.md
 
-0.12
-  * Performance improvements.
-  * Show loading messages which initializing the ontology manager.
+	Added simple build.sh and build.bat scripts
 
-0.11.1
-  * Fixed creation of multiple new aggregate resources. They used to have the same URI.
-  * Fixed deletion of triples by subject or object in RDFE.Document.
-  * Disable caching for all ajax requests.
+	Added support for config.nice script
 
-0.11
-  * Added missing Daimler BCE templates
-  * Added specialized Daimler BCE editor page.
-  * Improved template handling
-  * Individuals loading in the ontology manager.
-  * many fixes and improvements.
+	Added support for building runtime packages in .tar.gz and .zip format
 
-0.10
-  * Small design improvements in the entity editor
-  * subPropertyOf handling for ranges in the ontology manger
-  * Honor config.labelProps in entity view
-  * Document data verification before saving
-  * Custom config loading via URL parameters
+	Small cleanups
 
-0.9
-  * Aggregate handling in the editor
-  * Error handling
-  * Improved property selection in triple view
-  * Add property action in entity view
-  * URI template for entity creation
-  * Ontology mangement fixes
+	Added local rules for clean and distclean
 
-0.8.1
-  * Several fixes and improvements.
+	Added filelist for source distribution
 
-0.8
-  * Initial "public" release
+	Fixed package and vad version handling
+
+	Upgraded grunt-contrib-imagemin to ^1.0.0
+
+	Added COPYING, LICENSE, AUTHORS and CREDITS to runtime distribution
+
+	Added copyright declarations
+
+2015-11-09  Patrick van Kleef  <pkleef@openlinksw.com>
+
+	Added initial list of third party projects used in the RDF Editor
+
+	Added list of contributors to this project
+
+	Fixed use GPLv2-only license for this open source project
+
+	Added vadpacker as a submodule
+
+	Fixed pin bootstrap to 3.3.4 due to problems with bootstrap.css in later version
+
+	Upgraded angular-bootstrap to version 0.14.x
+
+2015-11-02  Virtuoso Development Team  <virtdev@openlinksw.com>
+
+	Fixed issue finding vadpacker.py
+
+	Removed generated file
+
+	Added files for git to ignore
+
+	Updated vad version generation
+
+2015-10-30  Patrick van Kleef  <pkleef@openlinksw.com>
+
+	Merge branch 'feature/ldpFolderList' into develop
+
+2015-10-28  Dimitar Dimitrov  <ddimitrov@openlinksw.com>
+
+	Fixed CORS bug with not allowed header properties.
+
+2015-10-26  Dimitar Dimitrov  <ddimitrov@openlinksw.com>
+
+	Fixed folder list for LDP folders.
+
+2015-10-17  Patrick van Kleef  <pkleef@openlinksw.com>
+
+	Merge branch 'feature/Bug17072' into develop
+
+2015-10-17  Dimitar Dimitrov  <ddimitrov@openlinksw.com>
+
+	Added support for new RdfNode editor.
+
+	Update RdfNode editor to use selection for classes (and resources).
+
+	Added new version of Selectize library.
+
+2015-10-17  Patrick van Kleef  <pkleef@openlinksw.com>
+
+	Merge branch 'feature/authenticationFormFix' into develop
+
+2015-10-17  Dimitar Dimitrov  <ddimitrov@openlinksw.com>
+
+	Fixed VAL detection bug.
+
+	Fixed problems with custom authentication form. Added new header param 'X-Requested-With' for specific purposes.
+
+	Removed doubled code.
+
+	Fixed VAL bugs on non Virtuoso servers.
+
+2015-10-16  Dimitar Dimitrov  <ddimitrov@openlinksw.com>
+
+	Fixed bug with missing folders from LDP sources.
+
+2015-09-22  Patrick van Kleef  <pkleef@openlinksw.com>
+
+	Merge branch 'feature/openSaveBug' into develop
+
+2015-09-22  Dimitar Dimitrov  <ddimitrov@openlinksw.com>
+
+	Fixed IE bur related to open locations.
+
+	Fixed bug with open and save documents.
+
+2015-09-14  Dimitar Dimitrov  <ddimitrov@openlinksw.com>
+
+	Added dcterms, vcard, cert, pim, void. sioc, skos, schema, and gr to preloaded ontologies.
+
+2015-09-07  Patrick van Kleef  <pkleef@openlinksw.com>
+
+	Merge branch 'feature/ontologyLoaderFix' into develop
+
+2015-09-02  Dimitar Dimitrov  <ddimitrov@openlinksw.com>
+
+	Added option for add/change prefixes in the ontology view.
+
+2015-09-01  Dimitar Dimitrov  <ddimitrov@openlinksw.com>
+
+	Added UB as custom proxy server. Updated ontology view.
+
+2015-08-28  Dimitar Dimitrov  <ddimitrov@openlinksw.com>
+
+	Replaced title messages in views: entities, atributes and values.
+
+2015-08-07  Dimitar Dimitrov  <ddimitrov@openlinksw.com>
+
+	Set version number to 0.15.
+
+2015-08-07  Patrick van Kleef  <pkleef@openlinksw.com>
+
+	Merge branch 'feature/timeoutUpdate' into develop
+
+2015-08-05  Dimitar Dimitrov  <ddimitrov@openlinksw.com>
+
+	Fixed small browser bugs. Added spin for 'Add Location'. Fixed refresh spin.
+
+2015-08-04  Dimitar Dimitrov  <ddimitrov@openlinksw.com>
+
+	Fixed timeout bug. Fixed error message after load doc.
+
+2015-07-22  Dimitar Dimitrov  <ddimitrov@openlinksw.com>
+
+	Fixed bugs with recent document feature.
+
+2015-07-22  Patrick van Kleef  <pkleef@openlinksw.com>
+
+	Merge branch 'feature/editorUpdates' into develop
+
+2015-07-22  Dimitar Dimitrov  <ddimitrov@openlinksw.com>
+
+	Small changes in UI. Fixed bad comment content.
+
+	Fixed sorting for predicate and subject views.
+
+	Fixed sort for columns with mixed values.
+
+	Added 'Values' projection to the editor.
+
+	Fixed bug with LDP resources content type.
+
+	Added new config option 'nonTTLProxy' to enable using proxy for non TTL sources.
+
+	Fixed ontology panel view and ontology add behaviour. Added 'Refresh' action.
+
+	Fixed bug with lock select after errors. Enabled add properties like #relatedTo.
+
+	Make editor page more compact.
+
+2015-07-15  Dimitar Dimitrov  <ddimitrov@openlinksw.com>
+
+	Added timeout config option for I/O commands.
+
+2015-06-05  Sebastian Trueg  <trueg@openlinksw.com>
+
+	Merge branch 'feature/Bug16727' into develop
+
+2015-06-01  Dimitar Dimitrov  <ddimitrov@openlinksw.com>
+
+	Fixed app name by request.
+
+	Bug 16727 - Possibility to add a default storage url via the config. Added new config option: 'storage'
+
+2015-05-28  Sebastian Trueg  <trueg@openlinksw.com>
+
+	Merge branch 'feature/fixRefreshUX' into develop
+
+	Merge branch 'feature/Bug16828' into develop
+
+2015-05-27  Dimitar Dimitrov  <ddimitrov@openlinksw.com>
+
+	Trim bad characters from URIs.
+
+	Added new utility function - trim().
+
+	Fixed bug with update predicate views after actions.
+
+	Fixed bad reference in PropertyBox control.
+
+2015-05-26  Dimitar Dimitrov  <ddimitrov@openlinksw.com>
+
+	Added spinner for browser refresh action. Fixed bug with  function.
+
+	Fixed bug with login and not created doc editor.
+
+2015-05-22  Sebastian Trueg  <trueg@openlinksw.com>
+
+	Merge branch 'feature/Bug16826' into develop
+
+	Merge branch 'feature/Bug16675' into develop
+
+	Moved the default config value for maxLabelLength to config.js.
+
+	Renamed "oldEntityView" config option to "useEntityEditor".
+
+2015-05-22  Dimitar Dimitrov  <ddimitrov@openlinksw.com>
+
+	Fixed editor document @href in the main page.
+
+	Fixed bug in PropertyBox used bad function for creation property object.
+
+	Fixed bug when 'Link' header option is missing.
+
+	Added new view - subject view. Added parameter in config which makes views switchable.
+
+2015-05-22  Sebastian Trueg  <trueg@openlinksw.com>
+
+	New config option to filter the entities by type.
+
+	Added namingschema to default config.
+
+	Added new "types" column to the entity list.
+
+	Merge branch 'feature/editorUpdates' into develop
+
+	Merge branch 'feature/saveEditing' into develop
+
+2015-05-21  Dimitar Dimitrov  <ddimitrov@openlinksw.com>
+
+	Bug 16826 - Add shortcut 'a' for rdf:type.
+
+	Fixed label of the ontology pane - by request.
+
+2015-05-20  Sebastian Trueg  <trueg@openlinksw.com>
+
+	Fixed rdfnode boolean editor: it did not toggle properly on load.
+
+2015-05-19  Dimitar Dimitrov  <ddimitrov@openlinksw.com>
+
+	Saved and restore then document between login/logout actions.
+
+	Moved 'Create new document' at the top of pane.
+
+	Add 'withCreadentials' parameter to the Ajax calls.
+
+	Swap language and type fields for node editor.
+
+2015-05-13  Dimitar Dimitrov  <ddimitrov@openlinksw.com>
+
+	Removed double call for user's profile.
+
+2015-04-29  Dimitar Dimitrov  <ddimitrov@openlinksw.com>
+
+	Fixed but with hide language field after switch between Literal and String types.
+
+2015-04-29  Sebastian Trueg  <trueg@openlinksw.com>
+
+	Merge branch 'feature/entityEditorUpdate' into develop
+
+	Renamed "oldEntityView" config option to "useEntityEditor".
+
+2015-04-29  Dimitar Dimitrov  <ddimitrov@openlinksw.com>
+
+	Fixed editor document @href in the main page.
+
+	Fixed bug in PropertyBox used bad function for creation property object.
+
+	Fixed bug when 'Link' header option is missing.
+
+2015-04-28  Dimitar Dimitrov  <ddimitrov@openlinksw.com>
+
+	Added new view - subject view. Added parameter in config which makes views switchable.
+
+2015-04-27  Dimitar Dimitrov  <ddimitrov@openlinksw.com>
+
+	Fixed problem with adding IRIs starting with '#'. Fixed CSS UI of the editing forms. Fixed problem with stack overflow when adding triplets.
+
+2015-04-27  Sebastian Trueg  <trueg@openlinksw.com>
+
+	Merge branch 'feature/entityListFilterByTypes' into develop
+
+	New config option to filter the entities by type.
+
+	Added namingschema to default config.
+
+	Added new "types" column to the entity list.
+
+2015-04-24  Dimitar Dimitrov  <ddimitrov@openlinksw.com>
+
+	Bug 16675 - Abbreviate long objects in triple table. Added additionl config parameter - 'maxLabelLength'. Fixed URIs ended with #this, #me, #i
+
+2015-04-24  Sebastian Trueg  <trueg@openlinksw.com>
+
+	Updated Changelog
+
+	Merge branch 'feature/newAddPredicate' into develop
+
+2015-04-22  Dimitar Dimitrov  <ddimitrov@openlinksw.com>
+
+	Added 'Add' button to the editor views.
+
+	Remeved 'Add' button from the editor toolbar.
+
+	Fixed attributes view and editor. New form is replacing with select field.
+
+2015-04-21  Dimitar Dimitrov  <ddimitrov@openlinksw.com>
+
+	Added 2 configurable naming schemas: EAV and SPO.
+
+2015-04-17  Dimitar Dimitrov  <ddimitrov@openlinksw.com>
+
+	Fixed exception with undefined property 'uri'.
+
+	Fixed SKOS ontology URI.
+
+2015-04-16  Dimitar Dimitrov  <ddimitrov@openlinksw.com>
+
+	Fixed vidth for actions column.
+
+	Added new functionalite for 'Add attribute' action. Fixed error with behaviour for back button.
+
+	Fixed nameng based on EAV.
+
+2015-04-16  Sebastian Trueg  <trueg@openlinksw.com>
+
+	Properly handle defaults in nested entity models.
+
+	The result is that newly created sub-resources get their proper type.
+	This in turn makes it possible to load the appropriate template next
+	time.
+
+2015-04-16  Sebastian Trueg  <trueg@openlinksw.com>
+
+	Show entity uris as tooltips in the entity view.
+
+2015-04-15  Sebastian Trueg  <trueg@openlinksw.com>
+
+	Fallback to the profile uri in case we have neither name nor nick.
+
+2015-04-14  Sebastian Trueg  <trueg@openlinksw.com>
+
+	Merge branch 'feature/Bug16723' into develop
+
+	- Renamed "Property" to "Attrbute".
+	- New button to download the current doc as turtle file.
+
+2015-04-14  Dimitar Dimitrov  <ddimitrov@openlinksw.com>
+
+	Bug 16770 - Rename 'Properties' to 'Attributes'.
+
+	Bug 16723 - Save to desktop.
+
+2015-04-10  Dimitar Dimitrov  <ddimitrov@openlinksw.com>
+
+	Bug 16747 - CORS error messages in dav.js.
+
+2015-04-10  Sebastian Trueg  <trueg@openlinksw.com>
+
+	Fixed creation of unique int values.
+
+	rdf store cannot handle int values as literals, all must be strings.
+
+2015-04-10  Sebastian Trueg  <trueg@openlinksw.com>
+
+	Fixed creation of entities with unknown classes.
+
+2015-04-09  Sebastian Trueg  <trueg@openlinksw.com>
+
+	Do not throw an error when giving null to RDFE.Utils.uri2name.
+
+	Added function Document.deleteEntities.
+
+2015-04-07  Sebastian Trueg  <trueg@openlinksw.com>
+
+	Small fix.
+
+	Use the onto manager from the doc in the entity model. The model
+	itself does not have that property.
+
+2015-04-01  Sebastian Trueg  <trueg@openlinksw.com>
+
+	Install ontologies in the vad.
+
+	Version bump.
+
+	Removed all the deprecated files.
+
+	Merge branch 'feature/addOntologyViewToAngularApp' into develop
+
+	Fixed $apply loop
+
+	Fixed event handling for the ontology view.
+
+	Added ontology view to the main page.
+
+	Merge branch 'feature/gruntBuildSystem' into develop
+
+	Merge branch 'feature/ontologyPanel' into develop
+
+	Show the document uri as a link.
+
+	Added a default page to the vdir created in the vad.
+
+2015-04-01  Sebastian Trueg  <trueg@openlinksw.com>
+
+	Integrated grunt build system into automake.
+
+	Now the automake system will run all the required commands like
+	bower and grunt and then package the dist folder, ie. the uglified
+	application.
+
+2015-04-01  Sebastian Trueg  <trueg@openlinksw.com>
+
+	Include the config and the default ontologies into the grunt build.
+
+	Removed some deprecated files.
+
+2015-04-01  Sebastian Trueg  <trueg@openlinksw.com>
+
+	Fixed grunt build.
+
+	- Moved bower sources to be able to test without "grunt serv"
+	- Included fonts and images into the grunt build.
+
+2015-04-01  Sebastian Trueg  <trueg@openlinksw.com>
+
+	Added a grunt-based build system using a Yeoman template.
+
+	This allows to build a minified version of the whole app via
+	  $ grunt build
+
+2015-04-01  Sebastian Trueg  <trueg@openlinksw.com>
+
+	Merge branch 'feature/davAndLdpBrowser' into develop
+
+	Added two FIXMEs for later.
+
+2015-04-01  Sebastian Trueg  <trueg@openlinksw.com>
+
+	Fixed creation of new statements.
+
+	Do not follow the default action of the link which will end up in a
+	blank page.
+
+2015-03-31  Sebastian Trueg  <trueg@openlinksw.com>
+
+	Fixed caching of auth information.
+
+	We can now reuse folder auth info on the files in the folder.
+	Sub-folders are not supported yet.
+
+2015-03-31  Sebastian Trueg  <trueg@openlinksw.com>
+
+	Typo fixes.
+
+	Show an error if loading the config failed.
+
+2015-03-31  Sebastian Trueg  <trueg@openlinksw.com>
+
+	Install the full angular app into the vad for now.
+
+	Eventually we will add a grunt-based build system.
+
+2015-03-31  Sebastian Trueg  <trueg@openlinksw.com>
+
+	Fixed the editor spinner.
+
+	Always overwrite for LDP via PUT.
+
+	Fixed creation of new documents from the welcome page.
+
+2015-03-31  Dimitar Dimitrov  <ddimitrov@openlinksw.com>
+
+	Added new ontology panel on the start page.
+
+	Updated build.js with new JS file.
+
+	Added ontology panel following LOD Refine.
+
+2015-03-31  Sebastian Trueg  <trueg@openlinksw.com>
+
+	Fixed saving of documents to LDP.
+
+	Prevent following links when saving new entities.
+
+	Hide the version footer until we have better formatting.
+
+	Small fixes.
+
+	Show the document url in the editor.
+
+	Added a config.json file to the app folder for testing.
+
+	Optional parameter for Document.getEntityLabel which sets the props.
+
+2015-03-31  Sebastian Trueg  <trueg@openlinksw.com>
+
+	Do not use the minified build.
+
+	We will do that later via grunt.
+
+2015-03-31  Sebastian Trueg  <trueg@openlinksw.com>
+
+	Allow saving of documents.
+
+	- Select save location via browser.
+	- Use Notification service instead of growl directly.
+
+2015-03-31  Sebastian Trueg  <trueg@openlinksw.com>
+
+	New save mode for the browser.
+
+	Added new angular-spin dependency
+
+2015-03-27  Sebastian Trueg  <trueg@openlinksw.com>
+
+	Added handling of "New doc" action.
+
+	Added action buttons to the editor page.
+
+	Prevent default action on cancel buttons.
+
+2015-03-26  Sebastian Trueg  <trueg@openlinksw.com>
+
+	Fixed unique id creation for new entities.
+
+2015-03-24  Sebastian Trueg  <trueg@openlinksw.com>
+
+	Show a comment for virtual folders like recent docs.
+
+2015-03-23  Sebastian Trueg  <trueg@openlinksw.com>
+
+	New action to create a new document in a folder.
+
+	Added a spinner which shows while loading the document tree.
+
+	Do not try other protocols when getting a 401 or 403.
+
+2015-03-23  Sebastian Trueg  <trueg@openlinksw.com>
+
+	Added support for optional authorization in RDFE.IO.
+
+	A function can be injected that requests the auth credentials from the
+	user.
+
+2015-03-23  Sebastian Trueg  <trueg@openlinksw.com>
+
+	New action to add graphs to sparql endpoints in the file browser.
+
+	First working version of the editor view.
+
+	Use the profile nickname as a fallback for the login header.
+
+2015-03-23  Sebastian Trueg  <trueg@openlinksw.com>
+
+	Moved auth info dialog into the DocumentTree service.
+
+	This allows to reuse it everywhere.
+	Also adding new locations is now operational.
+
+2015-03-23  Sebastian Trueg  <trueg@openlinksw.com>
+
+	New Notification angular service.
+
+	For now this service uses growl but in the future it may be implemented
+	with an angular notification service.
+
+2015-03-23  Sebastian Trueg  <trueg@openlinksw.com>
+
+	Small fix in EntityModel: invalid variable usage.
+
+	dav.js - The authfunction callback now gets an object as paramter.
+
+	dav.js - do not crash on invalid urls.
+
+	Support files in the location list.
+
+	Removed unused code.
+
+	Support files in RDFE.IO.openUrl in addition to folders.
+
+	Do not return WebDAV files as folders.
+
+	Handle auth header via Angular controller.
+
+	File Browser beautification
+
+2015-03-23  Sebastian Trueg  <trueg@openlinksw.com>
+
+	Moved the document tree allocation into a service.
+
+	This allows to reuse the tree between ng-route operations.
+
+2015-03-23  Sebastian Trueg  <trueg@openlinksw.com>
+
+	Use Angular 1.3.x
+
+2015-03-23  Sebastian Trueg  <trueg@openlinksw.com>
+
+	Fixed folder update in case there is no need for an actual update.
+
+	(prevent nested angular.$apply)
+
+2015-03-23  Sebastian Trueg  <trueg@openlinksw.com>
+
+	Show folder path instead of name as header for the browser.
+
+	Do not use the document's url as default in RDFE.UI.Resource.
+
+	Fixed display of url in authentication dialog.
+
+	Added button to refresh folder contents to the file browser.
+
+	Added first version of the rdf editor as an Angular application.
+
+2015-03-23  Sebastian Trueg  <trueg@openlinksw.com>
+
+	Return storages from the profile in an array.
+
+	Also treat sparql endpoints as folders.
+
+2015-03-23  Sebastian Trueg  <trueg@openlinksw.com>
+
+	val.js - Store the profile details in the val object for easy access.
+
+2015-03-23  Sebastian Trueg  <trueg@openlinksw.com>
+
+	dav.js - Support optional basic http authentication.
+
+	This is achieved through an auth function that is provided in the
+	options.
+	Also errors are properly handled, the framework returns http status
+	codes which make it easy tocheck if authentication is required.
+
+2015-03-23  Sebastian Trueg  <trueg@openlinksw.com>
+
+	Add the folder URL as href for the ui element.
+
+	Use a default new entity template with the doc url as basis.
+
+2015-03-23  Sebastian Trueg  <trueg@openlinksw.com>
+
+	New function RDFE.IO.openFolder.
+
+	This new function tries to open a url as LDP and DAV location and
+	returns the result.
+
+2015-03-23  Sebastian Trueg  <trueg@openlinksw.com>
+
+	Do not include the parent LDP folder in its own children list.
+
+	updated version of rdfstore.
+
+	Added dav.js to the build system.
+
+	Use RDFE.IO.Resource for a simple file browser on the main page.
+
+	Added new utility function RDFE.Utils.splitUrl.
+
+	Added missing error handling in RDFE.IO.LdpFolder
+
+	Added an ioType to RDFE.IO.File.
+
+	New function RDFE.IO.Folder.getChildren which supports sorting, etc.
+
+	Make the "force" parameter in RDFE.IO.Folder.update optional.
+
+	Default empty children list for RDFE.IO.Folder.
+
+	Renamed RDFE.IO.Resource.resType to type.
+
+	Add a path property to all RDFE.IO.Resource objects.
+
+	Added an LDPFolder which allows to browse LDP BasicContainers.
+
+2015-03-23  Sebastian Trueg  <trueg@openlinksw.com>
+
+	Added a first implementation of the dav browser.
+
+	We have a new RDFE.IO.WebDavFolder which can list dav urls and
+	constructs a tree.
+
+2015-03-23  Sebastian Trueg  <trueg@openlinksw.com>
+
+	Merge branch 'feature/Bug16645' into develop
+
+	Added predicte-centric editor.
+
+2015-03-23  Sebastian Trueg  <trueg@openlinksw.com>
+
+	Fixed function dox.
+
+2015-03-23  Sebastian Trueg  <trueg@openlinksw.com>
+
+	Improved function naming.
+
+	A function called getXXX needs to return a value without changing
+	anything.
+
+2015-03-17  Dimitar Dimitrov  <ddimitrov@openlinksw.com>
+
+	Update build.js with new predicate files.
+
+	Update editor page with new predicate view.
+
+	Added new predicates to editor and document.
+
+	Added new predicate view and editor.
+
+	Fixed typo.
+
+2015-03-12  Sebastian Trueg  <trueg@openlinksw.com>
+
+	Merge branch 'feature/Bug16651' into develop
+
+	Warn before overwriting a document that has changed since loading it.
+
+2015-03-12  Dimitar Dimitrov  <ddimitrov@openlinksw.com>
+
+	Added option for check target document for changes.
+
+	Added jQuery plugin for MD5 calcs.
+
+	Updated all success function with all return params from jQuery Ajax call.
+
+2015-03-11  Sebastian Trueg  <trueg@openlinksw.com>
+
+	Distribution build update.
+
+2015-03-11  Sebastian Trueg  <trueg@openlinksw.com>
+
+	Merge branch 'feature/Bug16650' into develop
+
+	- Loading of new ontologies from the OntoBox and PropertyBox
+	- Improved error messages for CORS situations.
+
+2015-03-11  Dimitar Dimitrov  <ddimitrov@openlinksw.com>
+
+	Bug 16667 - updated. By fail ontology and property are created with default values.
+
+2015-03-11  Sebastian Trueg  <trueg@openlinksw.com>
+
+	Fall back to showing the storage URI from the WebID profile.
+
+	This happens if we cannot figure out what the URI points to.
+
+2015-03-05  Sebastian Trueg  <trueg@openlinksw.com>
+
+	Fixed val profile query.
+
+	rdfstore.js has problems with long queries. We split it in three and
+	get the correct results now.
+
+2015-03-05  Sebastian Trueg  <trueg@openlinksw.com>
+
+	Updated distribution build.
+
+	Improved SPARQL endpoint handling in WebID profiles.
+
+	Distribution build update.
+
+	Fixed creation of new types in the "New Entity" dialog.
+
+	Updated distribution build.
+
+	Fixed extraction of more than one storage url from val profile.
+
+	Fixed file extension check.
+
+2015-03-05  Sebastian Trueg  <trueg@openlinksw.com>
+
+	Dropped ldpclient.js.
+
+	This is not required anymore, the interesting parts of its code
+	can now be found in utils.js
+
+2015-03-05  Sebastian Trueg  <trueg@openlinksw.com>
+
+	Use RDFE.Util.resolveStorageLocations in index.html
+
+	Allow recent documents and your documents to have custom sparql endpoints.
+
+	New function which tries hard to get document urls from the profile.
+
+	Extract the optional sparql endpoint fro mthe VAL profile.
+
+	Avoid exception when using unknown literal types.
+
+	Added xsd:hexBinary literal type.
+
+	Properly convert "[]" in turtle to the doc url.
+
+2015-03-04  Dimitar Dimitrov  <ddimitrov@openlinksw.com>
+
+	Bug 16667 - Re-enable optional automatic loading of ontologies.
+
+	Bug 16650 - Use context information for better error messages.
+
+2015-03-02  Sebastian Trueg  <trueg@openlinksw.com>
+
+	Updated welcome message.
+
+	Removed deprecated demo page.
+
+2015-03-02  Dimitar Dimitrov  <ddimitrov@openlinksw.com>
+
+	Bug 16639 - New config option for triple editor titles.
+
+2015-02-27  Sebastian Trueg  <trueg@openlinksw.com>
+
+	Merge branch 'feature/ldpStorageSupport' into develop
+
+	Updated distribution build.
+
+	Added missing css into vad.
+
+	Use LDPClient to load document urls from the WebID's storage location.
+
+	Added ldpclient.js - A simple LDP client which can list files.
+
+	Extract the remote storage locations from the VAL profile.
+
+	Merge branch 'feature/fixedRecentDocs' into develop
+
+	Updated distribution build.
+
+	Remember last used documents when opening and saving.
+
+	Fixed typo in ontologymanager.
+
+	Merge branch 'feature/startPage' into develop
+
+	Added initial version of the new editor UI with a start page.
+
+	Install distribution builds in the vad.
+
+	Use the bootstrap theme for 3d buttons.
+
+	Updated distribution build.
+
+2015-02-27  Sebastian Trueg  <trueg@openlinksw.com>
+
+	Fixed distribution build.
+
+	Some dependencies were incorrectly ordered.
+
+2015-02-27  Sebastian Trueg  <trueg@openlinksw.com>
+
+	Fixed creation of new properties in the PropertyBox.
+
+	Bootstrap update.
+
+	Allow the creation of new properties and classes in the onto man.
+
+2015-02-20  Sebastian Trueg  <trueg@openlinksw.com>
+
+	Fixed vad building for the new folder structure.
+
+	Allow resizie of the textareas only vertically.
+
+	Removed Daimler specific config entries from the demo page.
+
+2015-02-19  Sebastian Trueg  <trueg@openlinksw.com>
+
+	Fixed building on systems that default to python 3.
+
+	Adjust build system to new folder structure.
+
+	Renamed "Resource" type to "Reference" in the rdf node editor.
+
+2015-02-18  Sebastian Trueg  <trueg@openlinksw.com>
+
+	Merge branch 'release/0.13' into develop
+
+	version bump to 0.13
+
+	Merge branch 'feature/betterCodeOrganization' into develop
+
+2015-02-17  Sebastian Trueg  <trueg@openlinksw.com>
+
+	Moved remaining js files into src/ subdirs and removed unused ones.
+
+	Updated the buildify script and added minified builds of RDFE.
+
+	Removed old files.
+
+	Removed unused css files.
+
+	Moved js sources into src/ subdir structure.
+
+	Always render the editor to allow adding new entites.
+
+	Only use turtle for pre-loaded ontologies.
+
+	Merge branch 'feature/textToTextarea' into develop
+
+	Indentation cleanup.
+
+	Cleaner layout of backbone-forms lists.
+
+2015-02-16  Sebastian Trueg  <trueg@openlinksw.com>
+
+	Merge branch 'feature/onlyUseSparqlQueriesInDocument' into develop
+
+	Fixed super-class checks in OntologyClass.isAggregateProperty
+
+	Check super-properties for cardinalities in OntologyClass.maxCardinalityForProperty.
+
+	Fixed OntologyProperty.getRange recursion.
+
+	Use Document.getEntity instead of a sparql query in the EntityModel.
+
+	Let Document.getEntity collect all properties in an object.
+
+	Fallback to the instance name if there is no label.
+
+2015-02-11  Sebastian Trueg  <trueg@openlinksw.com>
+
+	Small hack to resize the toggle buttons in the entity forms.
+
+	Fixed "add" button placement in nested backbone-forms lists.
+
+	Prevent null-pointer exception
+
+	Fixed handling of restrictions with multiple onProperty values.
+
+	Merge branch 'feature/beautification' into develop
+
+	Show the entity types in the title of the entity editor.
+
+	Small button beautification in the entity editor.
+
+	Merge branch 'feature/ontologyLoadingPerformanceBoost' into develop
+
+2015-02-11  Sebastian Trueg  <trueg@openlinksw.com>
+
+	Fixed OntologyManager.findFresnelLens
+
+	"self" -> "this".
+
+2015-02-11  Sebastian Trueg  <trueg@openlinksw.com>
+
+	Find fresnel lenses in super-classes.
+
+	Also we now have OntologyClass.getFresnelLens.
+
+2015-02-11  Sebastian Trueg  <trueg@openlinksw.com>
+
+	More code simplification.
+
+2015-02-11  Sebastian Trueg  <trueg@openlinksw.com>
+
+	Fixed notification events from the ontology manager.
+
+	We only emit the "changed" signal now since ontologies
+	are created while parsing the rest.
+
+2015-02-11  Sebastian Trueg  <trueg@openlinksw.com>
+
+	Convert labels and comments to plain strings.
+
+	IO: Fallback to turtle if we do not get a content type.
+
+	Fixed Ontology URI assignment.
+
+	Never overwrite ontology entity labels and comments.
+
+	Code simplification.
+
+	Fixed BCE admin config files.
+
+	Removed more unused code.
+
+	Fixed prefix lookup.
+
+2015-02-11  Sebastian Trueg  <trueg@openlinksw.com>
+
+	Code simplification.
+
+	We now parse ontologies, fresnel lenses and individuals with
+	the same function which allows to drop some code.
+
+2015-02-10  Sebastian Trueg  <trueg@openlinksw.com>
+
+	We do no longer store ontology sources.
+
+	We do not need that since we parse a file in one
+	go.
+
+2015-02-10  Sebastian Trueg  <trueg@openlinksw.com>
+
+	Show an error when trying to parse non-ttl ontology sources.
+
+	Since we are using the N3.js parser we can only
+	handle Turtle.
+
+2015-02-10  Sebastian Trueg  <trueg@openlinksw.com>
+
+	Removed deprecated code.
+
+	This also includes removal of fresnel:Format and Group
+	support. This is fine since we never used them anyway.
+
+2015-02-10  Sebastian Trueg  <trueg@openlinksw.com>
+
+	Support for fresnel lenses in parseOntologyFile.
+
+	Removed deprecated code.
+
+	Allow the creation of RDFE.OntologyManager without a config.
+
+2015-02-10  Sebastian Trueg  <trueg@openlinksw.com>
+
+	Removed lots of unused code.
+
+	Our new parseOntologyFile can handle ontologies and individuals.
+
+2015-02-10  Sebastian Trueg  <trueg@openlinksw.com>
+
+	Added parsing of individuals and collections.
+
+	The new ontology parsing function can now handle individuals
+	and collections as well as owl:unionOf.
+
+2015-02-10  Sebastian Trueg  <trueg@openlinksw.com>
+
+	Removed usage of "crossDomain" in $.ajax.
+
+	This fixes local file ajax requests. Also I dont see a point in
+	setting that option.
+
+2015-02-10  Sebastian Trueg  <trueg@openlinksw.com>
+
+	Added "retrieve" implementation for RDFE.IO.HTTP
+
+	Code simplification.
+
+	Added FIXME as a reminder.
+
+	Use === instead of ==
+
+2015-02-10  Sebastian Trueg  <trueg@openlinksw.com>
+
+	Removed all old ontology parsing code.
+
+	Only individuals remain to be replaced soon.
+
+2015-02-10  Sebastian Trueg  <trueg@openlinksw.com>
+
+	New function to parse ontology files without rdfstore.
+
+	The new function only parses via N3 and omits any long
+	sparql queries.
+
+2015-02-09  Dimitar Dimitrov  <ddimitrov@openlinksw.com>
+
+	Added transform text input to textarea.
+
+2015-02-09  Sebastian Trueg  <trueg@openlinksw.com>
+
+	Merge branch 'feature/Bug16593' into develop
+
+	Code cleanup.
+
+2015-02-09  Dimitar Dimitrov  <ddimitrov@openlinksw.com>
+
+	Added new method in OntologyClass - getSubClasses(). Reimplement get individuals functions.
+
+	Bug 16593 - Individual query in doc should include sub-types.
+
+2015-02-09  Sebastian Trueg  <trueg@openlinksw.com>
+
+	Merge branch 'release/0.12.1' into develop
+
+	version bump to 0.12.1
+
+	BCE Data: load bce:Highlights for touchpoint editing.
+
+2015-02-08  Sebastian Trueg  <trueg@openlinksw.com>
+
+	Merge branch 'release/0.12' into develop
+
+	Version bump to 0.12
+
+	Merge branch 'feature/initCallback' into develop
+
+	Show the spinner while loading ontologies.
+
+	Clear RDFE.Editor container before rendering contents.
+
+2015-02-08  Dimitar Dimitrov  <ddimitrov@openlinksw.com>
+
+	The page shows loaded data and then load and show document.
+
+	Added option parameter by creation editor.
+
+	Added events before and after item parse. Fixed problem with failure some parse.
+
+	Added callback option for init and parse methods.
+
+2015-02-08  Sebastian Trueg  <trueg@openlinksw.com>
+
+	Merge branch 'feature/entityListPerformance' into develop
+
+	Small API usage fixes.
+
+	Use the new RDFE.Editor view mode API in demo.html.
+
+2015-02-08  Sebastian Trueg  <trueg@openlinksw.com>
+
+	Added support for Entity objects in RdfNode.
+
+	RdfNode can now convert entity objects as returned by Document
+	via listEntities and getEntity.
+
+2015-02-08  Sebastian Trueg  <trueg@openlinksw.com>
+
+	Cache entity lists in the EntityModel.
+
+	This is a small performance improvement for models which contain
+	multiple properties with the same range.
+
+2015-02-08  Sebastian Trueg  <trueg@openlinksw.com>
+
+	New Api in Editor which will manage the view modes.
+
+	Now the client does not need to do that anymore. RDFE.Editor will only
+	re-render the contents if necessary.
+
+2015-02-08  Sebastian Trueg  <trueg@openlinksw.com>
+
+	Do not always rebuild the entity table after showing the editor.
+
+	Instead we simply update the entity list.
+
+2015-02-08  Sebastian Trueg  <trueg@openlinksw.com>
+
+	New function EntityView.updateEntity.
+
+	It allows to update a single entity in the view. We will use this
+	to update the view after having edited an entity.
+
+2015-02-08  Sebastian Trueg  <trueg@openlinksw.com>
+
+	New Bootstrap-table function: update.
+
+	This function updates a single data object by referencing it
+	via a given field rather than the row index.
+
+2015-02-07  Sebastian Trueg  <trueg@openlinksw.com>
+
+	New function Document.getEntity.
+
+	This function fetches a single entity and provides it in the
+	same format at listEntities does.
+
+2015-02-07  Sebastian Trueg  <trueg@openlinksw.com>
+
+	Improved version of Document.listEntities.
+
+	This version simply iterates over all triples and extracts
+	the data manually which is much faster than a sparql query.
+
+2015-02-07  Sebastian Trueg  <trueg@openlinksw.com>
+
+	Use ++ operator.
+
+2015-02-07  Sebastian Trueg  <trueg@openlinksw.com>
+
+	New function RDFE.Utils.uri2name.
+
+	This function extracts the last section of the uri or the fragment.
+
+2015-02-06  Sebastian Trueg  <trueg@openlinksw.com>
+
+	Merge branch 'release/0.11.1' into develop
+
+	Version bump to 0.11.1
+
+2015-02-06  Sebastian Trueg  <trueg@openlinksw.com>
+
+	Never cache any of the data we get from the server.
+
+	All the data we fetch is dynamic.
+
+2015-02-06  Sebastian Trueg  <trueg@openlinksw.com>
+
+	Fixed new resource creation during aggregate save.
+
+	Merge branch 'feature/fixDocumentDeleteByXxx' into develop
+
+2015-02-06  Sebastian Trueg  <trueg@openlinksw.com>
+
+	Major code simplification in Document.deleteBySubject|Object
+
+	Instead of doing a select query and then converting the results
+	into triples, we do a construct and directly get the triples we need.
+	In addition this actually makes it work rather than crash in rdfstore
+	with some OID error.
+
+2015-02-06  Sebastian Trueg  <trueg@openlinksw.com>
+
+	Added default value for autoInverseOfHandling into config.js.
+
+	Do a simple sparql delete if inverse handling is disabled.
+
+	Merge branch 'release/0.11' into develop
+
+	Version bump to 0.11
+
+	Disabled some console output.
+
+	Merge branch 'feature/instanseOfActions' into develop
+
+	Merge branch 'feature/moreBceFixes' into develop
+
+2015-02-06  Sebastian Trueg  <trueg@openlinksw.com>
+
+	Fixed backbone-forms nested editor saving.
+
+	We now support an endless depth in nesting.
+
+2015-02-06  Sebastian Trueg  <trueg@openlinksw.com>
+
+	Backbone-Forms list: do not create a new item after key enter.
+
+	BCE restriction: olo:item has cardinality 1.
+
+2015-02-06  Sebastian Trueg  <trueg@openlinksw.com>
+
+	Backbone-Forms list: Fix handling of nested lists.
+
+	We need to make sure our event handlers only apply to the main list,
+	not any listed ones. That is why we use the :last css selector.
+
+2015-02-05  Sebastian Trueg  <trueg@openlinksw.com>
+
+	Added missing label for bceui:TouchpointFilter.
+
+	Support range rdfs:Class and rdf:Property when presenting choices.
+
+2015-02-05  Sebastian Trueg  <trueg@openlinksw.com>
+
+	Only show "Add property" button in entity editor if applicable.
+
+	The button is shown only if either:
+	- the lens contains fresnel:allProperties
+	- or there is no lens.
+
+2015-02-05  Sebastian Trueg  <trueg@openlinksw.com>
+
+	Fixed property spelling.
+
+	We need rdfs:label for the filter types.
+
+	Merge branch 'feature/bceAdminUi' into develop
+
+	Treat rdfs:Literal and xsd:string as compatible in the node editor.
+
+	Fixed spelling of property name in template.
+
+2015-02-05  Dimitar Dimitrov  <ddimitrov@openlinksw.com>
+
+	Added custom labels and comments
+
+2015-02-05  Sebastian Trueg  <trueg@openlinksw.com>
+
+	Milieu-specific values do not have labels but a milieu.
+
+	Add "bceui:Filter" as type for new resources.
+
+	Really really do not add nested resources if they are empty.
+
+	Fixed error handling in Document.verifyData
+
+	Disable trimOnSearch in the bootstrap table. Stupid feature.
+
+	Nested models: only create data if there are triples to be added.
+
+2015-02-05  Sebastian Trueg  <trueg@openlinksw.com>
+
+	HACK in ontology manager to avoid long graph urls.
+
+	When using /sparql urls to get individuals or other data
+	in the ontology manager, then the graph uris can become very
+	long. We now use a fixed graph uri, avoiding that problem.
+	This, however, is no long-term solution and should be
+	improved.
+
+2015-02-05  Sebastian Trueg  <trueg@openlinksw.com>
+
+	Removed unused function.
+
+2015-02-05  Sebastian Trueg  <trueg@openlinksw.com>
+
+	Special case in the rdfnode editor for boolean.
+
+	We now try to be smart about handling "0" and "1" values.
+
+2015-02-05  Sebastian Trueg  <trueg@openlinksw.com>
+
+	Fixed individual listing in the entitymodel.
+
+	We need to convert the object we get from the onto
+	manager into a flat list of individuals.
+
+2015-02-05  Sebastian Trueg  <trueg@openlinksw.com>
+
+	BCE tmpl++
+
+	All bce resources use skos:prefLabel only.
+
+	Load Toolktits, Channels, etc. as individuals for touchpoint editing.
+
+	Added additional BCE lenses and restrictions.
+
+	Fixed Touchpoint individuals loading query.
+
+	Replaced the big document url header with a small indicator.
+
+	Syntax++
+
+	Added new bce files to build system.
+
+	Renamed small.html to bceadmin.html
+
+2015-02-05  Sebastian Trueg  <trueg@openlinksw.com>
+
+	Have the small demo page load complete new configs as bookmarks
+
+	This allows to have different preloadindividuals for different
+	docs.
+
+2015-02-05  Sebastian Trueg  <trueg@openlinksw.com>
+
+	Moved BCE-specific ontologies and templates into bce/ subdir
+
+2015-02-05  Sebastian Trueg  <trueg@openlinksw.com>
+
+	Replaced the "Add" button in the small demo page with a dropdown.
+
+	The dropdown contains actions which open the "new entity" form
+	with a preselected type.
+
+2015-02-05  Sebastian Trueg  <trueg@openlinksw.com>
+
+	Merge branch 'feature/uniqueRestriction' into develop
+
+2015-02-05  Sebastian Trueg  <trueg@openlinksw.com>
+
+	Moved getUniqueValue from OntologyClass into Document.
+
+	The unique value is specific to the document, not the class. Thus, the
+	logical place for the function is Document.
+
+2015-02-05  Sebastian Trueg  <trueg@openlinksw.com>
+
+	Merge branch 'feature/bootstrapTableUpdate' into develop
+
+2015-02-04  Dimitar Dimitrov  <ddimitrov@openlinksw.com>
+
+	Fixed type of created unique ID.
+
+	Fixed new entity form focus bug.
+
+	Updated bootstrap-table JS lib to v1.6.0
+
+	Added support oplowl:UniqueIdRestriction property.
+
+2015-02-04  Sebastian Trueg  <trueg@openlinksw.com>
+
+	Fixed z-index issue.
+
+	Bootstrap table: do not reset search word on change.
+
+	The type used for "new entity" can now be forced.
+
+	Added an example for a UniqueIdRestriction.
+
+	Renamed bce:Touchpoint to bce:TouchPoint as done in the original ontology.
+
+2015-02-04  Sebastian Trueg  <trueg@openlinksw.com>
+
+	Code cleanup.
+
+	- One does not check for a config flag in a function like Document.inverseTriple
+	  instead this is done in the functions like addTriple.
+	- Removed some clutter in the code.
+
+2015-02-04  Sebastian Trueg  <trueg@openlinksw.com>
+
+	Merge branch 'feature/simpleEditorPage' into develop
+
+2015-02-04  Sebastian Trueg  <trueg@openlinksw.com>
+
+	Removed all unused code from the simple demo page.
+
+	This page will eventually be the basis for the Daimler BCE ADmin
+	tool.
+
+2015-02-04  Sebastian Trueg  <trueg@openlinksw.com>
+
+	Remove duplicates from the list of types in the entity view.
+
+	Directly open the entity editor after creating a new entity.
+
+	Small fix
+
+	Renamed buttons in the entity editor and "add" form.
+
+2015-02-03  Sebastian Trueg  <trueg@openlinksw.com>
+
+	Fixed type list creation in Document.listEntities
+
+	Document: Clear the store before loading new data into it.
+
+2015-02-03  Dimitar Dimitrov  <ddimitrov@openlinksw.com>
+
+	Replace bookmarks menu with buttons.
+
+2015-02-03  Sebastian Trueg  <trueg@openlinksw.com>
+
+	BCE ontology and template ++
+
+	New BCE data graphs in the demo config.
+
+	Added test/*.rdf to the vad package.
+
+	Removed old ontology files.
+
+	Enhanced BCE templates.
+
+2015-02-03  Dimitar Dimitrov  <ddimitrov@openlinksw.com>
+
+	Removed entities/triples buttons.
+
+	Add simple editor page - small.html.
+
+2015-02-03  Sebastian Trueg  <trueg@openlinksw.com>
+
+	Added BCE ontology entites for filter type.
+
+	Updated BCE ontologies to version 0.81 (I suppose they meant 0.8.1)
+
+	Allow search by type in the entity view.
+
+2015-02-03  Dimitar Dimitrov  <ddimitrov@openlinksw.com>
+
+	Updated triples actions to use also inverseOf triplets.
+
+	Added new config option 'autoInverseOfHandling'.
+
+2015-02-02  Sebastian Trueg  <trueg@openlinksw.com>
+
+	Merge branch 'feature/moveStuffIntoRDFE.Editor' into develop
+
+2015-02-02  Sebastian Trueg  <trueg@openlinksw.com>
+
+	Use events instead of callbacks for time-consuming editor tasks.
+
+	Some of the actions in the RDFE.Editor can be trigered by user
+	interaction. Now with using events instead of "finished" callbacks
+	the client will always be informed about these actions.
+
+2015-02-02  Sebastian Trueg  <trueg@openlinksw.com>
+
+	Made the editor more self-contained.
+
+	The container element is now set once. After that the
+	editor renders all its components into this one copntainer.
+
+2015-02-02  Sebastian Trueg  <trueg@openlinksw.com>
+
+	Moved Document and OntologyManager into the Editor.
+
+	The Editor will become the main entry point for RDFE.
+
+2015-02-02  Dimitar Dimitrov  <ddimitrov@openlinksw.com>
+
+	Added parse and store owl:inversoOf propery.
+
+2015-01-30  Sebastian Trueg  <trueg@openlinksw.com>
+
+	Merge branch 'feature/Bug16565' into develop
+
+	Removed invalid fixme.
+
+2015-01-30  Dimitar Dimitrov  <trueg@openlinksw.com>
+
+	Bug16565 - Add support for prefix.cc
+
+2015-01-30  Sebastian Trueg  <trueg@openlinksw.com>
+
+	Merge branch 'feature/Bug16589' into develop
+
+	Merge branch 'feature/ontologyLoadUpdate' into develop
+
+2015-01-29  Dimitar Dimitrov  <trueg@openlinksw.com>
+
+	Removed 2 times callback call by verification.
+
+2015-01-29  Sebastian Trueg  <trueg@openlinksw.com>
+
+	Add touchpoints as individuals.
+
+	New bce-based entity uri template.
+
+	Merge branch 'feature/supportForSuperClasses' into develop
+
+	Use config.labelProps for the individual labels in the onto manager.
+
+	New function OntologyClass.getIndividuals which can check super-classes also.
+
+	Manage superclass relations in the onto manager.
+
+2015-01-29  Dimitar Dimitrov  <trueg@openlinksw.com>
+
+	Update load options for ontologies, fresnels and individuals.
+
+2015-01-29  Sebastian Trueg  <trueg@openlinksw.com>
+
+	Added template information for olo.
+
+	Merge branch 'feature/preloadIndividuals' into develop
+
+	Better names for the BCE bookmarks.
+
+	Added more BCE lenses and restrictions.
+
+	Merge branch 'feature/poorMansInference' into develop
+
+	Fixed type-list building: OntologyProperty.domain is already a list of objects.
+
+2015-01-29  Sebastian Trueg  <trueg@openlinksw.com>
+
+	Added poor-man's inference for resource-type check.
+
+	If the resource does not have a type defined, we simply check its
+	properties for domains and combine them all into a list.
+	That way we can find a template for a resource even if it does not
+	have a type.
+
+2015-01-29  Sebastian Trueg  <trueg@openlinksw.com>
+
+	Avoid null-pointer ex.
+
+	Move "add property" action to the top of the entity editor (Bug 16586)
+
+	Save form data before refuilding entitiy editor (Bug 16585)
+
+	Fixed spelling in bce template.
+
+	Use GSP instead of sparql io for the BCE bookmarks: performance++
+
+2015-01-28  Sebastian Trueg  <trueg@openlinksw.com>
+
+	Removed bookmarks from the open dialog. They are ugly and confusing.
+
+	Nicer error message.
+
+	Merge branch 'release/0.10' into develop
+
+	version bump to 0.10
+
+	Merge branch 'feature/docVerificationBeforeSaving' into develop
+
+	Verify the document before saving it.
+
+	Better error display after doc saving.
+
+	Fixed z-index on message growl to overlap dialogs.
+
+	Added range for skos:note in teh bce restrictions.
+
+	Added BCE UI ontology for simpler testing.
+
+	Added small FIXME
+
+	Small fix in RDFE.IO.GSP.
+
+	Merge branch 'feature/subPropertyOfSupportForRanges' into develop
+
+	Added OntologyProperty.getRange() which handles subPropertyOf.
+
+	Fixed subclassof handling in OntologyClass.isAggregate et al.
+
+	Made OntologyProperty.subPropertyOf an array.
+
+2015-01-28  Dimitar Dimitrov  <trueg@openlinksw.com>
+
+	Bug16576 - Custom config url via url parameter.
+
+	Added option for preload individuals.
+
+2015-01-28  Sebastian Trueg  <trueg@openlinksw.com>
+
+	Nicer design for the entity editor.
+
+	Use config.labelProps in the entity view.
+
+	Merge branch 'release/0.9' into develop
+
+	version bump to 0.9
+
+	Added more BCE restrictions.
+
+	Do not use empty label values to display in the entity table.
+
+2015-01-28  Sebastian Trueg  <trueg@openlinksw.com>
+
+	Fixed restriction handling.
+
+	We now save restrictions in OntologyClass.restrictions. For some
+	reason a non-cloned (ie. one appended in OntologyProperty.parse) property
+	 in OntologyClass.properties would not always carry the correct
+	restriction values.
+
+2015-01-28  Sebastian Trueg  <trueg@openlinksw.com>
+
+	Renamed RDFE.Document.Model to RDFE.EntityModel
+
+	Added NestedRdf to the buldify script.
+
+2015-01-27  Sebastian Trueg  <trueg@openlinksw.com>
+
+	Merge branch 'feature/fixAggregationEntitySave' into develop
+
+	Delete old triples from the aggregate before saving new ones.
+
+2015-01-27  Sebastian Trueg  <trueg@openlinksw.com>
+
+	Fixed aggregate editing and creation.
+
+	- Aggregates are also managed as lists
+	- We use a custom nested model editor which properly handles our model
+	- We create an entity uri if the aggregate resource does not exist
+	- We save all aggregate triples along with the main resources'
+
+2015-01-27  Sebastian Trueg  <trueg@openlinksw.com>
+
+	Always put the type first in entity editors without lens.
+
+	Let Document.Model use the ontology manager from the Document.
+
+	Use a fallback name for entity uri creation if none is given.
+
+	Custom Backbone.Form which has a button to add a new property.
+
+	Do not use empty label values.
+
+	Clone the lens properties into the model to avoid changes later on.
+
+2015-01-27  Sebastian Trueg  <trueg@openlinksw.com>
+
+	The Backbone entity model now has a field "types".
+
+	This allows to clean up the API for simpler use in the future.
+
+2015-01-27  Sebastian Trueg  <trueg@openlinksw.com>
+
+	Fixed saving of entity properties which are not part of the fresnel lens.
+
+	New procedure RDE.Document.addEntity
+
+	Moved buildEntityUriFromTemplate to RDFE.Document
+
+	config cleanup.
+
+	Merge branch 'feature/ioErrorUpdate' into develop
+
+2015-01-27  Sebastian Trueg  <trueg@openlinksw.com>
+
+	Renamed httpMessage into message to simplify management of events.
+
+	Other events in RDFE use "message" also.
+
+2015-01-27  Dimitar Dimitrov  <trueg@openlinksw.com>
+
+	Added new common ajax function for I/O with error return.
+
+2015-01-26  Sebastian Trueg  <trueg@openlinksw.com>
+
+	Remove usage of deprecated function.
+
+	Removed executable flag on source files.
+
+	Merge branch 'feature/entityUriTemplates' into develop
+
+	Fixed unique URI creation for new entities.
+
+	Fixed initial display of new entities with name.
+
+2015-01-26  Sebastian Trueg  <trueg@openlinksw.com>
+
+	Support for entityUriTmpl.
+
+	If a template is specififed the user does not have to enter the uri of
+	a new entity. Instead they enter the name which is used to build the
+	uri from the template.
+
+2015-01-26  Sebastian Trueg  <trueg@openlinksw.com>
+
+	Added entityUriTmpl config value and simplified config options building.
+
+	Niver "new entity" type selection box similar to the PropertyBox.
+
+2015-01-26  Dimitar Dimitrov  <trueg@openlinksw.com>
+
+	Fixed bug with loading ontologies and individuals.
+
+2015-01-26  Sebastian Trueg  <trueg@openlinksw.com>
+
+	Added RDF and RDFS as default ontologies to load.
+
+	Fixed RDFE.Document.deleteTriples.
+
+	Removed unused function.
+
+	Fixed the creation of new entities.
+
+	Merge branch 'feature/addTripleWithNiceNodeEditors' into develop
+
+	Do not hide the literal type selection if no base type is set.
+
+	Use the propertybox and the rdfnode editor for creation of new triples.
+
+2015-01-26  Sebastian Trueg  <trueg@openlinksw.com>
+
+	Do not use a bootstrap input-group for the literal lang selection.
+
+	The input-group is always 100% width and I have no time to fix that now.
+
+2015-01-26  Sebastian Trueg  <trueg@openlinksw.com>
+
+	Fixed error handling in ontologyParse.
+
+	Added missing js file.
+
+	Merge branch 'feature/propertyBox' into develop
+
+	Fixed error reporting on triple update.
+
+	Use the PropertyBox to edit the property value in the triple view.
+
+2015-01-25  Sebastian Trueg  <trueg@openlinksw.com>
+
+	Added OntologyManager.allProperties and Ontology.allProperties.
+
+	These functions are used by the property box to get the list of
+	properties to display.
+
+2015-01-25  Sebastian Trueg  <trueg@openlinksw.com>
+
+	Fixed empty ontology instances in case the owl:Ontology has a different URI.
+
+	Added the propertybox to the buildify script.
+
+	Show a propertybox in the main page for demo purposes.
+
+	New properties "name" and "curi" for OntologyClass and OntologyProperty.
+
+	Removed function related to templates. We do not use templates anympre.
+
+	Allow to add custom prefixes via the config.
+
+	Syntax++
+
+	Moved the uriDenormalize function into the ontology manager.
+
+	Merge branch 'feature/errorHandling' into develop
+
+	More error handling.
+
+	Propage errors to the callback in rdfstore.loadTurtle
+
+	Propagate load and save errors in Document to the callbacks.
+
+2015-01-23  Sebastian Trueg  <trueg@openlinksw.com>
+
+	Added a few missing properties to default config.
+
+	Fixed label property uri in config.
+
+	Added skos for testing.
+
+	Error handling++
+
+	Nicer layout of the "add entity" and "add triple" views.
+
+	Merge branch 'feature/blankOntologiesFix' into develop
+
+	Renamed RDFE.IO.HTTP.retrieve to retrieveToStore for consistency.
+
+2015-01-23  Dimitar Dimitrov  <trueg@openlinksw.com>
+
+	Fixed creating ontologies and classes with blank nodes.
+
+	Added new I/O type - http. Changed ontology load function.
+
+	Replaced ontology selector with OntoBox control.
+
+2015-01-23  Sebastian Trueg  <trueg@openlinksw.com>
+
+	"Smart" string handling in rdfnode editor.
+
+	This means that we will treat a typed string as plain literal if the
+	type of the editor is "plain literal".
+	This is merely for convinience in templates.
+
+2015-01-23  Sebastian Trueg  <trueg@openlinksw.com>
+
+	Merge branch 'feature/truegsRdfStore' into develop
+
+	Updated rdfstore: removed unused debug code.
+
+	The rdfxml parser is now registered by default.
+
+	Some information about 3rd-party lib changes in the README.
+
+	Updated to trueg's version of rdfstore which has fixed rdfxml parsing.
+
+2015-01-23  Sebastian Trueg  <trueg@openlinksw.com>
+
+	Only add triples with blank nodes in one go to rdfstore.
+
+	This minimizes the probability of the creation of a huge triple list
+	resulting on a gigantic sparql insert query.
+
+2015-01-23  Sebastian Trueg  <trueg@openlinksw.com>
+
+	Do not break abbreviations when creating a title label.
+
+2015-01-23  Sebastian Trueg  <trueg@openlinksw.com>
+
+	Revert "Make jslint scream a little less."
+
+	This reverts commit 4aef852007f5531056fb8ad01ef82836b3262690.
+	Tha changes broke something in the rdfnode editor. I do not waste time
+	on that atm.
+
+2015-01-23  Sebastian Trueg  <trueg@openlinksw.com>
+
+	Merge branch 'feature/buildify' into develop
+
+	Added utils.js from the rdfe sources to the buildify script.
+
+	Make jslint scream a little less.
+
+	Build minified versions of the rdfe sources via buildify.
+
+	Fixed standalone build by adding a ";" at the end of bootstrap-growl.
+
+	Slightly better order of the js source files for buildify.
+
+	Minify css using the buildify script.
+
+2015-01-23  Sebastian Trueg  <trueg@openlinksw.com>
+
+	Added first version of buildify script.
+
+	This will create a minified standalone version of rdfe which includes
+	every dependency (including jquery).
+
+2015-01-23  Dimitar Dimitrov  <trueg@openlinksw.com>
+
+	Fixed Bug 16558: Better labels in the entity editor.
+
+2015-01-23  Sebastian Trueg  <trueg@openlinksw.com>
+
+	Merge branch 'feature/loadOntologyUpdate' into develop
+
+2015-01-22  Dimitar Dimitrov  <trueg@openlinksw.com>
+
+	Fixed lists and selection of ontologies and related classes.
+
+	Moved load function to io.js. Update loading ontologies.
+
+2015-01-22  Sebastian Trueg  <trueg@openlinksw.com>
+
+	Added support for fresnel:hideProperties in the entity editor.
+
+	Improved examples.
+
+2015-01-22  Sebastian Trueg  <trueg@openlinksw.com>
+
+	Fixed support for fresnel:allProperties.
+
+	Now allProperties is replaced with the rest of the existing properties
+	instead of simply being appended.
+
+2015-01-22  Sebastian Trueg  <trueg@openlinksw.com>
+
+	Fixed vad: include dialogs.
+
+	Fixed comparision of blank nodes for sort in bootstrap-table.
+
+	Merge branch 'release/0.8.1' into develop
+
+	Updated changelog.
+
+	Added simple build system for a demo vad.
+
+2015-01-21  Sebastian Trueg  <trueg@openlinksw.com>
+
+	More BCE restrictions.
+
+	Fixed aggregate restriction parsing.
+
+	Never show "undefined" as label in the resource selector.
+
+	Small fix.
+
+	Small hack to fix display of nested backbone-forms.
+
+	Fixed cardinality setting in backbone form.
+
+	Merge branch 'feature/fixedTemplateHandling' into develop
+
+	Added lens for bce:UseCase.
+
+	Ignore empty lenses.
+
+	Fixed config for fresnel loading.
+
+2015-01-21  Sebastian Trueg  <trueg@openlinksw.com>
+
+	Fixed parsing of ttls with blank nodes.
+
+	We need to add all triples in one go rather than one at a time.
+	Of course this might get problematic once we have very large ttl files.
+	But that is a problem for another day.
+
+2015-01-21  Sebastian Trueg  <trueg@openlinksw.com>
+
+	Updated N3.js
+
+	New function Document.deleteTriples and fixed Entity update.
+
+	Added an aggregate example to the BCE restrictions test file.
+
+2015-01-21  Sebastian Trueg  <trueg@openlinksw.com>
+
+	Added support for aggregate restrictions.
+
+	This is not fully working yet due to broken restriction parsing in general.
+
+2015-01-21  Sebastian Trueg  <trueg@openlinksw.com>
+
+	Use the latest version of backbone-forms.
+
+	Removed RDFE.Template and friends. They are not used anymore.
+
+2015-01-21  Sebastian Trueg  <trueg@openlinksw.com>
+
+	Added support for fresnel lenses and property details to the doc-model bridge.
+
+	- Determine list of properties using the fresnel lens.
+	- Determine editor type from property range.
+	- Preliminary support for aggregate properties.
+
+	This replaces RDFE.Template and friends.
+
+2015-01-21  Sebastian Trueg  <trueg@openlinksw.com>
+
+	Added RDFE.OntologyManager.maxCardinalityForProperty
+
+	This runs through the class hierarchy and checks for max cardinality
+	for a given property uri.
+
+2015-01-21  Sebastian Trueg  <trueg@openlinksw.com>
+
+	Added FIXME
+
+	Fixed parsing of individuals.
+
+	Sort of properly trigger the "ontologyLoaded" event again.
+
+	Protect against wrong input.
+
+	Merge branch 'feature/blankNodeSupportWithN3Parser' into develop
+
+	Use the new N3.js based parser in ontology.js if possible.
+
+	Use the new N3.js based parser in rdfstore.
+
+2015-01-21  Sebastian Trueg  <trueg@openlinksw.com>
+
+	New function rdfstore.Store.loadTurtle with N3.js support.
+
+	This also supports blank nodes via a local dict.
+
+2015-01-21  Dimitar Dimitrov  <trueg@openlinksw.com>
+
+	Fixed calls for parse procedures.
+
+	Fixed cardinality bug.
+
+2015-01-21  Sebastian Trueg  <trueg@openlinksw.com>
+
+	Added more missing prefixes to test files.
+
+	Added missing prefixes.
+
+	Mini fix.
+
+	Added Daimler BCE Test data.
+
+	Merge branch 'feature/moveCodeFromDemoPageIntoFramework' into develop
+
+	Merge branch 'feature/ontologyManagerFix' into develop
+
+2015-01-21  Dimitar Dimitrov  <trueg@openlinksw.com>
+
+	Optimization for class restrictions. Replace some URIs with objects.
+
+	Update test resriction file - added secod restriction.
+
+2015-01-20  Sebastian Trueg  <trueg@openlinksw.com>
+
+	Fixed updating triples in Document.
+
+2015-01-20  Dimitar Dimitrov  <trueg@openlinksw.com>
+
+	Fixed restriction parse bug. Updated restriction test file.
+
+2015-01-20  Sebastian Trueg  <trueg@openlinksw.com>
+
+	Forward error and success events from TripleView, EntityView, and EntityEditor.
+
+	Do not add event handlers before creating the object.
+
+2015-01-20  Dimitar Dimitrov  <trueg@openlinksw.com>
+
+	Updated test files with restrictions for foaf:Person.
+
+	Added support of subclasses in templates.
+
+	Added test files with restrictions for foaf:Person.
+
+	Fixed property restriction problem.
+
+2015-01-20  Sebastian Trueg  <trueg@openlinksw.com>
+
+	Fixed adding of recently created items to the entity list.
+
+2015-01-20  Sebastian Trueg  <trueg@openlinksw.com>
+
+	Set the Document once in the editor and never change it afterwards.
+
+	This makes the api much simpler and cleaner.
+
+2015-01-20  Sebastian Trueg  <trueg@openlinksw.com>
+
+	Moved entity view into its own class and source file.
+
+2015-01-20  Sebastian Trueg  <trueg@openlinksw.com>
+
+	Moved the entity editor into its own class.
+
+	This makes maintenance again simpler.
+
+2015-01-20  Sebastian Trueg  <trueg@openlinksw.com>
+
+	Moved the tripleview into its own class and source file.
+
+	This does not change anything. It simply makes the code management
+	simpler.
+
+2015-01-20  Dimitar Dimitrov  <trueg@openlinksw.com>
+
+	Fix RDFE.ontologyManager - add dictionaries for classes and properties.
+
+2015-01-20  Sebastian Trueg  <trueg@openlinksw.com>
+
+	Moved the dialogs into their own source file which is loaded via ajax.
+
+	Renamed Editor.createEditorUI into Editor.createTripleList
+
+	Ad the entity URI as link target to the editor header.
+
+2015-01-20  Sebastian Trueg  <trueg@openlinksw.com>
+
+	Make the ontology manager a parameter of the RDFE.Editor constructor.
+
+	This prevents us from using a global ontologyManager variable in the
+	backbone model document bridge.
+
+2015-01-19  Sebastian Trueg  <trueg@openlinksw.com>
+
+	Fixed initial cardinality enforcement in backbone-forms-list.
+
+	Merge branch 'feature/cardinality' into develop
+
+2015-01-19  Dimitar Dimitrov  <trueg@openlinksw.com>
+
+	Parse and store owl:cardinality value.
+
+2015-01-19  Sebastian Trueg  <trueg@openlinksw.com>
+
+	Merge branch 'feature/backboneFormsListCardinality' into develop
+
+	Load non-minified version of backbone-forms-list for cardinality support.
+
+	Added support for maxCardinality to Backbone-Forms-List.
+
+	Added vanilla import of the backbone-forms-list sources.
+
+2015-01-19  Dimitar Dimitrov  <trueg@openlinksw.com>
+
+	Added error callbacks in io.js.
+
+	Source pretty print.
+
+2015-01-19  Sebastian Trueg  <trueg@openlinksw.com>
+
+	Merge branch 'feature/ontoBox' into develop
+
+	Add a panel around the new triple/entity forms for less clutter.
+
+	Fancier drop-down list for property selection in "new entity" editor.
+
+	Slightly better default io type selection when opening dialogs.
+
+	Use the OntoBox for the new entity editor.
+
+2015-01-19  Sebastian Trueg  <trueg@openlinksw.com>
+
+	Keep the ontologies in an object which uses the onto uri as key.
+
+	This improves performance and avoids convoluted loops.
+
+2015-01-19  Sebastian Trueg  <trueg@openlinksw.com>
+
+	Use OntoBox in the demo page for the ontology list.
+
+	Added OntoBox ontology selector jquery plugin.
+
+	Added custom events to the ontology manager.
+
+	Added test file for owl restrictions.
+
+	Get the ontology prefix from the internal list of prefixes.
+
+	Merge branch 'feature/io/realAbstraction' into develop
+
+2015-01-19  Sebastian Trueg  <trueg@openlinksw.com>
+
+	Fixed RDFE.IO.GSP.retrieve.
+
+	Now we use RDFE.IO.GSP.exec instead of a query paramter which seems
+	like a copy'n'paste fragment from SPARQL.
+
+2015-01-19  Sebastian Trueg  <trueg@openlinksw.com>
+
+	More missing self definitions.
+
+	Added UI to choose the IO type when saving a document.
+
+	Fixed usage of self and this in IO.
+
+	Removed unused "url" property from RDFE.IO.Base.
+
+	Added gsp endpoint configuration.
+
+2015-01-17  Sebastian Trueg  <trueg@openlinksw.com>
+
+	Removed unused code.
+
+2015-01-17  Sebastian Trueg  <trueg@openlinksw.com>
+
+	Fancy class-hierarchy in the IO abstraction.
+
+	- Encapsulation
+	- future possibility of shared functions in the base class
+
+2015-01-17  Sebastian Trueg  <trueg@openlinksw.com>
+
+	Moved modification of the document into RDFE.Document member functions.
+
+	As a side-product RDFE.Document will now emit a custom event whenever
+	its data changes.
+
+2015-01-17  Sebastian Trueg  <trueg@openlinksw.com>
+
+	Hide internal IO functions and variables in the closure.
+
+2015-01-17  Sebastian Trueg  <trueg@openlinksw.com>
+
+	Setup RDFE.IO in a closure.
+
+	This will allow us to hide certain interna from the outside.
+
+2015-01-16  Sebastian Trueg  <trueg@openlinksw.com>
+
+	Support for io type selection in "open" and bookmarks.
+
+	Smarter handling of the sparql endpoint config option.
+
+	In the io abstraction dav and ldp are the same.
+
+	Fixed missing self var in io functions.
+
+2015-01-16  Sebastian Trueg  <trueg@openlinksw.com>
+
+	Added simple IO abstraction function.
+
+	RDFE.IO.createIO allows to create an IO instance based on the name of
+	the IO system "sparql", "gsp", or "ldp".
+
+2015-01-16  Sebastian Trueg  <trueg@openlinksw.com>
+
+	Moved all the io things into RDFE.IO.
+
+	The goal is to have the astraction in RDFE.IO eventually.
+
+2015-01-16  Sebastian Trueg  <trueg@openlinksw.com>
+
+	Properly do the initial definition of RDFE in all source files.
+
+	Merge branch 'feature/classSelection' into develop
+
+	renamed RDFE.IO to RDFE.SPARQL
+
+2015-01-16  Dimitar Dimitrov  <trueg@openlinksw.com>
+
+	Added ontology and class selection for entity create.
+
+2015-01-16  Sebastian Trueg  <trueg@openlinksw.com>
+
+	Merge branch 'feature/documentNew' into develop
+
+	Added button to create a new document.
+
+	Added RDFE.Document.new which basically clears the doc.
+
+	Fixed "saveas" action button config.
+
+2015-01-16  Sebastian Trueg  <trueg@openlinksw.com>
+
+	Added a "dirty" flag to RDFE.Document.
+
+	The dirty flag is true whenever the document has unsaved changes.
+
+2015-01-16  Sebastian Trueg  <trueg@openlinksw.com>
+
+	Merge branch 'feature/fixedLoadParse' into develop
+
+2015-01-16  Dimitar Dimitrov  <trueg@openlinksw.com>
+
+	Added add entity without class and ontology selection.
+
+	Added performance updates related to loops.
+
+	Fixed problem with load preload ontologies and fresnels. Fixed double load ontologies and fresnels.
+
+	Add remove methods for ontologies, fresnels, templates.
+
+2015-01-15  Sebastian Trueg  <trueg@openlinksw.com>
+
+	Add foaf:name to the label props in the demo config.
+
+	Only load the config once.
+
+	Show a view on startup, allowing to edit an empty doc.
+
+	Added a few FIXMEs so we do nto forget.
+
+	Merge branch 'feature/codeMaintenance' into develop
+
+	Added new config option to choose the default data view: triples or entities.
+
+2015-01-15  Dimitar Dimitrov  <trueg@openlinksw.com>
+
+	Updated html pages - fixed class name changes.
+
+2015-01-15  Sebastian Trueg  <trueg@openlinksw.com>
+
+	Added missing css file.
+
+2015-01-15  Dimitar Dimitrov  <trueg@openlinksw.com>
+
+	JS code maintenanc - move methods as prototype methods. Code prety print - fixed potential errors.
+
+2015-01-15  Sebastian Trueg  <trueg@openlinksw.com>
+
+	Merge branch 'feature/labelsInEntitySelection' into develop
+
+	Nicer formatting of the resources in the rdfnode editor selection.
+
+2015-01-15  Sebastian Trueg  <trueg@openlinksw.com>
+
+	Allow customization of the label properties.
+
+	This allows to define custom properties to use for displaying the
+	entities.
+
+2015-01-15  Sebastian Trueg  <trueg@openlinksw.com>
+
+	Cleanup of the RDFE.Config.
+
+	Fixed creation of new entries in the rdfnodeeditor resource select.
+
+	New class RDFE.RdfNode which allows clean handling of rdf nodes.
+
+	Fixed array concat.
+
+	Support a list of types in Document.listEntities.
+
+	Use Document.listEntities in RDFE.individuals.
+
+	Use Document.listEntities to list all entities in the editor.
+
+2015-01-15  Sebastian Trueg  <trueg@openlinksw.com>
+
+	New function Document.listEntities.
+
+	This new function can take a type as parameter to only list those
+	entities which have that type.
+
+2015-01-15  Sebastian Trueg  <trueg@openlinksw.com>
+
+	Added missing selectize files.
+
+2015-01-15  Dimitar Dimitrov  <trueg@openlinksw.com>
+
+	Update template classes. Added RDFE.PropertyTemplate class.
+
+	Removed VOS comments.
+
+2015-01-14  Sebastian Trueg  <trueg@openlinksw.com>
+
+	Fixed loading of literal lang from simple node.
+
+	Merge branch 'feature/actionConfig' into develop
+
+	Make the bookmarks action configurable.
+
+2015-01-14  Dimitar Dimitrov  <trueg@openlinksw.com>
+
+	Page update related to new config options.
+
+	Move RDFE.Config in config.js.
+
+2015-01-14  Sebastian Trueg  <trueg@openlinksw.com>
+
+	Merge branch 'feature/backboneFormsRdfNodeEditor' into develop
+
+	Import new js sources into the demo page.
+
+	Use the rdf node editor in the Backbone-Forms schemas for the entity editor.
+
+	Properly handle rdf nodes in the Backbone-Document bridge.
+
+2015-01-14  Sebastian Trueg  <trueg@openlinksw.com>
+
+	Improvements in the rdfnode editor.
+
+	- Better layout using table css
+	- Resource selection via selectize and a set of choices.
+	- Possibility to create new resource entries if configured.
+	- Some code cleanup
+
+2015-01-14  Sebastian Trueg  <trueg@openlinksw.com>
+
+	Added Backbone-Forms plugin for the rdfnode editor.
+
+2015-01-13  Sebastian Trueg  <trueg@openlinksw.com>
+
+	Untested first version of the Backbone-Forms RdfNode editor.
+
+	Merge branch 'feature/ontology' into develop
+
+2015-01-13  Sebastian Trueg  <trueg@openlinksw.com>
+
+	Merge branch 'feature/literalEditor' into develop
+
+	new RdfNodeEditor which can be used via x-editable.
+
+2015-01-13  Sebastian Trueg  <trueg@openlinksw.com>
+
+	Use the RdfNodeEditor for editing triple subjects and resource objects.
+
+2015-01-13  Sebastian Trueg  <trueg@openlinksw.com>
+
+	Fixed "rdfnode" options handling in RdfNode x-editable editor.
+
+	The option to be passed on to the constructor has to be part of the
+	defaults.
+
+2015-01-13  Sebastian Trueg  <trueg@openlinksw.com>
+
+	Renamed RdfNode editor plugin fct from literalEditor() to rdfNodeEditor()
+
+	Added support for URIs to the literaleditor.
+
+	Added a change event to the literaleditor which is fired on value change.
+
+2015-01-13  Dimitar Dimitrov  <trueg@openlinksw.com>
+
+	Added field order. Input field based on property type.
+
+2015-01-13  Sebastian Trueg  <trueg@openlinksw.com>
+
+	Added suppoort for using selectize for the type dropdown.
+
+	It is disabled by default since it is not working perfectly yet.
+
+2015-01-13  Sebastian Trueg  <trueg@openlinksw.com>
+
+	Include bootstrap-toggle for fancy-looking boolean literal editors.
+
+	Use a checkbox for boolean literal values.
+
+	Added support for datetimepicker for datetime and date values.
+
+2015-01-12  Dimitar Dimitrov  <trueg@openlinksw.com>
+
+	Fix problem with loading some ontologies without isDefinedBy property.
+
+2015-01-12  Sebastian Trueg  <trueg@openlinksw.com>
+
+	Use the new literal editor to edit non-datetime literals in-place.
+
+	Added an x-editable extension for the literal editor.
+
+2015-01-12  Sebastian Trueg  <trueg@openlinksw.com>
+
+	Added a simple literal editor plugin.
+
+	This plugin allows to edit plain and typed literals with verification.
+	Date and datetime support are not completed yet.
+
+2015-01-12  Dimitar Dimitrov  <trueg@openlinksw.com>
+
+	Update editor with generated by ontology.
+
+2015-01-09  Dimitar Dimitrov  <trueg@openlinksw.com>
+
+	Updated RDFE.Config class. Reformat code. Small bugs.
+
+	Added test files - RDF, TTL.
+
+	Fixed bugs related to ontology API. Added templates.
+
+2015-01-09  Sebastian Trueg  <trueg@openlinksw.com>
+
+	Syntax++
+
+2015-01-09  Sebastian Trueg  <trueg@openlinksw.com>
+
+	Merge branch 'feature/n3Parsing' into develop
+
+	Use the N3.js parser to parse turtle faster than the rdfstore parser can.
+
+2015-01-09  Sebastian Trueg  <trueg@openlinksw.com>
+
+	Use the N3.js parser to parse turtle results from sparql endpoints.
+
+	Added conversion function for N3.js triples to rdfstore.js triples.
+
+	Added minified version of the N3 parser from https://github.com/RubenVerborgh/N3.js
+
+2015-01-09  Sebastian Trueg  <trueg@openlinksw.com>
+
+	Merge branch 'feature/tripleViewWithPaginationEtc' into develop
+
+	The triple view now also uses Bootstrap-table with search, sorting, and
+	pagination.
+
+2015-01-09  Sebastian Trueg  <trueg@openlinksw.com>
+
+	Show the spinner until the ui is built when loading entities or triples.
+
+2015-01-08  Sebastian Trueg  <trueg@openlinksw.com>
+
+	Removed lots of now unused code.
+
+2015-01-08  Sebastian Trueg  <trueg@openlinksw.com>
+
+	Fixed adding of triples for the new bootstrap-table-based triple list.
+
+	The insertion is still dumb, using plain input fields and no ontology
+	knowledge.
+
+2015-01-08  Sebastian Trueg  <trueg@openlinksw.com>
+
+	Removed debug output.
+
+	performance++
+
+2015-01-08  Sebastian Trueg  <trueg@openlinksw.com>
+
+	Nicer formatting for dates in the triple editor.
+
+	This will not be used after editing yet because we do not properly
+	update the view after the change yet.
+
+2015-01-08  Sebastian Trueg  <trueg@openlinksw.com>
+
+	Fixed deletion of triples.
+
+2015-01-08  Sebastian Trueg  <trueg@openlinksw.com>
+
+	Added implementation of localeCompare to NamedNode and Literal.
+
+	This allows to sort the triple table.
+
+2015-01-08  Sebastian Trueg  <trueg@openlinksw.com>
+
+	Re-enable the datepicker for the triple inline editor.
+
+	Properly format a date using Date()
+
+2015-01-08  Sebastian Trueg  <trueg@openlinksw.com>
+
+	Added support for a function used as "x-editable" settings in bs-table.
+
+	This allows to choose the editable settings based on the individual
+	values.
+
+2015-01-08  Sebastian Trueg  <trueg@openlinksw.com>
+
+	Use Bootstrap-table to format the triples list.
+
+	Do not show entities in addition to triples when loading a new doc.
+
+	Added new function to list all properties in a document.
+
+	Support for a data update function in bootstrap-table-editable.
+
+2015-01-08  Sebastian Trueg  <trueg@openlinksw.com>
+
+	Added bootstrap-table-editable extension.
+
+	We will use this to support inline-editing in the triples table.
+
+2015-01-07  Sebastian Trueg  <trueg@openlinksw.com>
+
+	Fixed config. "Bookmarks" keyword needs to be lower-case.
+
+	Merge branch 'feature/ontology' into develop
+
+	Made chunk size for sparql insert configurable.
+
+	Code cleanup.
+
+	Simplified layout with less panel clutter.
+
+	Only show the login/logout link when they are functional.
+
+	Use the current host as default sparql endpoint.
+
+	Merge branch 'feature/entityListSortableAndSearchableAndPagination' into develop
+
+	Avoid an exception if no bookmarks are defined.
+
+	First crude implementation of entity filtering and pagination.
+
+2015-01-05  Dimitar Dimitrov  <trueg@openlinksw.com>
+
+	Added fresnel API functions. Fixed small bugs.
+
+2014-12-29  Dimitar Dimitrov  <trueg@openlinksw.com>
+
+	Fixed bugs related to load classes. Added individuals.
+
+2014-12-23  Dimitar Dimitrov  <trueg@openlinksw.com>
+
+	Fixed retrieve collection data from RDF store. Added pretty print versions of the rdf_store.js and rdfxml_parser.js.
+
+2014-12-22  Dimitar Dimitrov  <trueg@openlinksw.com>
+
+	Added preloaded ontolgies in the config. Update RDF collection function.
+
+	Fixed small bugs. Added config JS class.
+
+	Added ontology API.
+
+2014-12-19  Tim Haynes  <trueg@openlinksw.com>
+
+	List all entities in the graph without requiring rdf:type specification
+
+2014-12-19  Sebastian Trueg  <trueg@openlinksw.com>
+
+	Merge branch 'feature/add-typeahead-example' into develop
+
+	Moved editable code for typeahead into action creation function.
+
+2014-12-18  Tim Haynes  <trueg@openlinksw.com>
+
+	Added typeaheadjs.js
+
+	Remove misleading default value
+
+	Added initial x-editable/typeahead for predicates
+
+2014-12-18  Sebastian Trueg  <trueg@openlinksw.com>
+
+	Show a busy spinner while saving a document.
+
+2014-12-17  Sebastian Trueg  <trueg@openlinksw.com>
+
+	Chunked /sparql upload to avoid problems with very large queries.
+
+	Small layout improvements.
+
+2014-12-17  Sebastian Trueg  <trueg@openlinksw.com>
+
+	IO: Use POST requests for large /sparql updates.
+
+	The queries can get very long.
+
+2014-12-17  Sebastian Trueg  <trueg@openlinksw.com>
+
+	Use """ to encode literals in rdfstore.js.
+
+	This fixes saving of documents with multi-line literals or such
+	containing ".
+
+2014-12-17  Sebastian Trueg  <trueg@openlinksw.com>
+
+	Use Lists for all properties in the entity editor to be more flexible.
+
+	Nicer looking list template for Backbone-Form.
+
+	Fixed saving of entity triples which has to be done only once.
+
+	Removed unused js include.
+
+	Added missing css file.
+
+	Added missing js file.
+
+2014-12-17  Sebastian Trueg  <trueg@openlinksw.com>
+
+	Merge branch 'feature/backboneEntityEditor' into develop
+
+	First version of the Backbone-Form based entity editor.
+
+2014-12-17  Sebastian Trueg  <trueg@openlinksw.com>
+
+	Layout++
+
+2014-12-17  Sebastian Trueg  <trueg@openlinksw.com>
+
+	Added entity editing using Backbone-Form.
+
+	Thus far we only have text editors. There is no way to add a property
+	yet.
+
+2014-12-17  Sebastian Trueg  <trueg@openlinksw.com>
+
+	If no entity label is found, use the name from the uri.
+
+	Added Daimler BCE graphs to the demo config.
+
+	Show labels in the entity list (rdfs:label and skos:prefLabel support).
+
+2014-12-17  Sebastian Trueg  <trueg@openlinksw.com>
+
+	Merge branch 'feature/edit_literal' into develop
+
+	Added custom editing of literals using specific editors for:
+	- int
+	- float
+	- datetime
+
+2014-12-17  Sebastian Trueg  <trueg@openlinksw.com>
+
+	Load triples via rdfstore.graph() again.
+
+	This fixes problems with datetime values and improves performance.
+
+2014-12-17  Sebastian Trueg  <trueg@openlinksw.com>
+
+	Whitespace fixes.
+
+2014-12-17  Sebastian Trueg  <trueg@openlinksw.com>
+
+	Merge branch 'feature/entitymanagement' into develop
+
+	First step to complete entity management:
+	- List all resources in the doc.
+	- Allow deletion if resources.
+	- Also added bookmarks
+	- Opening a document now requires a bookmark or the open dlg.
+
+2014-12-17  Sebastian Trueg  <trueg@openlinksw.com>
+
+	Demo config data - bookmarks.
+
+2014-12-17  Sebastian Trueg  <trueg@openlinksw.com>
+
+	Added a bookmarks button which loads bookmarks from config.json.
+
+	Eventually we need to convert the json to ttl.
+
+2014-12-17  Aziz Baktiev  <trueg@openlinksw.com>
+
+	Edit typed literal
+
+2014-12-16  Sebastian Trueg  <trueg@openlinksw.com>
+
+	Use the "Add" button for both adding new triples and entities.
+
+	The latter is not implemented yet.
+
+2014-12-16  Sebastian Trueg  <trueg@openlinksw.com>
+
+	Store the main doc url in local storage to use as default on next load.
+
+2014-12-16  Sebastian Trueg  <trueg@openlinksw.com>
+
+	Make the open file action work.
+
+	Now we need to open documents via the open button. Also save will
+	fall back to saveAs if no doc has been loaded.
+
+2014-12-16  Sebastian Trueg  <trueg@openlinksw.com>
+
+	Call the success callback even if there was nothing to save.
+
+	Fixed endless loop in io.
+
+	Fixed saveAs: actually store to the given url instead of the original.
+
+	Hide the saveAs dlg after successful saving.
+
+	notifications should be layer over modals.
+
+	Make the entity view the default view.
+
+	Removed some console debugging output
+
+	Added an entity list with support for deletion of entire entities.
+
+	Merge branch 'feature/ioAPIupdate' into develop
+
+2014-12-16  Dimitar Dimitrov  <trueg@openlinksw.com>
+
+	Updates related to I/O API - fixed non literal items bug.
+
+2014-12-16  Tim Haynes  <trueg@openlinksw.com>
+
+	Added spinner while retrieving data
+
+2014-12-16  Sebastian Trueg  <trueg@openlinksw.com>
+
+	Removed the usage of "async" in ajax calls.
+
+	1. It might block the browser.
+	2. It actually breaks document loading in Chrome 38.0.x
+
+2014-12-16  Sebastian Trueg  <trueg@openlinksw.com>
+
+	Merge branch 'feature/saveDocument' into develop
+
+	Added saving of the document back to the store.
+
+2014-12-16  Sebastian Trueg  <trueg@openlinksw.com>
+
+	Added FIXME hint for IO.
+
+	Load triples via a sparql query to be able to sort.
+
+	Fixed result handling in IO.
+
+	Use doc.graph instead of doc.url where appropriate.
+
+2014-12-16  Dimitar Dimitrov  <trueg@openlinksw.com>
+
+	Fixed I/O library - added as first parameter graph for functions.
+
+2014-12-16  Sebastian Trueg  <trueg@openlinksw.com>
+
+	Implemented the saveAs action.
+
+	* The button opens a dialog requesting a url. Eventually the dialog
+	  should also support choosing the storage method.
+	* The editor now has a default document which allows to create content
+	  without first loading a url.
+
+2014-12-16  Sebastian Trueg  <trueg@openlinksw.com>
+
+	A Document now has a url and a graph uri.
+
+	The url is the actual document url and the graph is the uri of the
+	graph used in the rdfstore object to store the contents.
+
+2014-12-15  Sebastian Trueg  <trueg@openlinksw.com>
+
+	Use bootstrap-growl for notifications.
+
+	Call the fail function in case saving without url has been attempted.
+
+2014-12-15  Sebastian Trueg  <trueg@openlinksw.com>
+
+	Documents can now be saved with the click of a button.
+
+	No user feedback yet.
+
+2014-12-15  Sebastian Trueg  <trueg@openlinksw.com>
+
+	Merge branch 'feature/objects' into develop
+
+	Moved js code into js objects for cleaner code.
+
+2014-12-15  Sebastian Trueg  <trueg@openlinksw.com>
+
+	Separated js code into several files for simpler development.
+
+	Moved some files around in preparation of cleanup.
+
+	Created new objects RDFE.Document and RDFE.Editor to encapsulate everything.
+
+	Fixed retriveToStore for gsp and ldp.
+
+	Use the IO layer in rdfe.js to load the document.
+
+	Wait for the data being loaded into the store before calling the success proc.
+
+2014-12-15  Tim Haynes  <trueg@openlinksw.com>
+
+	Added local storage for SPARQL endpoint and default graph fields
+
+2014-12-15  Sebastian Trueg  <trueg@openlinksw.com>
+
+	Allow the addition of new statements.
+
+	Some ui cleanup.
+
+	Remove all the unused stuff from the demo.html page.
+
+	Get rid of the index attribute which simplifies stuff again.
+
+	More code simplification.
+
+2014-12-15  Sebastian Trueg  <trueg@openlinksw.com>
+
+	Merge branch 'feature/edit_delete_fix' into develop
+
+	Basic editing works locally.
+
+2014-12-15  Sebastian Trueg  <trueg@openlinksw.com>
+
+	Code cleanup + fixes.
+
+	* Moved several parts into their own functions
+	* Never reload after editing, just update existing attributes.
+	* Clear store before loading new contents.
+
+2014-12-15  Aziz Baktiev  <trueg@openlinksw.com>
+
+	fixed delete
+
+2014-12-12  Sebastian Trueg  <trueg@openlinksw.com>
+
+	Use val links from the val config.
+
+	Slightly cleaner node conversion.
+
+	Fixed encoding of literal values.
+
+2014-12-12  Aziz Baktiev  <trueg@openlinksw.com>
+
+	Added Delete and Update
+
+2014-12-12  Dimitar Dimitrov  <trueg@openlinksw.com>
+
+	Added import .TTL content to the JS rdf store.
+
+2014-12-11  Sebastian Trueg  <trueg@openlinksw.com>
+
+	Merge branch 'feature/insertFromStore' into develop
+
+2014-12-11  Dimitar Dimitrov  <trueg@openlinksw.com>
+
+	Added clean graph before insertFromStore functions.
+
+	Added insert from RDF Store API functions.
+
+2014-12-11  Sebastian Trueg  <trueg@openlinksw.com>
+
+	Use the graph uri and sparql endpoint as parameters for the loading fnt.
+
+	Merge branch 'feature/editor-crud' into develop
+
+	Default to the current host for val login.
+
+2014-12-11  Sebastian Trueg  <trueg@openlinksw.com>
+
+	Entirely rely on cookies for VAL login handling.
+
+	It makes the code simpler, it allows support for other cookie names.
+
+2014-12-11  Sebastian Trueg  <trueg@openlinksw.com>
+
+	Added convinience procedures for later.
+
+	Store triples using NT instead of curis+NT.
+
+2014-12-10  Tim Haynes  <trueg@openlinksw.com>
+
+	Added quote-stripping functions
+
+	Remove store.rdf.resolve() lookups
+
+	Implemented rudimentary triple-identification API
+
+	Switch from atob() to escape() which actually works
+
+	Added js/rdf-editor-api.js
+
+2014-12-10  Sebastian Trueg  <trueg@openlinksw.com>
+
+	Some UI changes. Also added editing aids place-holder.
+
+2014-12-10  Tim Haynes  <trueg@openlinksw.com>
+
+	Added data-statement-*-old attributes
+
+	Abstracted io_draw_graph_contents() into separate JS file for the beginnings of a Controller API
+
+	Added data-statement per row
+
+2014-12-10  Sebastian Trueg  <trueg@openlinksw.com>
+
+	Typo fix.
+
+	Code simplification using jQuery.
+
+	Use jQuery.extend() instead of custom code.
+
+	Fixed js indentation.
+
+	Another small margin bootstrap fix.
+
+2014-12-10  Sebastian Trueg  <trueg@openlinksw.com>
+
+	Merge branch 'feature/updateIO' into develop
+
+	get url in i/o layer.
+
+2014-12-10  Sebastian Trueg  <trueg@openlinksw.com>
+
+	Better layout all around + config dialog.
+
+	Merge branch 'feature/initial-editor' into develop
+
+2014-12-09  Dimitar Dimitrov  <trueg@openlinksw.com>
+
+	Updated JS i/O library. Added retrieve functions.
+
+2014-12-09  Sebastian Trueg  <trueg@openlinksw.com>
+
+	Slightly nicer layout
+
+2014-12-09  Tim Haynes  <trueg@openlinksw.com>
+
+	Change table#sparqlcontents class for full-width view
+
+	Fix relative URLs to bootstrap-editable
+
+	Added data-title properties
+
+	Refactor, creating escapeHTML() function; add editable hooks
+
+2014-12-09  Sebastian Trueg  <trueg@openlinksw.com>
+
+	Small fix for a bootstrap bug.
+
+2014-12-09  Tim Haynes  <trueg@openlinksw.com>
+
+	Added x-editable hooks
+
+2014-12-09  Sebastian Trueg  <trueg@openlinksw.com>
+
+	Fallback to nick if there is no name for the login header.
+
+2014-12-09  Tim Haynes  <trueg@openlinksw.com>
+
+	Fix issue with escaping for HTML
+
+2014-12-09  Sebastian Trueg  <trueg@openlinksw.com>
+
+	Added val auth to the demo.html page.
+
+	Merge branch 'feature/sparql-get' into develop
+
+2014-12-09  Tim Haynes  <trueg@openlinksw.com>
+
+	Added demo retrieving data via rdf_store.js
+
+2014-12-09  Sebastian Trueg  <trueg@openlinksw.com>
+
+	Merge branch 'feature/authentication' into develop
+
+	Added simple VAL-based authentication.
+
+2014-12-09  Sebastian Trueg  <trueg@openlinksw.com>
+
+	Fixed image file locations.
+
+	Added val login header to the editor demo page.
+
+	Added simple VAL js wrapper which can get the profile from val.
+
+	Added rdfstore.js into our skeleton.
+
+	Imported editor skeleton.
+
+2014-12-03  Sebastian Trueg  <trueg@openlinksw.com>
+
+	Improved mockups for listing and editing resources.
+
+	Added edit view mockup
+
+	Initial import of content.

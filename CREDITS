@@ -1,0 +1,215 @@
+#
+#  CREDITS
+#
+#  This file is part of the OpenLink RDF Editor
+#
+#  Copyright (C) 2014-2015 OpenLink Software
+#
+#  This project is free software; you can redistribute it and/or modify it
+#  under the terms of the GNU General Public License as published by the
+#  Free Software Foundation; only version 2 of the License, dated June 1991.
+#
+#  This program is distributed in the hope that it will be useful, but
+#  WITHOUT ANY WARRANTY; without even the implied warranty of
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+#  General Public License for more details.
+#
+#  You should have received a copy of the GNU General Public License along
+#  with this program; if not, write to the Free Software Foundation, Inc.,
+#  51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA
+#
+#
+
+The OpenLink Software RDF Editor project wishes to acknowledge incorporation of code from the
+following projects:
+
+* angular
+    Project	: https://angularjs.org/
+    License	: MIT license
+    Description	:
+	HTML enhanced for web apps!
+
+
+* angular-spinner
+    Project	: https://github.com/urish/angular-spinner
+    License	: MIT license
+    Description	:
+	Angular directive to show an animated spinner (using spin.js)
+
+
+* backbone.js
+    Project	: http://backbonejs.org/
+    License	: MIT license
+    Description	:
+	Backbone.js gives structure to web applications by providing models with key-value binding
+	and custom events, collections with a rich API of enumerable functions, views with
+	declarative event handling, and connects it all to your existing API over a RESTful JSON
+	interface.
+
+
+* backbone-forms.js
+    Project	: https://github.com/powmedia/backbone-forms
+    License	: https://github.com/powmedia/backbone-forms/blob/master/LICENSE, looks like MIT license
+    Description	:
+	Form framework for BackboneJS with nested forms, editable lists and validation
+
+
+* bootbox.js
+    Project	: http://bootboxjs.com/
+    License	: MIT license
+    Description	:
+	Bootbox.js is a small JavaScript library which allows you to create programmatic dialog
+	boxes using Bootstrap modals, without having to worry about creating, managing or removing
+	any of the required DOM elements or JS event handlers.
+
+
+* bootstrap.js
+    Project	: http://getbootstrap.com/
+    License	: MIT license
+    Description	:
+	Bootstrap is the most popular HTML, CSS, and JS framework for developing responsive, mobile
+	first projects on the web.
+
+
+* bootstrap-datetimepicker.js
+    Project	: https://github.com/smalot/bootstrap-datetimepicker
+    License	: Apache License V2.0
+    Description	:
+	Date and Time picker widget based on twitter bootstrap.
+
+
+* bootstrap-editable.js
+    Project	: http://vitalets.github.io/x-editable/
+    License	: MIT license
+    Description	:
+	This library allows you to create editable elements on your page. It can be used with any
+	engine (bootstrap, jquery-ui, jquery only) and includes both popup and inline modes.
+
+
+* bootstrap-growl.js
+    Project	: https://github.com/mouse0270/bootstrap-growl
+    License	: MIT license
+    Description	:
+	Turns standard Bootstrap alerts into "Growl-like" notifications.
+
+
+* bootstrap-table.js
+    Project	: http://bootstrap-table.wenzhixin.net.cn/
+    License	: MIT license
+    Description	:
+	An extended Bootstrap table with radio, checkbox, sort, pagination, and other added features.
+
+
+* bootstrap-table-editable.js
+    Project	: http://bootstrap-table.wenzhixin.net.cn/extensions/
+    License	: MIT license
+    Description	:
+	The extensions of bootstrap table.
+
+
+* bootstrap-toggle.js
+    Project	: http://www.bootstraptoggle.com/
+    License	: MIT license
+    Description	:
+	Bootstrap Toggle is a highly flexible Bootstrap plugin that converts checkboxes into toggles.
+
+
+* jQuery
+    Project	: https://jquery.com/
+    License	: https://github.com/jquery/jquery/blob/master/LICENSE.txt, looks like MIT license
+    Description	:
+	jQuery is a fast, small, and feature-rich JavaScript library.
+	It makes things like HTML document traversal and manipulation,
+	event handling, animation, and Ajax much simpler with an
+	easy-to-use API that works across a multitude of browsers.
+
+
+* jquery.cookie.js
+    Project	: https://github.com/carhartl/jquery-cookie
+    License	: MIT license
+    Description	:
+	A simple, lightweight jQuery plugin for reading, writing and deleting cookies.
+
+
+* jquery-depparam.js
+    Project	: https://github.com/chrissrogers/jquery-deparam
+    License	: based on http://benalman.com/projects/jquery-bbq-plugin/which is dual licensed under the MIT and GPL licenses
+    Description	:
+	An extraction of the deparam method from Ben Alman's jQuery BBQ.
+
+
+* jquery.md5.js
+    Project	: https://github.com/blueimp/jQuery-MD5
+    License	: MIT license
+    Description	:
+	JavaScript MD5 implementation.
+
+
+* N3.js
+    Project	: https://github.com/RubenVerborgh/N3.js
+    License	: MIT license
+    Description	:
+	Lightning fast, asynchronous, streaming RDF for JavaScript.
+
+
+* rdf_store.js
+    Project	: https://github.com/antoniogarrote/rdfstore-js
+    License	: MIT license
+    Description	:
+	JS RDF store with SPARQL support.
+
+
+* selectize.js
+    Project	: http://brianreavis.github.io/selectize.js/
+    License	: Apache License V2.0
+    Description	:
+	Selectize is the hybrid of a textbox and <select> box. It's jQuery-based and it's useful for
+	tagging, contact lists, country selectors, and so on.
+
+
+* spin.js
+    Project	: http://fgnass.github.io/spin.js/
+    License	: MIT license
+    Description	:
+	Spin.js dynamically creates spinning activity indicators that can be used as
+	resolution-independent replacement for AJAX loading GIFs.
+
+
+* underscore.js
+    Project	: http://underscorejs.org
+    License	: MIT license
+    Description	:
+	Underscore is a JavaScript library that provides a whole mess of useful functional
+	programming helpers without extending any built-in objects. It’s the answer to the question:
+	“If I sit down in front of a blank HTML page, and want to start being productive
+	immediately, what do I need?” … and the tie to go along with jQuery's tux and Backbone's
+	suspenders.
+
+
+Additionally the OpenLink Software RDF Editor project wishes to acknowledge using the following
+projects during the build phase:
+
+* nodejs
+    Project	: https://nodejs.org/
+    license	: https://raw.githubusercontent.com/joyent/node/master/LICENSE
+    Description	:
+	Node.js is a JavaScript runtime built on Chrome's V8 JavaScript engine. Node.js uses an
+	event-driven, non-blocking I/O model that makes it lightweight and efficient. Node.js'
+	package ecosystem, npm, is the largest ecosystem of open source libraries in the world.
+
+* bower
+    Project	: http://bower.io/
+    License	: MIT license
+    Description	:
+	A package manager for the web.
+
+
+* grunt
+    Project	: http://gruntjs.com/
+    License	: MIT license
+    Description	:
+	The JavaScript Task Runner.
+
+
+This list may not complete. If you feel any third party project is missing from this list, please
+email the current maintainer.
