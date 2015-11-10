@@ -163,58 +163,8 @@ Utils.iso8601 = function(date) {
 };
 
 
-Utils.parseStrictISO8601 = function (str) {
-    var regexp = "([0-9]{4})(-([0-9]{2})(-([0-9]{2})" +
-        "(T([0-9]{2}):([0-9]{2})(:([0-9]{2})(\.([0-9]+))?)?" +
-        "(Z|(([-+])([0-9]{2}):([0-9]{2})))?)?)?)?";
-    var d = str.match(new RegExp(regexp));
-
-    var offset = 0;
-    var date = new Date(d[1], 0, 1);
-
-    if (d[3]) {
-        date.setMonth(d[3] - 1);
-    } else {
-        throw "missing ISO8061 component"
-    }
-    if (d[5]) {
-        date.setDate(d[5]);
-    } else {
-        throw "missing ISO8061 component"
-    }
-    if (d[7]) {
-        date.setHours(d[7]);
-    } else {
-        throw "missing ISO8061 component"
-    }
-    if (d[8]) {
-        date.setMinutes(d[8]);
-    } else {
-        throw "missing ISO8061 component"
-    }
-    if (d[10]) {
-        date.setSeconds(d[10]);
-    } else {
-        throw "missing ISO8061 component"
-    }
-    if (d[12]) {
-        date.setMilliseconds(Number("0." + d[12]) * 1000);
-    }
-    if (d[14]) {
-        offset = (Number(d[16]) * 60) + Number(d[17]);
-        offset *= ((d[15] == '-') ? 1 : -1);
-    }
-
-    offset -= date.getTimezoneOffset();
-    var time = (Number(date) + (offset * 60 * 1000));
-    var toReturn = new Date();
-    toReturn.setTime(Number(time));
-    return toReturn;
-};
-
-
 Utils.parseISO8601 = function (str) {
-    var regexp = "([0-9]{4})(-([0-9]{2})(-([0-9]{2})" +
+    var regexp = "^([0-9]{4})(-([0-9]{2})(-([0-9]{2})" +
         "(T([0-9]{2}):([0-9]{2})(:([0-9]{2})(\.([0-9]+))?)?" +
         "(Z|(([-+])([0-9]{2}):([0-9]{2})))?)?)?)?";
     var d = str.match(new RegExp(regexp));
@@ -2206,7 +2156,7 @@ var _getKeywords = function(ctx)
    {
       '@id': '@id',
       '@language': '@language',
-      '@literal': '@literal',
+      '@value': '@value',
       '@type': '@type'
    };
 
@@ -2453,7 +2403,7 @@ var _isSubject = function(value)
    // 1. It is an Object.
    // 2. It is not a literal.
    // 3. It has more than 1 key OR any existing key is not '@id'.
-   if(value !== null && value.constructor === Object && !('@literal' in value))
+   if(value !== null && value.constructor === Object && !('@value' in value))
    {
       var keyCount = Object.keys(value).length;
       rval = (keyCount > 1 || !('@id' in value));
@@ -2745,9 +2695,9 @@ jsonld.toTriples = function(input, graph, callback)
                         obji2 = {'token':'uri', 'value':obji2['@id']};
                     }
                 } else if(obji2['@type'] != null) {
-                    obji2 = {'token':'literal', 'value':obji2['@literal'], 'type':obji2['@type']};
+                    obji2 = {'token':'literal', 'value':obji2['@value'], 'type':obji2['@type']};
                 } else if(obji2['@language'] != null) {
-                    obji2 = {'token':'literal', 'value':obji2['@literal'], 'lang':obji2['@language']};
+                    obji2 = {'token':'literal', 'value':obji2['@value'], 'lang':obji2['@language']};
                 }
 
 		quit = (callback(s, {'token':'uri', 'value':p}, obji2) === false);
@@ -3044,9 +2994,9 @@ Processor.prototype.compact = function(ctx, property, value, usedCtx)
                {
                   rval = value['@id'];
                }
-               else if('@literal' in value)
+               else if('@value' in value)
                {
-                  rval = value['@literal'];
+                  rval = value['@value'];
                }
             }
             else
@@ -3215,7 +3165,7 @@ Processor.prototype.expand = function(ctx, property, value)
                value = value.toExponential(6).replace(
                   /(e(?:\+|-))([0-9])$/, '$10$2');
             }
-            rval['@literal'] = '' + value;
+            rval['@value'] = '' + value;
          }
       }
       // nothing to coerce
@@ -3433,10 +3383,10 @@ var _compareObjects = function(o1, o2)
    }
    else
    {
-      rval = _compareObjectKeys(o1, o2, '@literal');
+      rval = _compareObjectKeys(o1, o2, '@value');
       if(rval === 0)
       {
-         if('@literal' in o1)
+         if('@value' in o1)
          {
             rval = _compareObjectKeys(o1, o2, '@type');
             if(rval === 0)
@@ -3474,8 +3424,8 @@ var _compareBlankNodeObjects = function(a, b)
    3.2.1. The bnode with fewer non-bnodes is first.
    3.2.2. The bnode with a string object is first.
    3.2.3. The bnode with the alphabetically-first string is first.
-   3.2.4. The bnode with a @literal is first.
-   3.2.5. The bnode with the alphabetically-first @literal is first.
+   3.2.4. The bnode with a @value is first.
+   3.2.5. The bnode with the alphabetically-first @value is first.
    3.2.6. The bnode with the alphabetically-first @type is first.
    3.2.7. The bnode with a @language is first.
    3.2.8. The bnode with the alphabetically-first @language is first.
@@ -3639,7 +3589,7 @@ var _flatten = function(parent, parentProperty, value, subjects)
    else if(value.constructor === Object)
    {
       // already-expanded value or special-case reference-only @type
-      if('@literal' in value || parentProperty === '@type')
+      if('@value' in value || parentProperty === '@type')
       {
          flattened = _clone(value);
       }
@@ -4114,7 +4064,7 @@ var _serializeProperties = function(b)
                // literal
                else
                {
-                  rval += '"' + o['@literal'] + '"';
+                  rval += '"' + o['@value'] + '"';
 
                   // type literal
                   if('@type' in o)
@@ -5681,7 +5631,8 @@ N3Parser.prototype = {
 
   // ### `_readPredicate` reads a triple's predicate.
   _readPredicate: function (token) {
-    switch (token.type) {
+    var type = token.type;
+    switch (type) {
     case 'IRI':
     case 'abbreviation':
       if (this._baseIRI === null || absoluteIRI.test(token.value))
@@ -5705,9 +5656,9 @@ N3Parser.prototype = {
     case '}':
       // Expected predicate didn't come, must have been trailing semicolon.
       if (this._predicate === null)
-        return this._error('Unexpected ' + token.type, token);
+        return this._error('Unexpected ' + type, token);
       this._subject = null;
-      return this._readBlankNodeTail(token);
+      return type === ']' ? this._readBlankNodeTail(token) : this._readPunctuation(token);
     case ';':
       // Extra semicolons can be safely ignored
       return this._readPredicate;
@@ -5780,14 +5731,14 @@ N3Parser.prototype = {
   // ### `_readBlankNodeTail` reads the end of a blank node.
   _readBlankNodeTail: function (token) {
     if (token.type !== ']')
-      return this._readPunctuation(token);
+      return this._readBlankNodePunctuation(token);
 
     // Store blank node triple.
     if (this._subject !== null)
       this._callback(null, { subject:   this._subject,
                              predicate: this._predicate,
                              object:    this._object,
-                             graph:     this._graph || '' });
+                             graph:     this._graph || '' });
 
     // Restore parent triple that contains the blank node.
     var triple = this._tripleStack.pop();
@@ -5985,7 +5936,30 @@ N3Parser.prototype = {
       this._callback(null, { subject:   subject,
                              predicate: this._predicate,
                              object:    this._object,
-                             graph:     graph || '' });
+                             graph:     graph || '' });
+    return next;
+  },
+
+    // ### `_readBlankNodePunctuation` reads punctuation in a blank node
+  _readBlankNodePunctuation: function (token) {
+    var next;
+    switch (token.type) {
+    // Semicolon means the subject is shared; predicate and object are different.
+    case ';':
+      next = this._readPredicate;
+      break;
+    // Comma means both the subject and predicate are shared; the object is different.
+    case ',':
+      next = this._readObject;
+      break;
+    default:
+      return this._error('Expected punctuation to follow "' + this._object + '"', token);
+    }
+    // A triple has been completed now, so return it.
+    this._callback(null, { subject:   this._subject,
+                           predicate: this._predicate,
+                           object:    this._object,
+                           graph:     this._graph || '' });
     return next;
   },
 
@@ -6164,7 +6138,7 @@ RVN3Parser.parser = {
       graph = { token: 'uri', value: graph, prefix: null, suffix: null };
     // Convert options
     if (options && options.baseURI)
-      options.documentURI = options.baseURI;
+      options.documentIRI = options.baseURI;
 
     // Parse triples into array
     var triples = [];
@@ -6178,15 +6152,28 @@ RVN3Parser.parser = {
           subject:   convertEntity(triple.subject),
           predicate: convertEntity(triple.predicate),
           object:    convertEntity(triple.object),
-          graph:     graph});
+          graph:     graph
+        });
     });
+  },
+
+  resetBlankNodeIds: function() {
+      N3Parser._resetBlankNodeIds();
   }
+
 };
 
 // Converts an entity in N3.js representation to this library's representation
 function convertEntity(entity) {
   switch (entity[0]) {
-    case '"': return { literal: entity };
+  case '"': {
+      if(entity.indexOf("^^") > 0) {
+          var parts = entity.split("^^");
+          return {literal: parts[0] + "^^<" + parts[1] + ">" };
+      } else {
+          return { literal: entity };
+      }
+    }
     case '_': return { blank: entity.replace('b', '') };
     default:  return { token: 'uri', value: entity, prefix: null, suffix: null };
   };
@@ -6199,8 +6186,15 @@ var RDFLoader = {};
 // imports
 
 RDFLoader.RDFLoader = function (params) {
-    this.precedences = ["text/turtle", "text/n3", "application/ld+json", "application/json"/*, "application/rdf+xml"*/];
-    this.parsers = {"text/turtle":RVN3Parser.parser, "text/n3":RVN3Parser.parser, "application/ld+json":JSONLDParser.parser, "application/json":JSONLDParser.parser, "application/rdf+xml":RDFXMLParser.parser};
+    this.precedences = ["text/turtle", "text/n3", "application/ld+json", "application/json"];
+    this.parsers = {"text/turtle":RVN3Parser.parser, "text/n3":RVN3Parser.parser, "application/ld+json":JSONLDParser.parser, "application/json":JSONLDParser.parser};
+
+    // Conditionally adding RDFXML parser
+    if(typeof(RDFXMLParser) !== 'undefined') {
+        this.precedences.push("application/rdf+xml");
+        this.parsers["application/rdf+xml"] = RDFXMLParser.parser;
+    }
+
     if (params != null) {
         for (var mime in params["parsers"]) {
             this.parsers[mime] = params["parsers"][mime];
@@ -23352,8 +23346,8 @@ SparqlParser.parser = (function(){
       }
 
       function parse_STRING_LITERAL_LONG1() {
-        var result0, result1, result2;
-        var pos0, pos1;
+        var result0, result1, result2, result3;
+        var pos0, pos1, pos2;
 
         reportFailures++;
         pos0 = pos;
@@ -23369,32 +23363,94 @@ SparqlParser.parser = (function(){
         }
         if (result0 !== null) {
           result1 = [];
-          if (input.substr(pos, 3) == result0) {
-            result2 = null;
-          } else if (/^[^\\]/.test(input.charAt(pos))) {
-            result2 = input.charAt(pos);
+          pos2 = pos;
+          if (input.charCodeAt(pos) === 39) {
+            result2 = "'";
             pos++;
           } else {
             result2 = null;
             if (reportFailures === 0) {
-              matchFailed("[^'\\\\]");
+              matchFailed("\"'\"");
             }
+          }
+          if (result2 === null) {
+            if (input.substr(pos, 2) === "''") {
+              result2 = "''";
+              pos += 2;
+            } else {
+              result2 = null;
+              if (reportFailures === 0) {
+                matchFailed("\"''\"");
+              }
+            }
+          }
+          result2 = result2 !== null ? result2 : "";
+          if (result2 !== null) {
+            if (/^[^']/.test(input.charAt(pos))) {
+              result3 = input.charAt(pos);
+              pos++;
+            } else {
+              result3 = null;
+              if (reportFailures === 0) {
+                matchFailed("[^']");
+              }
+            }
+            if (result3 !== null) {
+              result2 = [result2, result3];
+            } else {
+              result2 = null;
+              pos = pos2;
+            }
+          } else {
+            result2 = null;
+            pos = pos2;
           }
           if (result2 === null) {
             result2 = parse_ECHAR();
           }
           while (result2 !== null) {
             result1.push(result2);
-            if (input.substr(pos, 3) == result0) {
-              result2 = null;
-            } else if (/^[^\\]/.test(input.charAt(pos))) {
-              result2 = input.charAt(pos);
+            pos2 = pos;
+            if (input.charCodeAt(pos) === 39) {
+              result2 = "'";
               pos++;
             } else {
               result2 = null;
               if (reportFailures === 0) {
-                matchFailed("[^'\\\\]");
+                matchFailed("\"'\"");
               }
+            }
+            if (result2 === null) {
+              if (input.substr(pos, 2) === "''") {
+                result2 = "''";
+                pos += 2;
+              } else {
+                result2 = null;
+                if (reportFailures === 0) {
+                  matchFailed("\"''\"");
+                }
+              }
+            }
+            result2 = result2 !== null ? result2 : "";
+            if (result2 !== null) {
+              if (/^[^']/.test(input.charAt(pos))) {
+                result3 = input.charAt(pos);
+                pos++;
+              } else {
+                result3 = null;
+                if (reportFailures === 0) {
+                  matchFailed("[^']");
+                }
+              }
+              if (result3 !== null) {
+                result2 = [result2, result3];
+              } else {
+                result2 = null;
+                pos = pos2;
+              }
+            } else {
+              result2 = null;
+              pos = pos2;
             }
             if (result2 === null) {
               result2 = parse_ECHAR();
@@ -23438,8 +23494,8 @@ SparqlParser.parser = (function(){
       }
 
       function parse_STRING_LITERAL_LONG2() {
-        var result0, result1, result2;
-        var pos0, pos1;
+        var result0, result1, result2, result3;
+        var pos0, pos1, pos2;
 
         reportFailures++;
         pos0 = pos;
@@ -23455,32 +23511,94 @@ SparqlParser.parser = (function(){
         }
         if (result0 !== null) {
           result1 = [];
-          if (input.substr(pos, 3) == result0) {
-            result2 = null;
-          } else if (/^[^\\]/.test(input.charAt(pos))) {
-            result2 = input.charAt(pos);
+          pos2 = pos;
+          if (input.charCodeAt(pos) === 34) {
+            result2 = "\"";
             pos++;
           } else {
             result2 = null;
             if (reportFailures === 0) {
-              matchFailed("[^\"\\\\]");
+              matchFailed("\"\\\"\"");
             }
+          }
+          if (result2 === null) {
+            if (input.substr(pos, 2) === "\"\"") {
+              result2 = "\"\"";
+              pos += 2;
+            } else {
+              result2 = null;
+              if (reportFailures === 0) {
+                matchFailed("\"\\\"\\\"\"");
+              }
+            }
+          }
+          result2 = result2 !== null ? result2 : "";
+          if (result2 !== null) {
+            if (/^[^"]/.test(input.charAt(pos))) {
+              result3 = input.charAt(pos);
+              pos++;
+            } else {
+              result3 = null;
+              if (reportFailures === 0) {
+                matchFailed("[^\"]");
+              }
+            }
+            if (result3 !== null) {
+              result2 = [result2, result3];
+            } else {
+              result2 = null;
+              pos = pos2;
+            }
+          } else {
+            result2 = null;
+            pos = pos2;
           }
           if (result2 === null) {
             result2 = parse_ECHAR();
           }
           while (result2 !== null) {
             result1.push(result2);
-            if (input.substr(pos, 3) == result0) {
-              result2 = null;
-            } else if (/^[^\\]/.test(input.charAt(pos))) {
-              result2 = input.charAt(pos);
+            pos2 = pos;
+            if (input.charCodeAt(pos) === 34) {
+              result2 = "\"";
               pos++;
             } else {
               result2 = null;
               if (reportFailures === 0) {
-                matchFailed("[^\"\\\\]");
+                matchFailed("\"\\\"\"");
               }
+            }
+            if (result2 === null) {
+              if (input.substr(pos, 2) === "\"\"") {
+                result2 = "\"\"";
+                pos += 2;
+              } else {
+                result2 = null;
+                if (reportFailures === 0) {
+                  matchFailed("\"\\\"\\\"\"");
+                }
+              }
+            }
+            result2 = result2 !== null ? result2 : "";
+            if (result2 !== null) {
+              if (/^[^"]/.test(input.charAt(pos))) {
+                result3 = input.charAt(pos);
+                pos++;
+              } else {
+                result3 = null;
+                if (reportFailures === 0) {
+                  matchFailed("[^\"]");
+                }
+              }
+              if (result3 !== null) {
+                result2 = [result2, result3];
+              } else {
+                result2 = null;
+                pos = pos2;
+              }
+            } else {
+              result2 = null;
+              pos = pos2;
             }
             if (result2 === null) {
               result2 = parse_ECHAR();
@@ -24466,6 +24584,7 @@ SparqlParser.parser = (function(){
 
   return result;
 })();
+
 // end of ./src/js-sparql-parser/src/sparql_parser.js
 /**
  * @fileoverview
@@ -25118,7 +25237,7 @@ var TabulatorRDFXMLParser = function() {
         var parser, xmlDoc;
         if (typeof module != 'undefined') {
             var jsdom = require('jsdom');
-            xmlDoc = jsdom.jsdom(string, jsdom.level(2, "core"), {});
+            xmlDoc = jsdom.jsdom(string/*, jsdom.level(2, "core")*/, {});
         } else if (window.DOMParser) {
             parser = new DOMParser();
             xmlDoc = parser.parseFromString(string, 'text/xml');
@@ -25607,13 +25726,32 @@ RDFJSInterface.Literal = function(value, language, datatype) {
 Utils['extends'](RDFJSInterface.RDFNode,RDFJSInterface.Literal);
 
 RDFJSInterface.Literal.prototype.toString = function(){
-    var tmp = '"""'+this.nominalValue+'"""';
+    if(this.nominalValue.match("\n")) {
+        var tmp = '"""'+this.nominalValue+'"""';
+        if(this.nominalValue.match(/"""/)) {
+            var tmp = "'''"+this.nominalValue+"'''";
+        }
+    } else {
+        if(this.nominalValue.match(/"/)) {
+            var tmp = "'"+this.nominalValue+"'";
+            if(this.nominalValue.match(/'/)) {
+                var tmp = '"""'+this.nominalValue+'"""';
+                if(this.nominalValue.match(/"""/)) {
+                    var tmp = "'''"+this.nominalValue+"'''";
+                    if(this.nominalValue.match(/'''/)) {
+                        throw "Literal not possible to escape in a String.";
+                    }
+                }
+            }
+        } else {
+            var tmp = '"'+this.nominalValue+'"';
+        }
+    };
     if(this.language != null) {
         tmp = tmp + "@" + this.language;
     } else if(this.datatype != null || this.type) {
         tmp = tmp + "^^<" + (this.datatype||this.type) + ">";
     }
-
     return tmp;
 };
 
@@ -27522,7 +27660,7 @@ QueryFilters.runIriRefOrFunction = function(iriref, args, bindings,queryEngine, 
                 return from;
             } else if(from.type == "http://www.w3.org/2001/XMLSchema#string" || from.type == null) {
                 try {
-                    from.value = Utils.iso8601(Utils.parseStrictISO8601(from.value));
+                    from.value = Utils.iso8601(Utils.parseISO8601(from.value));
                     from.type = fun;
                     return from;
                 } catch(e) {
@@ -31571,8 +31709,8 @@ Store.Store.prototype.insert = function() {
     var callback;
     if(arguments.length === 1) {
         triples = arguments[0];
+        callback= function(){};
     } else if(arguments.length === 2) {
-        graph = this.rdf.createNamedNode(this.engine.lexicon.defaultGraphUri);
         triples = arguments[0];
         callback= arguments[1] || function(){};
     } else if(arguments.length === 3) {
@@ -31592,7 +31730,7 @@ Store.Store.prototype.insert = function() {
     if(graph != null) {
         query = "INSERT DATA { GRAPH " + this._nodeToQuery(graph) +" { "+ query + " } }";
     } else {
-        query = "INSERT DATA { " + this._nodeToQuery(graph) +" { "+ query + " }";
+        query = "INSERT DATA { "+ query + " }";
     }
 
     this.engine.execute(query, callback);
@@ -31606,14 +31744,7 @@ Store.Store.prototype._nodeToQuery = function(term) {
         } else {
             return "<" + term.valueOf() + ">";
         }
-    } else if(term.interfaceName === '') {
-        return term.toString();
     } else {
-        if(term.lang != null) {
-            return "\""+term.valueOf()+"\"@"+term.lang;
-        } else if(term.datatype != null) {
-            return "\""+term.valueOf()+"\"^^<"+term.datatype+">";
-        }
         return term.toString();
     }
 };
@@ -31642,8 +31773,8 @@ Store.Store.prototype['delete'] = function() {
     var callback;
     if(arguments.length === 1) {
         triples = arguments[0];
+        callback= function(){};
     } else if(arguments.length === 2) {
-        graph = this.rdf.createNamedNode(this.engine.lexicon.defaultGraphUri);
         triples = arguments[0];
         callback= arguments[1] || function(){};
     } else if(arguments.length === 3) {
@@ -31663,7 +31794,7 @@ Store.Store.prototype['delete'] = function() {
     if(graph != null) {
         query = "DELETE DATA { GRAPH " + this._nodeToQuery(graph) +" { "+ query + " } }";
     } else {
-        query = "DELETE DATA { " + this._nodeToQuery(graph) +" { "+ query + " }";
+        query = "DELETE DATA { "+ query + " }";
     }
 
     this.engine.execute(query, callback);
@@ -31799,30 +31930,29 @@ Store.Store.prototype.load = function(){
         data = this.rdf.createNamedNode(data);
         var query = "LOAD <"+data.valueOf()+"> INTO GRAPH <"+graph.valueOf()+">";
         this.engine.execute(query, callback);
-    } else if(data && typeof(data)==='string' && data.indexOf('file://')=== 0) {
-        var parser = this.engine.rdfLoader.parsers[mediaType];
-
-        var that = this;
-        this.engine.rdfLoader.loadFromFile(parser, {'token':'uri', 'value':graph.valueOf()}, data, function(success, quads) {
-            if(success) {
-                that.engine.batchLoad(quads,callback);
-            } else {
-                callback(success, quads);
-            }
-        });
-
-
     } else {
-        var parser = this.engine.rdfLoader.parsers[mediaType];
+
         var that = this;
 
-        this.engine.rdfLoader.tryToParse(parser, {'token':'uri', 'value':graph.valueOf()}, data, options, function(success, quads) {
+        var parser = this.engine.rdfLoader.parsers[mediaType];
+
+        if (!parser) return callback(false, 0);
+
+        var cb = function(success, quads) {
             if(success) {
                 that.engine.batchLoad(quads,callback);
             } else {
                 callback(success, quads);
             }
-        });
+        };
+
+        var args = [parser, {'token':'uri', 'value':graph.valueOf()}, data, options, cb];
+
+        if(data && typeof(data)==='string' && data.indexOf('file://')=== 0) {
+          this.engine.rdfLoader.loadFromFile.apply(null, args);
+        } else {
+          this.engine.rdfLoader.tryToParse.apply(null, args);
+        }
     }
 };
 
@@ -31886,22 +32016,6 @@ Store.Store.prototype.registeredGraphs = function(callback) {
     }
 };
 
-/** @private */
-Store.Store.prototype._nodeToQuery = function(term) {
-    if(term.interfaceName === 'NamedNode') {
-        var resolvedUri = this.rdf.resolve(term.valueOf());
-        if(resolvedUri != null) {
-            return "<" + resolvedUri + ">";
-        } else {
-            return "<" + term.valueOf() + ">";
-        }
-    } else if(term.interfaceName === '') {
-        return term.toString();
-    } else {
-        return term.toString();
-    }
-};
-
 /**
  * Returns the current network transport being used by the
  * the store.
@@ -31943,11 +32057,11 @@ Store.Store.prototype.setNetworkTransport = function(networkTransportImpl) {
  */
 Store.Store.prototype.close = function(cb) {
     if(cb == null)
-	cb = function(){};
+	      cb = function(){};
     if(this.engine.close)
-	this.engine.close(cb);
+	      this.engine.close(cb);
     else
-	cb();
+	      cb();
 };
 
 // end of ./src/js-store/src/store.js

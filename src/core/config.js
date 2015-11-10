@@ -1,3 +1,23 @@
+/*
+ *  This file is part of the OpenLink RDF Editor
+ *
+ *  Copyright (C) 2014-2015 OpenLink Software
+ *
+ *  This project is free software; you can redistribute it and/or modify it
+ *  under the terms of the GNU General Public License as published by the
+ *  Free Software Foundation; only version 2 of the License, dated June 1991.
+ *
+ *  This program is distributed in the hope that it will be useful, but
+ *  WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ *  General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License along
+ *  with this program; if not, write to the Free Software Foundation, Inc.,
+ *  51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA
+ *
+ */
+
 if(!window.RDFE)
   window.RDFE = {};
 
@@ -6,7 +26,7 @@ if(!window.RDFE)
  * Config class
  *
  */
-RDFE.Config = function(source, callback) {
+RDFE.Config = function(source, callback, fail) {
   var self = this;
   this.options = RDFE.Config.defaults;
 
@@ -29,6 +49,9 @@ RDFE.Config = function(source, callback) {
       })(callback),
       error: function(jqXHR, textStatus, errorThrown) {
         console.error('config load =>', errorThrown);
+        if(fail) {
+          fail();
+        }
       }
     });
   }
@@ -38,6 +61,7 @@ RDFE.Config.defaults = {
   // configuration related to the ontology manager
   ontology: {
     proxy: false,
+    nonTTLProxy: true,
     fresnelLenses: true,
     fresnelFormats: true,
     fresnelGroups: true,
@@ -83,8 +107,30 @@ RDFE.Config.defaults = {
   // Examples:
   // - {DOC-URI}#{NAME}
   // - urn:test:{NAME}
-  entityUriTmpl: undefined,
+  entityUriTmpl: "{DOC-URI}#{NAME}",
 
   // if true then the editor will take owl:inverseOf into account and create or delete the values properly
-  autoInverseOfHandling: false
+  autoInverseOfHandling: false,
+
+  // A list of entity type URIs which when set will be used to filter the entity view
+  entityTypesFiler: null,
+
+  "namingSchema": "eavSchema",
+  "eavSchema": {
+    "spo": ["Statement", "Statements"],
+    "s": ["Entity", "Entities"],
+    "p": ["Attribute", "Attributes"],
+    "o": ["Value", "Values"]
+  },
+  "spoSchema": {
+    "spo": ["Triple", "Triples"],
+    "s": ["Subject", "Subjects"],
+    "p": ["Predicate", "Predicates"],
+    "o": ["Object", "Objects"]
+  },
+
+  // If true, then the entity editor with template and OWL restriction support is used to edit entities
+  useEntityEditor: false,
+
+  maxLabelLength: 0
 };

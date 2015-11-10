@@ -1,3 +1,23 @@
+/*
+ *  This file is part of the OpenLink RDF Editor
+ *
+ *  Copyright (C) 2014-2015 OpenLink Software
+ *
+ *  This project is free software; you can redistribute it and/or modify it
+ *  under the terms of the GNU General Public License as published by the
+ *  Free Software Foundation; only version 2 of the License, dated June 1991.
+ *
+ *  This program is distributed in the hope that it will be useful, but
+ *  WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ *  General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License along
+ *  with this program; if not, write to the Free Software Foundation, Inc.,
+ *  51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA
+ *
+ */
+
 (function ($) {
 
   var OntoBox = function(elem, options) {
@@ -8,7 +28,7 @@
 
     self.mainElem = elem;
 
-    $(ontologyManager).on('changed', function(e, om) {
+    $(self.options.ontoManager).on('changed', function(e, om) {
       self.sel.addOption(om.allOntologies());
     });
 
@@ -20,17 +40,24 @@
       onChange: function(value) {
         $(self).trigger('changed', self.options.ontoManager.ontologyByURI(value));
       },
+      createOntology: function(input, create) {
+        return self.options.ontoManager.ontologyByURI(self.options.ontoManager.ontologyDetermine(input), create);
+      },
       create: function(input, cb) {
+        var that = this;
         var url = self.options.ontoManager.ontologyDetermine(input);
         if (!url) {
           url = self.options.ontoManager.prefixes[input] || input;
         }
-        self.options.ontoManager.ontologyParse(url, {
-          "success": function(onto) {
-            cb(onto);
+        self.options.ontoManager.parseOntologyFile(url, {
+          "success": function() {
+            cb(that.settings.createOntology(input, true));
           },
-          "error": function() {
-            cb(null);
+          "error": function(state) {
+            if (state && state.message) {
+              $.growl({message: state.message}, {type: 'danger'});
+            }
+            cb(that.settings.createOntology(input, true));
           }
         });
       },

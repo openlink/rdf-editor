@@ -1,3 +1,23 @@
+/*
+ *  This file is part of the OpenLink RDF Editor
+ *
+ *  Copyright (C) 2014-2015 OpenLink Software
+ *
+ *  This project is free software; you can redistribute it and/or modify it
+ *  under the terms of the GNU General Public License as published by the
+ *  Free Software Foundation; only version 2 of the License, dated June 1991.
+ *
+ *  This program is distributed in the hope that it will be useful, but
+ *  WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ *  General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License along
+ *  with this program; if not, write to the Free Software Foundation, Inc.,
+ *  51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA
+ *
+ */
+
 if(!window.RDFE)
   window.RDFE = {};
 
@@ -131,7 +151,7 @@ RDFE.EntityModel = Backbone.Model.extend({
         item.itemType = "NestedRdf";
         item.model = RDFE.EntityModel.extend({
           defaults: {
-            'http://www.w3.org/1999/02/22-rdf-syntax-ns#type': [ property.getRange() ]
+            'http://www.w3.org/1999/02/22-rdf-syntax-ns#type': [ new RDFE.RdfNode('uri', property.getRange()) ]
           },
           initialize: function(options) {
             RDFE.EntityModel.prototype.initialize.call(this, options);
@@ -224,7 +244,6 @@ RDFE.EntityModel = Backbone.Model.extend({
     var self = this;
     self.schema = {};
     self.fields = [];
-    self.ontologyManager = ontologyManager;
 
     this.doc.getEntity(self.uri, function(entity) {
       // TODO: optionally load the ontologies for this.types. Ideally through a function in the ontology manager, something like getClass()
@@ -275,7 +294,7 @@ RDFE.EntityModel = Backbone.Model.extend({
       }
       else {
         // replace fresnel:allProperties with the missing properties, rather than appending them
-        var j = self.fields.indexOf(self.ontologyManager.uriDenormalize('fresnel:allProperties'));
+        var j = self.fields.indexOf(self.doc.ontologyManager.uriDenormalize('fresnel:allProperties'));
         if(j >= 0) {
           // only chow the "Add Property" button if we have fresnel:allProperties in the lens or we have no lens
           self.allowAddProperty = true;

@@ -1,3 +1,23 @@
+/*
+ *  This file is part of the OpenLink RDF Editor
+ *
+ *  Copyright (C) 2014-2015 OpenLink Software
+ *
+ *  This project is free software; you can redistribute it and/or modify it
+ *  under the terms of the GNU General Public License as published by the
+ *  Free Software Foundation; only version 2 of the License, dated June 1991.
+ *
+ *  This program is distributed in the hope that it will be useful, but
+ *  WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ *  General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License along
+ *  with this program; if not, write to the Free Software Foundation, Inc.,
+ *  51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA
+ *
+ */
+
 (function($) {
   if (!window.RDFE) {
     window.RDFE = {};
@@ -5,24 +25,26 @@
 
   RDFE.TripleView = (function() {
     // constructor
-    var c = function(doc, ontoMan) {
+    var c = function(doc, ontologyManager, editor) {
       this.doc = doc;
-      this.ontologyManager = ontoMan;
-    };
-
-    var nodeFormatter = function(value) {
-      if (value.interfaceName == "Literal") {
-        if (value.datatype == 'http://www.w3.org/2001/XMLSchema#dateTime')
-          return (new Date(value.nominalValue)).toString();
-        else
-          return value.nominalValue;
-      } else {
-        return value.toString();
-      }
+      this.namingSchema = doc.config.options[doc.config.options["namingSchema"]];
+      this.ontologyManager = ontologyManager;
+      this.editor = editor;
     };
 
     c.prototype.render = function(container, callback) {
       var self = this;
+      var maxLength = self.doc.config.options["maxLabelLength"];
+
+      var nodeFormatter = function(value) {
+        if (value.interfaceName == "Literal") {
+          if (value.datatype == 'http://www.w3.org/2001/XMLSchema#dateTime') {
+            return (new Date(value.nominalValue)).toString();
+          }
+          return RDFE.Utils.strAbbreviate(value.nominalValue, maxLength);
+        }
+        return RDFE.Utils.uriAbbreviate(value.toString(), maxLength);
+      };
 
       var tripleEditorDataSetter = function(triple, field, newValue) {
         var newNode = newValue;
@@ -55,7 +77,6 @@
       };
 
       self.doc.listProperties(function (pl) {
-        console.log('Found existing predicates: ', pl);
         self.doc.store.graph(self.doc.graph, function(success, g) {
           if(success) {
             container.empty();
@@ -81,8 +102,8 @@
               dataSetter: tripleEditorDataSetter,
               columns: [{
                 field: 'subject',
-                title: 'Subject',
-                aligh: 'left',
+                title: RDFE.Utils.namingSchemaLabel('s', self.namingSchema),
+                align: 'left',
                 sortable: true,
                 editable: function(triple) {
                   return {
@@ -97,7 +118,7 @@
                 formatter: nodeFormatter
               }, {
                 field: 'predicate',
-                title: 'Predicate',
+                title: RDFE.Utils.namingSchemaLabel('p', self.namingSchema),
                 align: 'left',
                 sortable: true,
                 editable: function(triple) {
@@ -113,22 +134,28 @@
                 formatter: nodeFormatter
               }, {
                 field: 'object',
-                title: 'Object',
+                title: RDFE.Utils.namingSchemaLabel('o', self.namingSchema),
                 align: 'left',
                 sortable: true,
                 editable: function(triple) {
                   return {
-                    mode: "inline",
-                    type: "rdfnode",
-                    value: triple.object
+                    "mode": "inline",
+                    "type": "rdfnode",
+                    "rdfnode": {
+                      "predicate": triple.predicate.toString(),
+                      "document": self.doc,
+                      "ontologyManager": self.ontologyManager
+                    },
+                    "value": triple.object
                   };
                 },
                 formatter: nodeFormatter
               }, {
                 field: 'actions',
-                title: 'Actions',
+                title: '<button class="add btn btn-default" title="Add a new statement to the document"><span class="glyphicon glyphicon-plus" aria-hidden="true"></span> New</button>',
                 align: 'center',
                 valign: 'middle',
+                class: 'small-column',
                 clickToSelect: false,
                 editable: false,
                 formatter: function(value, row, index) {
@@ -147,19 +174,21 @@
                         values: [row.id]
                       });
                     }, function() {
-                      $(self).trigger('rdf-editor-error', { "type": 'triple-delete-failed', "message": 'Failed to delete triple.' });
+                      $(self).trigger('rdf-editor-error', { "type": 'triple-delete-failed', "message": 'Failed to delete ' + RDFE.Utils.namingSchemaLabel('spo', self.namingSchema, false, true) + '.' });
                     });
                   }
                 }
               }]
             });
-
+            $($list).find('.add').on('click', function(e) {
+              self.editor.createNewStatementEditor();
+            });
             self.tripleTable = $list;
 
             if (callback)
               callback();
           } else {
-            $(self).trigger('rdf-editor-error', 'Failed to query triples from doc.');
+            $(self).trigger('rdf-editor-error', 'Failed to query ' + RDFE.Utils.namingSchemaLabel('spo', self.namingSchema, true, true) + ' from document.');
           }
         });
       });
@@ -167,11 +196,8 @@
 
     c.prototype.addTriple = function(t) {
       var i = this.tripleTable.data('maxindex');
-      i += 1;
-      this.tripleTable.bootstrapTable('append', $.extend(t, {
-        id: i
-      }));
-      this.tripleTable.data('maxindex', i);
+      this.tripleTable.bootstrapTable('append', $.extend(t, { id: i}));
+      this.tripleTable.data('maxindex', i+1);
     };
 
     return c;

@@ -1,3 +1,23 @@
+/*
+ *  This file is part of the OpenLink RDF Editor
+ *
+ *  Copyright (C) 2014-2015 OpenLink Software
+ *
+ *  This project is free software; you can redistribute it and/or modify it
+ *  under the terms of the GNU General Public License as published by the
+ *  Free Software Foundation; only version 2 of the License, dated June 1991.
+ *
+ *  This program is distributed in the hope that it will be useful, but
+ *  WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ *  General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License along
+ *  with this program; if not, write to the Free Software Foundation, Inc.,
+ *  51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA
+ *
+ */
+
 String.prototype.format = function() {
   var args = arguments;
   return this.replace(/{(\d+)}/g, function(match, number) {
@@ -87,6 +107,22 @@ String.prototype.format = function() {
       $(document).ajaxError(params.ajaxError);
       $(document).ajaxSuccess(params.ajaxSuccess);
 
+      // add auth info from self.options.username and .password via
+      ajaxParams.headers = ajaxParams.headers || {};
+      if (params.username) {
+        ajaxParams.headers["Authorization"] = "Basic " + btoa(params.username + ":" + params.password);
+        ajaxParams = $.extend({"withCredentials": true}, ajaxParams);
+      }
+      if (params.authFunction) {
+        if (RDFE.Utils.getUrlBase(ajaxParams.url) === RDFE.Utils.getUrlBase(window.location.href)) {
+          ajaxParams.headers["X-Requested-With"] = 'XMLHttpRequest';
+        }
+      }
+      ajaxParams = $.extend({"crossDomain": true}, ajaxParams);
+      if (self.options["ioTimeout"]) {
+        ajaxParams = $.extend({"timeout": self.options["ioTimeout"]}, ajaxParams);
+      }
+
       $.ajax(ajaxParams).done(function(data, status, xhr) {
         if (params && params.success) {
           params.success(data, status, xhr);
@@ -97,7 +133,30 @@ String.prototype.format = function() {
             "httpCode": data.status,
             "message": data.statusText
           }
-          params.error(state, data, status, xhr);
+          if (this.crossDomain && (state.message = 'error') && (RDFE.Utils.extractDomain(this.url) !== window.location.hostname)) {
+            state.message = "The document failed to load - this could be related to missing CORS settings on the server."
+          }
+          if ((data.status === 401 || data.status === 403) && params.authFunction) {
+            params.authFunction(ajaxParams.url, function(r) {
+              params.username = r.username;
+              params.password = r.password;
+              self.baseExec(ajaxParams, params);
+            }, function() {
+              // user did not provide credentials
+              state = 'Error: ' + data.status + ' (' + data.statusText + ')';
+              params.error(state, data, status, xhr);
+            });
+          }
+          else if (status === 'timeout') {
+            var state = {
+              "httpCode": status,
+              "message": 'Failed to load document because of timeout'
+            }
+            params.error(state, data, status, xhr);
+          }
+          else {
+            params.error(state, data, status, xhr);
+          }
         }
       });
     }
@@ -147,11 +206,11 @@ String.prototype.format = function() {
     c.prototype.retrieveToStore = function(graph, store, storeGraph, params) {
       var self = this;
       params = extendParams(params, self.options);
-      var __success = function(data, textStatus) {
+      var __success = function(data, status, xhr) {
         clearGraph(store, storeGraph);
-        store.loadTurtle(data, storeGraph, function(success, r) {
+        store.loadTurtle(data, storeGraph, graph, function(success, r) {
           if (success && params["__success"]) {
-            params["__success"]();
+            params["__success"](data, status, xhr);
           }
           else if(!success && params["error"]) {
             params["error"](r);
@@ -284,11 +343,11 @@ String.prototype.format = function() {
     c.prototype.retrieveToStore = function(graph, store, storeGraph, params) {
       var self = this;
       params = extendParams(params, self.options);
-      var __success = function(data, textStatus) {
+      var __success = function(data, status, xhr) {
         clearGraph(store, storeGraph);
-        store.loadTurtle(data, storeGraph, function(success, r) {
+        store.loadTurtle(data, storeGraph, graph, function(success, r) {
           if (success && params["__success"]) {
-            params["__success"]();
+            params["__success"](data, status, xhr);
           }
           else if(!success && params["error"]) {
             params["error"](r);
@@ -389,7 +448,7 @@ String.prototype.format = function() {
         params["ajaxError"] = null;
         params["ajaxSuccess"] = null;
       }
-      var headers;
+      var headers = {};
       if (this.type != 'webdav') {
         headers = {
           "Accept": 'text/turtle, */*;q=0.1'
@@ -400,11 +459,11 @@ String.prototype.format = function() {
 
     c.prototype.retrieveToStore = function(path, store, storeGraph, params) {
       params = extendParams(params, this.options);
-      var __success = function(data, textStatus) {
+      var __success = function(data, status, xhr) {
         clearGraph(store, storeGraph);
-        store.loadTurtle(data, storeGraph, function(success, r) {
+        store.loadTurtle(data, storeGraph, path, function(success, r) {
           if (success && params["__success"]) {
-            params["__success"]();
+            params["__success"](data, status, xhr);
           }
           else if(!success && params["error"]) {
             params["error"](r);
@@ -421,12 +480,10 @@ String.prototype.format = function() {
       var headers;
       var method;
       if (this.type != 'webdav') {
-        method = 'POST';
+        method = 'PUT';
         headers = {
-          "Content-Type": 'text/turtle',
-          "Slug": getFn(path)
+          "Content-Type": 'text/turtle'
         };
-        path = getFParent(path);
       } else {
         method = 'PUT';
       }
@@ -473,7 +530,7 @@ String.prototype.format = function() {
         url: path,
         type: method,
         headers: headers,
-        contentType: 'application/octet-stream',
+        contentType: 'text/turtle',
         processData: false,
         data: content,
         dataType: params.dataType
@@ -516,9 +573,8 @@ String.prototype.format = function() {
       var self = this;
       params.__success = params.success;
       params.success = function(data, status, xhr) {
-        var contentType = (xhr.getResponseHeader('content-type') || '').split(';')[0];
         if (params && params.__success) {
-          params.__success(data, contentType);
+          params.__success(data, status, xhr);
         }
       };
 
@@ -547,7 +603,7 @@ String.prototype.format = function() {
               return;
             }
             if (params && params.__success) {
-              params.__success();
+              params.__success(data, status, xhr);
             }
           };
           if(contentType.indexOf('turtle') > 0 || contentType.length === 0)

@@ -1,3 +1,23 @@
+/*
+ *  This file is part of the OpenLink RDF Editor
+ *
+ *  Copyright (C) 2014-2015 OpenLink Software
+ *
+ *  This project is free software; you can redistribute it and/or modify it
+ *  under the terms of the GNU General Public License as published by the
+ *  Free Software Foundation; only version 2 of the License, dated June 1991.
+ *
+ *  This program is distributed in the hope that it will be useful, but
+ *  WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ *  General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License along
+ *  with this program; if not, write to the Free Software Foundation, Inc.,
+ *  51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA
+ *
+ */
+
 if(!window.RDFE)
   window.RDFE = {};
 
@@ -14,8 +34,8 @@ RDFE.RdfNode = function(t, v, dt, l) {
 RDFE.RdfNode.prototype.toStoreNode = function(store) {
   if(this.type == 'uri')
     return store.rdf.createNamedNode(this.value);
-  else
-    return store.rdf.createLiteral(this.value, this.language, this.datatype);
+
+  return store.rdf.createLiteral(this.value, this.language, this.datatype);
 };
 
 RDFE.RdfNode.prototype.toString = function() {
@@ -33,40 +53,41 @@ RDFE.RdfNode.prototype.toString = function() {
  */
 RDFE.RdfNode.fromStoreNode = function(node) {
   // plain string
-  if(typeof(node) == 'string') {
+  if (typeof(node) === 'string') {
     return new RDFE.RdfNode('uri', node);
   }
 
   // already an RdfNode
-  else if(node instanceof RDFE.RdfNode) {
+  if (node instanceof RDFE.RdfNode) {
     return node;
   }
 
   // rdfstore nodes
-  else if(node.token) {
+  if (node.token) {
     return new RDFE.RdfNode(node.token, node.value, node.type, node.lang);
   }
 
   // rdfstore.rdf nodes
-  else if(node.interfaceName) {
+  if (node.interfaceName) {
     var t;
-    if(node.interfaceName === 'NamedNode')
-      t = 'uri';
-    else if(node.interfaceName === 'Literal')
-      t = 'literal'
-    else
-      throw "Blank nodes cannot be converted into RDFE.RdfNode values.";
 
+    if (node.interfaceName === 'NamedNode') {
+      t = 'uri';
+    }
+    else if(node.interfaceName === 'Literal') {
+      t = 'literal'
+    }
+    else {
+      throw "Blank nodes cannot be converted into RDFE.RdfNode values.";
+    }
     return new RDFE.RdfNode(t, node.nominalValue, node.datatype, node.language);
   }
 
   // entities
-  else if(node.uri) {
+  if (node.uri) {
     return new RDFE.RdfNode('uri', node.uri);
   }
 
   // unknown
-  else {
-    throw "Unsupported node type for RDFE.RdfNode conversion.";
-  }
+  throw "Unsupported node type for RDFE.RdfNode conversion.";
 };

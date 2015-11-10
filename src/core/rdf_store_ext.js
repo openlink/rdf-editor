@@ -1,3 +1,23 @@
+/*
+ *  This file is part of the OpenLink RDF Editor
+ *
+ *  Copyright (C) 2014-2015 OpenLink Software
+ *
+ *  This project is free software; you can redistribute it and/or modify it
+ *  under the terms of the GNU General Public License as published by the
+ *  Free Software Foundation; only version 2 of the License, dated June 1991.
+ *
+ *  This program is distributed in the hope that it will be useful, but
+ *  WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ *  General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License along
+ *  with this program; if not, write to the Free Software Foundation, Inc.,
+ *  51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA
+ *
+ */
+
 /* Extensions for rdfstore.js */
 /**
  * Try to abbreviate a URI using the prefixes defined in the rdfstore.
@@ -55,15 +75,22 @@ rdfstore.Store.prototype.rdf.api.RDFNode.prototype.localeCompare = function(comp
     return this.toString().localeCompare(compareNode.toString(), locales, options);
 };
 
-rdfstore.Store.prototype.loadTurtle = function(data, graph, callback) {
+rdfstore.Store.prototype.loadTurtle = function(data, graph, baseUri, callback) {
   var self = this;
   var parser = N3.Parser();
+  if(typeof(baseUri) === 'function') {
+    callback = baseUri;
+    baseUri = graph;
+  }
 
   // mapping for blank nodes
   var bns = {};
 
   var convertNode = function(node) {
-    if(N3.Util.isLiteral(node)) {
+    if(!node) {
+      return self.rdf.createNamedNode(baseUri);
+    }
+    else if(N3.Util.isLiteral(node)) {
       // rdfstore treats the empty string as a valid language
       var l = N3.Util.getLiteralLanguage(node);
       if(l == '')

@@ -1,3 +1,23 @@
+/*
+ *  This file is part of the OpenLink RDF Editor
+ *
+ *  Copyright (C) 2014-2015 OpenLink Software
+ *
+ *  This project is free software; you can redistribute it and/or modify it
+ *  under the terms of the GNU General Public License as published by the
+ *  Free Software Foundation; only version 2 of the License, dated June 1991.
+ *
+ *  This program is distributed in the hope that it will be useful, but
+ *  WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ *  General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License along
+ *  with this program; if not, write to the Free Software Foundation, Inc.,
+ *  51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA
+ *
+ */
+
 (function($) {
   if (!window.RDFE) {
     window.RDFE = {};
@@ -7,25 +27,27 @@
     // constructor
     var c = function(doc, ontoMan) {
       this.doc = doc;
+      this.namingSchema = doc.config.options[doc.config.options["namingSchema"]];
       this.ontologyManager = ontoMan;
     };
 
     // custom form which allows adding new properties
     var EntityForm = Backbone.Form.extend({
       // Add a "new property" button to the default Backbone-Forms form
-      template: _.template('\
-        <form class="form-horizontal clearfix" role="form">\
-          <a href="#" class="btn btn-default btn-xs pull-right addProp">Add Property</a>\
-          <div data-fieldsets></div>\
-          <% if (submitButton) { %>\
-            <button type="submit" class="btn"><%= submitButton %></button>\
-          <% } %>\
-        </form>\
-      '),
+      template: _.template(
+        '<form class="form-horizontal clearfix" role="form">' +
+        '  <a href="#" class="btn btn-default btn-xs pull-right addProp">Add <%= RDFE.Utils.namingSchemaLabel("p", this.namingSchema) %></a>' +
+        '  <div data-fieldsets></div>' +
+        '  <% if (submitButton) { %>' +
+        '    <button type="submit" class="btn"><%= submitButton %></button>' +
+        '  <% } %>' +
+        '</form>'
+      ),
 
       render: function() {
         var self = this;
 
+        self.namingSchema = self.model.doc.config.options[self.model.doc.config.options["namingSchema"]];
         Backbone.Form.prototype.render.call(this);
 
         if(!self.model.allowAddProperty) {
@@ -42,7 +64,7 @@
               cnclBtn = $(document.createElement('button')).addClass('btn').addClass('btn-default').text('Cancel');
 
           var c = $(document.createElement('div'))
-            .append($(document.createElement('span')).text('New Property:'))
+            .append($(document.createElement('span')).text('New ' + RDFE.Utils.namingSchemaLabel('p', self.namingSchema) + ':'))
             .append(ps)
             .append(addBtn)
             .append(cnclBtn);
@@ -107,6 +129,7 @@
 
     c.prototype.render = function(container, url, closeCb) {
       var self = this;
+
       var model = new RDFE.EntityModel();
       model.setEntity(this.doc, url);
       model.docToModel(function() {

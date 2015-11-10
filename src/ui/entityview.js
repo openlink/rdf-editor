@@ -1,3 +1,23 @@
+/*
+ *  This file is part of the OpenLink RDF Editor
+ *
+ *  Copyright (C) 2014-2015 OpenLink Software
+ *
+ *  This project is free software; you can redistribute it and/or modify it
+ *  under the terms of the GNU General Public License as published by the
+ *  Free Software Foundation; only version 2 of the License, dated June 1991.
+ *
+ *  This program is distributed in the hope that it will be useful, but
+ *  WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ *  General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License along
+ *  with this program; if not, write to the Free Software Foundation, Inc.,
+ *  51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA
+ *
+ */
+
 (function($) {
   if (!window.RDFE) {
     window.RDFE = {};
@@ -5,30 +25,25 @@
 
   RDFE.EntityView = (function() {
     // constructor
-    var c = function(doc, ontoMan, params) {
+    var c = function(doc, ontologyManager, editor, params) {
       this.doc = doc;
-      this.ontologyManager = ontoMan;
+      this.namingSchema = doc.config.options[doc.config.options["namingSchema"]];
+      this.ontologyManager = ontologyManager;
+      this.editor = editor;
       this.editFct = params.editFct;
     };
 
     var labelFormatter = function(value, row, index) {
-      if(row.types && row.types.length) {
-        return row.label + ' <small>(' + row.types + ')</small>';
-      }
-      else {
-        return row.label;
-      }
+      return '<span title="' + row.uri + '">' + row.label + '</span>';
     };
 
-    var entityListActionsFormatter = function(value, row, index) {
-      return [
-        '<a class="edit ml10" href="javascript:void(0)" title="Edit">',
-        '  <i class="glyphicon glyphicon-edit"></i>',
-        '</a>',
-        '<a class="remove ml10" href="javascript:void(0)" title="Remove">',
-        '  <i class="glyphicon glyphicon-remove"></i>',
-        '</a>'
-      ].join('');
+    var typeFormatter = function(value, row, index) {
+      if(row.types && row.types.length) {
+        return row.types;
+      }
+      else {
+        return "<em>none</em>";
+      }
     };
 
     /**
@@ -46,7 +61,18 @@
     c.prototype.render = function(container, callback) {
       var self = this;
 
-      self.doc.listEntities(function(el) {
+      var entityListActionsFormatter = function(value, row, index) {
+        return [
+          '<a class="edit ml10" href="javascript:void(0)" title="Edit this '+RDFE.Utils.namingSchemaLabel('spo', self.namingSchema, false, true)+'">',
+          '  <i class="glyphicon glyphicon-edit"></i>',
+          '</a>',
+          '<a class="remove ml10" href="javascript:void(0)" title="Remove this '+RDFE.Utils.namingSchemaLabel('spo', self.namingSchema, false, true)+' from the document">',
+          '  <i class="glyphicon glyphicon-remove"></i>',
+          '</a>'
+        ].join('');
+      };
+
+      self.doc.listEntities(self.editor.config.options.entityTypesFiler, function(el) {
         self.entityTable = null;
         container.empty();
 
@@ -90,15 +116,23 @@
           idField: 'uri',
           columns: [{
             field: 'label',
-            title: 'Entity Name',
+            title: RDFE.Utils.namingSchemaLabel('s', self.namingSchema) + ' Name',
             aligh: 'left',
             sortable: true,
             formatter: labelFormatter
           }, {
+            field: 'types',
+            title: 'Entity Types',
+            aligh: 'left',
+            class: 'small-column',
+            sortable: true,
+            formatter: typeFormatter
+          }, {
             field: 'actions',
-            title: 'Actions',
+            title: '<button class="add btn btn-default" title="Click to create a new '+RDFE.Utils.namingSchemaLabel('spo', self.namingSchema, false, true)+' to the document"><span class="glyphicon glyphicon-plus" aria-hidden="true"></span> New</button>',
             align: 'center',
             valign: 'middle',
+            class: 'small-column',
             clickToSelect: false,
             formatter: entityListActionsFormatter,
             events: {
@@ -110,6 +144,9 @@
               }
             }
           }]
+        });
+        $($list).find('.add').on('click', function(e) {
+          self.editor.createNewEntityEditor();
         });
         self.entityTable = $list;
 

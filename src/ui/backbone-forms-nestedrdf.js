@@ -1,3 +1,23 @@
+/*
+ *  This file is part of the OpenLink RDF Editor
+ *
+ *  Copyright (C) 2014-2015 OpenLink Software
+ *
+ *  This project is free software; you can redistribute it and/or modify it
+ *  under the terms of the GNU General Public License as published by the
+ *  Free Software Foundation; only version 2 of the License, dated June 1991.
+ *
+ *  This program is distributed in the hope that it will be useful, but
+ *  WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ *  General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License along
+ *  with this program; if not, write to the Free Software Foundation, Inc.,
+ *  51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA
+ *
+ */
+
 /**
  * NestedRdf editor
  *
@@ -42,9 +62,28 @@ Backbone.Form.editors.NestedRdf = Backbone.Form.editors.Object.extend({
   },
 
   getValue: function() {
+    var v = this.nestedForm.getValue();
+    if(this.nestedForm.model.defaults) {
+      // we only merge defaults if there is any value at all
+      var haveVal = false;
+      for(var p in v) {
+        if(v[p]) {
+          for(var i = 0; i < v[p].length; i++) {
+            if(v[p][i].value) {
+              haveVal = true;
+              break;
+            }
+          }
+        }
+      }
+      if(haveVal) {
+        v = _.extend({}, this.nestedForm.model.defaults, v);
+      }
+    }
+
     return {
       "uri": this.nestedForm.model.uri,
-      "values": this.nestedForm.getValue()
+      "values": v
     };
   }
 

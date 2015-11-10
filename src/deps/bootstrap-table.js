@@ -518,7 +518,11 @@
                     bb = '';
                 }
 
+                // IF both values are numeric, do a numeric comparison
                 if ($.isNumeric(aa) && $.isNumeric(bb)) {
+                    // Convert numerical values form string to float.
+                    aa = parseFloat(aa);
+                    bb = parseFloat(bb);
                     if (aa < bb) {
                         return order * -1;
                     }
@@ -528,6 +532,12 @@
                 if (aa === bb) {
                     return 0;
                 }
+
+                // If value is not a string, convert to string
+                if (typeof aa !== 'string') {
+                    aa = aa.toString();
+                }
+
                 if (aa.localeCompare(bb) === -1) {
                     return order * -1;
                 }
