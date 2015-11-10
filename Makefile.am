@@ -34,7 +34,7 @@ GRUNT_FILES = \
 
 RDF_EDITOR_FILES = dist/index.html
 
-VERSION=`./gen_version.sh`
+VAD_VERSION=`./gen_version.sh`
 
 vad_DATA = rdf_editor_dav.vad
 
@@ -49,7 +49,7 @@ dist/index.html: $(GRUNT_FILES)
 
 # Rule to create our vad
 rdf_editor_dav.vad: $(RDF_EDITOR_FILES) rdf-editor-sticker.xml Makefile vad_version
-	@VADPACKER@ -o rdf_editor_dav.vad --var="VERSION=$(VERSION)" rdf-editor-sticker.xml
+	@PYTHON@ @VADPACKER@ -o rdf_editor_dav.vad --var="VERSION=$(VAD_VERSION)" rdf-editor-sticker.xml
 
 CLEANFILES = *.vad
 

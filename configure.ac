@@ -1,4 +1,6 @@
-AC_INIT([rdf-editor], m4_esyscmd([./gen_version.sh | tr -d '\n']), [ods@openlinksw.com])
+define([RDF_EDITOR_VERSION], [esyscmd([./gen_version.sh | sed -e 's/_git.*//' | tr -d '\n'])])
+
+AC_INIT([rdf-editor], [RDF_EDITOR_VERSION], [opensource@openlinksw.com])
 AM_INIT_AUTOMAKE
 
 # --------------------------------------------------------------
