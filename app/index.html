@@ -63,12 +63,12 @@
       </div>
 
       <div class="collapse navbar-collapse" id="rdfe-navbar-collapse">
-        <p class="navbar-text navbar-right">
+        <p ng-show="userProfile.config.valInstalled" class="navbar-text navbar-right">
           <span ng-show="profile" ng-cloak class="ng-cloak">Logged in as <a class="navbar-link" ng-href="{{profile.uri}}">{{profile.name || profile.nick || profile.uri}}</a></span>
           <span ng-hide="profile">Not logged in</span>
         </p>
 
-        <ul class="nav navbar-nav navbar-right">
+        <ul ng-show="userProfile.config.valInstalled" class="nav navbar-nav navbar-right">
           <li ng-hide="profile"><a class="navbar-link" ng-click="login();" href="">Login</a></li>
           <li ng-show="profile"><a class="navbar-link" ng-click="logout();" href="">Logout</a></li>
         </ul>

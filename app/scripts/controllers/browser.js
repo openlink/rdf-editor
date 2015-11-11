@@ -63,7 +63,7 @@ angular.module('myApp.fileBrowser', ['ngRoute', 'ui.bootstrap'])
   });
 
   $scope.setCurrentLocation = function(location) {
-    $scope.resetUi();
+    $scope.resetUI();
     if (location != $scope.currentLocation) {
       if (location.httpStatus) {
         var authFunction;
@@ -109,53 +109,67 @@ angular.module('myApp.fileBrowser', ['ngRoute', 'ui.bootstrap'])
   };
 
   $scope.changeDir = function(folder) {
-    $scope.resetUi();
+    var applyFolder = function () {
+      usSpinnerService.stop('refresh-spinner');
+      $scope.currentFolder = folder;
+    }
+    $scope.resetUI();
+    usSpinnerService.spin('refresh-spinner');
 
     // FIXME: apparently this update does not always work after having created a new file via addFile()
-    if(folder.dirty) {
+    if (folder.dirty) {
+      folder.httpStatus = null;
+      folder.errorMessage = null;
       folder.update(function() {
         $scope.$apply(function() {
-          $scope.currentFolder = folder;
+          applyFolder();
         });
-      }, function() {
+      }, function(folder, err, status) {
         // even if there is an error we change the current folder
         // the ui will show the error automatically
+        folder.httpStatus = status;
+        folder.errorMessage = err;
         $scope.$apply(function() {
-          $scope.currentFolder = folder;
+          applyFolder();
         });
       });
     }
     else {
-      $scope.currentFolder = folder;
+      applyFolder();
     }
   };
 
   $scope.folderUp = function() {
-    if($scope.currentFolder.parent) {
+    if ($scope.currentFolder.parent) {
       $scope.currentFolder = $scope.currentFolder.parent;
-      $scope.resetUi();
+      $scope.resetUI();
     }
   };
 
   $scope.refresh = function() {
-    $scope.resetUi();
+    $scope.resetUI();
 
     if ($scope.currentLocation.name === "Recent Documents") {
       $scope.currentLocation.children = DocumentTree.getRecentDocs();
-        $scope.currentFolder = $scope.currentFolder;
+      $scope.currentFolder = $scope.currentFolder;
     }
     else {
       usSpinnerService.spin('refresh-spinner');
+      $scope.currentFolder.httpStatus = null;
+      $scope.currentFolder.errorMessage = null;
       $scope.currentFolder.update(true, function() {
         $scope.$evalAsync(function() {
           $scope.currentFolder = $scope.currentFolder;
-        $timeout(function() {
-          usSpinnerService.stop('refresh-spinner');
-        }, 1000);
+          $timeout(function() {
+            usSpinnerService.stop('refresh-spinner');
+          }, 1000);
+        });
+      }, function(folder, err, status) {
+        usSpinnerService.stop('refresh-spinner');
+        folder.httpStatus = status;
+        folder.errorMessage = err;
+        $scope.$apply();
       });
-    }, function() {
-      // do nothing
-    });
     }
   };
 
@@ -303,7 +317,7 @@ angular.module('myApp.fileBrowser', ['ngRoute', 'ui.bootstrap'])
     }
   };
 
-  $scope.resetUi = function() {
+  $scope.resetUI = function() {
     $scope.addingFile = false;
     $scope.addingGraph = false;
     $scope.addingLocation = false;
