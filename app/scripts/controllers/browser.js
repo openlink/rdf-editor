@@ -41,13 +41,15 @@ angular.module('myApp.fileBrowser', ['ngRoute', 'ui.bootstrap'])
   };
 })
 
-.controller('FileBrowserCtrl', ["$scope", '$routeParams', "$timeout", '$location', "usSpinnerService", "DocumentTree", 'Notification', function($scope, $routeParams, $timeout, $location, usSpinnerService, DocumentTree, Notification) {
+.controller('FileBrowserCtrl', ["$rootScope", "$scope", '$routeParams', "$timeout", '$location', "usSpinnerService", "DocumentTree", 'Notification', function($rootScope, $scope, $routeParams, $timeout, $location, usSpinnerService, DocumentTree, Notification) {
   // browser mode
-  $scope.mode = 'open';
-  $scope.title = 'Open a Document';
-  if($routeParams.mode === 'save') {
+  if ($routeParams.mode === 'save') {
     $scope.mode = $routeParams.mode;
     $scope.title = 'Save Your Document';
+  }
+  else {
+    $scope.mode = 'open';
+    $scope.title = 'Open a Document';
   }
 
   // array of default locations
@@ -56,8 +58,18 @@ angular.module('myApp.fileBrowser', ['ngRoute', 'ui.bootstrap'])
     $scope.locations = locations;
 
     // browser state
-    $scope.updateCurrentLocation($scope.locations[0]);
-    $scope.currentFolder = $scope.currentLocation;
+    // replace the old location with the new one
+    var ndx = 0;
+    if ($rootScope.currentLocation) {
+      for (var i = 0; i < $scope.locations.length; i++) {
+        if ($scope.locations[i].url === $rootScope.currentLocation.url) {
+          ndx = i;
+          break;
+        }
+      }
+    }
+    $scope.updateCurrentLocation($scope.locations[ndx]);
+    $scope.updateCurrentFolder($scope.currentLocation);
 
     usSpinnerService.stop('location-spinner');
   });
@@ -81,7 +93,7 @@ angular.module('myApp.fileBrowser', ['ngRoute', 'ui.bootstrap'])
             // replace the old location with the new one
             $scope.locations[$scope.locations.indexOf(location)] = dir;
             $scope.updateCurrentLocation(dir);
-            $scope.currentFolder = dir;
+            $scope.updateCurrentFolder(dir);
           });
         }, function(errMsg, status) {
           location.httpStatus = status;
@@ -90,22 +102,29 @@ angular.module('myApp.fileBrowser', ['ngRoute', 'ui.bootstrap'])
           // to avoid the $apply nesting
           $timeout(function() {
             $scope.updateCurrentLocation(location);
-            $scope.currentFolder = location;
+            $scope.updateCurrentFolder(location);
           });
         });
       }
       else {
         $scope.updateCurrentLocation(location);
-        $scope.currentFolder = location;
+        $scope.updateCurrentFolder(location);
       }
     }
   };
 
   $scope.updateCurrentLocation = function(location) {
     $scope.currentLocation = location;
+    $rootScope.currentLocation = location;
 
     // property to order files and folders by (folders are always first)
     $scope.orderProp = (location.name === "Recent Documents")? null: "name";
+  };
+
+  $scope.updateCurrentFolder = function(folder) {
+    $scope.currentFolder = folder;
+    if ($scope.currentFolder && $scope.currentFolder.dirty)
+      $scope.refresh();
   };
 
   $scope.changeDir = function(folder) {
@@ -115,8 +134,6 @@ angular.module('myApp.fileBrowser', ['ngRoute', 'ui.bootstrap'])
     }
     $scope.resetUI();
     usSpinnerService.spin('refresh-spinner');
-
-    // FIXME: apparently this update does not always work after having created a new file via addFile()
     if (folder.dirty) {
       folder.httpStatus = null;
       folder.errorMessage = null;
@@ -141,7 +158,7 @@ angular.module('myApp.fileBrowser', ['ngRoute', 'ui.bootstrap'])
 
   $scope.folderUp = function() {
     if ($scope.currentFolder.parent) {
-      $scope.currentFolder = $scope.currentFolder.parent;
+      $scope.updateCurrentFolder($scope.currentFolder.parent);
       $scope.resetUI();
     }
   };
@@ -282,11 +299,11 @@ angular.module('myApp.fileBrowser', ['ngRoute', 'ui.bootstrap'])
   $scope.addNewGraph = function() {
     if ($scope.newGraphUri && $scope.newGraphUri.length) {
       // add the new graph file item
-      var gr = new RDFE.IO.File($scope.newGraphUri);
-      gr.parent = $scope.currentFolder;
-      gr.sparqlEndpoint = $scope.currentFolder.sparqlEndpoint;
-      gr.ioType = 'sparql';
-      $scope.currentFolder.children.push(gr);
+      var graph = new RDFE.IO.File($scope.newGraphUri);
+      graph.parent = $scope.currentFolder;
+      graph.sparqlEndpoint = $scope.currentFolder.sparqlEndpoint;
+      graph.ioType = 'sparql';
+      $scope.currentFolder.children.push(graph);
 
       // open the file in the editor
       $scope.openFile(gr);
@@ -301,7 +318,7 @@ angular.module('myApp.fileBrowser', ['ngRoute', 'ui.bootstrap'])
     $scope.newFileName = "myDocument.ttl";
   };
   $scope.addNewFile = function() {
-    if($scope.newFileName && $scope.newFileName.length) {
+    if ($scope.newFileName && $scope.newFileName.length) {
       // force reload next time in case the doc will be saved
       $scope.currentFolder.dirty = true;
 
@@ -309,11 +326,11 @@ angular.module('myApp.fileBrowser', ['ngRoute', 'ui.bootstrap'])
       var uri = $scope.currentFolder.url + $scope.newFileName;
 
       // create a fake file object marked as being new
-      var newF = new RDFE.IO.File(uri);
-      newF.isNew = true;
-      newF.ioType = $scope.currentFolder.ioType;
+      var file = new RDFE.IO.File(uri);
+      file.isNew = true;
+      file.ioType = $scope.currentFolder.ioType;
 
-      $scope.openFile(newF);
+      $scope.openFile(file);
     }
   };
 
