@@ -41,6 +41,7 @@
     "o": ["Object", "Objects"]
   },
   "autoInverseOfHandling": true,
+  "validateEmptyNodes": true,
   "storage": [],
   "ioTimeout": 60000
 }
