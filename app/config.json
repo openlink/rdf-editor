@@ -2,7 +2,10 @@
   "ontology": {
     "proxy": false,
     "nonTTLProxy": true,
-    "nonTTLProxyUrl": "http://linkeddata.uriburner.com/proxy?url={0}&output-format=turtle&force=rdf",
+    "nonTTLProxyUrl": {
+      "http:": "http://linkeddata.uriburner.com/proxy?url={0}&output-format=turtle&force=rdf",
+      "https:": "https://linkeddata.uriburner.com/proxy?url={0}&output-format=turtle&force=rdf"
+    },
     "fresnelLenses": true,
     "fresnelFormats": true,
     "fresnelGroups": true,

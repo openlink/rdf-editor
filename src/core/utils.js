@@ -227,6 +227,11 @@ RDFE.Utils.getUrlBase = function(url) {
   return parser.protocol + '//' + parser.host;
 };
 
+RDFE.Utils.getProtocol = function(url) {
+  var parser = RDFE.Utils.splitUrl(url);
+  return parser.protocol;
+};
+
 RDFE.Utils.splitUrl = function(url) {
   var parser = document.createElement('a');
   parser.href = url;
