@@ -140,6 +140,7 @@
 
                 "error": function (state) {
                   $(self.ontologyManager).trigger('loadingFailed', [self.ontologyManager]);
+                  $.growl({"message": state.message}, {"type": 'danger'});
                   $loading.hide();
                 },
 
