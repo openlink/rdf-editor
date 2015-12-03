@@ -341,7 +341,7 @@ RDFE.OntologyManager.prototype.load = function(URI, params) {
   var ioType = (params.ioType)? params.ioType: 'http';
   var options = {};
   if (self.options.nonTTLProxyUrl) {
-    options.httpProxyTemplate = self.options.nonTTLProxyUrl;
+    options.httpProxyTemplate = self.options.nonTTLProxyUrl[document.location.protocol];
   }
   var IO = RDFE.IO.createIO(ioType, options);
   IO.type = ioType;
@@ -370,8 +370,8 @@ RDFE.OntologyManager.prototype.load = function(URI, params) {
       params.__error(state, data, status, xhr);
     }
   };
-
-  IO.retrieve(URI, $.extend({"proxy": self.options.proxy}, params));
+  var proxy = ((RDFE.Utils.getProtocol(URI) !== document.location.protocol) && (document.location.protocol === 'https:')) ? true: self.options.proxy;
+  IO.retrieve(URI, $.extend({"proxy": proxy}, params));
 }
 
 RDFE.OntologyManager.prototype.parseOntologyFile = function(URI, params) {

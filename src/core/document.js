@@ -83,25 +83,37 @@ RDFE.Document.prototype.load = function(url, io, success, fail) {
 RDFE.Document.prototype.verifyData = function(callback, fail) {
   var self = this;
 
-  // check if there are any invalid uris in the document
-  self.store.execute("select * from <" + self.graph + "> where {{ <> ?p ?o } union { ?s2 ?p2 <> }}", function(s,r) {
-    if (s) {
-      if (r.length > 0) {
-        callback(false, "The document is not valid. It contains empty URI nodes.");
-        return false;
+  if (self.config.options.validateEmptyNodes) {
+    // check if there are any invalid uris in the document
+    self.store.execute("select * from <" + self.graph + "> where {{ <> ?p ?o } union { ?s2 ?p2 <> }}", function(success, result) {
+      if (success) {
+        if (result.length > 0) {
+          if (callback)
+            callback(false, "The document is not valid. It contains empty URI nodes.");
+
+          return false;
+        }
+        else {
+          if (callback)
+            callback(true);
+
+          return true;
+        }
       }
       else {
-        callback(true);
-        return true;
+        if (fail)
+          fail();
+
+        return false;
       }
-    }
-    else {
-      if (fail) {
-        fail();
-      }
-      return false;
-    }
-  });
+    });
+  }
+  else {
+    if (callback)
+      callback(true);
+
+    return true;
+  }
 };
 
 RDFE.Document.prototype.save = function(url, io, success, fail) {
@@ -137,7 +149,7 @@ RDFE.Document.prototype.save = function(url, io, success, fail) {
         myIo.type = 'webdav';
       }
       self.verifyData(function(s, m) {
-        if(s) {
+        if (s) {
           var __success = function() {
             self.url = myUrl;
             self.io = myIo;

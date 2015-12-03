@@ -82,7 +82,7 @@ rdf_editor_dav.vad: $(RDF_EDITOR_FILES) rdf-editor-sticker.xml Makefile vad_vers
 
 $(PKG_NAME).tar.gz: rdf_editor_dav.vad
 	-@ln -s dist @PACKAGE@
-	-tar cfLz $(PKG_NAME).tar.gz @PACKAGE@
+	-tar cfz $(PKG_NAME).tar.gz @PACKAGE@
 	-@rm -f @PACKAGE@
 
 $(PKG_NAME).zip: rdf_editor_dav.vad
@@ -167,7 +167,7 @@ RDF_EDITOR_DIST = \
 	src/deps-orig/backbone-min.map \
 	src/deps-orig/*.js \
 	src/deps-orig/underscore-min.map \
-	src/ui/*.js 
+	src/ui/*.js
 
 VADPACKER = \
 	vadpacker/*.py \
