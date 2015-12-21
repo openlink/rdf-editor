@@ -33,17 +33,20 @@ RDFE.Editor = function(config, documentTree, options) {
   var options = $.extend({"initOntologyManager": true}, options);
 
   // initialize our ontology manager
-  this.ontologyManager = new RDFE.OntologyManager(config.options);
+  self.ontologyManager = new RDFE.OntologyManager(config.options);
   if (options.initOntologyManager === true) {
-    this.ontologyManager.init();
+    self.ontologyManager.init();
   }
 
   // create our main document
-  this.doc = new RDFE.Document(this.ontologyManager, config, documentTree);
+  self.doc = new RDFE.Document(self.ontologyManager, config, documentTree);
 
   // store the config for future access
-  this.config = config;
-  this.namingSchema = config.options[config.options["namingSchema"]];
+  self.config = config;
+  self.namingSchema = config.options[config.options["namingSchema"]];
+  $(self.doc).on('docChanged', function(e, doc) {
+    self.docChanged();
+  });
 };
 
 RDFE.Editor.prototype.render = function(container) {
@@ -55,6 +58,15 @@ RDFE.Editor.prototype.render = function(container) {
   this.formContainer = $(document.createElement('div')).appendTo(this.container);
 
   this.toggleView(this.config.options.defaultView);
+};
+
+RDFE.Editor.prototype.docChanged = function() {
+  var self = this;
+
+  self.doc.store.graph(self.doc.graph, function(success, graph){
+    var serialized = graph.toNT();
+    $('body').find('script[type="text/turtle"]').html(serialized);
+  });
 };
 
 /**
@@ -84,17 +96,17 @@ RDFE.Editor.prototype.toggleView = function(view) {
       }
       this._currentView = "entities";
     }
-    else if (view === 'triples') {
-      this.createTripleList();
-      this._currentView = "triples";
-    }
     else if (view === 'predicates') {
       this.createPredicateList();
       this._currentView = "predicates";
     }
-    else {
+    else if (view === 'values') {
       this.createObjectList();
       this._currentView = "values";
+    }
+    else {
+      this.createTripleList();
+      this._currentView = "triples";
     }
   }
 };
@@ -103,22 +115,24 @@ RDFE.Editor.prototype.toggleView = function(view) {
  * Forcefully update the contents in the current view.
  */
 RDFE.Editor.prototype.updateView = function() {
-  if (this._currentView === 'entities') {
-    if (this.config.options['useEntityEditor'] === true) {
-      this.createEntityList();
+  var self = this;
+
+  if (self._currentView === 'entities') {
+    if (self.config.options['useEntityEditor'] === true) {
+      self.createEntityList();
     }
     else {
-      this.createSubjectList();
+      self.createSubjectList();
     }
   }
-  else if (this._currentView === 'triples') {
-    this.createTripleList();
+  else if (self._currentView === 'predicates') {
+    self.createPredicateList();
   }
-  else if (this._currentView === 'predicates') {
-    this.createPredicateList();
+  else if (self._currentView === 'values') {
+    self.createObjectList();
   }
   else {
-    this.createObjectList();
+    self.createTripleList();
   }
 };
 
@@ -505,6 +519,11 @@ RDFE.Editor.prototype.editSubject = function(subject) {
     });
   }
 
+  // subject as URL parameter
+  if (typeof subject === 'string') {
+    subject = self.doc.newSubject(subject);
+  }
+
   // render the entity editor and re-create the entity list once the editor is done
   self.listContainer.hide();
   self.formContainer.show();
@@ -564,6 +583,16 @@ RDFE.Editor.prototype.editPredicate = function(predicate) {
   // render the entity editor and re-create the entity list once the editor is done
   self.listContainer.hide();
   self.formContainer.show();
+
+  // predicate as URL parameter
+  if (typeof predicate === 'string') {
+    predicate = self.doc.newPredicate(predicate);
+  }
+
+  if (predicate) {
+    self.ontologyManager.ontologyPropertyByURI(predicate.uri, true);
+  }
+
   self.predicateEditor.predicate = predicate;
   self.predicateEditor.render(self, self.formContainer, function() {
     self.formContainer.hide();
@@ -615,6 +644,11 @@ RDFE.Editor.prototype.editObject = function(object) {
     }).on('rdf-editor-success', function(e, d) {
       $(self).trigger('rdf-editor-success', d);
     });
+  }
+
+  // subject as URL parameter
+  if (typeof object === 'string') {
+    object = self.doc.newSubject(object);
   }
 
   // render the entity editor and re-create the entity list once the editor is done

@@ -33,38 +33,40 @@ RDFE.Document = function(ontologyManager, config, documentTree) {
   self.dirty = false;
 };
 
-RDFE.Document.prototype.setChanged = function(d) {
-  if(d === undefined)
-    d = true;
-  this.dirty = d;
-  if(d)
-    $(this).trigger('changed', this);
+RDFE.Document.prototype.setChanged = function(dirty) {
+  var self = this;
+
+  self.dirty = dirty;
+  if (self.dirty) {
+    $(self).trigger('changed', self);
+  }
+  $(self).trigger('docChanged', self);
 };
 
 RDFE.Document.prototype.load = function(url, io, success, fail) {
-    var self = this;
-    var successFct = function(data, status, xhr) {
-        self.url = url;
-        self.io = io;
-        self.setChanged(false);
+  var self = this;
+  var successFct = function(data, status, xhr) {
+    self.url = url;
+    self.io = io;
+    self.setChanged(false);
 
-        // store document identification properties after load
-        self.srcParams = {
-          "length": data.length,
-          "md5": $.md5(data)
-        }
+    // store document identification properties after load
+    self.srcParams = {
+      "length": data.length,
+      "md5": $.md5(data)
+    }
 
-        if (success)
-            success();
-    };
+    if (success)
+      success();
+  };
 
-    // clear the store and then load the new data
-    self.store.clear(function() {
-      io.retrieveToStore(url, self.store, self.graph, {
-        'success': successFct,
-        'error': fail
-      });
+  // clear the store and then load the new data
+  self.store.clear(function() {
+    io.retrieveToStore(url, self.store, self.graph, {
+      'success': successFct,
+      'error': fail
     });
+  });
 };
 
 /**
@@ -123,7 +125,7 @@ RDFE.Document.prototype.save = function(url, io, success, fail) {
         mySuccess = success,
         myFail = fail;
 
-     // url is optional
+    // url is optional
     if (typeof(url) != 'string') {
        myUrl = self.url;
        myIo = url;
@@ -188,13 +190,18 @@ RDFE.Document.prototype.save = function(url, io, success, fail) {
 
 RDFE.Document.prototype.new = function(success, fail) {
   var self = this;
+
   self.url = null;
   self.io = null;
+  self.srcParams = null;
   self.store.clear(self.graph, function(s) {
-    if(s && success)
+    if (s && success) {
+      self.setChanged(false);
       success();
-    else if(!s && fail)
+    }
+    else if (!s && fail) {
       fail();
+    }
   });
 };
 
@@ -394,14 +401,14 @@ RDFE.Document.prototype.addTriples = function(triple, success, fail, isInverseTr
           self.addTriples(inverseTriples, success, fail, true);
         }
         else {
-          self.setChanged();
+          self.setChanged(true);
           if (success) {
             success();
           }
         }
       }
       else {
-        self.setChanged();
+        self.setChanged(true);
         if(success) {
           success();
         }
@@ -428,7 +435,7 @@ RDFE.Document.prototype.deleteTriples = function(triple, success, fail, isInvers
 
   self.store.delete(self.store.rdf.createGraph(triples), self.graph, function(s) {
     if (s) {
-      self.setChanged();
+      self.setChanged(true);
 
       if (self.config.options.autoInverseOfHandling === true && !isInverseTripple) {
         var inverseTriples = self.inverseTriples(triples);
@@ -436,14 +443,14 @@ RDFE.Document.prototype.deleteTriples = function(triple, success, fail, isInvers
           self.deleteTriples(inverseTriples, success, fail, true);
         }
         else {
-          self.setChanged();
+          self.setChanged(true);
           if(success) {
             success();
           }
         }
       }
       else {
-        self.setChanged();
+        self.setChanged(true);
         if(success) {
           success();
         }
@@ -465,7 +472,7 @@ RDFE.Document.prototype.updateTriple = function(oldTriple, newTriple, success, f
       self.addTriple(
         newTriple,
         function () {
-          self.setChanged();
+          self.setChanged(true);
           if (success) {
             success();
           }
@@ -816,10 +823,7 @@ RDFE.Document.prototype.listSubjects = function(success, error) {
       for (var i = 0; i < triples.length; i+=1) {
         var x = triples[i].subject.toString();
         if (!sl[x]) {
-          sl[x] = {
-            "uri": x,
-            "items": []
-          };
+          sl[x] = self.newSubject(uri);
         }
         sl[x].items.push(triples[i]);
       }
@@ -837,10 +841,7 @@ RDFE.Document.prototype.getSubject = function(uri, success, error) {
 
   self.store.graph(self.graph, function(s, result) {
     if (s) {
-      var sl = {
-        "uri": uri,
-        "items": []
-      };
+      var sl = self.newSubject(uri);
       var triples = result.toArray();
       for (var i = 0; i < triples.length; i+=1) {
         if (triples[i].subject.toString() === uri) {
@@ -855,6 +856,10 @@ RDFE.Document.prototype.getSubject = function(uri, success, error) {
       error(result);
     }
   });
+};
+
+RDFE.Document.prototype.newSubject = function(uri) {
+  return {"uri": uri, "items": [] };
 };
 
 /**
@@ -873,10 +878,7 @@ RDFE.Document.prototype.listPredicates = function(success, error) {
       for (var i = 0; i < triples.length; i+=1) {
         var p = triples[i].predicate.toString();
         if (!sl[p]) {
-          sl[p] = {
-            "uri": p,
-            "items": []
-          };
+          sl[p] = self.newPredicate(p);
         }
         sl[p].items.push(triples[i]);
       }
@@ -894,10 +896,7 @@ RDFE.Document.prototype.getPredicate = function(uri, success, error) {
 
   self.store.graph(self.graph, function(s, result) {
     if (s) {
-      var sl = {
-        "uri": uri,
-        "items": []
-      };
+      var sl = self.newPredicate(uri);
       var triples = result.toArray();
       for (var i = 0; i < triples.length; i+=1) {
         if (triples[i].predicate.toString() === uri) {
@@ -912,6 +911,10 @@ RDFE.Document.prototype.getPredicate = function(uri, success, error) {
       error(result);
     }
   });
+};
+
+RDFE.Document.prototype.newPredicate = function(uri) {
+  return {"uri": uri, "items": [] };
 };
 
 /**
@@ -931,13 +934,7 @@ RDFE.Document.prototype.listObjects = function(success, error) {
         var o = triples[i].object;
         var id = self.formatObjectID(o);
         if (!sl[id]) {
-          sl[id] = {
-            "id": id,
-            "label": self.formatObjectLabel(o),
-            "type": self.formatObjectType(o),
-            "object": o,
-            "items": []
-          };
+          sl[id] = self.newObject(o);
         }
         sl[id].items.push(triples[i]);
       }
@@ -955,13 +952,7 @@ RDFE.Document.prototype.getObject = function(object, success, error) {
 
   self.store.graph(self.graph, function(s, result) {
     if (s) {
-      var sl = {
-        "id": self.formatObjectID(object),
-        "label": self.formatObjectLabel(object),
-        "type": self.formatObjectType(object),
-        "object": object,
-        "items": []
-      };
+      var sl = self.newObject(object);
       var triples = result.toArray();
       for (var i = 0; i < triples.length; i+=1) {
         if (self.formatObjectID(triples[i].object) === sl.id) {
@@ -976,6 +967,16 @@ RDFE.Document.prototype.getObject = function(object, success, error) {
       error(result);
     }
   });
+};
+
+RDFE.Document.prototype.newObject = function(object) {
+  return {
+    "id": (typeof object === 'string')? 'iteral - ' + object: self.formatObjectID(object),
+    "label": (typeof object === 'string')? object: self.formatObjectLabel(object),
+    "type": (typeof object === 'string')? 'http://www.w3.org/2000/01/rdf-schema#Literal': self.formatObjectType(object),
+    "object": object,
+    "items": []
+  };
 };
 
 RDFE.Document.prototype.formatObjectID = function(o) {
