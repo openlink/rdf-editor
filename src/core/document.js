@@ -823,7 +823,7 @@ RDFE.Document.prototype.listSubjects = function(success, error) {
       for (var i = 0; i < triples.length; i+=1) {
         var x = triples[i].subject.toString();
         if (!sl[x]) {
-          sl[x] = self.newSubject(uri);
+          sl[x] = self.newSubject(x);
         }
         sl[x].items.push(triples[i]);
       }
@@ -970,6 +970,8 @@ RDFE.Document.prototype.getObject = function(object, success, error) {
 };
 
 RDFE.Document.prototype.newObject = function(object) {
+  var self = this;
+
   return {
     "id": (typeof object === 'string')? 'iteral - ' + object: self.formatObjectID(object),
     "label": (typeof object === 'string')? object: self.formatObjectLabel(object),

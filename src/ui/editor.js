@@ -65,7 +65,7 @@ RDFE.Editor.prototype.docChanged = function() {
 
   self.doc.store.graph(self.doc.graph, function(success, graph){
     var serialized = graph.toNT();
-    $('body').find('script[type="text/turtle"]').html(serialized);
+    $('body').find('script[type="text/turtle"][id="document"]').html(serialized);
   });
 };
 

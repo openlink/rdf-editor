@@ -71,8 +71,8 @@ angular.module('myApp.editor', ['ngRoute'])
 
 .controller(
   'EditorCtrl', [
-  '$rootScope', '$scope', '$routeParams', '$location', "usSpinnerService", 'RDFEditor', 'DocumentTree', 'Notification',
-  function($rootScope, $scope, $routeParams, $location, usSpinnerService, RDFEditor, DocumentTree, Notification) {
+  '$rootScope', '$scope', '$routeParams', '$location', '$timeout', "usSpinnerService", 'RDFEditor', 'DocumentTree', 'Notification',
+  function($rootScope, $scope, $routeParams, $location, $timeout, usSpinnerService, RDFEditor, DocumentTree, Notification) {
 
   function toggleSpinner(on) {
     if(on) {
@@ -179,7 +179,7 @@ angular.module('myApp.editor', ['ngRoute'])
     $scope.editor.render($("#contents"));
 
     // the browser requested that we save the current document
-    if($routeParams.saveDocument) {
+    if ($routeParams.saveDocument) {
       $scope.mainDoc.url = $routeParams.uri;
       $scope.mainDoc.io = getIO($routeParams.ioType, $routeParams.sparqlEndpoint, editor.config.options['ioTimeout']);
       $scope.saveDocument();
@@ -187,11 +187,12 @@ angular.module('myApp.editor', ['ngRoute'])
     }
 
     // and if we are told, then we create a new document by clearing the old one
-    else if($routeParams.newDocument) {
+    else if ($routeParams.newDocument) {
       $scope.mainDoc.new(function() {
         toggleView();
         $scope.editor.updateView();
-        $scope.$apply(function() {
+        $timeout(function() {
+          // Any code in here will automatically have an $scope.apply() run afterwards
           if ($routeParams.uri) {
             $scope.mainDoc.url = $routeParams.uri;
             $scope.mainDoc.io = getIO($routeParams.ioType, $routeParams.sparqlEndpoint, editor.config.options['ioTimeout']);
@@ -212,7 +213,7 @@ angular.module('myApp.editor', ['ngRoute'])
             if (success) {
               toggleView();
               $scope.editor.updateView();
-              $scope.$apply(function() {
+              $timeout(function() {
                 // this is essentially a no-op to force the ui to update the url view
                 $scope.mainDoc.dirty = true;
                 $scope.mainDoc.url = $routeParams.uri;
