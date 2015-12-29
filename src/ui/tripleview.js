@@ -181,12 +181,13 @@
               }]
             });
             $($list).find('.add').on('click', function(e) {
-              self.editor.createNewStatementEditor();
+              self.editor.editTriple();
             });
             self.tripleTable = $list;
 
-            if (callback)
+            if (callback) {
               callback();
+            }
           } else {
             $(self).trigger('rdf-editor-error', 'Failed to query ' + RDFE.Utils.namingSchemaLabel('spo', self.namingSchema, true, true) + ' from document.');
           }

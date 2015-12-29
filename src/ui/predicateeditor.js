@@ -62,7 +62,7 @@
       </div>'
     );
 
-    c.prototype.render = function(editor, container, backCallback) {
+    c.prototype.render = function(editor, container, newStatement, backCallback) {
       var self = this;
 
       var predicateEditorData = function(container, backCallback) {
@@ -151,6 +151,9 @@
 
         // reftersh predicates data
         self.renderData();
+        if (newStatement) {
+          self.createNewRelationEditor();
+        }
       };
 
       var predicateEditorDataSetter = function(triple, field, newValue) {
@@ -197,13 +200,13 @@
         backCallback();
       });
 
-      var predicateSelect = container.find('select[name="predicate"]').propertyBox({
+      var predicateEditor = container.find('select[name="predicate"]').propertyBox({
         ontoManager: self.ontologyManager
       });
       if (self.predicate) {
-        predicateSelect.setPropertyURI(self.predicate.uri);
+        predicateEditor.setPropertyURI(self.predicate.uri);
       }
-      predicateSelect.sel.on('change', function(predicateUri) {
+      predicateEditor.sel.on('change', function(predicateUri) {
         if (predicateUri) {
           self.doc.getPredicate(predicateUri, function (predicate) {
             self.predicateView.addPredicate(predicate);
@@ -273,11 +276,11 @@
       ).show();
 
       var property = self.ontologyManager.ontologyProperties[self.predicate.uri];
-      var objectEdit = self.predicateFormContainer.find('input[name="object"]').rdfNodeEditor();
+      var objectEditor = self.predicateFormContainer.find('input[name="object"]').rdfNodeEditor();
       var node;
       var nodeItems;
       var range = property.getRange();
-      if (objectEdit.isLiteralType(range)) {
+      if (objectEditor.isLiteralType(range)) {
         node = new RDFE.RdfNode('literal', '', range, '');
       }
       else if (self.ontologyManager.ontologyClassByURI(range)) {
@@ -287,7 +290,7 @@
       else {
         node = new RDFE.RdfNode('literal', '', null, '');
       }
-      objectEdit.setValue(node, nodeItems);
+      objectEditor.setValue(node, nodeItems);
 
       self.predicateFormContainer.find('button.predicate-action-new-cancel').click(function(e) {
         self.predicateFormContainer.hide();
@@ -298,7 +301,7 @@
         var s = self.predicateFormContainer.find('input[name="subject"]').val();
         s = RDFE.Utils.trim(RDFE.Utils.trim(s, '<'), '>')
         var p = self.predicate.uri;
-        var o = objectEdit.getValue();
+        var o = objectEditor.getValue();
         var t = self.doc.store.rdf.createTriple(self.doc.store.rdf.createNamedNode(s), self.doc.store.rdf.createNamedNode(p), o.toStoreNode(self.doc.store));
         self.doc.addTriples([t], function() {
           self.addTriple(t);

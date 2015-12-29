@@ -146,27 +146,43 @@ angular.module('myApp.editor', ['ngRoute'])
   }
 
   function toggleView() {
-    if ($routeParams["statement:subject"]) {
-      $scope.viewMode = 'entities';
+    var s = $routeParams["statement:subject"];
+    var p = $routeParams["statement:predicate"];
+    var o = $routeParams["statement:object"];
+
+    if (s) {
+      $scope.viewMode = ($routeParams["view"] === 'statements')? 'triples' :'entities';
     }
-    else if ($routeParams["statement:predicate"]) {
-      $scope.viewMode = 'predicates';
+    else if (p) {
+      $scope.viewMode = ($routeParams["view"] === 'statements')? 'triples' :'predicates';
     }
-    else if ($routeParams["statement:object"]) {
-      $scope.viewMode = 'values';
+    else if (o) {
+      $scope.viewMode = ($routeParams["view"] === 'statements')? 'triples' :'values';
+    }
+    else if (s || p || o) {
+      $scope.viewMode = 'triples';
     }
     $scope.editor.toggleView($scope.viewMode)
   }
 
   function showViewEditor() {
-    if ($routeParams["statement:subject"]) {
-      $scope.editor.editSubject($routeParams["statement:subject"]);
+    var newStatement = $routeParams["newStatement"];
+    var s = $routeParams["statement:subject"];
+    var p = $routeParams["statement:predicate"];
+    var o = $routeParams["statement:object"];
+    var view = $routeParams["view"];
+
+    if (s && (!view || view === 'entities')) {
+      $scope.editor.editSubject(s, newStatement);
     }
-    else if ($routeParams["statement:predicate"]) {
-      $scope.editor.editPredicate($routeParams["statement:predicate"]);
+    else if (p && (!view || view === 'predicates')) {
+      $scope.editor.editPredicate(p, newStatement);
     }
-    else if ($routeParams["statement:object"]) {
-      $scope.editor.editObject($routeParams["statement:object"]);
+    else if (o && (!view || view === 'values')) {
+      $scope.editor.editObject(o, newStatement);
+    }
+    else if ((s || p || o || newStatement) && (!view || view === 'statements')) {
+      $scope.editor.editTriple(s, p, o, newStatement);
     }
   }
 
