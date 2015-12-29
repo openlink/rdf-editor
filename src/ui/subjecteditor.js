@@ -217,6 +217,7 @@
                 "mode": "inline",
                 "type": "rdfnode",
                 "rdfnode": {
+                  "config": self.doc.config.options,
                   "type": 'http://www.w3.org/1999/02/22-rdf-syntax-ns#Resource'
                 },
                 "value": triple.predicate
@@ -232,6 +233,7 @@
                 "mode": "inline",
                 "type": "rdfnode",
                 "rdfnode": {
+                  "config": self.doc.config.options,
                   "predicate": triple.predicate.toString(),
                   "document": self.doc,
                   "ontologyManager": self.ontologyManager
@@ -393,7 +395,7 @@
         '</div>'
       ).show();
 
-      var objectEditor = self.subjectFormContainer.find('input[name="object"]').rdfNodeEditor();
+      var objectEditor = self.subjectFormContainer.find('input[name="object"]').rdfNodeEditor(self.doc.config.options);
       objectEditor.setValue(new RDFE.RdfNode('literal', '', null, ''));
 
       var predicateEditor = self.subjectFormContainer.find('select[name="predicate"]').propertyBox({

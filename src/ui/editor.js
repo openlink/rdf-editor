@@ -197,7 +197,7 @@ RDFE.Editor.prototype.editTriple = function(s, p, o) {
     self.formContainer.find('input[name="subject"]').val(s);
   }
 
-  var objectEditor = self.formContainer.find('input[name="object"]').rdfNodeEditor();
+  var objectEditor = self.formContainer.find('input[name="object"]').rdfNodeEditor(self.config.options);
   // Set object value
   if (o) {
     objectEditor.setValue(new RDFE.RdfNode('literal', o, null, ''));
@@ -385,7 +385,7 @@ RDFE.Editor.prototype.createNewEntityEditor = function(forcedType) {
   }
 
   // if we have an entity uri template we ask the user to provide a nem instead of the uri
-  if(this.config.options.entityUriTmpl) {
+  if (self.config.options.entityUriTmpl) {
     self.formContainer.find('label[for="subject"]').text(RDFE.Utils.namingSchemaLabel('s', self.namingSchema) + ' Name');
   }
 

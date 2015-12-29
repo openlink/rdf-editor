@@ -86,6 +86,7 @@
                 "mode": "inline",
                 "type": "rdfnode",
                 "rdfnode": {
+                  "config": self.doc.config.options,
                   "type": 'http://www.w3.org/1999/02/22-rdf-syntax-ns#Resource'
                 },
                 "value": triple.subject
@@ -102,6 +103,7 @@
                 "mode": "inline",
                 "type": "rdfnode",
                 "rdfnode": {
+                  "config": self.doc.config.options,
                   "predicate": self.predicate.uri,
                   "document": self.doc,
                   "ontologyManager": self.ontologyManager
@@ -276,7 +278,7 @@
       ).show();
 
       var property = self.ontologyManager.ontologyProperties[self.predicate.uri];
-      var objectEditor = self.predicateFormContainer.find('input[name="object"]').rdfNodeEditor();
+      var objectEditor = self.predicateFormContainer.find('input[name="object"]').rdfNodeEditor(self.doc.config.options);
       var node;
       var nodeItems;
       var range = property.getRange();

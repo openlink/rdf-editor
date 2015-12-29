@@ -190,7 +190,7 @@
         backCallback();
       });
 
-      var objectInput = container.find('input[name="object"]').rdfNodeEditor();
+      var objectInput = container.find('input[name="object"]').rdfNodeEditor(self.doc.config.options);
       if (self.object) {
         objectInput.setValue(self.object.object);
       }
