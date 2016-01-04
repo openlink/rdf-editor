@@ -175,7 +175,7 @@
               editor.subjectView.addSubject(subject);
 
               self.subject = subject;
-              self.render(editor, container, backCallback);
+              self.render(editor, container, newStatement, backCallback);
             });
           }, function() {
             $(self).trigger('rdf-editor-error', {
