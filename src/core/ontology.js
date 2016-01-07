@@ -85,9 +85,11 @@ RDFE.uriPrefix = function(v) {
   if ((m != -1) && (m == v.lastIndexOf(':'))) {
     return v.substring(0, m);
   }
+  /*
   if (m == -1) {
     return v;
   }
+  */
   return null;
 }
 

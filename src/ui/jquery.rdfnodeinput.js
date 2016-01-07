@@ -217,6 +217,7 @@
     self.currentType = self.options.type || 'http://www.w3.org/2000/01/rdf-schema#Literal';
 
     self.mainElement.on('input', function() {
+      self.checkHashSign();
       self.verifyInput();
       self.change();
     });
@@ -251,7 +252,7 @@
     }
     self.typeContainer.append(self.typeElement);
     self.container.append(self.typeContainer);
-    var typeChFct = function() {
+    var typeChangeFunction = function() {
       self.lastType = self.currentType;
       self.currentType = (self.options.selectize ? self.typeElement[0].selectize.getValue() : self.typeElement.val());
       self.verifyFct = nodeTypes[self.currentType].verify;
@@ -261,12 +262,12 @@
     };
     if (self.options.selectize) {
       self.typeElement.selectize({
-        onChange: typeChFct
+        onChange: typeChangeFunction
       });
       self.typeElement[0].selectize.setValue(this.currentType);
     }
     else {
-      self.typeElement.change(typeChFct);
+      self.typeElement.change(typeChangeFunction);
     }
     if (self.options.type) {
       self.typeElement.val(self.options.type);
@@ -387,7 +388,7 @@
   };
 
   RdfNodeEditor.prototype.getValue = function() {
-    if(this.currentType === 'http://www.w3.org/1999/02/22-rdf-syntax-ns#Resource')
+    if (this.currentType === 'http://www.w3.org/1999/02/22-rdf-syntax-ns#Resource')
       return new RDFE.RdfNode(
         'uri',
         RDFE.Utils.trim(RDFE.Utils.trim(this.mainElement.val(), '<'), '>')
@@ -410,8 +411,8 @@
 
     var node = RDFE.RdfNode.fromStoreNode(node);
 
-    this.lastType = this.currentType;
-    if (node.type === 'uri') {
+    self.lastType = self.currentType;
+    if ((node.type === 'uri') || self.startsWithHashSign()) {
       self.currentType = 'http://www.w3.org/1999/02/22-rdf-syntax-ns#Resource';
       if (nodeItems) {
         self.selectizeSetup(nodeItems);
@@ -454,6 +455,7 @@
 
   RdfNodeEditor.prototype.updateView = function(mode) {
     var self = this;
+
     if (mode) {
       self.inputContainer.css('width', null);
       self.mainElement.show();
@@ -475,16 +477,45 @@
   };
 
   RdfNodeEditor.prototype.isValid = function(node) {
-    return(this.verifyFct ? this.verifyFct(this.mainElement.val()) : true);
+    return (this.verifyFct ? this.verifyFct(this.mainElement.val()) : true);
+  };
+
+  RdfNodeEditor.prototype.startsWithHashSign = function() {
+    var self = this;
+
+    if (self.options.startHashSignAsResource === true) {
+      var val = RDFE.Utils.trim($(self.mainElement).val());
+      return (val.length >= 1) && (val.charAt(0) === '#');
+    }
+
+    return false;
+  };
+
+  RdfNodeEditor.prototype.checkHashSign = function() {
+    var self = this;
+
+    if (self.startsWithHashSign()) {
+      var typeVal = self.options.selectize ? self.typeElement[0].selectize.getValue() : self.typeElement.val();
+      if (typeVal !== 'http://www.w3.org/1999/02/22-rdf-syntax-ns#Resource') {
+        if (self.options.selectize) {
+         self.typeElement[0].selectize.setValue('http://www.w3.org/1999/02/22-rdf-syntax-ns#Resource');
+         self.typeElement[0].selectize.onChange();
+        }
+        else {
+          self.typeElement.val('http://www.w3.org/1999/02/22-rdf-syntax-ns#Resource');
+          self.typeElement.change();
+        }
+      }
+    }
   };
 
   RdfNodeEditor.prototype.verifyInput = function() {
     var self = this;
-    var val = $(this.mainElement).val();
+    var val = $(self.mainElement).val();
     var v = true;
 
     if (val.length > 0) {
-      v = (this.verifyFct ? this.verifyFct(val) : true);
+      v = (self.verifyFct ? self.verifyFct(val) : true);
     }
     if (v) {
       self.mainElement.removeClass('has-error');

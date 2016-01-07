@@ -61,7 +61,7 @@
       </div>'
     );
 
-    c.prototype.render = function(editor, container, backCallback) {
+    c.prototype.render = function(editor, container, newStatement, backCallback) {
       var self = this;
 
       var subjectEditorNew = function(container, backCallback) {
@@ -175,7 +175,7 @@
               editor.subjectView.addSubject(subject);
 
               self.subject = subject;
-              self.render(editor, container, backCallback);
+              self.render(editor, container, newStatement, backCallback);
             });
           }, function() {
             $(self).trigger('rdf-editor-error', {
@@ -217,6 +217,7 @@
                 "mode": "inline",
                 "type": "rdfnode",
                 "rdfnode": {
+                  "config": self.doc.config.options,
                   "type": 'http://www.w3.org/1999/02/22-rdf-syntax-ns#Resource'
                 },
                 "value": triple.predicate
@@ -232,6 +233,7 @@
                 "mode": "inline",
                 "type": "rdfnode",
                 "rdfnode": {
+                  "config": self.doc.config.options,
                   "predicate": triple.predicate.toString(),
                   "document": self.doc,
                   "ontologyManager": self.ontologyManager
@@ -280,6 +282,9 @@
 
         // reftersh subjects data
         self.renderData();
+        if (newStatement) {
+          self.createNewRelationEditor();
+        }
       };
 
       var subjectEditorDataSetter = function(triple, field, newValue) {
@@ -390,18 +395,18 @@
         '</div>'
       ).show();
 
-      var objectEdit = self.subjectFormContainer.find('input[name="object"]').rdfNodeEditor();
-      objectEdit.setValue(new RDFE.RdfNode('literal', '', null, ''));
+      var objectEditor = self.subjectFormContainer.find('input[name="object"]').rdfNodeEditor(self.doc.config.options);
+      objectEditor.setValue(new RDFE.RdfNode('literal', '', null, ''));
 
-      var predicateEdit = self.subjectFormContainer.find('select[name="predicate"]').propertyBox({
+      var predicateEditor = self.subjectFormContainer.find('select[name="predicate"]').propertyBox({
         ontoManager: self.ontologyManager
       }).on('changed', function(e, predicate) {
         var node;
         var nodeItems;
-        var currentNode = objectEdit.getValue();
+        var currentNode = objectEditor.getValue();
         var range = predicate.getRange();
 
-        if (objectEdit.isLiteralType(range)) {
+        if (objectEditor.isLiteralType(range)) {
           node = new RDFE.RdfNode('literal', currentNode.value, range, currentNode.language);
         }
         else if (self.ontologyManager.ontologyClassByURI(range)) {
@@ -411,7 +416,7 @@
         else {
           node = new RDFE.RdfNode('literal', currentNode.value, null, '');
         }
-        objectEdit.setValue(node, nodeItems);
+        objectEditor.setValue(node, nodeItems);
       });
 
       self.subjectFormContainer.find('button.subject-action-new-cancel').click(function(e) {
@@ -421,8 +426,8 @@
 
       self.subjectFormContainer.find('button.subject-action-new-save').click(function(e) {
         var s = self.subject.uri;
-        var p = predicateEdit.selectedURI();
-        var o = objectEdit.getValue();
+        var p = predicateEditor.selectedURI();
+        var o = objectEditor.getValue();
         var t = self.doc.store.rdf.createTriple(self.doc.store.rdf.createNamedNode(s), self.doc.store.rdf.createNamedNode(p), o.toStoreNode(self.doc.store));
         self.doc.addTriples([t], function() {
           if (!self.subjectView) {

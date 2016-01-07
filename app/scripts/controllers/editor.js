@@ -71,8 +71,8 @@ angular.module('myApp.editor', ['ngRoute'])
 
 .controller(
   'EditorCtrl', [
-  '$rootScope', '$scope', '$routeParams', '$location', "usSpinnerService", 'RDFEditor', 'DocumentTree', 'Notification',
-  function($rootScope, $scope, $routeParams, $location, usSpinnerService, RDFEditor, DocumentTree, Notification) {
+  '$rootScope', '$scope', '$routeParams', '$location', '$timeout', "usSpinnerService", 'RDFEditor', 'DocumentTree', 'Notification',
+  function($rootScope, $scope, $routeParams, $location, $timeout, usSpinnerService, RDFEditor, DocumentTree, Notification) {
 
   function toggleSpinner(on) {
     if(on) {
@@ -146,27 +146,43 @@ angular.module('myApp.editor', ['ngRoute'])
   }
 
   function toggleView() {
-    if ($routeParams["statement:subject"]) {
-      $scope.viewMode = 'entities';
+    var s = $routeParams["statement:subject"];
+    var p = $routeParams["statement:predicate"];
+    var o = $routeParams["statement:object"];
+
+    if (s) {
+      $scope.viewMode = ($routeParams["view"] === 'statements')? 'triples' :'entities';
     }
-    else if ($routeParams["statement:predicate"]) {
-      $scope.viewMode = 'predicates';
+    else if (p) {
+      $scope.viewMode = ($routeParams["view"] === 'statements')? 'triples' :'predicates';
     }
-    else if ($routeParams["statement:object"]) {
-      $scope.viewMode = 'values';
+    else if (o) {
+      $scope.viewMode = ($routeParams["view"] === 'statements')? 'triples' :'values';
+    }
+    else if (s || p || o) {
+      $scope.viewMode = 'triples';
     }
     $scope.editor.toggleView($scope.viewMode)
   }
 
   function showViewEditor() {
-    if ($routeParams["statement:subject"]) {
-      $scope.editor.editSubject($routeParams["statement:subject"]);
+    var newStatement = $routeParams["newStatement"];
+    var s = $routeParams["statement:subject"];
+    var p = $routeParams["statement:predicate"];
+    var o = $routeParams["statement:object"];
+    var view = $routeParams["view"];
+
+    if (s && (!view || view === 'entities')) {
+      $scope.editor.editSubject(s, newStatement);
     }
-    else if ($routeParams["statement:predicate"]) {
-      $scope.editor.editPredicate($routeParams["statement:predicate"]);
+    else if (p && (!view || view === 'predicates')) {
+      $scope.editor.editPredicate(p, newStatement);
     }
-    else if ($routeParams["statement:object"]) {
-      $scope.editor.editObject($routeParams["statement:object"]);
+    else if (o && (!view || view === 'values')) {
+      $scope.editor.editObject(o, newStatement);
+    }
+    else if ((s || p || o || newStatement) && (!view || view === 'statements')) {
+      $scope.editor.editTriple(s, p, o, newStatement);
     }
   }
 
@@ -179,7 +195,7 @@ angular.module('myApp.editor', ['ngRoute'])
     $scope.editor.render($("#contents"));
 
     // the browser requested that we save the current document
-    if($routeParams.saveDocument) {
+    if ($routeParams.saveDocument) {
       $scope.mainDoc.url = $routeParams.uri;
       $scope.mainDoc.io = getIO($routeParams.ioType, $routeParams.sparqlEndpoint, editor.config.options['ioTimeout']);
       $scope.saveDocument();
@@ -187,11 +203,12 @@ angular.module('myApp.editor', ['ngRoute'])
     }
 
     // and if we are told, then we create a new document by clearing the old one
-    else if($routeParams.newDocument) {
+    else if ($routeParams.newDocument) {
       $scope.mainDoc.new(function() {
         toggleView();
         $scope.editor.updateView();
-        $scope.$apply(function() {
+        $timeout(function() {
+          // Any code in here will automatically have an $scope.apply() run afterwards
           if ($routeParams.uri) {
             $scope.mainDoc.url = $routeParams.uri;
             $scope.mainDoc.io = getIO($routeParams.ioType, $routeParams.sparqlEndpoint, editor.config.options['ioTimeout']);
@@ -212,7 +229,7 @@ angular.module('myApp.editor', ['ngRoute'])
             if (success) {
               toggleView();
               $scope.editor.updateView();
-              $scope.$apply(function() {
+              $timeout(function() {
                 // this is essentially a no-op to force the ui to update the url view
                 $scope.mainDoc.dirty = true;
                 $scope.mainDoc.url = $routeParams.uri;

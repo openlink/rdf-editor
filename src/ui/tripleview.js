@@ -91,57 +91,59 @@
             $list.data('maxindex', i);
 
             $list.bootstrapTable({
-              striped:true,
-              sortName:'s',
-              pagination:true,
-              search:true,
-              searchAlign: 'left',
-              showHeader: true,
-              editable: true,
-              data: triples,
-              dataSetter: tripleEditorDataSetter,
-              columns: [{
-                field: 'subject',
-                title: RDFE.Utils.namingSchemaLabel('s', self.namingSchema),
-                align: 'left',
-                sortable: true,
-                editable: function(triple) {
-                  return {
-                    mode: "inline",
-                    type: "rdfnode",
-                    rdfnode: {
-                      type: 'http://www.w3.org/1999/02/22-rdf-syntax-ns#Resource'
-                    },
-                    value: triple.subject
-                  }
-                },
-                formatter: nodeFormatter
-              }, {
-                field: 'predicate',
-                title: RDFE.Utils.namingSchemaLabel('p', self.namingSchema),
-                align: 'left',
-                sortable: true,
-                editable: function(triple) {
-                  return {
-                    mode: "inline",
-                    type: "propertyBox",
-                    propertyBox: {
-                      ontoManager: self.ontologyManager
-                    },
-                    value: triple.predicate.nominalValue
-                  };
-                },
-                formatter: nodeFormatter
-              }, {
-                field: 'object',
-                title: RDFE.Utils.namingSchemaLabel('o', self.namingSchema),
-                align: 'left',
-                sortable: true,
-                editable: function(triple) {
+              "striped": true,
+              "sortName": 's',
+              "pagination": true,
+              "search": true,
+              "searchAlign": 'left',
+              "showHeader": true,
+              "editable": true,
+              "data": triples,
+              "dataSetter": tripleEditorDataSetter,
+              "columns": [{
+                "field": 'subject',
+                "title": RDFE.Utils.namingSchemaLabel('s', self.namingSchema),
+                "align": 'left',
+                "sortable": true,
+                "editable": function(triple) {
                   return {
                     "mode": "inline",
                     "type": "rdfnode",
                     "rdfnode": {
+                      "config": self.doc.config.options,
+                      "type": 'http://www.w3.org/1999/02/22-rdf-syntax-ns#Resource'
+                    },
+                    "value": triple.subject
+                  }
+                },
+                "formatter": nodeFormatter
+              }, {
+                "field": 'predicate',
+                "title": RDFE.Utils.namingSchemaLabel('p', self.namingSchema),
+                "align": 'left',
+                "sortable": true,
+                "editable": function(triple) {
+                  return {
+                    "mode": "inline",
+                    "type": "propertyBox",
+                    "propertyBox": {
+                      "ontoManager": self.ontologyManager
+                    },
+                    "value": triple.predicate.nominalValue
+                  };
+                },
+                "formatter": nodeFormatter
+              }, {
+                "field": 'object',
+                "title": RDFE.Utils.namingSchemaLabel('o', self.namingSchema),
+                "align": 'left',
+                "sortable": true,
+                "editable": function(triple) {
+                  return {
+                    "mode": "inline",
+                    "type": "rdfnode",
+                    "rdfnode": {
+                      "config": self.doc.config.options,
                       "predicate": triple.predicate.toString(),
                       "document": self.doc,
                       "ontologyManager": self.ontologyManager
@@ -149,23 +151,23 @@
                     "value": triple.object
                   };
                 },
-                formatter: nodeFormatter
+                "formatter": nodeFormatter
               }, {
-                field: 'actions',
-                title: '<button class="add btn btn-default" title="Add a new statement to the document"><span class="glyphicon glyphicon-plus" aria-hidden="true"></span> New</button>',
-                align: 'center',
-                valign: 'middle',
-                class: 'small-column',
-                clickToSelect: false,
-                editable: false,
-                formatter: function(value, row, index) {
+                "field": 'actions',
+                "title": '<button class="add btn btn-default" title="Add a new statement to the document"><span class="glyphicon glyphicon-plus" aria-hidden="true"></span> New</button>',
+                "align": 'center',
+                "valign": 'middle',
+                "class": 'small-column',
+                "clickToSelect": false,
+                "editable": false,
+                "formatter": function(value, row, index) {
                   return [
                     '<a class="remove ml10" href="javascript:void(0)" title="Remove">',
                     '<i class="glyphicon glyphicon-remove"></i>',
                     '</a>'
                   ].join('');
                 },
-                events: {
+                "events": {
                   'click .remove': function (e, value, row, index) {
                     var triple = row;
                     self.doc.deleteTriple(triple, function() {
@@ -181,12 +183,13 @@
               }]
             });
             $($list).find('.add').on('click', function(e) {
-              self.editor.createNewStatementEditor();
+              self.editor.editTriple();
             });
             self.tripleTable = $list;
 
-            if (callback)
+            if (callback) {
               callback();
+            }
           } else {
             $(self).trigger('rdf-editor-error', 'Failed to query ' + RDFE.Utils.namingSchemaLabel('spo', self.namingSchema, true, true) + ' from document.');
           }

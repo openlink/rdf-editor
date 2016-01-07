@@ -64,7 +64,7 @@
       </div>'
     );
 
-    c.prototype.render = function(editor, container, backCallback) {
+    c.prototype.render = function(editor, container, newStatement, backCallback) {
       var self = this;
 
       var objectEditorData = function(container, backCallback) {
@@ -151,6 +151,9 @@
 
         // reftersh objects data
         self.renderData();
+        if (newStatement) {
+          self.createNewRelationEditor();
+        }
       };
 
       var objectEditorDataSetter = function(triple, field, newValue) {
@@ -187,7 +190,7 @@
         backCallback();
       });
 
-      var objectInput = container.find('input[name="object"]').rdfNodeEditor();
+      var objectInput = container.find('input[name="object"]').rdfNodeEditor(self.doc.config.options);
       if (self.object) {
         objectInput.setValue(self.object.object);
       }
@@ -266,7 +269,7 @@
         '</div>'
       ).show();
 
-      self.predicateEdit = self.objectFormContainer.find('select[name="predicate"]').propertyBox({
+      self.predicateEditor = self.objectFormContainer.find('select[name="predicate"]').propertyBox({
         ontoManager: self.ontologyManager
       });
 
@@ -278,7 +281,7 @@
       self.objectFormContainer.find('button.object-action-new-save').click(function(e) {
         var s = self.objectFormContainer.find('input[name="subject"]').val();
         s = RDFE.Utils.trim(RDFE.Utils.trim(s, '<'), '>')
-        var p = self.predicateEdit.selectedURI();
+        var p = self.predicateEditor.selectedURI();
         p = RDFE.Utils.trim(RDFE.Utils.trim(p, '<'), '>')
         var t = self.doc.store.rdf.createTriple(self.doc.store.rdf.createNamedNode(s), self.doc.store.rdf.createNamedNode(p), self.object.object);
         self.doc.addTriples([t], function() {

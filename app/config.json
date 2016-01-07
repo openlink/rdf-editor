@@ -44,6 +44,7 @@
     "o": ["Object", "Objects"]
   },
   "autoInverseOfHandling": true,
+  "startHashSignAsResource": true,
   "validateEmptyNodes": true,
   "storage": [],
   "ioTimeout": 60000
