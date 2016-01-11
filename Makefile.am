@@ -1,7 +1,7 @@
 #
 #  This file is part of the OpenLink RDF Editor
 #
-#  Copyright (C) 2014-2015 OpenLink Software
+#  Copyright (C) 2014-2016 OpenLink Software
 #
 #  This project is free software; you can redistribute it and/or modify it
 #  under the terms of the GNU General Public License as published by the
