@@ -1,3 +1,22 @@
+v0.17:
+  * Added detail info about deployments on different HTTP servers.
+  * Added new URL parameters related to 'Annotate' option in OSDS.
+  * Added turtle and JSON-LD app description data.
+  * Added <script type=text/turtle></script> element for OSDS plugin
+  * Added 'Fork me on GitHub' link
+  * Added error messages to the ontology's view.
+  * Added check for mixed content before Ajax call.
+  * Added config option for verify empty noes or not.
+  * Added throbber for folder selection in browser.
+  * Reduced ontology search by prefix in editors.
+  * Updated sort order in browser - folders and files are sorted together.
+  * Use 'Resource' node type when value starts with '#'. Added new config option for this.
+  * Fixed bug with 'Back' button in subject's editor.
+  * Fixed bugs to enable correct work of OSDS plugin.
+  * Fixed bug ontology refresh and 'Mixed content' error.
+  * Fixed creation tar version of the editor.
+  * Fixed bug with refresh folder list after adding new file.
+
 v0.16:
   * Publish the RDF Editor project to github
   * Added dcterms, vcard, cert, pim, void. sioc, skos, schema, and gr to preloaded ontologies
