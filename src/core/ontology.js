@@ -1,7 +1,7 @@
 /*
  *  This file is part of the OpenLink RDF Editor
  *
- *  Copyright (C) 2014-2015 OpenLink Software
+ *  Copyright (C) 2014-2016 OpenLink Software
  *
  *  This project is free software; you can redistribute it and/or modify it
  *  under the terms of the GNU General Public License as published by the
@@ -85,9 +85,11 @@ RDFE.uriPrefix = function(v) {
   if ((m != -1) && (m == v.lastIndexOf(':'))) {
     return v.substring(0, m);
   }
+  /*
   if (m == -1) {
     return v;
   }
+  */
   return null;
 }
 
@@ -341,7 +343,7 @@ RDFE.OntologyManager.prototype.load = function(URI, params) {
   var ioType = (params.ioType)? params.ioType: 'http';
   var options = {};
   if (self.options.nonTTLProxyUrl) {
-    options.httpProxyTemplate = self.options.nonTTLProxyUrl;
+    options.httpProxyTemplate = self.options.nonTTLProxyUrl[document.location.protocol];
   }
   var IO = RDFE.IO.createIO(ioType, options);
   IO.type = ioType;
@@ -370,8 +372,8 @@ RDFE.OntologyManager.prototype.load = function(URI, params) {
       params.__error(state, data, status, xhr);
     }
   };
-
-  IO.retrieve(URI, $.extend({"proxy": self.options.proxy}, params));
+  var proxy = ((RDFE.Utils.getProtocol(URI) !== document.location.protocol) && (document.location.protocol === 'https:')) ? true: self.options.proxy;
+  IO.retrieve(URI, $.extend({"proxy": proxy}, params));
 }
 
 RDFE.OntologyManager.prototype.parseOntologyFile = function(URI, params) {

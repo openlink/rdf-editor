@@ -1,4 +1,84 @@
+2016-01-12  Patrick van Kleef  <pkleef@openlinksw.com>
+
+	Updated version to 0.17 for final release
+
+	Merge branch 'feature/readmeUpdate' into develop
+
+2016-01-11  Dimitar Dimitrov  <ddimitrov@openlinksw.com>
+
+	Added detail info about deployments on different HTTP servers.
+
+2016-01-11  Patrick van Kleef  <pkleef@openlinksw.com>
+
+	Updated Copyright to 2016
+
+2016-01-07  Patrick van Kleef  <pkleef@openlinksw.com>
+
+	Merge branch 'feature/osdsRelatedBugFix' into develop
+
+2016-01-04  Dimitar Dimitrov  <ddimitrov@openlinksw.com>
+
+	Reduced ontology search by prefix in editors.
+
+	Fxed bug with 'Back' button in subject's editor.
+
+2015-12-29  Dimitar Dimitrov  <ddimitrov@openlinksw.com>
+
+	Use 'Resource' node type when value starts with '#'. Added new config option for this.
+
+	Added new URL parameters related to 'Annotate' option in OSDS.
+
+2015-12-23  Dimitar Dimitrov  <ddimitrov@openlinksw.com>
+
+	Fixed bugs to enable correct work of OSDS plugin.
+
+2015-12-22  Dimitar Dimitrov  <ddimitrov@openlinksw.com>
+
+	Added turtle and JSON-LD app description data.
+
+2015-12-21  Patrick van Kleef  <pkleef@openlinksw.com>
+
+	Merge branch 'feature/osdsUpdates' into develop
+
+2015-12-21  Dimitar Dimitrov  <ddimitrov@openlinksw.com>
+
+	Added <script type=text/turtle></script> element for OSDS plugin. Extend URL paramteres with statement:subject, statement:predicate and statement:object.
+
+	Added 'Fork me on GitHub' link
+
+2015-12-03  Patrick van Kleef  <pkleef@openlinksw.com>
+
+	Merge branch 'feature/saveAsRefreshBug' into develop
+
+2015-12-02  Dimitar Dimitrov  <ddimitrov@openlinksw.com>
+
+	Added error messages to the ontology's view.
+
+	Added check for mixed content before Ajax call.
+
+2015-12-01  Dimitar Dimitrov  <ddimitrov@openlinksw.com>
+
+	Fixed bug ontology refresh and 'Mixed content' error.
+
+	Fixed creation tar version of the editor.
+
+2015-11-20  Dimitar Dimitrov  <ddimitrov@openlinksw.com>
+
+	Added config option for verify empty noes or not.
+
+	Fixed bug with refresh folder list after adding new file.
+
+	Updated sort order in browser - folders and files are sorted together.
+
+2015-11-11  Dimitar Dimitrov  <ddimitrov@openlinksw.com>
+
+	Added throbber for folder selection in browser.
+
 2015-11-11  Patrick van Kleef  <pkleef@openlinksw.com>
+
+	Merge branch 'release/0.16' into develop
+
+	Updated ChangeLog
 
 	Updated version to 0.16 for release
 

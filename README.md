@@ -15,7 +15,7 @@ served from a system that supports at least one of the following open standards:
 
 
 ## License
-Copyright 2014-2015 [OpenLink Software](mailto:opensource@openlinksw.com)
+Copyright 2014-2016 [OpenLink Software](mailto:opensource@openlinksw.com)
 
 This software is licensed under the GNU General Public License (see
 [COPYING](http://github.com/openlink/rdf-editor/blob/develop/COPYING)).
@@ -91,16 +91,84 @@ Editor in various operating system environments.
 
 ## Deployment
 
-The build system creates both a *rdf_editor_dav.vad* file that can be used with the
+The build system creates both a *rdf\_editor\_dav.vad* file that can be used with the
 [OpenLink Virtuoso Universal Server](http://virtuoso.openlinksw.com) or
 [OpenLink Virtuoso Open Source Edition](http://github.com/openlink/virtuoso-opensource)
-projects and a *rdf_editor_pkg.tar.gz* and *rdf_editor_pkg.zip* file that can be used to build and
+projects and a *rdf\_editor\_pkg.tar.gz* and *rdf\_editor\_pkg.zip* file that can be used to build and
 deploy the application on many http servers such as:
 
-  - Apache
-  - IIS
-  - Tomcat
-  - Node.js http-server
+- Apache
+-
+  * **Download and install Apache (v2.x)**.
+
+  * **Extract RDF Editor**:
+
+	unzip rdf\_editor\_pkg.zip -d [PATH]
+
+  * **Add new drectory (/rdf-edtor) with RDF Editor to the server configuration**:
+
+  * **Start Apache Server**.
+
+	[APACHE HOME]/bin/httpd
+
+  * **Usage**:
+
+	[Default Browser] localhost:[port]/rdf-editor/index.html
+
+- IIS (Windows Only)
+
+  * **Start IIS**.
+
+  * **Extract RDF Editor**:
+
+	unzip rdf\_editor\_pkg.zip -d [IIS Root Path]
+
+  * **Usage**:
+
+	[Default Browser] localhost:[port]/rdf-editor/index.html
+
+- Tomcat
+
+  * **Download and install Tomcat (v8.x)**.
+
+  * **Start Tomcat**.
+
+	[TOMCAT HOME]/bin/startup
+
+  * **Extract RDF Editor**:
+
+	unzip rdf\_editor\_pkg.zip -d [TOMCAT HOME]/webapps/Root
+
+  * **Usage**:
+
+	[Default Browser] localhost:[port]/rdf-editor/index.html
+
+- Node.js http-server
+
+  * **Download and install Node.js**.
+
+  * **Download and install NPM manager**.
+
+  * **Extract RDF Editor**:
+
+	unzip rdf\_editor\_pkg.zip -d [RDF Editor Path]
+
+	The http-server is a simple, zero-configuration command-line http server.
+
+  * **Installation**:
+
+	npm install http-server -g
+
+	This will install http-server globally so that it may be run from the command line.
+
+  * **Start HTTP Server**:
+
+	http-server [RDF Editor Path]/rdf-editor [options]
+
+  * **Usage**:
+
+	[Default Browser] localhost:[port]/index.html
+
 
 The project contains several README* files that show how to deploy the OpenLink RDF Editor in
 various operating system environments.

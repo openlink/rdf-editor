@@ -1,7 +1,7 @@
 /*
  *  This file is part of the OpenLink RDF Editor
  *
- *  Copyright (C) 2014-2015 OpenLink Software
+ *  Copyright (C) 2014-2016 OpenLink Software
  *
  *  This project is free software; you can redistribute it and/or modify it
  *  under the terms of the GNU General Public License as published by the
@@ -33,17 +33,20 @@ RDFE.Editor = function(config, documentTree, options) {
   var options = $.extend({"initOntologyManager": true}, options);
 
   // initialize our ontology manager
-  this.ontologyManager = new RDFE.OntologyManager(config.options);
+  self.ontologyManager = new RDFE.OntologyManager(config.options);
   if (options.initOntologyManager === true) {
-    this.ontologyManager.init();
+    self.ontologyManager.init();
   }
 
   // create our main document
-  this.doc = new RDFE.Document(this.ontologyManager, config, documentTree);
+  self.doc = new RDFE.Document(self.ontologyManager, config, documentTree);
 
   // store the config for future access
-  this.config = config;
-  this.namingSchema = config.options[config.options["namingSchema"]];
+  self.config = config;
+  self.namingSchema = config.options[config.options["namingSchema"]];
+  $(self.doc).on('docChanged', function(e, doc) {
+    self.docChanged();
+  });
 };
 
 RDFE.Editor.prototype.render = function(container) {
@@ -55,6 +58,15 @@ RDFE.Editor.prototype.render = function(container) {
   this.formContainer = $(document.createElement('div')).appendTo(this.container);
 
   this.toggleView(this.config.options.defaultView);
+};
+
+RDFE.Editor.prototype.docChanged = function() {
+  var self = this;
+
+  self.doc.store.graph(self.doc.graph, function(success, graph){
+    var serialized = '<![CDATA[' + graph.toNT() + ']]>';
+    $('body').find('script[type="text/turtle"][id="document"]').text(serialized);
+  });
 };
 
 /**
@@ -84,17 +96,17 @@ RDFE.Editor.prototype.toggleView = function(view) {
       }
       this._currentView = "entities";
     }
-    else if (view === 'triples') {
-      this.createTripleList();
-      this._currentView = "triples";
-    }
     else if (view === 'predicates') {
       this.createPredicateList();
       this._currentView = "predicates";
     }
-    else {
+    else if (view === 'values') {
       this.createObjectList();
       this._currentView = "values";
+    }
+    else {
+      this.createTripleList();
+      this._currentView = "triples";
     }
   }
 };
@@ -103,22 +115,24 @@ RDFE.Editor.prototype.toggleView = function(view) {
  * Forcefully update the contents in the current view.
  */
 RDFE.Editor.prototype.updateView = function() {
-  if (this._currentView === 'entities') {
-    if (this.config.options['useEntityEditor'] === true) {
-      this.createEntityList();
+  var self = this;
+
+  if (self._currentView === 'entities') {
+    if (self.config.options['useEntityEditor'] === true) {
+      self.createEntityList();
     }
     else {
-      this.createSubjectList();
+      self.createSubjectList();
     }
   }
-  else if (this._currentView === 'triples') {
-    this.createTripleList();
+  else if (self._currentView === 'predicates') {
+    self.createPredicateList();
   }
-  else if (this._currentView === 'predicates') {
-    this.createPredicateList();
+  else if (self._currentView === 'values') {
+    self.createObjectList();
   }
   else {
-    this.createObjectList();
+    self.createTripleList();
   }
 };
 
@@ -145,10 +159,10 @@ RDFE.Editor.prototype.createTripleList = function() {
   });
 };
 
-RDFE.Editor.prototype.createNewStatementEditor = function() {
+RDFE.Editor.prototype.editTriple = function(s, p, o) {
   var self = this;
 
-  if (!this.doc) {
+  if (!self.doc) {
     return false;
   }
 
@@ -178,16 +192,26 @@ RDFE.Editor.prototype.createNewStatementEditor = function() {
     '</div>'
   ).show();
 
-  var objEd = self.formContainer.find('input[name="object"]').rdfNodeEditor();
-  var propEd = self.formContainer.find('select[name="predicate"]').propertyBox({
+  // Set subject value
+  if (s) {
+    self.formContainer.find('input[name="subject"]').val(s);
+  }
+
+  var objectEditor = self.formContainer.find('input[name="object"]').rdfNodeEditor(self.config.options);
+  // Set object value
+  if (o) {
+    objectEditor.setValue(new RDFE.RdfNode('literal', o, null, ''));
+  }
+
+  var predicateEditor = self.formContainer.find('select[name="predicate"]').propertyBox({
     ontoManager: self.ontologyManager
   }).on('changed', function(e, p) {
     // console.log('changed', p)
     var node;
     var nodeItems;
-    var cn = objEd.getValue();
+    var cn = objectEditor.getValue();
     var range = (p)? p.getRange(): null;
-    if (objEd.isLiteralType(range)) {
+    if (objectEditor.isLiteralType(range)) {
       node = new RDFE.RdfNode('literal', cn.value, range, cn.language);
     }
     else if (self.ontologyManager.ontologyClassByURI(range)) {
@@ -197,8 +221,12 @@ RDFE.Editor.prototype.createNewStatementEditor = function() {
     else {
       node = new RDFE.RdfNode('literal', cn.value, null, '');
     }
-    objEd.setValue(node, nodeItems);
+    objectEditor.setValue(node, nodeItems);
   });
+  // Set predicate value
+  if (p) {
+    predicateEditor.setPropertyURI(p);
+  }
 
   self.formContainer.find('a.triple-action-new-cancel').click(function(e) {
     e.preventDefault();
@@ -209,9 +237,9 @@ RDFE.Editor.prototype.createNewStatementEditor = function() {
     e.preventDefault();
     var s = self.formContainer.find('input[name="subject"]').val();
     s = RDFE.Utils.trim(RDFE.Utils.trim(s, '<'), '>')
-    var p = propEd.selectedURI();
+    var p = predicateEditor.selectedURI();
     p = RDFE.Utils.trim(RDFE.Utils.trim(p, '<'), '>')
-    var o = objEd.getValue();
+    var o = objectEditor.getValue();
     if (o.type == 'uri') {
       o.value = self.ontologyManager.uriDenormalize(o.value);
     }
@@ -357,7 +385,7 @@ RDFE.Editor.prototype.createNewEntityEditor = function(forcedType) {
   }
 
   // if we have an entity uri template we ask the user to provide a nem instead of the uri
-  if(this.config.options.entityUriTmpl) {
+  if (self.config.options.entityUriTmpl) {
     self.formContainer.find('label[for="subject"]').text(RDFE.Utils.namingSchemaLabel('s', self.namingSchema) + ' Name');
   }
 
@@ -493,10 +521,10 @@ RDFE.Editor.prototype.createSubjectList = function() {
   });
 };
 
-RDFE.Editor.prototype.editSubject = function(subject) {
+RDFE.Editor.prototype.editSubject = function(subject, newStatement) {
   var self = this;
 
-  if(!self.subjectEditor) {
+  if (!self.subjectEditor) {
     self.subjectEditor = new RDFE.SubjectEditor(self.doc, self.ontologyManager);
     $(self.subjectEditor).on('rdf-editor-error', function(e) {
       $(self).trigger('rdf-editor-error', d);
@@ -505,11 +533,16 @@ RDFE.Editor.prototype.editSubject = function(subject) {
     });
   }
 
+  // subject as URL parameter
+  if (typeof subject === 'string') {
+    subject = self.doc.newSubject(subject);
+  }
+
   // render the entity editor and re-create the entity list once the editor is done
   self.listContainer.hide();
   self.formContainer.show();
   self.subjectEditor.subject = subject;
-  self.subjectEditor.render(self, self.formContainer, function() {
+  self.subjectEditor.render(self, self.formContainer, newStatement, function() {
     self.formContainer.hide();
     self.listContainer.show();
     if (subject && subject.uri) {
@@ -549,7 +582,7 @@ RDFE.Editor.prototype.createPredicateList = function() {
   });
 };
 
-RDFE.Editor.prototype.editPredicate = function(predicate) {
+RDFE.Editor.prototype.editPredicate = function(predicate, newStatement) {
   var self = this;
 
   if (!self.predicateEditor) {
@@ -564,8 +597,18 @@ RDFE.Editor.prototype.editPredicate = function(predicate) {
   // render the entity editor and re-create the entity list once the editor is done
   self.listContainer.hide();
   self.formContainer.show();
+
+  // predicate as URL parameter
+  if (typeof predicate === 'string') {
+    predicate = self.doc.newPredicate(predicate);
+  }
+
+  if (predicate) {
+    self.ontologyManager.ontologyPropertyByURI(predicate.uri, true);
+  }
+
   self.predicateEditor.predicate = predicate;
-  self.predicateEditor.render(self, self.formContainer, function() {
+  self.predicateEditor.render(self, self.formContainer, newStatement, function() {
     self.formContainer.hide();
     self.listContainer.show();
     if (predicate && predicate.uri) {
@@ -605,7 +648,7 @@ RDFE.Editor.prototype.createObjectList = function() {
   });
 };
 
-RDFE.Editor.prototype.editObject = function(object) {
+RDFE.Editor.prototype.editObject = function(object, newStatement) {
   var self = this;
 
   if (!self.objectEditor) {
@@ -617,11 +660,16 @@ RDFE.Editor.prototype.editObject = function(object) {
     });
   }
 
+  // subject as URL parameter
+  if (typeof object === 'string') {
+    object = self.doc.newObject(object);
+  }
+
   // render the entity editor and re-create the entity list once the editor is done
   self.listContainer.hide();
   self.formContainer.show();
   self.objectEditor.object = object;
-  self.objectEditor.render(self, self.formContainer, function() {
+  self.objectEditor.render(self, self.formContainer, newStatement, function() {
     self.formContainer.hide();
     self.listContainer.show();
     if (object) {

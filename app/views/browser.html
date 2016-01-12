@@ -96,7 +96,7 @@
       </div>
     </li>
 
-    <li ng-repeat='child in currentFolder.children | orderBy : ["-type", orderProp] : reverse' class="resourceItem list-group-item">
+    <li ng-repeat='child in currentFolder.children | orderBy : [orderProp] : reverse' class="resourceItem list-group-item">
       <a href="{{child.url}}" ng-click="$event.preventDefault(); open(child)">
         <div class="resourceIcon">
           <span class="glyphicon" ng-class="{ 'glyphicon-file': child.type === 'file', 'glyphicon-folder-close': child.type === 'folder' }"></span>

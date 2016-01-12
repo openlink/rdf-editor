@@ -1,7 +1,7 @@
 /*
  *  This file is part of the OpenLink RDF Editor
  *
- *  Copyright (C) 2014-2015 OpenLink Software
+ *  Copyright (C) 2014-2016 OpenLink Software
  *
  *  This project is free software; you can redistribute it and/or modify it
  *  under the terms of the GNU General Public License as published by the
@@ -62,7 +62,7 @@
       </div>'
     );
 
-    c.prototype.render = function(editor, container, backCallback) {
+    c.prototype.render = function(editor, container, newStatement, backCallback) {
       var self = this;
 
       var predicateEditorData = function(container, backCallback) {
@@ -86,6 +86,7 @@
                 "mode": "inline",
                 "type": "rdfnode",
                 "rdfnode": {
+                  "config": self.doc.config.options,
                   "type": 'http://www.w3.org/1999/02/22-rdf-syntax-ns#Resource'
                 },
                 "value": triple.subject
@@ -102,6 +103,7 @@
                 "mode": "inline",
                 "type": "rdfnode",
                 "rdfnode": {
+                  "config": self.doc.config.options,
                   "predicate": self.predicate.uri,
                   "document": self.doc,
                   "ontologyManager": self.ontologyManager
@@ -151,6 +153,9 @@
 
         // reftersh predicates data
         self.renderData();
+        if (newStatement) {
+          self.createNewRelationEditor();
+        }
       };
 
       var predicateEditorDataSetter = function(triple, field, newValue) {
@@ -197,13 +202,13 @@
         backCallback();
       });
 
-      var predicateSelect = container.find('select[name="predicate"]').propertyBox({
+      var predicateEditor = container.find('select[name="predicate"]').propertyBox({
         ontoManager: self.ontologyManager
       });
       if (self.predicate) {
-        predicateSelect.setPropertyURI(self.predicate.uri);
+        predicateEditor.setPropertyURI(self.predicate.uri);
       }
-      predicateSelect.sel.on('change', function(predicateUri) {
+      predicateEditor.sel.on('change', function(predicateUri) {
         if (predicateUri) {
           self.doc.getPredicate(predicateUri, function (predicate) {
             self.predicateView.addPredicate(predicate);
@@ -273,11 +278,11 @@
       ).show();
 
       var property = self.ontologyManager.ontologyProperties[self.predicate.uri];
-      var objectEdit = self.predicateFormContainer.find('input[name="object"]').rdfNodeEditor();
+      var objectEditor = self.predicateFormContainer.find('input[name="object"]').rdfNodeEditor(self.doc.config.options);
       var node;
       var nodeItems;
       var range = property.getRange();
-      if (objectEdit.isLiteralType(range)) {
+      if (objectEditor.isLiteralType(range)) {
         node = new RDFE.RdfNode('literal', '', range, '');
       }
       else if (self.ontologyManager.ontologyClassByURI(range)) {
@@ -287,7 +292,7 @@
       else {
         node = new RDFE.RdfNode('literal', '', null, '');
       }
-      objectEdit.setValue(node, nodeItems);
+      objectEditor.setValue(node, nodeItems);
 
       self.predicateFormContainer.find('button.predicate-action-new-cancel').click(function(e) {
         self.predicateFormContainer.hide();
@@ -298,7 +303,7 @@
         var s = self.predicateFormContainer.find('input[name="subject"]').val();
         s = RDFE.Utils.trim(RDFE.Utils.trim(s, '<'), '>')
         var p = self.predicate.uri;
-        var o = objectEdit.getValue();
+        var o = objectEditor.getValue();
         var t = self.doc.store.rdf.createTriple(self.doc.store.rdf.createNamedNode(s), self.doc.store.rdf.createNamedNode(p), o.toStoreNode(self.doc.store));
         self.doc.addTriples([t], function() {
           self.addTriple(t);

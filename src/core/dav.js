@@ -1,7 +1,7 @@
 /*
  *  This file is part of the OpenLink RDF Editor
  *
- *  Copyright (C) 2014-2015 OpenLink Software
+ *  Copyright (C) 2014-2016 OpenLink Software
  *
  *  This project is free software; you can redistribute it and/or modify it
  *  under the terms of the GNU General Public License as published by the
@@ -165,6 +165,7 @@ RDFE.IO.Folder = (function() {
    * @param fail An optional callback function which gets the folder itself, an error message, and an http result code as parameters.
    */
   c.prototype.update = function(force, success, fail) {
+    var self = this;
     var _force = force,
         _success = success,
         _fail = fail;
@@ -175,7 +176,6 @@ RDFE.IO.Folder = (function() {
       _force = false;
     }
     if (_force || this.dirty) {
-      var self = this;
       this.listDir(function() {
         // update the root dir of all children
         $(self.children).each(function() {
@@ -184,31 +184,30 @@ RDFE.IO.Folder = (function() {
         });
 
         self.dirty = false;
-
-        if(_success) {
+        if (_success) {
           _success(self);
         }
       },
       function(err, status) {
         // get auth information from the user if possible
-        if((status === 401 || status === 403) && self.options.authFunction) {
+        if ((status === 401 || status === 403) && self.options.authFunction) {
           self.options.authFunction(self.url, function(r) {
             self.options.username = r.username;
             self.options.password = r.password;
             self.update(_force, _success, _fail);
           }, function() {
-            if(_fail) {
+            if (_fail) {
               _fail(self, err, status);
             }
           });
         }
-        else if(_fail) {
+        else if (_fail) {
           _fail(self, err, status);
         }
       });
     }
     else {
-      _success(this);
+      _success(self);
     }
   };
 

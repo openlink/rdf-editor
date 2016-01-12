@@ -71,8 +71,8 @@ angular.module('myApp.editor', ['ngRoute'])
 
 .controller(
   'EditorCtrl', [
-  '$rootScope', '$scope', '$routeParams', '$location', "usSpinnerService", 'RDFEditor', 'DocumentTree', 'Notification',
-  function($rootScope, $scope, $routeParams, $location, usSpinnerService, RDFEditor, DocumentTree, Notification) {
+  '$rootScope', '$scope', '$routeParams', '$location', '$timeout', "usSpinnerService", 'RDFEditor', 'DocumentTree', 'Notification',
+  function($rootScope, $scope, $routeParams, $location, $timeout, usSpinnerService, RDFEditor, DocumentTree, Notification) {
 
   function toggleSpinner(on) {
     if(on) {
@@ -111,11 +111,14 @@ angular.module('myApp.editor', ['ngRoute'])
       var loadUrl= function(url, io_rdfe) {
         toggleSpinner(true);
         $scope.mainDoc.load(url, io_rdfe, function() {
+          toggleView();
           $scope.editor.updateView();
           $scope.$apply(function() {
             // this is essentially a no-op to force the ui to update the url view
             $scope.mainDoc.url = url;
           });
+          showViewEditor();
+          $scope.editor.docChanged();
         }, function(state) {
           var msg = (state && state.message)? state.message: 'Failed to load document';
           Notification.notify('error', msg);
@@ -142,6 +145,47 @@ angular.module('myApp.editor', ['ngRoute'])
 
   }
 
+  function toggleView() {
+    var s = $routeParams["statement:subject"];
+    var p = $routeParams["statement:predicate"];
+    var o = $routeParams["statement:object"];
+
+    if (s) {
+      $scope.viewMode = ($routeParams["view"] === 'statements')? 'triples' :'entities';
+    }
+    else if (p) {
+      $scope.viewMode = ($routeParams["view"] === 'statements')? 'triples' :'predicates';
+    }
+    else if (o) {
+      $scope.viewMode = ($routeParams["view"] === 'statements')? 'triples' :'values';
+    }
+    else if (s || p || o) {
+      $scope.viewMode = 'triples';
+    }
+    $scope.editor.toggleView($scope.viewMode)
+  }
+
+  function showViewEditor() {
+    var newStatement = $routeParams["newStatement"];
+    var s = $routeParams["statement:subject"];
+    var p = $routeParams["statement:predicate"];
+    var o = $routeParams["statement:object"];
+    var view = $routeParams["view"];
+
+    if (s && (!view || view === 'entities')) {
+      $scope.editor.editSubject(s, newStatement);
+    }
+    else if (p && (!view || view === 'predicates')) {
+      $scope.editor.editPredicate(p, newStatement);
+    }
+    else if (o && (!view || view === 'values')) {
+      $scope.editor.editObject(o, newStatement);
+    }
+    else if ((s || p || o || newStatement) && (!view || view === 'statements')) {
+      $scope.editor.editTriple(s, p, o, newStatement);
+    }
+  }
+
   RDFEditor.getEditor().then(function(editor) {
     $rootScope.editor = editor;
     $scope.editor = editor;
@@ -151,7 +195,7 @@ angular.module('myApp.editor', ['ngRoute'])
     $scope.editor.render($("#contents"));
 
     // the browser requested that we save the current document
-    if($routeParams.saveDocument) {
+    if ($routeParams.saveDocument) {
       $scope.mainDoc.url = $routeParams.uri;
       $scope.mainDoc.io = getIO($routeParams.ioType, $routeParams.sparqlEndpoint, editor.config.options['ioTimeout']);
       $scope.saveDocument();
@@ -159,32 +203,39 @@ angular.module('myApp.editor', ['ngRoute'])
     }
 
     // and if we are told, then we create a new document by clearing the old one
-    else if($routeParams.newDocument) {
+    else if ($routeParams.newDocument) {
       $scope.mainDoc.new(function() {
-        if($routeParams.uri) {
-          $scope.mainDoc.url = $routeParams.uri;
-          $scope.mainDoc.io = getIO($routeParams.ioType, $routeParams.sparqlEndpoint, editor.config.options['ioTimeout']);
-        }
+        toggleView();
         $scope.editor.updateView();
+        $timeout(function() {
+          // Any code in here will automatically have an $scope.apply() run afterwards
+          if ($routeParams.uri) {
+            $scope.mainDoc.url = $routeParams.uri;
+            $scope.mainDoc.io = getIO($routeParams.ioType, $routeParams.sparqlEndpoint, editor.config.options['ioTimeout']);
+          }
+        });
+        showViewEditor();
       }, function() {
         Notification.notity('error', "Failed to clear Document for unknown reasons.");
       });
     }
 
     // otherwise we try to load the requested document
-    else if($routeParams.uri) {
+    else if ($routeParams.uri) {
       var content = $.jStorage.get('rdfe:savedDocument', null);
       if (content) {
         $scope.mainDoc.store.clear(function() {
           $scope.mainDoc.store.loadTurtle(content, $scope.mainDoc.graph, $scope.mainDoc.graph, function(success, r) {
             if (success) {
+              toggleView();
               $scope.editor.updateView();
-              $scope.$apply(function() {
+              $timeout(function() {
                 // this is essentially a no-op to force the ui to update the url view
                 $scope.mainDoc.dirty = true;
                 $scope.mainDoc.url = $routeParams.uri;
                 $scope.mainDoc.io = getIO($routeParams.ioType, $routeParams.sparqlEndpoint, editor.config.options['ioTimeout']);
               });
+              showViewEditor();
             }
           });
         });

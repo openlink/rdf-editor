@@ -1,7 +1,7 @@
 /*
  *  This file is part of the OpenLink RDF Editor
  *
- *  Copyright (C) 2014-2015 OpenLink Software
+ *  Copyright (C) 2014-2016 OpenLink Software
  *
  *  This project is free software; you can redistribute it and/or modify it
  *  under the terms of the GNU General Public License as published by the
@@ -37,26 +37,26 @@ String.prototype.format = function() {
   RDFE.IO.createIO = function(type, options) {
     var t = "sparql";
     var o = {};
-    if (typeof(type) == 'string') {
+    if (typeof(type) === 'string') {
       t = type;
       o = options;
-    } else if (typeof(type) == 'object') {
+    } else if (typeof(type) === 'object') {
       o = type;
       if (o.type) {
         t = o.type;
       }
     }
 
-    if (t == 'sparql')
+    if (t === 'sparql')
       return new RDFE.IO.SPARQL(o);
 
-    else if (t == 'gsp')
+    else if (t === 'gsp')
       return new RDFE.IO.GSP(o);
 
-    else if (t == 'ldp' || t == "webdav" || t == "dav")
+    else if (t === 'ldp' || t === "webdav" || t === "dav")
       return new RDFE.IO.LDP(o);
 
-    else if (t == 'http')
+    else if (t === 'http')
       return new RDFE.IO.HTTP(o);
 
     throw "Unsupport IO type: " + t;
@@ -123,6 +123,13 @@ String.prototype.format = function() {
         ajaxParams = $.extend({"timeout": self.options["ioTimeout"]}, ajaxParams);
       }
 
+      if ((RDFE.Utils.getProtocol(ajaxParams.url) !== document.location.protocol) && (document.location.protocol === 'https:')) {
+        if (params && params.error) {
+          params.error({"httpCode": '', "message": 'Mixed Content Error: This request has been blocked; the content must be served over HTTPS'});
+        }
+        return;
+      }
+
       $.ajax(ajaxParams).done(function(data, status, xhr) {
         if (params && params.success) {
           params.success(data, status, xhr);
@@ -133,7 +140,7 @@ String.prototype.format = function() {
             "httpCode": data.status,
             "message": data.statusText
           }
-          if (this.crossDomain && (state.message = 'error') && (RDFE.Utils.extractDomain(this.url) !== window.location.hostname)) {
+          if (this.crossDomain && (state.message === 'error') && (RDFE.Utils.extractDomain(this.url) !== window.location.hostname)) {
             state.message = "The document failed to load - this could be related to missing CORS settings on the server."
           }
           if ((data.status === 401 || data.status === 403) && params.authFunction) {
@@ -182,7 +189,7 @@ String.prototype.format = function() {
       }
 
       self.options = $.extend({}, defaults, options);
-      if (!self.options.sparqlEndpoint || self.options.sparqlEndpoint.length == 0) {
+      if (!self.options.sparqlEndpoint || self.options.sparqlEndpoint.length === 0) {
         self.options.sparqlEndpoint = defaults.sparqlEndpoint;
       }
     });
@@ -322,7 +329,7 @@ String.prototype.format = function() {
       };
 
       self.options = $.extend({}, defaults, options);
-      if (!self.options.gspEndpoint || self.options.gspEndpoint.length == 0) {
+      if (!self.options.gspEndpoint || self.options.gspEndpoint.length === 0) {
         self.options.gspEndpoint = defaults.gspEndpoint;
       }
     });
@@ -479,7 +486,7 @@ String.prototype.format = function() {
       params = extendParams(params, this.options);
       var headers;
       var method;
-      if (this.type != 'webdav') {
+      if (this.type !== 'webdav') {
         method = 'PUT';
         headers = {
           "Content-Type": 'text/turtle'
@@ -561,10 +568,10 @@ String.prototype.format = function() {
       };
 
       self.options = $.extend({}, defaults, options);
-      if (!self.options.httpTemplate || self.options.httpTemplate.length == 0) {
+      if (!self.options.httpTemplate || self.options.httpTemplate.length === 0) {
         self.options.httpTemplate = defaults.httpTemplate;
       }
-      if (!self.options.httpProxyTemplate || self.options.httpProxyTemplate.length == 0) {
+      if (!self.options.httpProxyTemplate || self.options.httpProxyTemplate.length === 0) {
         self.options.httpProxyTemplate = defaults.httpProxyTemplate;
       }
     });
