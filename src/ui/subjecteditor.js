@@ -380,9 +380,12 @@
         '        <label for="predicate" class="col-sm-2 control-label">' + RDFE.Utils.namingSchemaLabel('p', self.namingSchema) + '</label> ' +
         '        <div class="col-sm-10"><select name="predicate" class="form-control"></select></div> ' +
         '      </div> ' +
-        '      <div class="form-group"> ' +
-        '        <label for="object" class="col-sm-2 control-label">' + RDFE.Utils.namingSchemaLabel('o', self.namingSchema) + '</label> ' +
-        '        <div class="col-sm-10"><input name="object" class="form-control" /></div> ' +
+        '      <div class="form-group object-list"> ' +
+        '        <div class="col-sm-12 object-item_0" style="padding: 0;"> ' +
+        '          <label for="object_0" class="col-sm-2 control-label">' + RDFE.Utils.namingSchemaLabel('o', self.namingSchema) + '</label> ' +
+        '          <div class="col-sm-9"><input name="object_0" class="form-control" /></div> ' +
+        '          <div class="col-sm-1"><button type="button" class="btn btn-default object-add_0" title="Add Object"><span class="glyphicon glyphicon-plus" aria-hidden="true"></span></button></div> ' +
+        '        </div> ' +
         '      </div> ' +
         '      <div class="form-group"> ' +
         '        <div class="col-sm-10 col-sm-offset-2"> ' +
@@ -395,17 +398,11 @@
         '</div>'
       ).show();
 
-      var objectEditor = self.subjectFormContainer.find('input[name="object"]').rdfNodeEditor(self.doc.config.options);
-      objectEditor.setValue(new RDFE.RdfNode('literal', '', null, ''));
-
-      var predicateEditor = self.subjectFormContainer.find('select[name="predicate"]').propertyBox({
-        ontoManager: self.ontologyManager
-      }).on('changed', function(e, predicate) {
+      var objectTypeChange = function (predicate, objectEditor) {
         var node;
         var nodeItems;
-        var currentNode = objectEditor.getValue();
         var range = predicate.getRange();
-
+        var currentNode = objectEditor.getValue();
         if (objectEditor.isLiteralType(range)) {
           node = new RDFE.RdfNode('literal', currentNode.value, range, currentNode.language);
         }
@@ -417,6 +414,51 @@
           node = new RDFE.RdfNode('literal', currentNode.value, null, '');
         }
         objectEditor.setValue(node, nodeItems);
+      };
+
+      var objectNo = 1;
+      var objectHTML =
+        ' <div class="col-sm-12 object-item_<N>" style="padding: 0;"> ' +
+        '   <label for="object_<N>" class="col-sm-2 control-label"></label> ' +
+        '   <div class="col-sm-9"><input name="object_<N>" class="form-control" /></div> ' +
+        '   <div class="col-sm-1"><button type="button" class="btn btn-default object-remove_<N>" title="Remove Object"><span class="glyphicon glyphicon-remove" aria-hidden="true"></span></button></div> ' +
+        ' </div> ';
+      var objectEditors = [];
+      var objectEditor = self.subjectFormContainer.find('input[name="object_0"]').rdfNodeEditor(self.doc.config.options);
+      objectEditor.setValue(new RDFE.RdfNode('literal', '', null, ''));
+      objectEditors.push(objectEditor);
+
+      var predicateEditor = self.subjectFormContainer.find('select[name="predicate"]').propertyBox({
+        ontoManager: self.ontologyManager
+      }).on('changed', function(e, predicate) {
+        for (var i = 0; i < objectEditors.length; i++) {
+          var objectEditor = objectEditors[i];
+          if (objectEditor) {
+            objectTypeChange(predicate, objectEditor);
+          }
+        }
+      });
+
+      self.subjectFormContainer.find('button.object-add_0').click(function(e) {
+        var predicate = self.ontologyManager.ontologyPropertyByURI(predicateEditor.selectedURI());
+        var objectList = self.subjectFormContainer.find('div.object-list');
+        objectList.append(objectHTML.replace(/<N>/g, objectNo));
+        var objectEditor = self.subjectFormContainer.find('input[name="object_<N>"]'.replace(/<N>/g, objectNo)).rdfNodeEditor(self.doc.config.options);
+        objectEditor.setValue(new RDFE.RdfNode('literal', '', null, ''));
+        if (predicate) {
+          objectTypeChange(predicate, objectEditor);
+        }
+
+        var objectRemove = function(N) {
+          return function(e) {
+              self.subjectFormContainer.find('div.object-item_<N>'.replace(/<N>/g, N)).remove();
+              objectEditors[N] = null;
+            };
+        }(objectNo);
+        self.subjectFormContainer.find('button.object-remove_<N>'.replace(/<N>/g, objectNo)).click(objectRemove);
+
+        objectEditors.push(objectEditor);
+        objectNo++;
       });
 
       self.subjectFormContainer.find('button.subject-action-new-cancel').click(function(e) {
@@ -425,26 +467,46 @@
       });
 
       self.subjectFormContainer.find('button.subject-action-new-save').click(function(e) {
+        var success = true;
         var s = self.subject.uri;
         var p = predicateEditor.selectedURI();
-        var o = objectEditor.getValue();
-        var t = self.doc.store.rdf.createTriple(self.doc.store.rdf.createNamedNode(s), self.doc.store.rdf.createNamedNode(p), o.toStoreNode(self.doc.store));
-        self.doc.addTriples([t], function() {
-          if (!self.subjectView) {
-            self.addTriple(t);
+        if (!p)
+          return;
+
+        for (var i = 0; i < objectEditors.length; i++) {
+          var objectEditor = objectEditors[i];
+          if (!objectEditor)
+            continue;
+
+          var o = objectEditor.getValue();
+          if (!o.value) {
+            success = false;
+            continue;
           }
-          $(self).trigger('rdf-editor-success', {
-            "type": "triple-insert-success",
-            "message": "Successfully added new statement."
+
+          var t = self.doc.store.rdf.createTriple(self.doc.store.rdf.createNamedNode(s), self.doc.store.rdf.createNamedNode(p), o.toStoreNode(self.doc.store));
+          self.doc.addTriples([t], function() {
+            if (!self.subjectView) {
+              self.addTriple(t);
+            }
+            $(self).trigger('rdf-editor-success', {
+              "type": "triple-insert-success",
+              "message": "Successfully added new statement."
+            });
+            self.subjectFormContainer.find('div.object-item_<N>'.replace(/<N>/g, i)).remove();
+            objectEditors[i] = null;
+          }, function() {
+            $(self).trigger('rdf-editor-error', {
+              "type": 'triple-insert-failed',
+              "message": "Failed to add new statement to store."
+            });
+            success = false;
           });
+        }
+        if (success) {
           self.subjectFormContainer.hide();
           self.subjectTableContainer.show();
-        }, function() {
-          $(self).trigger('rdf-editor-error', {
-            "type": 'triple-insert-failed',
-            "message": "Failed to add new statement to store."
-          });
-        });
+        }
       });
     };
 
