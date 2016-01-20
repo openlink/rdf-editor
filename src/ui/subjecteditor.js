@@ -25,10 +25,11 @@
 
   RDFE.SubjectEditor = (function() {
     // constructor
-    var c = function(doc, ontologyManager, subject) {
-      this.doc = doc;
-      this.namingSchema = doc.config.options[doc.config.options["namingSchema"]];
-      this.ontologyManager = ontologyManager;
+    var c = function(editor, subject) {
+      this.editor = editor;
+      this.doc = editor.doc;
+      this.ontologyManager = editor.ontologyManager;
+      this.namingSchema = editor.doc.config.options[editor.doc.config.options["namingSchema"]];
       this.subject = subject;
     };
 
@@ -398,24 +399,6 @@
         '</div>'
       ).show();
 
-      var objectTypeChange = function (predicate, objectEditor) {
-        var node;
-        var nodeItems;
-        var range = predicate.getRange();
-        var currentNode = objectEditor.getValue();
-        if (objectEditor.isLiteralType(range)) {
-          node = new RDFE.RdfNode('literal', currentNode.value, range, currentNode.language);
-        }
-        else if (self.ontologyManager.ontologyClassByURI(range)) {
-          node = new RDFE.RdfNode('uri', currentNode.value);
-          nodeItems = self.doc.itemsByRange(range);
-        }
-        else {
-          node = new RDFE.RdfNode('literal', currentNode.value, null, '');
-        }
-        objectEditor.setValue(node, nodeItems);
-      };
-
       var objectNo = 1;
       var objectHTML =
         ' <div class="col-sm-12 object-item_<N>" style="padding: 0;"> ' +
@@ -434,7 +417,7 @@
         for (var i = 0; i < objectEditors.length; i++) {
           var objectEditor = objectEditors[i];
           if (objectEditor) {
-            objectTypeChange(predicate, objectEditor);
+            self.editor.changeObjectType(predicate, objectEditor);
           }
         }
       });
@@ -446,7 +429,7 @@
         var objectEditor = self.subjectFormContainer.find('input[name="object_<N>"]'.replace(/<N>/g, objectNo)).rdfNodeEditor(self.doc.config.options);
         objectEditor.setValue(new RDFE.RdfNode('literal', '', null, ''));
         if (predicate) {
-          objectTypeChange(predicate, objectEditor);
+          self.editor.changeObjectType(predicate, objectEditor);
         }
 
         var objectRemove = function(N) {

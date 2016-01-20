@@ -25,10 +25,11 @@
 
   RDFE.PredicateEditor = (function() {
     // constructor
-    var c = function(doc, ontologyManager, predicate) {
-      this.doc = doc;
-      this.namingSchema = doc.config.options[doc.config.options["namingSchema"]];
-      this.ontologyManager = ontologyManager;
+    var c = function(editor, predicate) {
+      this.editor = editor;
+      this.doc = editor.doc;
+      this.ontologyManager = editor.ontologyManager;
+      this.namingSchema = editor.doc.config.options[editor.doc.config.options["namingSchema"]];
       this.predicate = predicate;
     };
 
@@ -279,20 +280,7 @@
 
       var property = self.ontologyManager.ontologyProperties[self.predicate.uri];
       var objectEditor = self.predicateFormContainer.find('input[name="object"]').rdfNodeEditor(self.doc.config.options);
-      var node;
-      var nodeItems;
-      var range = property.getRange();
-      if (objectEditor.isLiteralType(range)) {
-        node = new RDFE.RdfNode('literal', '', range, '');
-      }
-      else if (self.ontologyManager.ontologyClassByURI(range)) {
-        node = new RDFE.RdfNode('uri', '');
-        nodeItems = self.doc.itemsByRange(range);
-      }
-      else {
-        node = new RDFE.RdfNode('literal', '', null, '');
-      }
-      objectEditor.setValue(node, nodeItems);
+      self.editor.changeObjectType(property, objectEditor);
 
       self.predicateFormContainer.find('button.predicate-action-new-cancel').click(function(e) {
         self.predicateFormContainer.hide();

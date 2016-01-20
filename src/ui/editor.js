@@ -206,23 +206,9 @@ RDFE.Editor.prototype.editTriple = function(s, p, o) {
   var predicateEditor = self.formContainer.find('select[name="predicate"]').propertyBox({
     ontoManager: self.ontologyManager
   }).on('changed', function(e, p) {
-    // console.log('changed', p)
-    var node;
-    var nodeItems;
-    var cn = objectEditor.getValue();
-    var range = (p)? p.getRange(): null;
-    if (objectEditor.isLiteralType(range)) {
-      node = new RDFE.RdfNode('literal', cn.value, range, cn.language);
-    }
-    else if (self.ontologyManager.ontologyClassByURI(range)) {
-      node = new RDFE.RdfNode('uri', RDFE.Utils.trim(RDFE.Utils.trim(cn.value, '<'), '>'));
-      nodeItems = self.doc.itemsByRange(range);
-    }
-    else {
-      node = new RDFE.RdfNode('literal', cn.value, null, '');
-    }
-    objectEditor.setValue(node, nodeItems);
+    self.changeObjectType(p, objectEditor);
   });
+
   // Set predicate value
   if (p) {
     predicateEditor.setPropertyURI(p);
@@ -525,7 +511,7 @@ RDFE.Editor.prototype.editSubject = function(subject, newStatement) {
   var self = this;
 
   if (!self.subjectEditor) {
-    self.subjectEditor = new RDFE.SubjectEditor(self.doc, self.ontologyManager);
+    self.subjectEditor = new RDFE.SubjectEditor(self);
     $(self.subjectEditor).on('rdf-editor-error', function(e) {
       $(self).trigger('rdf-editor-error', d);
     }).on('rdf-editor-success', function(e, d) {
@@ -586,7 +572,7 @@ RDFE.Editor.prototype.editPredicate = function(predicate, newStatement) {
   var self = this;
 
   if (!self.predicateEditor) {
-    self.predicateEditor = new RDFE.PredicateEditor(self.doc, self.ontologyManager);
+    self.predicateEditor = new RDFE.PredicateEditor(self);
     $(self.predicateEditor).on('rdf-editor-error', function(e, d) {
       $(self).trigger('rdf-editor-error', d);
     }).on('rdf-editor-success', function(e, d) {
@@ -652,7 +638,7 @@ RDFE.Editor.prototype.editObject = function(object, newStatement) {
   var self = this;
 
   if (!self.objectEditor) {
-    self.objectEditor = new RDFE.ObjectEditor(self.doc, self.ontologyManager);
+    self.objectEditor = new RDFE.ObjectEditor(self);
     $(self.objectEditor).on('rdf-editor-error', function(e, d) {
       $(self).trigger('rdf-editor-error', d);
     }).on('rdf-editor-success', function(e, d) {
@@ -676,4 +662,31 @@ RDFE.Editor.prototype.editObject = function(object, newStatement) {
       self.objectView.updateObject(object);
     }
   });
+};
+
+RDFE.Editor.prototype.changeObjectType = function (predicate, objectEditor) {
+  var self = this;
+
+  var node;
+  var nodeItems;
+  var range;
+  var currentNode = objectEditor.getValue();
+  if (predicate) {
+    range = predicate.getRange();
+    nodeItems = self.doc.itemsByRange(range);
+    if (nodeItems) {
+      node = new RDFE.RdfNode('uri', currentNode.value);
+    }
+    else {
+      for (var i = 0; i < range.length; i++) {
+        if (objectEditor.isLiteralType(range[i])) {
+          node = new RDFE.RdfNode('literal', currentNode.value, range[i], currentNode.language);
+        }
+      }
+    }
+  }
+  if (!node) {
+    node = new RDFE.RdfNode('literal', currentNode.value, null, '');
+  }
+  objectEditor.setValue(node, nodeItems);
 };

@@ -694,25 +694,30 @@ RDFE.Document.prototype.listEntities = function(type, callback, errorCb) {
 RDFE.Document.prototype.itemsByRange = function(range) {
   var self = this;
 
-  var nodeItems = [];
-  var tmpItems = _.values(self.ontologyManager.ontologyClassByURI(range).getIndividuals());
-  for (var i = 0; i < tmpItems.length; i++) {
-    var nodeItem = RDFE.RdfNode.fromStoreNode(tmpItems[i].URI)
-    nodeItem.label = tmpItems[i].curi || tmpItems[i].URI;
-    nodeItems.push(nodeItem);
-  }
-  self.listEntities(
-    range,
-    function(tmpItems) {
-      for (var i = 0; i < tmpItems.length; i++) {
-        var nodeItem = RDFE.RdfNode.fromStoreNode(tmpItems[i].uri)
-        nodeItem.label = tmpItems[i].label || tmpItems[i].uri;
-        nodeItems.push(nodeItem);
-      }
+  var nodeItems;
+  for (var i = 0; i < range.length; i++) {
+    var ontologyClass = self.ontologyManager.ontologyClassByURI(range[i]);
+
+    if (!ontologyClass)
+      contnue;
+
+    nodeItems = nodeItems || [];
+    var items = _.values(ontologyClass.getIndividuals());
+    for (var j = 0; j < items.length; j++) {
+      var nodeItem = RDFE.RdfNode.fromStoreNode(items[j].URI)
+      nodeItem.label = items[j].curi || items[j].URI;
+      nodeItems.push(nodeItem);
     }
-  );
-  if (!nodeItems.length) {
-    nodeItems = null;
+    self.listEntities(
+      range,
+      function(items) {
+        for (var j = 0; j < items.length; j++) {
+          var nodeItem = RDFE.RdfNode.fromStoreNode(items[j].uri)
+          nodeItem.label = items[j].label || items[j].uri;
+          nodeItems.push(nodeItem);
+        }
+      }
+    );
   }
   return nodeItems;
 };
