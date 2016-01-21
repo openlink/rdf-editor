@@ -193,8 +193,8 @@ RDFE.Editor.prototype.editTriple = function(s, p, o) {
   ).show();
 
   // Set subject value
-  if (s) {
-    self.formContainer.find('input[name="subject"]').val(s);
+  if (s || self.saveSubject) {
+    self.formContainer.find('input[name="subject"]').val(s || self.saveSubject);
   }
 
   var objectEditor = self.formContainer.find('input[name="object"]').rdfNodeEditor(self.config.options);
@@ -238,7 +238,7 @@ RDFE.Editor.prototype.editTriple = function(s, p, o) {
         "type": "triple-insert-success",
         "message": "Successfully added new triple."
       });
-
+      self.saveSubject = s;
       self.createTripleList();
     }, function() {
       $(self).trigger('rdf-editor-error', {

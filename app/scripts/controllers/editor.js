@@ -206,6 +206,7 @@ angular.module('myApp.editor', ['ngRoute'])
     else if ($routeParams.newDocument) {
       $scope.mainDoc.new(function() {
         toggleView();
+        $scope.editor.saveSubject = null;
         $scope.editor.updateView();
         $timeout(function() {
           // Any code in here will automatically have an $scope.apply() run afterwards
@@ -228,6 +229,7 @@ angular.module('myApp.editor', ['ngRoute'])
           $scope.mainDoc.store.loadTurtle(content, $scope.mainDoc.graph, $scope.mainDoc.graph, function(success, r) {
             if (success) {
               toggleView();
+              $scope.editor.saveSubject = null;
               $scope.editor.updateView();
               $timeout(function() {
                 // this is essentially a no-op to force the ui to update the url view
