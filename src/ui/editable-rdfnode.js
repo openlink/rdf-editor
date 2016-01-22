@@ -56,9 +56,8 @@
         if (ontologyManager) {
           var predicate = ontologyManager.ontologyPropertyByURI(rdfnode.predicate);
           var range = predicate.getRange();
-          if (ontologyManager.ontologyClassByURI(range)) {
-            nodeItems = rdfnode.document.itemsByRange(range);
-          }
+
+          nodeItems = rdfnode.document.itemsByRange(range);
         }
       }
       this.$input.rdfNodeEditor().setValue(value, nodeItems);

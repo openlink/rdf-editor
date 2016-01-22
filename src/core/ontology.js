@@ -171,6 +171,45 @@ RDFE.ontologyByPrefix = function(prefix) {
 
 /*
  *
+ * Find ontology by prefix
+ *
+ */
+RDFE.schema2ontology_range = function(range) {
+  var v = range;
+
+  if (range === 'http://schema.org/Boolean') {
+    v = 'http://www.w3.org/2001/XMLSchema#boolean';
+  }
+  else if (range === 'http://schema.org/Date') {
+    v = 'http://www.w3.org/2001/XMLSchema#boolean';
+  }
+  else if (range === 'http://schema.org/DateTime') {
+    v = 'http://www.w3.org/2001/XMLSchema#datetime';
+  }
+  else if (range === 'http://schema.org/Time') {
+    v = 'http://www.w3.org/2001/XMLSchema#datetime';
+  }
+  else if (range === 'http://schema.org/Number') {
+    v = 'http://www.w3.org/2001/XMLSchema#decimal';
+  }
+  else if (range === 'http://schema.org/Float') {
+    v = 'http://www.w3.org/2001/XMLSchema#float';
+  }
+  else if (range === 'http://schema.org/Integer') {
+    v = 'http://www.w3.org/2001/XMLSchema#integer';
+  }
+  else if (range === 'http://schema.org/Text') {
+    v = 'http://www.w3.org/2001/XMLSchema#string';
+  }
+  else if (range === 'http://schema.org/URL') {
+    v = 'http://www.w3.org/2001/XMLSchema#string';
+  }
+  return v;
+}
+;
+
+/*
+ *
  * Ontology Manager
  *
  */
@@ -510,9 +549,9 @@ RDFE.OntologyManager.prototype.parseOntologyFile = function(URI, params) {
       pc.superPropertyOf.push(cc);
     }
 
-    else if(p === 'http://www.w3.org/2000/01/rdf-schema#domain') {
+    else if ((p === 'http://www.w3.org/2000/01/rdf-schema#domain') || (p === 'http://schema.org/domainIncludes')) {
       var c = findOrCreateProperty(s);
-      if(N3.Util.isBlank(o)) {
+      if (N3.Util.isBlank(o)) {
         // postpone the collection query for later
         c.domain.push(o);
       }
@@ -521,10 +560,17 @@ RDFE.OntologyManager.prototype.parseOntologyFile = function(URI, params) {
       }
     }
 
-    else if(p === 'http://www.w3.org/2000/01/rdf-schema#range') {
+    else if (p === 'http://www.w3.org/2000/01/rdf-schema#range') {
       var c = findOrCreateProperty(s);
-      // we store the range as a uri since it could be a literal. TODO: maybe introduce literal types or sth like that.
-      c.range = o;
+
+      c.range.push(o);
+    }
+
+    else if (p === 'http://schema.org/rangeIncludes') {
+      var c = findOrCreateProperty(s);
+      var r = RDFE.schema2ontology_range(o);
+
+      c.range.push(r);
     }
 
     else if(p === 'http://www.w3.org/2002/07/owl#onProperty') {
@@ -570,8 +616,8 @@ RDFE.OntologyManager.prototype.parseOntologyFile = function(URI, params) {
       c.comment = c.comment || comments[uri];
 
       var rm = restrictionMap[uri];
-      if(rm) {
-        for(var i = 0; i < rm.length; i++) {
+      if (rm) {
+        for (var i = 0; i < rm.length; i++) {
           var r = restrictions[rm[i]];
           var rr = _.clone(r);
           for(var j = 0; j < r.onProperty.length; j++) {
@@ -582,27 +628,32 @@ RDFE.OntologyManager.prototype.parseOntologyFile = function(URI, params) {
       }
     }
 
-    for(uri in self.ontologyProperties) {
+    for (uri in self.ontologyProperties) {
       var p = self.ontologyProperties[uri];
       p.label = p.label || labels[uri];
       p.comment = p.comment || comments[uri];
 
       // resolve the range in case it is a collection (owl:UnionOf)
-      // TODO: convert range into an array and drop rangeAll. This requires changes throughout RDFE
-      if(N3.Util.isBlank(p.range)) {
-        p.rangeAll = resolveCollection(p.range);
-        p.range = _.first(p.rangeAll);
+      var range = _.clone(p.range);
+      p.range = [];
+      for (var i = 0; i < range.length; i++) {
+        if (N3.Util.isBlank(range[i])) {
+          p.range = _.union(p.range, resolveCollection(range[i]));
+        }
+        else {
+          p.range.push(range[i]);
+        }
       }
 
       // we store the domain as a list
-      var dmn = _.clone(p.domain);
+      var domain = _.clone(p.domain);
       p.domain = [];
-      for(var i = 0; i < dmn.length; i++) {
-        if(!dmn[i].URI && N3.Util.isBlank(dmn[i])) {
-          p.domain = _.union(p.domain, resolveCollection(dmn[i]));
+      for(var i = 0; i < domain.length; i++) {
+        if(!domain[i].URI && N3.Util.isBlank(domain[i])) {
+          p.domain = _.union(p.domain, resolveCollection(domain[i]));
         }
         else {
-          p.domain.push(dmn[i]);
+          p.domain.push(domain[i]);
         }
       }
     }
@@ -1013,6 +1064,7 @@ RDFE.OntologyProperty = function(ontologyManager, URI) {
   this.subPropertyOf = [];
   this.superPropertyOf = [];
   this.domain = [];
+  this.range = [];
 
   this.manager = ontologyManager;
   this.manager.ontologyProperties[URI] = self;
@@ -1030,26 +1082,27 @@ RDFE.OntologyProperty.prototype.hasDomain = function(domain) {
   return false;
 };
 
-RDFE.OntologyProperty.prototype.getRange = function(pp) {
+RDFE.OntologyProperty.prototype.getRange = function(subProperties) {
   // check if this property has a range itself
-  var r = this.range;
-  if(r) {
-    return r;
+  var self = this;
+  var range = self.range;
+  if (!_.isEmpty(range)) {
+    return range;
   }
 
   // check super-properties (with loop-protection)
-  for(var i = 0; i < this.subPropertyOf.length; i++) {
-    var sp = this.subPropertyOf[i];
-    if($.inArray(sp.URI, pp) < 0) {
-      pp = pp || [];
-      pp.push(sp.URI);
-      r = sp.getRange(pp);
-      if(r) {
-        return r;
+  for (var i = 0; i < self.subPropertyOf.length; i++) {
+    var subProperty = self.subPropertyOf[i];
+    if ($.inArray(subProperty.URI, subProperties) < 0) {
+      subProperties = subProperties || [];
+      subProperties.push(subProperty.URI);
+      range = subProperty.getRange(subProperties);
+      if (!_.isEmpty(range)) {
+        return range;
       }
     }
     else {
-      console.log('CAUTION: Found sub-property loop in ', pp);
+      console.log('CAUTION: Found sub-property loop in ', subProperties);
     }
   }
 

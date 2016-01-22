@@ -25,10 +25,11 @@
 
   RDFE.ObjectEditor = (function() {
     // constructor
-    var c = function(doc, ontologyManager, object) {
-      this.doc = doc;
-      this.namingSchema = doc.config.options[doc.config.options["namingSchema"]];
-      this.ontologyManager = ontologyManager;
+    var c = function(editor, object) {
+      this.editor = editor;
+      this.doc = editor.doc;
+      this.ontologyManager = editor.ontologyManager;
+      this.namingSchema = editor.doc.config.options[editor.doc.config.options["namingSchema"]];
       this.object = object;
     };
 
