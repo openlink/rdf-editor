@@ -385,7 +385,7 @@
         '        <div class="col-sm-12 object-item_0" style="padding: 0;"> ' +
         '          <label for="object_0" class="col-sm-2 control-label">' + RDFE.Utils.namingSchemaLabel('o', self.namingSchema) + '</label> ' +
         '          <div class="col-sm-9"><input name="object_0" class="form-control" /></div> ' +
-        '          <div class="col-sm-1"><button type="button" class="btn btn-default object-add_0" title="Add Object"><span class="glyphicon glyphicon-plus" aria-hidden="true"></span></button></div> ' +
+        '          <div class="col-sm-1 btn_0"><button type="button" class="btn btn-default object-add" title="Add Object"><span class="glyphicon glyphicon-plus" aria-hidden="true"></span></button></div> ' +
         '        </div> ' +
         '      </div> ' +
         '      <div class="form-group"> ' +
@@ -404,8 +404,10 @@
         ' <div class="col-sm-12 object-item_<N>" style="padding: 0;"> ' +
         '   <label for="object_<N>" class="col-sm-2 control-label"></label> ' +
         '   <div class="col-sm-9"><input name="object_<N>" class="form-control" /></div> ' +
-        '   <div class="col-sm-1"><button type="button" class="btn btn-default object-remove_<N>" title="Remove Object"><span class="glyphicon glyphicon-remove" aria-hidden="true"></span></button></div> ' +
+        '   <div class="col-sm-1 btn_<N>"></div> ' +
         ' </div> ';
+      var objectButtonHTML =
+        ' <button type="button" class="btn btn-default object-remove_<N>" title="Remove Object"><span class="glyphicon glyphicon-remove" aria-hidden="true"></span></button>';
       var objectEditors = [];
       var objectEditor = self.subjectFormContainer.find('input[name="object_0"]').rdfNodeEditor(self.doc.config.options);
       objectEditor.setValue(new RDFE.RdfNode('literal', '', null, ''));
@@ -422,10 +424,19 @@
         }
       });
 
-      self.subjectFormContainer.find('button.object-add_0').click(function(e) {
+      self.subjectFormContainer.find('button.object-add').click(function(e) {
+        var lastObjectNo = 0;
+        for (var i = objectEditors.length - 1; i >= 0; i--) {
+          if (objectEditors[i]) {
+            lastObjectNo = i;
+            break;
+          }
+        }
         var predicate = self.ontologyManager.ontologyPropertyByURI(predicateEditor.selectedURI());
         var objectList = self.subjectFormContainer.find('div.object-list');
         objectList.append(objectHTML.replace(/<N>/g, objectNo));
+        objectList.find('button.object-add').detach().appendTo(objectList.find('div.btn_<N>'.replace(/<N>/g, objectNo)));
+        objectList.find('div.btn_<N>'.replace(/<N>/g, lastObjectNo)).append(objectButtonHTML.replace(/<N>/g, lastObjectNo));
         var objectEditor = self.subjectFormContainer.find('input[name="object_<N>"]'.replace(/<N>/g, objectNo)).rdfNodeEditor(self.doc.config.options);
         objectEditor.setValue(new RDFE.RdfNode('literal', '', null, ''));
         if (predicate) {
@@ -437,8 +448,8 @@
               self.subjectFormContainer.find('div.object-item_<N>'.replace(/<N>/g, N)).remove();
               objectEditors[N] = null;
             };
-        }(objectNo);
-        self.subjectFormContainer.find('button.object-remove_<N>'.replace(/<N>/g, objectNo)).click(objectRemove);
+        }(lastObjectNo);
+        self.subjectFormContainer.find('button.object-remove_<N>'.replace(/<N>/g, lastObjectNo)).click(objectRemove);
 
         objectEditors.push(objectEditor);
         objectNo++;
