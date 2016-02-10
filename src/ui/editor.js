@@ -672,15 +672,20 @@ RDFE.Editor.prototype.changeObjectType = function (predicate, objectEditor) {
   var range;
   var currentNode = objectEditor.getValue();
   if (predicate) {
-    range = predicate.getRange();
-    nodeItems = self.doc.itemsByRange(range);
-    if (nodeItems) {
-      node = new RDFE.RdfNode('uri', currentNode.value);
-    }
-    else {
-      for (var i = 0; i < range.length; i++) {
-        if (objectEditor.isLiteralType(range[i])) {
-          node = new RDFE.RdfNode('literal', currentNode.value, range[i], currentNode.language);
+    ranges = predicate.getRange();
+    if (ranges) {
+      nodeItems = self.doc.itemsByRange(ranges);
+      if (nodeItems) {
+        node = new RDFE.RdfNode('uri', currentNode.value);
+        if (predicate.URI !== 'http://www.w3.org/1999/02/22-rdf-syntax-ns#type') {
+          self.objectsLookup(objectEditor, ranges);
+        }
+      }
+      else {
+        for (var i = 0; i < ranges.length; i++) {
+          if (objectEditor.isLiteralType(ranges[i])) {
+            node = new RDFE.RdfNode('literal', currentNode.value, ranges[i], currentNode.language);
+          }
         }
       }
     }
@@ -689,4 +694,48 @@ RDFE.Editor.prototype.changeObjectType = function (predicate, objectEditor) {
     node = new RDFE.RdfNode('literal', currentNode.value, null, '');
   }
   objectEditor.setValue(node, nodeItems);
+};
+
+RDFE.Editor.prototype.objectsLookup = function (objectEditor, ranges) {
+  var self = this;
+
+  var objectLookups = self.config.options["objectLookups"];
+  if (!objectLookups || !objectLookups.enabled) {
+    return;
+  }
+
+  var sources = objectLookups.sources;
+  if (!sources) {
+    return;
+  }
+  var io = RDFE.IO.createIO('http');
+  var store = self.doc.store;
+  for (var i = 0; i < sources.length; i++) {
+    for (var j = 0; j < ranges.length; j++) {
+      var range = ranges[j];
+      var graph = 'urn:__GRAPH__' + i + '_' + j;
+      var url = sources[i].url.format(encodeURIComponent(range));
+      var success = function(graph, range, label) {
+        return function (data, status, xhr) {
+          store.loadTurtle(data, graph, graph, function(success, result) {
+            if (success) {
+              var sparql = 'select ?s from <{0}> where {?s a <{1}>}'.format(graph, range);
+              store.execute(sparql, function (success, result) {
+                var nodeItems = [];
+                for (var l = 0; l < result.length; l++) {
+                  nodeItems.push(new RDFE.RdfNode('uri', result[l].s.value));
+                }
+                objectEditor.updateSelection(label, nodeItems);
+              });
+            }
+          });
+          store.clear(graph, function(){});
+        };
+      }(graph, range, sources[i].label);
+      var params = {
+        "success": success
+      };
+      io.retrieveToStore(url, store, graph, params);
+    }
+  }
 };

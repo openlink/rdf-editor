@@ -295,9 +295,8 @@
     $(this).trigger('changed', this);
   };
 
-  RdfNodeEditor.prototype.selectizeSetup = function(items) {
+  RdfNodeEditor.prototype.selectizeSetup = function(nodes) {
     var self = this;
-    var nodes = items;
 
     if (!self.resourceContainer) {
       self.resourceSelect = $(document.createElement('select'));
@@ -308,25 +307,26 @@
     }
     if (!self.resourceSelectize) {
       self.resourceSelect.selectize({
-        valueField: "value",
-        searchField: "label",
-        sortField: "label",
-        create: (self.options.create ? function(input, cb) {
-          var n = new RDFE.RdfNode('uri', input);
-          n.label = input;
-          this.options[input] = n;
-          cb(n);
+        "valueField": "value",
+        "searchField": "label",
+        "sortField": "label",
+        "lockOptgroupOrder": true,
+        "create": (self.options.create ? function(input, cb) {
+          var node = new RDFE.RdfNode('uri', input);
+          node.label = input;
+          this.options[input] = node;
+          cb(node);
         } : false),
-        createOnBlur: true,
-        onChange: function(value) {
+        "createOnBlur": true,
+        "onChange": function(value) {
           self.mainElement.val(value);
           self.change();
         },
-        render: {
-          item: function(item, escape) {
+        "render": {
+          "item": function(item, escape) {
             return '<div>' + escape(item.label || item.value) + '</div>';
           },
-          option: function(item, escape) {
+          "option": function(item, escape) {
             if (item.label)
               return '<div>' + escape(item.label) + ' <small>(' + escape(item.value) + ')</small></div>';
 
@@ -337,7 +337,26 @@
       self.resourceSelectize = $(self.resourceSelect)[0].selectize;
     }
     self.resourceSelectize.clearOptions();
+    self.resourceSelectize.clearOptionGroups();
+    self.resourceSelectize.addOptionGroup('local', {"label": 'Local Store'});
+    for (var i = 0; i < nodes.length; i++) {
+      nodes[i].optgroup = 'local';
+    }
     self.resourceSelectize.addOption(nodes);
+  };
+
+  RdfNodeEditor.prototype.updateSelection = function(optionGroup, nodes) {
+    var self = this;
+    var selectize = self.resourceSelectize;
+
+    if (selectize) {
+      selectize.addOptionGroup(optionGroup, {"label": optionGroup});
+      for (var i = 0; i < nodes.length; i++) {
+        nodes[i].optgroup = optionGroup;
+      }
+      selectize.addOption(nodes);
+      selectize.refreshOptions(true);
+    }
   };
 
   /**
