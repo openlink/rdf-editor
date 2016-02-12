@@ -114,14 +114,14 @@
             field: 'count',
             title: 'Count',
             align: 'right',
-            class: 'small-column',
+            class: 'rdfe-small-column',
             formatter: countFormatter
           }, {
             field: 'actions',
             title: '<button class="add btn btn-default" title="Click to create a new '+RDFE.Utils.namingSchemaLabel('p', self.namingSchema, false, true)+'"><span class="glyphicon glyphicon-plus" aria-hidden="true"></span> New</button>',
             align: 'center',
             valign: 'middle',
-            class: 'small-column',
+            class: 'rdfe-small-column',
             clickToSelect: false,
             formatter: predicateListActionsFormatter,
             events: {
