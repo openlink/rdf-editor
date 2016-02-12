@@ -53,7 +53,7 @@
               <select name="predicate" class="form-control" style="width: 85%;"></select> \
             </div> \
             <div class="btn-group pull-right" role="group"> \
-              <button type="button" class="btn btn-default btn-sm" id="backButton">Back</button> \
+              <button type="button" class="btn btn-default btn-sm rdfe-font-bold" id="backButton">Back</button> \
             </div> \
           </form> \
         </div> \
@@ -118,7 +118,7 @@
             "title": '<button class="add btn btn-default" title="Add Relation" style="display: none;"><span class="glyphicon glyphicon-plus" aria-hidden="true"></span> New</button>',
             "align": 'center',
             "valign": 'middle',
-            "class": 'small-column',
+            "class": 'rdfe-small-column',
             "clickToSelect": false,
             "editable": false,
             "formatter": function(value, row, index) {
@@ -209,6 +209,12 @@
       if (self.predicate) {
         predicateEditor.setPropertyURI(self.predicate.uri);
       }
+
+      // Set focus
+      if (!self.predicate) {
+        predicateEditor.sel.focus();
+      }
+
       predicateEditor.sel.on('change', function(predicateUri) {
         if (predicateUri) {
           self.doc.getPredicate(predicateUri, function (predicate) {
@@ -270,13 +276,17 @@
         '      <div class="form-group"> ' +
         '        <div class="col-sm-10 col-sm-offset-2"> ' +
         '          <button type="button" class="btn btn-default predicate-action predicate-action-new-cancel">Cancel</button> ' +
-        '          <button type="button" class="btn btn-primary predicate-action predicate-action-new-save">OK</button> ' +
+        '          <button type="submit" class="btn btn-primary predicate-action predicate-action-new-save">OK</button> ' +
         '        </div> ' +
         '      </div> ' +
         '    </form> ' +
         '  </div> ' +
         '</div>'
       ).show();
+
+      var subjectEditor = self.predicateFormContainer.find('input[name="subject"]');
+      // Set focus
+      subjectEditor.focus();
 
       var property = self.ontologyManager.ontologyProperties[self.predicate.uri];
       var objectEditor = self.predicateFormContainer.find('input[name="object"]').rdfNodeEditor(self.doc.config.options);
@@ -288,10 +298,18 @@
       });
 
       self.predicateFormContainer.find('button.predicate-action-new-save').click(function(e) {
-        var s = self.predicateFormContainer.find('input[name="subject"]').val();
+        e.preventDefault();
+
+        var s = subjectEditor.val();
         s = RDFE.Utils.trim(RDFE.Utils.trim(s, '<'), '>')
+        if (!RDFE.Validate.check(subjectEditor, s))
+          return;
+
         var p = self.predicate.uri;
         var o = objectEditor.getValue();
+        if (!RDFE.Validate.check(objectEditor.getField(), o.value))
+          return;
+
         var t = self.doc.store.rdf.createTriple(self.doc.store.rdf.createNamedNode(s), self.doc.store.rdf.createNamedNode(p), o.toStoreNode(self.doc.store));
         self.doc.addTriples([t], function() {
           self.addTriple(t);

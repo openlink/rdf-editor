@@ -52,7 +52,7 @@
               <input name="subject" class="form-control" style="width: 85%;" disabled="disabled" /> \
             </div> \
             <div class="btn-group pull-right" role="group"> \
-              <button type="button" class="btn btn-default btn-sm" id="backButton">Back</button> \
+              <button type="button" class="btn btn-default btn-sm rdfe-font-bold" id="backButton">Back</button> \
             </div> \
           </form> \
         </div> \
@@ -188,6 +188,7 @@
 
         container.find('a.triple-action-new-save').click(function(e) {
           e.preventDefault();
+
           saveFct();
         });
 
@@ -248,7 +249,7 @@
             "title": '<button class="add btn btn-default" title="Add Relation" style="display: none;"><span class="glyphicon glyphicon-plus" aria-hidden="true"></span> New</button>',
             "align": 'center',
             "valign": 'middle',
-            "class": 'small-column',
+            "class": 'rdfe-small-column',
             "clickToSelect": false,
             "editable": false,
             "formatter": function(value, row, index) {
@@ -391,7 +392,7 @@
         '      <div class="form-group"> ' +
         '        <div class="col-sm-10 col-sm-offset-2"> ' +
         '          <button type="button" class="btn btn-default subject-action subject-action-new-cancel">Cancel</button> ' +
-        '          <button type="button" class="btn btn-primary subject-action subject-action-new-save">OK</button> ' +
+        '          <button type="submt" class="btn btn-primary subject-action subject-action-new-save">OK</button> ' +
         '        </div> ' +
         '      </div> ' +
         '    </form> ' +
@@ -423,6 +424,9 @@
           }
         }
       });
+
+      // Set focus
+      predicateEditor.sel.focus();
 
       self.subjectFormContainer.find('button.object-add').click(function(e) {
         var lastObjectNo = 0;
@@ -461,10 +465,12 @@
       });
 
       self.subjectFormContainer.find('button.subject-action-new-save').click(function(e) {
+        e.preventDefault();
+
         var success = true;
         var s = self.subject.uri;
         var p = predicateEditor.selectedURI();
-        if (!p)
+        if (!RDFE.Validate.check(predicateEditor.sel, p))
           return;
 
         for (var i = 0; i < objectEditors.length; i++) {
@@ -473,7 +479,7 @@
             continue;
 
           var o = objectEditor.getValue();
-          if (!o.value) {
+          if (!RDFE.Validate.check(objectEditor.getField(), o.value)) {
             success = false;
             continue;
           }

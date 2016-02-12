@@ -166,29 +166,32 @@
       $form.html(
         '<div class="panel panel-default" style="border: 0; padding: 0; margin-bottom: 0;"> ' +
         '  <div class="panel-body" style="padding-top: 10px; padding-bottom: 0;"><div class="form-horizontal"> ' +
-        '    <div class="form-group"> ' +
-        '      <label for="ontology" class="col-sm-2 control-label">Prefix</label> ' +
-        '      <div class="col-sm-10"> ' +
-        '        <input name="prefix" id="prefix" class="form-control" /> ' +
+        '    <form class="form-horizontal"> ' +
+        '      <div class="form-group"> ' +
+        '        <label for="ontology" class="col-sm-2 control-label">Prefix</label> ' +
+        '        <div class="col-sm-10"> ' +
+        '          <input name="prefix" id="prefix" class="form-control" /> ' +
+        '        </div> ' +
         '      </div> ' +
-        '    </div> ' +
-        '    <div class="form-group"> ' +
-        '      <label for="class" class="col-sm-2 control-label">URI</label> ' +
-        '      <div class="col-sm-10"> ' +
-        '        <input name="uri" id="uri" class="form-control" /> ' +
+        '      <div class="form-group"> ' +
+        '        <label for="class" class="col-sm-2 control-label">URI</label> ' +
+        '        <div class="col-sm-10"> ' +
+        '          <input name="uri" id="uri" class="form-control" /> ' +
+        '        </div> ' +
         '      </div> ' +
-        '    </div> ' +
-        '    <div class="form-group"> ' +
-        '      <div class="col-sm-10 col-sm-offset-2"> ' +
-        '        <a href="#" class="btn btn-default cancel">Cancel</a> ' +
-        '        <a href="#" class="btn btn-primary ok">OK</a> ' +
+        '      <div class="form-group"> ' +
+        '        <div class="col-sm-10 col-sm-offset-2"> ' +
+        '          <button type="button" class="btn btn-default cancel">Cancel</button> ' +
+        '          <button type="submit" class="btn btn-primary save">OK</button> ' +
+        '        </div> ' +
         '      </div> ' +
-        '    </div> ' +
+        '    </form> ' +
         '  </div> ' +
         '</div>\n'
       );
       $form.find('.cancel').click(function (e) {
         e.preventDefault();
+
         var $loading = $('#ontology-loading')
         if ($loading.is(":visible"))
           return;
@@ -197,12 +200,14 @@
         self.tableContainer.show();
       });
 
-      $form.find('.ok').click(function (e) {
+      $form.find('.save').click(function (e) {
         e.preventDefault();
 
         var $loading = $('#ontology-loading');
         if ($loading.is(":visible"))
           return;
+
+        var uriEditor = self.formContainer.find('#uri');
 
         var formClose = function () {
           self.formContainer.hide();
@@ -221,7 +226,7 @@
             var message = (state && state.message)? state.message: 'Error loading ontology';
             bootbox.confirm(message + '. Do you want an empty ontology to be added?', function(result) {
               if (result) {
-                var uri = self.formContainer.find('#uri').val();
+                var uri = uriEditor.val();
                 var ontology = self.ontologyManager.ontologyByURI(uri);
                 if (!ontology) {
                   ontology = new RDFE.Ontology(self.ontologyManager, uri);
@@ -236,7 +241,10 @@
             formClose();
           }
         };
-        var uri = self.formContainer.find('#uri').val();
+        var uri = uriEditor.val();
+        if (!RDFE.Validate.check(uriEditor, uri)) {
+          return;
+        }
         var ontology = self.ontologyManager.ontologyByURI(uri);
         if (ontology) {
           bootbox.alert('This ontology is loaded. Please, use \'Refresh\' action!');
@@ -248,7 +256,7 @@
           var prefix = self.formContainer.find('#prefix').val();
           self.ontologyManager.prefixes[prefix] = uri;
         }
-        self.ontologyManager.parseOntologyFile(self.formContainer.find('#uri').val(), params);
+        self.ontologyManager.parseOntologyFile(uri, params);
       });
 
       $form.find('#prefix').blur(function (e) {
@@ -279,6 +287,7 @@
 
       self.tableContainer.hide();
       self.formContainer.show();
+      self.formContainer.find('#prefix').focus();
     };
 
     return c;
