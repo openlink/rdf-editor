@@ -157,7 +157,7 @@
                 "title": '<button class="add btn btn-default" title="Add a new statement to the document"><span class="glyphicon glyphicon-plus" aria-hidden="true"></span> New</button>',
                 "align": 'center',
                 "valign": 'middle',
-                "class": 'small-column',
+                "class": 'rdfe-small-column',
                 "clickToSelect": false,
                 "editable": false,
                 "formatter": function(value, row, index) {

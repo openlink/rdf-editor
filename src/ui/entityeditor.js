@@ -117,7 +117,7 @@
 
     c.prototype.template = _.template('<div class="panel panel-default">\
         <div class="panel-heading clearfix">\
-          <h3 class="panel-title pull-left">Editing <a href="<%= entityUri %>"><span class="entity-label"><%= entityLabel %><span></a> <span class="entity-types"></span></h3>\
+          <h3 class="panel-title pull-left">Editing <a href="<%= entityUri %>"><span class="rdfe-entity-label"><%= entityLabel %><span></a> <span class="rdfe-entity-types"></span></h3>\
           <div class="btn-group pull-right" role="group">\
             <button type="button" class="btn btn-primary btn-sm" id="okBtn">Apply</button>\
             <button type="button" class="btn btn-default btn-sm" id="cnclBtn">Cancel</button>\
@@ -146,8 +146,8 @@
           entityLabel: RDFE.Utils.uri2name(url)
         }));
         self.doc.getEntity(url, function(entity) {
-          container.find('.entity-types').html(self.ontologyManager.typesToLabel(entity.types, true));
-          container.find('.entity-label').html(entity.label);
+          container.find('.rdfe-entity-types').html(self.ontologyManager.typesToLabel(entity.types, true));
+          container.find('.rdfe-entity-label').html(entity.label);
         });
 
         // add the newly created form to the container

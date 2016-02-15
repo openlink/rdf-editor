@@ -183,8 +183,8 @@ RDFE.Editor.prototype.editTriple = function(s, p, o) {
     '      </div>' +
     '      <div class="form-group">' +
     '        <div class="col-sm-10 col-sm-offset-2">' +
-    '          <a href="#" class="btn btn-default triple-action triple-action-new-cancel">Cancel</a>' +
-    '          <a href="#" class="btn btn-primary triple-action triple-action-new-save">OK</a>' +
+    '          <button type="button" class="btn btn-default triple-action triple-action-new-cancel">Cancel</button> ' +
+    '          <button type="submit" class="btn btn-primary triple-action triple-action-new-save">OK</button> ' +
     '        </div>' +
     '      </div>' +
     '    </form>' +
@@ -192,12 +192,15 @@ RDFE.Editor.prototype.editTriple = function(s, p, o) {
     '</div>'
   ).show();
 
-  // Set subject value
+  var subjectEditor = self.formContainer.find('input[name="subject"]');
+  // Set focus
+  subjectEditor.focus();
+
   if (s || self.saveSubject) {
     self.formContainer.find('input[name="subject"]').val(s || self.saveSubject);
   }
 
-  var objectEditor = self.formContainer.find('input[name="object"]').rdfNodeEditor(self.config.options);
+ var objectEditor = self.formContainer.find('input[name="object"]').rdfNodeEditor(self.config.options);
   // Set object value
   if (o) {
     objectEditor.setValue(new RDFE.RdfNode('literal', o, null, ''));
@@ -214,21 +217,31 @@ RDFE.Editor.prototype.editTriple = function(s, p, o) {
     predicateEditor.setPropertyURI(p);
   }
 
-  self.formContainer.find('a.triple-action-new-cancel').click(function(e) {
+  self.formContainer.find('button.triple-action-new-cancel').click(function(e) {
     e.preventDefault();
     self.createTripleList();
   });
 
-  self.formContainer.find('a.triple-action-new-save').click(function(e) {
+  self.formContainer.find('button.triple-action-new-save').click(function(e) {
     e.preventDefault();
-    var s = self.formContainer.find('input[name="subject"]').val();
+
+    var s = subjectEditor.val();
     s = RDFE.Utils.trim(RDFE.Utils.trim(s, '<'), '>')
+    if (!RDFE.Validate.check(subjectEditor, s))
+      return;
+
     var p = predicateEditor.selectedURI();
     p = RDFE.Utils.trim(RDFE.Utils.trim(p, '<'), '>')
+    if (!RDFE.Validate.check(predicateEditor.sel, p))
+      return;
+
     var o = objectEditor.getValue();
     if (o.type == 'uri') {
       o.value = self.ontologyManager.uriDenormalize(o.value);
     }
+    if (!RDFE.Validate.check(objectEditor.getField(), o.value))
+      return;
+
     var t = self.doc.store.rdf.createTriple(self.doc.store.rdf.createNamedNode(s), self.doc.store.rdf.createNamedNode(p), o.toStoreNode(self.doc.store));
     self.doc.addTriples([t], function() {
       if (self.tripleView) {
@@ -294,8 +307,8 @@ RDFE.Editor.prototype.createNewEntityEditor = function(forcedType) {
       '  </div> ' +
       '  <div class="form-group"> ' +
       '    <div class="col-sm-10 col-sm-offset-2"> ' +
-      '      <a href="#" class="btn btn-default triple-action triple-action-new-cancel">Cancel</a> ' +
-      '      <a href="#" class="btn btn-primary triple-action triple-action-new-save">OK</a> ' +
+      '      <button type="button" class="btn btn-default triple-action triple-action-new-cancel">Cancel</button> ' +
+      '      <button type="submit" class="btn btn-primary triple-action triple-action-new-save">OK</button> ' +
       '    </div> ' +
       '  </div> ' +
       '</div></div></div>\n');
@@ -362,8 +375,8 @@ RDFE.Editor.prototype.createNewEntityEditor = function(forcedType) {
       '  </div> ' +
       '  <div class="form-group"> ' +
       '    <div class="col-sm-10 col-sm-offset-2"> ' +
-      '      <a href="#" class="btn btn-default triple-action triple-action-new-cancel">Cancel</a> ' +
-      '      <a href="#" class="btn btn-primary triple-action triple-action-new-save">OK</a> ' +
+      '      <button type="button" class="btn btn-default triple-action triple-action-new-cancel">Cancel</button> ' +
+      '      <button type="submit" class="btn btn-primary triple-action triple-action-new-save">OK</button> ' +
       '    </div> ' +
       '  </div> ' +
       '</div></div></div>\n');
@@ -375,7 +388,7 @@ RDFE.Editor.prototype.createNewEntityEditor = function(forcedType) {
     self.formContainer.find('label[for="subject"]').text(RDFE.Utils.namingSchemaLabel('s', self.namingSchema) + ' Name');
   }
 
-  self.formContainer.find('a.triple-action-new-cancel').click(function(e) {
+  self.formContainer.find('button.triple-action-new-cancel').click(function(e) {
     e.preventDefault();
     self.listContainer.show();
     self.formContainer.hide();
@@ -412,8 +425,9 @@ RDFE.Editor.prototype.createNewEntityEditor = function(forcedType) {
     });
   };
 
-  self.formContainer.find('a.triple-action-new-save').click(function(e) {
+  self.formContainer.find('button.triple-action-new-save').click(function(e) {
     e.preventDefault();
+
     saveFct();
   });
 

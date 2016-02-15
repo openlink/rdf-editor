@@ -55,7 +55,7 @@
               <input name="object" class="form-control" /> \
             </div> \
             <div class="col-sm-1"> \
-              <button type="button" class="btn btn-default btn-sm pull-right" id="backButton">Back</button> \
+              <button type="button" class="btn btn-default btn-sm pull-right rdfe-font-bold" id="backButton">Back</button> \
             </div> \
           </div> \
         </div> \
@@ -116,7 +116,7 @@
             title: '<button class="add btn btn-default" title="Add Relation" style="display: none;"><span class="glyphicon glyphicon-plus" aria-hidden="true"></span> New</button>',
             align: 'center',
             valign: 'middle',
-            class: 'small-column',
+            class: 'rdfe-small-column',
             clickToSelect: false,
             editable: false,
             formatter: function(value, row, index) {
@@ -211,6 +211,10 @@
           });
         }
       });
+
+      // Set focus
+      objectInput.mainElement.focus();
+
       objectEditorData(container, backCallback);
     };
 
@@ -262,7 +266,7 @@
         '      <div class="form-group"> ' +
         '        <div class="col-sm-10 col-sm-offset-2"> ' +
         '          <button type="button" class="btn btn-default object-action object-action-new-cancel">Cancel</button> ' +
-        '          <button type="button" class="btn btn-primary object-action object-action-new-save">OK</button> ' +
+        '          <button type="submit" class="btn btn-primary object-action object-action-new-save">OK</button> ' +
         '        </div> ' +
         '      </div> ' +
         '    </form> ' +
@@ -270,9 +274,13 @@
         '</div>'
       ).show();
 
-      self.predicateEditor = self.objectFormContainer.find('select[name="predicate"]').propertyBox({
+      predicateEditor = self.objectFormContainer.find('select[name="predicate"]').propertyBox({
         ontoManager: self.ontologyManager
       });
+
+      var subjectEditor = self.objectFormContainer.find('input[name="subject"]');
+      // Set focus
+      subjectEditor.focus();
 
       self.objectFormContainer.find('button.object-action-new-cancel').click(function(e) {
         self.objectFormContainer.hide();
@@ -280,10 +288,18 @@
       });
 
       self.objectFormContainer.find('button.object-action-new-save').click(function(e) {
-        var s = self.objectFormContainer.find('input[name="subject"]').val();
+        e.preventDefault();
+
+        var s = subjectEditor.val();
         s = RDFE.Utils.trim(RDFE.Utils.trim(s, '<'), '>')
-        var p = self.predicateEditor.selectedURI();
+        if (!RDFE.Validate.check(subjectEditor, s))
+          return;
+
+        var p = predicateEditor.selectedURI();
         p = RDFE.Utils.trim(RDFE.Utils.trim(p, '<'), '>')
+        if (!RDFE.Validate.check(predicateEditor.sel, p))
+          return;
+
         var t = self.doc.store.rdf.createTriple(self.doc.store.rdf.createNamedNode(s), self.doc.store.rdf.createNamedNode(p), self.object.object);
         self.doc.addTriples([t], function() {
           self.addTriple(t);

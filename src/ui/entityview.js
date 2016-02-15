@@ -124,7 +124,7 @@
             field: 'types',
             title: 'Entity Types',
             aligh: 'left',
-            class: 'small-column',
+            class: 'rdfe-small-column',
             sortable: true,
             formatter: typeFormatter
           }, {
@@ -132,7 +132,7 @@
             title: '<button class="add btn btn-default" title="Click to create a new '+RDFE.Utils.namingSchemaLabel('spo', self.namingSchema, false, true)+' to the document"><span class="glyphicon glyphicon-plus" aria-hidden="true"></span> New</button>',
             align: 'center',
             valign: 'middle',
-            class: 'small-column',
+            class: 'rdfe-small-column',
             clickToSelect: false,
             formatter: entityListActionsFormatter,
             events: {

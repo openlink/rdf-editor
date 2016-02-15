@@ -406,6 +406,15 @@
     }
   };
 
+  RdfNodeEditor.prototype.getField = function() {
+    var self = this;
+
+    if (self.currentType === 'http://www.w3.org/1999/02/22-rdf-syntax-ns#Resource')
+      return self.resourceSelectize;
+
+    return self.mainElement;
+  };
+
   RdfNodeEditor.prototype.getValue = function() {
     if (this.currentType === 'http://www.w3.org/1999/02/22-rdf-syntax-ns#Resource')
       return new RDFE.RdfNode(
@@ -549,11 +558,11 @@
   };
 
   RdfNodeEditor.prototype.setEditFocus = function() {
-    this.mainElement.focus();
+    this.getField().focus();
   };
 
   RdfNodeEditor.prototype.blur = function() {
-    this.mainElement.blur();
+    this.getField().blur();
   };
 
   RdfNodeEditor.prototype.getElement = function() {
