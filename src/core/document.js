@@ -691,12 +691,15 @@ RDFE.Document.prototype.listEntities = function(type, callback, errorCb) {
   });
 };
 
-RDFE.Document.prototype.itemsByRange = function(range) {
+RDFE.Document.prototype.itemsByRange = function(ranges) {
   var self = this;
-
   var nodeItems;
-  for (var i = 0; i < range.length; i++) {
-    var ontologyClass = self.ontologyManager.ontologyClassByURI(range[i]);
+
+  if (!ranges)
+    return;
+
+  for (var i = 0; i < ranges.length; i++) {
+    var ontologyClass = self.ontologyManager.ontologyClassByURI(ranges[i]);
 
     if (!ontologyClass)
       contnue;
@@ -709,7 +712,7 @@ RDFE.Document.prototype.itemsByRange = function(range) {
       nodeItems.push(nodeItem);
     }
     self.listEntities(
-      range,
+      ranges[i],
       function(items) {
         for (var j = 0; j < items.length; j++) {
           var nodeItem = RDFE.RdfNode.fromStoreNode(items[j].uri)
