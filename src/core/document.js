@@ -56,6 +56,9 @@ RDFE.Document.prototype.load = function(url, io, success, fail) {
       "md5": $.md5(data)
     }
 
+    // check for signed document
+    self.checkForSignature();
+
     if (success)
       success();
   };
@@ -194,6 +197,7 @@ RDFE.Document.prototype.new = function(success, fail) {
   self.url = null;
   self.io = null;
   self.srcParams = null;
+  self.signature = null;
   self.store.clear(self.graph, function(s) {
     if (s && success) {
       self.setChanged(false);
@@ -201,6 +205,19 @@ RDFE.Document.prototype.new = function(success, fail) {
     }
     else if (!s && fail) {
       fail();
+    }
+  });
+};
+
+RDFE.Document.prototype.import = function(content, success, fail) {
+  var self = this;
+
+  self.store.loadTurtle(content, self.graph, self.graph, function(s, results) {
+    if (s && success) {
+      success(s, results);
+    }
+    else if(!s && fail) {
+      fail(s, results);
     }
   });
 };
@@ -378,6 +395,21 @@ RDFE.Document.prototype.deleteObject = function(object, success, fail) {
       fail
     )
   }
+};
+
+// add triplet(s)
+RDFE.Document.prototype.checkTriple = function(triple, success, fail) {
+  var self = this;
+
+  self.store.node(triple.subject.nominalValue, self.graph, function(s, graph) {
+    if (!s && fail) {
+      fail(false);
+    }
+    else if (s && success) {
+      var g = graph.match(null, triple.predicate, triple.object);
+      success(g.triples.length > 0);
+    }
+  });
 };
 
 // add triplet(s)
@@ -1079,3 +1111,29 @@ RDFE.Document.prototype.getUniqueValue = function() {
     return uniqueValue;
   };
 }();
+
+RDFE.Document.prototype.checkForSignature = function(callback) {
+  var self = this;
+
+  self.store.registerDefaultNamespace('rdfs', 'http://www.w3.org/2000/01/rdf-schema#');
+  self.store.registerDefaultNamespace('cert', 'http://www.w3.org/ns/auth/cert#');
+  self.store.registerDefaultNamespace('oplcert', 'http://www.openlinksw.com/schemas/cert#');
+  var sparql =
+     'SELECT ?signatureDocURI\
+        FROM <{0}> \
+       WHERE { \
+               <{1}> oplcert:hasSignature ?signatureDocURI . \
+             }';
+  sparql = sparql.format(self.graph, self.url);
+  self.store.execute(sparql, function(s, results) {
+    if (s && results.length) {
+      self.signature = results[0]['signatureDocURI'].value;
+    }
+    else {
+      self.signature = null;
+    }
+    if (callback)
+      callback(self.signature);
+  });
+};
+

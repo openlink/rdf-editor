@@ -288,6 +288,7 @@ angular.module('myApp', [
   function updateProfileData(profile) {
     $scope.userProfile = profile;
     $scope.profile = profile.profileData;
+    $rootScope.valInstalled = (profile)? profile.config.valInstalled: false;
   }
 
   function saveDocument() {

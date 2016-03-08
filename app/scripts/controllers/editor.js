@@ -302,6 +302,22 @@ angular.module('myApp.editor', ['ngRoute'])
     });
   }
 
+  $scope.openDocument = function() {
+    function doOpen() {
+      $location.url('/browser');
+    };
+    if($scope.mainDoc.dirty) {
+      bootbox.confirm("Your document has unsaved changes. Do you really want to open another document?", function(r) {
+        if(r) {
+          $scope.$apply(doOpen);
+        }
+      });
+    }
+    else {
+      doOpen();
+    }
+  };
+
   $scope.saveDocument = function() {
     if ($scope.mainDoc.url) {
       var cbSave = function () {
@@ -348,20 +364,16 @@ angular.module('myApp.editor', ['ngRoute'])
     });
   };
 
-  $scope.openDocument = function() {
-    function doOpen() {
-      $location.url('/browser');
-    };
-    if($scope.mainDoc.dirty) {
-      bootbox.confirm("Your document has unsaved changes. Do you really want to open another document?", function(r) {
-        if(r) {
-          $scope.$apply(doOpen);
-        }
-      });
-    }
-    else {
-      doOpen();
-    }
+  $scope.signDocument = function() {
+    $scope.editor.signDocumentForm();
+  };
+
+  $scope.importInto = function() {
+    $scope.editor.importForm();
+  };
+
+  $scope.unsignDocument = function() {
+    $scope.editor.unsignDocumentForm();
   };
 
   $scope.closeDocument = function() {

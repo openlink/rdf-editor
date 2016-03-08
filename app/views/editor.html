@@ -2,7 +2,20 @@
 <div class="btn-group" role="group">
   <button ng-click="saveDocument()" type="button" class="btn btn-default" title="Save the current document"><span class="glyphicon glyphicon-save" aria-hidden="true"></span> Save</button>
   <button ng-click="saveDocumentAs()" type="button" class="btn btn-default" title="Save the current document to a new location"><span class="glyphicon glyphicon-save" aria-hidden="true"></span> Save As...</button>
-  <button ng-click="downloadDocumentAs()" type="button" class="btn btn-default" title="Download the current document"><span class="glyphicon glyphicon-save" aria-hidden="true"></span> Download</button>
+</div>
+<div class="btn-group dropdown" role="group">
+  <button class="dropdown-toggle btn btn-default" type="button" id="dropdownMenu1" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">
+    Actions
+    <span class="caret"></span>
+  </button>
+  <ul class="dropdown-menu" aria-labelledby="dropdownMenu1">
+    <li><a ng-click="downloadDocumentAs(); $event.preventDefault();" href="#" title="Download the current document"><span class="glyphicon glyphicon-save" aria-hidden="true"></span> Download</a></li>
+    <li role="separator" class="divider"></li>
+    <li><a ng-click="importInto(); $event.preventDefault();" href="#" title="Import RDF Turtle text into current document"><span class="glyphicon glyphicon-import" aria-hidden="true"></span> Import Turtle</a></li>
+    <li role="separator" class="divider"></li>
+    <li ng-show="valInstalled"><a ng-click="signDocument(); $event.preventDefault();" href="#" title="Sign/Resign the current document">Sign</a></li>
+    <li><a ng-click="unsignDocument(); $event.preventDefault();" ng-disabled="!$rootScope.userProfile.config.valInstalled" href="#" title="Unsign the current document">Unsign</a></li>
+  </ul>
 </div>
 <button ng-click="closeDocument()" class="btn btn-default" title="Close the document and return to the start page"><span class="glyphicon glyphicon-log-out"></span> Close</button>
 
@@ -58,6 +71,64 @@
 <hr class="editor" />
 
 <div id="contents">
+</div>
+
+<!-- Modal -->
+<div class="modal fade" id="importModal" tabindex="-1" role="dialog" aria-labelledby="importModalLabel">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        <h4 class="modal-title" id="importModal">Import Turtle Content</h4>
+      </div>
+      <div class="modal-body">
+        <div class="form-group">
+          <label for="comment">Content:</label>
+          <textarea class="form-control" rows="10" id="content"></textarea>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+        <button type="button" class="btn btn-primary ok">Import</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal fade" id="signModal" tabindex="-1" role="dialog" aria-labelledby="signModalLabel">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        <h4 class="modal-title" id="signModal">Sign Document</h4>
+      </div>
+      <div class="modal-body form-horizontal">
+        ...
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+        <button type="button" class="btn btn-primary ok">Sign</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal fade" id="unsignModal" tabindex="-1" role="dialog" aria-labelledby="unsignModalLabel">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        <h4 class="modal-title" id="unsignModal">Unsign Document</h4>
+      </div>
+      <div class="modal-body form-horizontal">
+        ...
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+        <button type="button" class="btn btn-primary ok">Unsign</button>
+      </div>
+    </div>
+  </div>
 </div>
 
 <script type="text/turtle" id="document">

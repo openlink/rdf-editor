@@ -67,12 +67,12 @@
           <li><a class="navbar-link" href="#about">About</a></li>
         </ul>
 
-        <p ng-show="userProfile.config.valInstalled" class="navbar-text navbar-right" style="margin-left: 0;">
+        <p ng-show="valInstalled" class="navbar-text navbar-right" style="margin-left: 0;">
           <span ng-show="profile" ng-cloak class="ng-cloak">Logged in as <a class="navbar-link" ng-href="{{profile.uri}}">{{profile.name || profile.nick || profile.uri}}</a></span>
           <span ng-hide="profile">Not logged in</span>
         </p>
 
-        <ul ng-show="userProfile.config.valInstalled" class="nav navbar-nav navbar-right">
+        <ul ng-show="valInstalled" class="nav navbar-nav navbar-right">
           <li ng-hide="profile"><a class="navbar-link" ng-click="login();" href="">Login</a></li>
           <li ng-show="profile"><a class="navbar-link" ng-click="logout();" href="">Logout</a></li>
         </ul>

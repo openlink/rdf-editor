@@ -109,5 +109,23 @@
       cb(false);
     });
   }
+  /**
+   * Sign content with user's public key. The only parameter is a callback function which
+   * takes two parameters: a boolean indicating success and a second which
+   * in the case of success contains the profile as an object (see below)
+   * and in the case of an error contains the error message.
+   *
+   * The profile object contains at least the personal "uri" and optionally
+   * the "nick" nickname, the "name" and an "image" url.
+   */
+  VAL.prototype.signature = function(content, callback) {
+    var self = this;
+
+    $.get(this.config.host + this.config.valApi + '/signature?content=' + content).done(function(data, status, xhr) {
+      callback(data, status, xhr);
+    }).fail(function(data, status, xhr) {
+      callback(data, status, xhr);
+    });
+  }
 
 })(jQuery);

@@ -537,7 +537,7 @@ String.prototype.format = function() {
         url: path,
         type: method,
         headers: headers,
-        contentType: 'text/turtle',
+        contentType: ((params.contentType)? params.contentType: 'text/turtle'),
         processData: false,
         data: content,
         dataType: params.dataType

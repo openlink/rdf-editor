@@ -134,6 +134,228 @@ RDFE.Editor.prototype.updateView = function() {
   else {
     self.createTripleList();
   }
+
+
+};
+
+/**
+ * Import RDF Turtle content into document.
+ */
+RDFE.Editor.prototype.importForm = function() {
+  var self = this;
+  var $form = $("#importModal");
+
+  $form.modal();
+  $form.find('.ok').off();
+  $form.find('.ok').on("click", (function ($form) {
+    return function (e) {
+      e.preventDefault();
+
+      var content = $form.find('#content').val();
+      var success = function (s, results) {
+        $form.modal('hide');
+        self.updateView();
+        $(self).trigger('rdf-editor-success', {
+          "type": "rdf-editor-success",
+          "message": "Successfully imported turtle content."
+        });
+      };
+      var fail = function (s, results) {
+        $(self).trigger('rdf-editor-error', {
+          "type": "rdf-editor-error",
+          "message": "Failed to import turtle content."
+        });
+      };
+      self.doc.import(content, success, fail);
+  };})($form)
+  );
+};
+
+/**
+ * Sign document.
+ */
+RDFE.Editor.prototype.signDocumentForm = function() {
+  var self = this;
+  var $form = $("#signModal");
+  var $formBody = $form.find('.modal-body');
+
+  $formBody.empty();
+
+  // Document is signed?
+  self.doc.checkForSignature();
+
+  var val = angular.element('[ng-controller=AuthHeaderCtrl]').scope();
+  if (!val.profile) {
+    // Sign is not possible - VAL is not installed or user is not logged
+    $formBody.html('\
+      <div class="form-group"> \
+        <label class="col-sm-2 control-label">Signature</label> \
+        <div class="col-sm-10"> \
+          <p class="form-control-static">The user is not logged. Please, login and try again.</p> \
+        </div> \
+      </div>\
+    ');
+    $form.find('.ok').hide();;
+  }
+  else {
+    // Sign is possible
+    $formBody.html('\
+      <div class="form-group"> \
+        <label class="col-sm-2 control-label">Signature</label> \
+        <div class="col-sm-10"> \
+          <input type="text" class="form-control" name="signatureDocURI" id="signatureDocURI" value="{0}">\
+        </div> \
+      </div>\
+    '.format((self.doc.signature)? self.doc.signature: self.doc.url+',signature'));
+    $form.find('.ok').show();
+    $form.find('.ok').off();
+    $form.find('.ok').on("click", (function ($form) {
+      return function (e) {
+        e.preventDefault();
+
+        var rdf = self.doc.store.rdf;
+        var signatureDocURI = $form.find('#signatureDocURI').val();
+        var triple = rdf.createTriple(rdf.createNamedNode(self.doc.url), rdf.createNamedNode('http://www.openlinksw.com/schemas/cert#hasSignature'), rdf.createNamedNode(signatureDocURI));
+        var tripleExists;
+        self.doc.checkTriple(triple, function(result){tripleExists = result;}, function(result){tripleExists = result;});
+        var successTriple = function (s, results) {
+          // sign the new content
+          self.doc.store.graph(self.doc.graph, function(success, graph) {
+            var content = graph.toNT();
+            var val = angular.injector(['ng', 'myApp']).get("Profile");
+            var callback = function(data, status, xhr) {
+              if (status === 'error') {
+                failTriple();
+              }
+              else {
+                // save signature file
+                var params = {
+                  "contentType": 'text/plain',
+                  "success": function() {
+                    $form.modal('hide');
+
+                    // update current list
+                    self.updateView();
+                    $(self).trigger('rdf-editor-success', {
+                      "type": "rdf-editor-success",
+                      "message": "Successfully signed document."
+                    });
+                  },
+                  "error": failTriple
+                }
+                var io = RDFE.IO.createIO('webdav');
+                io.type = 'webdav';
+                io.insert(signatureDocURI, data, params);
+              }
+            };
+            val.signature(content, callback);
+          });
+        };
+        var failTriple = function (s, results) {
+          if (!tripleExists) {
+            self.doc.deleteTriples(triple);
+          }
+          $(self).trigger('rdf-editor-error', {
+            "type": "rdf-editor-error",
+            "message": "Failed to sign document."
+          });
+        };
+        if (tripleExists) {
+          successTriple();
+        }
+        else {
+          self.doc.addTriples(triple, successTriple, failTriple);
+        }
+      };
+    })($form)
+    );
+  }
+  $form.modal();
+};
+
+/**
+ * Unsign document.
+ */
+RDFE.Editor.prototype.unsignDocumentForm = function() {
+  var self = this;
+  var $form = $("#unsignModal");
+  var $formBody = $form.find('.modal-body');
+
+  $formBody.empty();
+
+  // Document is signed?
+  self.doc.checkForSignature();
+
+  if (self.doc.signature) {
+    // Signed documents
+    $formBody.html('\
+      <div class="form-group"> \
+        <label class="col-sm-2 control-label">Signature</label> \
+        <div class="col-sm-10"> \
+          <p class="form-control-static">{0}</p> \
+        </div> \
+      </div>\
+      <div class="form-group"> \
+        <label class="col-sm-2"></label> \
+        <div class="col-sm-10 checkbox"> \
+          <label><input type="checkbox" name="deleteSignature" id="deleteSignature" value="on"><strong>Delete Signature File</strong></label>\
+        </div> \
+      </div>\
+    '.format(self.doc.signature));
+    $form.find('.ok').show();;
+    $form.find('.ok').off();
+    $form.find('.ok').on("click", (function ($form) {
+      return function (e) {
+        e.preventDefault();
+
+        var successTriple = function () {
+          $form.modal('hide');
+          self.updateView();
+          $(self).trigger('rdf-editor-success', {
+            "type": "rdf-editor-success",
+            "message": "Successfully unsigned document."
+          });
+        };
+        var failTriple = function () {
+          $(self).trigger('rdf-editor-error', {
+            "type": "rdf-editor-error",
+            "message": "Failed to unsign document."
+          });
+        };
+        var deleteSignatureTriple = function () {
+          var rdf = self.doc.store.rdf;
+          var triple = rdf.createTriple(rdf.createNamedNode(self.doc.url), rdf.createNamedNode('http://www.openlinksw.com/schemas/cert#hasSignature'), rdf.createNamedNode(self.doc.signature));
+          self.doc.deleteTriples(triple, successTriple, failTriple);
+        };
+        if ($form.find('#deleteSignature').checked) {
+          var params = {
+            "success": deleteSignatureTriple,
+            "error": failTriple
+          };
+          var io = RDFE.IO.createIO('webdav');
+          io.type = 'webdav';
+          io.delete(self.doc.signature);
+        }
+        else {
+          deleteSignatureTriple();
+        }
+      };
+    })($form)
+    );
+  }
+  else {
+    // Unsigned documents
+    $formBody.html('\
+      <div class="form-group"> \
+        <label class="col-sm-2 control-label">Signature</label> \
+        <div class="col-sm-10"> \
+          <p class="form-control-static">Document has not signature</p> \
+        </div> \
+      </div>\
+    ');
+    $form.find('.ok').hide();;
+  }
+  $form.modal();
 };
 
 RDFE.Editor.prototype.createTripleList = function() {
