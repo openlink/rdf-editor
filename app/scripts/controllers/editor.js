@@ -172,13 +172,13 @@ angular.module('myApp.editor', ['ngRoute'])
     var o = $routeParams["statement:object"];
     var view = $routeParams["view"];
 
-    if (s && (!view || view === 'entities')) {
+    if (s && (!view || view === 'entities' || view === 'subjects')) {
       $scope.editor.editSubject(s, newStatement);
     }
     else if (p && (!view || view === 'predicates')) {
       $scope.editor.editPredicate(p, newStatement);
     }
-    else if (o && (!view || view === 'values')) {
+    else if (o && (!view || view === 'values' || view === 'objects')) {
       $scope.editor.editObject(o, newStatement);
     }
     else if ((s || p || o || newStatement) && (!view || view === 'statements')) {
