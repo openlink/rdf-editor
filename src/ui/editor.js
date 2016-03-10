@@ -222,7 +222,6 @@ RDFE.Editor.prototype.signDocumentForm = function() {
           // sign the new content
           self.doc.store.graph(self.doc.graph, function(success, graph) {
             var content = graph.toNT();
-            var val = angular.injector(['ng', 'myApp']).get("Profile");
             var callback = function(data, status, xhr) {
               if (status === 'error') {
                 failTriple();
@@ -248,7 +247,11 @@ RDFE.Editor.prototype.signDocumentForm = function() {
                 io.insert(signatureDocURI, data, params);
               }
             };
-            val.signature(content, callback);
+            $.get('/ods/api/signature?content=' + content).done(function(data, status, xhr) {
+              callback(data, status, xhr);
+            }).fail(function(data, status, xhr) {
+              callback(data, status, xhr);
+            });
           });
         };
         var failTriple = function (s, results) {
