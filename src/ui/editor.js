@@ -144,31 +144,30 @@ RDFE.Editor.prototype.updateView = function() {
 RDFE.Editor.prototype.importForm = function() {
   var self = this;
   var $form = $("#importModal");
+  $form.find('#content').val('');
 
   $form.modal();
   $form.find('.ok').off();
-  $form.find('.ok').on("click", (function ($form) {
-    return function (e) {
-      e.preventDefault();
+  $form.find('.ok').on("click", function (e) {
+    e.preventDefault();
 
-      var content = $form.find('#content').val();
-      var success = function (s, results) {
-        $form.modal('hide');
-        self.updateView();
-        $(self).trigger('rdf-editor-success', {
-          "type": "rdf-editor-success",
-          "message": "Successfully imported turtle content."
-        });
-      };
-      var fail = function (s, results) {
-        $(self).trigger('rdf-editor-error', {
-          "type": "rdf-editor-error",
-          "message": "Failed to import turtle content."
-        });
-      };
-      self.doc.import(content, success, fail);
-  };})($form)
-  );
+    var content = $form.find('#content').val();
+    var success = function (s, results) {
+      $form.modal('hide');
+      self.updateView();
+      $(self).trigger('rdf-editor-success', {
+        "type": "rdf-editor-success",
+        "message": "Successfully imported turtle content."
+      });
+    };
+    var fail = function (s, results) {
+      $(self).trigger('rdf-editor-error', {
+        "type": "rdf-editor-error",
+        "message": "Failed to import turtle content. " + results
+      });
+    };
+    self.doc.import(content, success, fail);
+  });
 };
 
 /**

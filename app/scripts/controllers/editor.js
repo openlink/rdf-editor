@@ -173,9 +173,11 @@ angular.module('myApp.editor', ['ngRoute'])
     var view = $routeParams["view"];
 
     if (s && (!view || view === 'entities' || view === 'subjects')) {
+      s = $scope.ontologyManager.uriDenormalize(s);
       $scope.editor.editSubject(s, newStatement);
     }
     else if (p && (!view || view === 'predicates')) {
+      p = $scope.ontologyManager.uriDenormalize(p);
       $scope.editor.editPredicate(p, newStatement);
     }
     else if (o && (!view || view === 'values' || view === 'objects')) {
