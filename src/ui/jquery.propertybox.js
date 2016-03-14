@@ -140,9 +140,13 @@
   };
 
   PropertyBox.prototype.updateOptions = function() {
-    var pl = this.propertyList();
-    this.sel.clearOptions()
-    this.sel.addOption(pl); // FIXME: check if we also need to add the current value
+    var self = this;
+
+    var v = self.selectedURI();
+    var pl = self.propertyList();
+    self.sel.clearOptions()
+    self.sel.addOption(pl); // FIXME: check if we also need to add the current value
+    self.setPropertyURI(v);
   };
 
   PropertyBox.prototype.setPropertyURI = function(uri) {
