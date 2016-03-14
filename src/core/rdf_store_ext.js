@@ -135,8 +135,10 @@ rdfstore.Store.prototype.loadTurtle = function(data, graph, baseUri, callback) {
   var triples = [];
   parser.parse(data, function(error, triple, prefixes) {
     if (error) {
-      if(callback)
+      if(callback) {
         callback(false, error);
+      }
+      return;
     }
     if (triple == null) {
       addTriples(triples);
@@ -148,10 +150,12 @@ rdfstore.Store.prototype.loadTurtle = function(data, graph, baseUri, callback) {
     }
     else {
       var t = convertTriple(triple);
-      if(t.subject.interfaceName == 'BlankNode' || t.object.interfaceName == "BlankNode")
+      if(t.subject.interfaceName == 'BlankNode' || t.object.interfaceName == "BlankNode") {
         triples.push(t);
-      else
+      }
+      else {
         self.insert(self.rdf.createGraph([t]), graph, function() {});
+      }
       cnt++;
     }
   });
