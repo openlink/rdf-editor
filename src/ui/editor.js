@@ -155,6 +155,7 @@ RDFE.Editor.prototype.importForm = function() {
     var success = function (s, results) {
       $form.modal('hide');
       self.updateView();
+      self.docChanged();
       $(self).trigger('rdf-editor-success', {
         "type": "rdf-editor-success",
         "message": "Successfully imported turtle content."
@@ -955,7 +956,7 @@ RDFE.Editor.prototype.objectsLookup = function (objectEditor, ranges) {
       var url = sources[i].url.format(encodeURIComponent(range));
       var success = function(graph, range, label) {
         return function (data, status, xhr) {
-          store.loadTurtle(data, graph, graph, function(success, result) {
+          store.loadTurtle(data, graph, graph, null, function(success, result) {
             if (success) {
               var sparql = 'select ?s from <{0}> where {?s a <{1}>}'.format(graph, range);
               store.execute(sparql, function (success, result) {

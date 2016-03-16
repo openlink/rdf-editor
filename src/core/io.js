@@ -215,7 +215,7 @@ String.prototype.format = function() {
       params = extendParams(params, self.options);
       var __success = function(data, status, xhr) {
         clearGraph(store, storeGraph);
-        store.loadTurtle(data, storeGraph, graph, function(success, r) {
+        store.loadTurtle(data, storeGraph, graph, null, function(success, r) {
           if (success && params["__success"]) {
             params["__success"](data, status, xhr);
           }
@@ -352,7 +352,7 @@ String.prototype.format = function() {
       params = extendParams(params, self.options);
       var __success = function(data, status, xhr) {
         clearGraph(store, storeGraph);
-        store.loadTurtle(data, storeGraph, graph, function(success, r) {
+        store.loadTurtle(data, storeGraph, graph, null, function(success, r) {
           if (success && params["__success"]) {
             params["__success"](data, status, xhr);
           }
@@ -468,7 +468,7 @@ String.prototype.format = function() {
       params = extendParams(params, this.options);
       var __success = function(data, status, xhr) {
         clearGraph(store, storeGraph);
-        store.loadTurtle(data, storeGraph, path, function(success, r) {
+        store.loadTurtle(data, storeGraph, path, null, function(success, r) {
           if (success && params["__success"]) {
             params["__success"](data, status, xhr);
           }
@@ -614,7 +614,7 @@ String.prototype.format = function() {
             }
           };
           if(contentType.indexOf('turtle') > 0 || contentType.length === 0)
-            store.loadTurtle(data, URI, loadResultFct);
+            store.loadTurtle(data, URI, URI, null, loadResultFct);
           else
             store.load(contentType, data, URI, loadResultFct);
         }

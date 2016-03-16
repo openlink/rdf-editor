@@ -228,7 +228,7 @@ angular.module('myApp.editor', ['ngRoute'])
       var content = $.jStorage.get('rdfe:savedDocument', null);
       if (content) {
         $scope.mainDoc.store.clear(function() {
-          $scope.mainDoc.store.loadTurtle(content, $scope.mainDoc.graph, $scope.mainDoc.graph, function(success, r) {
+          $scope.mainDoc.store.loadTurtle(content, $scope.mainDoc.graph, $scope.mainDoc.graph, null, function(success, r) {
             if (success) {
               toggleView();
               $scope.editor.saveSubject = null;

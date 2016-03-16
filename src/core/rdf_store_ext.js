@@ -75,13 +75,9 @@ rdfstore.Store.prototype.rdf.api.RDFNode.prototype.localeCompare = function(comp
     return this.toString().localeCompare(compareNode.toString(), locales, options);
 };
 
-rdfstore.Store.prototype.loadTurtle = function(data, graph, baseUri, callback) {
+rdfstore.Store.prototype.loadTurtle = function(data, graph, baseUri, knownPrefixes, callback) {
   var self = this;
   var parser = N3.Parser();
-  if(typeof(baseUri) === 'function') {
-    callback = baseUri;
-    baseUri = graph;
-  }
 
   // mapping for blank nodes
   var bns = {};
@@ -135,7 +131,17 @@ rdfstore.Store.prototype.loadTurtle = function(data, graph, baseUri, callback) {
   var triples = [];
   parser.parse(data, function(error, triple, prefixes) {
     if (error) {
-      if(callback) {
+      if (error.message.startsWith('Undefined prefix') && knownPrefixes) {
+        var ndx = error.message.indexOf('"');
+        var prefix = error.message.substring(ndx+1);
+        ndx = prefix.indexOf('"');
+        prefix = prefix.substring(0, ndx-1);
+        if (knownPrefixes[prefix]) {
+          data = '@prefix ' + prefix + ': <' + knownPrefixes[prefix] + '> .' + data;
+          return self.loadTurtle(data, graph, baseUri, knownPrefixes, callback);
+        }
+      }
+      if (callback) {
         callback(false, error);
       }
       return;
@@ -150,7 +156,7 @@ rdfstore.Store.prototype.loadTurtle = function(data, graph, baseUri, callback) {
     }
     else {
       var t = convertTriple(triple);
-      if(t.subject.interfaceName == 'BlankNode' || t.object.interfaceName == "BlankNode") {
+      if (t.subject.interfaceName == 'BlankNode' || t.object.interfaceName == "BlankNode") {
         triples.push(t);
       }
       else {

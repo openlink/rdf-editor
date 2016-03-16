@@ -212,7 +212,8 @@ RDFE.Document.prototype.new = function(success, fail) {
 RDFE.Document.prototype.import = function(content, success, fail) {
   var self = this;
 
-  self.store.loadTurtle(content, self.graph, self.graph, function(s, results) {
+  // loading local data
+  self.store.loadTurtle(content, self.graph, self.graph, RDFE.prefixes, function(s, results) {
     if (s && success) {
       success(s, results);
     }
