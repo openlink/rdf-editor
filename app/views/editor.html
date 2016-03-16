@@ -1,41 +1,35 @@
-<div class="btn-group dropdown" role="group">
-  <button class="dropdown-toggle btn btn-default" type="button" id="dropdownMenu1" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">
-    Actions
-    <span class="caret"></span>
-  </button>
-  <ul class="dropdown-menu" aria-labelledby="dropdownMenu1">
-    <li><a ng-click="openDocument(); $event.preventDefault();" href="#" title="Open a Document"><span class="glyphicon glyphicon-open" aria-hidden="true"></span> Open Document</a></li>
-    <li role="separator" class="divider"></li>
-    <li><a ng-click="downloadDocumentAs(); $event.preventDefault();" href="#" title="Download the current document"><span class="glyphicon glyphicon-save" aria-hidden="true"></span> Download</a></li>
-    <li role="separator" class="divider"></li>
-    <li><a ng-click="importInto(); $event.preventDefault();" href="#" title="Import RDF Turtle text into current document"><span class="glyphicon glyphicon-import" aria-hidden="true"></span> Import Turtle</a></li>
-    <li role="separator" class="divider"></li>
-    <li ng-show="valInstalled"><a ng-click="signDocument(); $event.preventDefault();" href="#" title="Sign/Resign the current document">Sign</a></li>
-    <li><a ng-click="unsignDocument(); $event.preventDefault();" ng-disabled="!$rootScope.userProfile.config.valInstalled" href="#" title="Unsign the current document">Unsign</a></li>
-  </ul>
 </div>
-<div class="btn-group" role="group">
-  <button ng-click="saveDocument()" type="button" class="btn btn-default" title="Save the current document"><span class="glyphicon glyphicon-save" aria-hidden="true"></span> Save</button>
-  <button ng-click="saveDocumentAs()" type="button" class="btn btn-default" title="Save the current document to a new location"><span class="glyphicon glyphicon-save" aria-hidden="true"></span> Save As...</button>
+  <div class="btn-group dropdown" role="group">
+    <button class="dropdown-toggle btn btn-default" type="button" id="dropdownMenu1" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">
+      Actions
+      <span class="caret"></span>
+    </button>
+    <ul class="dropdown-menu" aria-labelledby="dropdownMenu1">
+      <li><a href="#/editor?newDocument=true" title="New Document"><span class="glyphicon glyphicon-open" aria-hidden="true"></span> New</a></li>
+      <li><a ng-click="openDocument(); $event.preventDefault();" href="#" title="Open a Document"><span class="glyphicon glyphicon-open" aria-hidden="true"></span> Open</a></li>
+      <li role="separator" class="divider"></li>
+      <li><a ng-click="saveDocument(); $event.preventDefault();" href="#" title="Save the current document"><span class="glyphicon glyphicon-save" aria-hidden="true"></span> Save</a></li>
+      <li><a ng-click="saveDocumentAs(); $event.preventDefault();" href="#" title="Save the current document to a new location"><span class="glyphicon glyphicon-save" aria-hidden="true"></span> Save As...</a></li>
+      <li role="separator" class="divider"></li>
+      <li><a ng-click="downloadDocumentAs(); $event.preventDefault();" href="#" title="Download the current document"><span class="glyphicon glyphicon-save" aria-hidden="true"></span> Download</a></li>
+      <li role="separator" class="divider"></li>
+      <li><a ng-click="importInto(); $event.preventDefault();" href="#" title="Input Turtle directly into current document"><span class="glyphicon glyphicon-import" aria-hidden="true"></span> Input Turtle Directly</a></li>
+      <li role="separator" class="divider"></li>
+      <li ng-show="valInstalled"><a ng-click="signDocument(); $event.preventDefault();" href="#" title="Sign/Resign the current document">Sign</a></li>
+      <li><a ng-click="unsignDocument(); $event.preventDefault();" ng-disabled="!$rootScope.userProfile.config.valInstalled" href="#" title="Unsign the current document">Unsign</a></li>
+      <li role="separator" class="divider"></li>
+      <li><a ng-click="closeDocument(); $event.preventDefault();" href="#" title="Close the document and return to the start page"><span class="glyphicon glyphicon-log-out"></span> Close</a></li>
+    </ul>
+  </div>
+  <div class="form-horizontal" style="display: inline;">
+    <label class="control-label" style="margin: 0 5px 0 15px;">Document:</label>
+    <a ng-show="mainDoc.url" ng-href="{{mainDoc.url}}">{{mainDoc.url}}</a>
+    <span ng-hide="mainDoc.url">new document</span>
+  </div>
 </div>
-<button ng-click="closeDocument()" class="btn btn-default" title="Close the document and return to the start page"><span class="glyphicon glyphicon-log-out"></span> Close</button>
 
 <div class="btn-group" role="group" style="width:50px">
   <span us-spinner="{ length: 10, radius: 7, lines:10, width:2, shadow: true }" spinner-key="editor-spinner"></span>
-</div>
-
-<hr />
-
-<div class="form-horizontal">
-  <div class="form-group">
-    <label for="documentUri" class="col-sm-2 control-label">Document URI</label>
-    <div class="col-sm-4">
-      <p class="form-control-static">
-        <a ng-show="mainDoc.url" ng-href="{{mainDoc.url}}">{{mainDoc.url}}</a>
-        <span ng-hide="mainDoc.url">new document</span>
-      </p>
-    </div>
-  </div>
 </div>
 
 <div class="clearfix"></div>
@@ -80,11 +74,11 @@
     <div class="modal-content">
       <div class="modal-header">
         <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-        <h4 class="modal-title" id="importModal">Import Turtle Content</h4>
+        <h4 class="modal-title" id="importModal">Input Turtle Directly</h4>
       </div>
       <div class="modal-body">
         <div class="form-group">
-          <label for="comment">Content:</label>
+          <label for="comment">Content</label>
           <textarea class="form-control" rows="10" id="content"></textarea>
         </div>
       </div>
