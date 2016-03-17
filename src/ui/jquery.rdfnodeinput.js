@@ -314,6 +314,7 @@
         "create": (self.options.create ? function(input, cb) {
           var node = new RDFE.RdfNode('uri', input);
           node.label = input;
+          node.optgroup = 'local';
           this.options[input] = node;
           cb(node);
         } : false),
