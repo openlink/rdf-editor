@@ -299,11 +299,28 @@
     var self = this;
 
     if (!self.resourceContainer) {
-      self.resourceSelect = $(document.createElement('select'));
       self.resourceContainer = $(document.createElement('div')).addClass('rdfResourceContainer');
-      self.resourceContainer.append(self.resourceSelect);
+      self.resourceSelect = $(document.createElement('select'));
+      var div = $(document.createElement('div')).css('display', 'table-cell').css('width', '100%');
+      div.append(self.resourceSelect);
+      self.resourceContainer.append(div);
 
+      self.resourceLink = $(document.createElement('button'));
+      self.resourceLink.attr('type', 'button').addClass('btn btn-default btn-sm editable-link"');
+      self.resourceLink.attr('style', 'margin-bottom: 24px;');
+      self.resourceLink.html('<i class="glyphicon glyphicon-link"></i>');
+      var div = $(document.createElement('div')).css('display', 'table-cell');
+      div.append(self.resourceLink);
+      self.resourceContainer.append(div);
       self.inputContainer.append(self.resourceContainer);
+
+      self.resourceLink.on('click', function() {
+        var uri = self.getValue();
+        if (uri && uri.value && uri.value.startsWith('http')) {
+          var win = window.open(uri.value, '_blank');
+          win.focus();
+        };
+      });
     }
     if (!self.resourceSelectize) {
       self.resourceSelect.selectize({
@@ -467,6 +484,9 @@
     }
     self.mainElement.val(node.value);
     if (self.resourceSelect) {
+      if (!node.optgroup) {
+        node.optgroup = 'local';
+      }
       self.resourceSelect[0].selectize.addOption(node);
       self.resourceSelect[0].selectize.setValue(node.value);
     }
@@ -559,7 +579,8 @@
   };
 
   RdfNodeEditor.prototype.setEditFocus = function() {
-    this.getField().focus();
+    if (this.getField())
+      this.getField().focus();
   };
 
   RdfNodeEditor.prototype.blur = function() {
