@@ -197,7 +197,7 @@ angular.module('myApp.editor', ['ngRoute'])
     $scope.editor.render($("#contents"));
 
     // the browser requested that we save the current document
-    if ($routeParams.saveDocument) {
+    if ($routeParams.saveDocument === "true") {
       $scope.mainDoc.url = $routeParams.uri;
       $scope.mainDoc.io = getIO($routeParams.ioType, $routeParams.sparqlEndpoint, editor.config.options['ioTimeout']);
       $scope.saveDocument();
@@ -205,7 +205,7 @@ angular.module('myApp.editor', ['ngRoute'])
     }
 
     // and if we are told, then we create a new document by clearing the old one
-    else if ($routeParams.newDocument) {
+    else if ($routeParams.newDocument === "true") {
       $scope.mainDoc.new(function() {
         toggleView();
         $scope.editor.saveSubject = null;
