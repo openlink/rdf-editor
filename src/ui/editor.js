@@ -145,6 +145,7 @@ RDFE.Editor.prototype.importForm = function() {
   var self = this;
   var $form = $("#importModal");
   $form.find('#content').val('');
+  $form.find('#contentType').val('text/turtle');
 
   $form.modal();
   $form.find('.ok').off();
@@ -152,6 +153,7 @@ RDFE.Editor.prototype.importForm = function() {
     e.preventDefault();
 
     var content = $form.find('#content').val();
+    var contentType = $form.find('#contentType').val();
     var success = function (s, results) {
       $form.modal('hide');
       self.updateView();
@@ -167,7 +169,7 @@ RDFE.Editor.prototype.importForm = function() {
         "message": "Failed to import turtle content. " + results
       });
     };
-    self.doc.import(content, success, fail);
+    self.doc.import(content, contentType, success, fail);
   });
 };
 

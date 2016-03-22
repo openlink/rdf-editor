@@ -13,7 +13,7 @@
       <li role="separator" class="divider"></li>
       <li><a ng-click="downloadDocumentAs(); $event.preventDefault();" href="#" title="Download the current document"><span class="glyphicon glyphicon-save" aria-hidden="true"></span> Download</a></li>
       <li role="separator" class="divider"></li>
-      <li><a ng-click="importInto(); $event.preventDefault();" href="#" title="Input Turtle directly into current document"><span class="glyphicon glyphicon-import" aria-hidden="true"></span> Input Turtle Directly</a></li>
+      <li><a ng-click="importInto(); $event.preventDefault();" href="#" title="Input Content directly into current document"><span class="glyphicon glyphicon-import" aria-hidden="true"></span> Input Directly</a></li>
       <li role="separator" class="divider"></li>
       <li ng-show="valInstalled"><a ng-click="signDocument(); $event.preventDefault();" href="#" title="Sign/Resign the current document">Sign</a></li>
       <li><a ng-click="unsignDocument(); $event.preventDefault();" ng-disabled="!$rootScope.userProfile.config.valInstalled" href="#" title="Unsign the current document">Unsign</a></li>
@@ -69,17 +69,25 @@
 </div>
 
 <!-- Modal -->
-<div class="modal fade" id="importModal" tabindex="-1" role="dialog" aria-labelledby="importModalLabel">
-  <div class="modal-dialog" role="document">
+<div class="modal fade" id="importModal" tabindex="-1" role="dialog" aria-labelledby="importModalLabel" data-backdrop="static" data-keyboard="false">
+  <div class="modal-dialog modal-lg" role="document">
     <div class="modal-content">
       <div class="modal-header">
         <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-        <h4 class="modal-title" id="importModal">Input Turtle Directly</h4>
+        <h4 class="modal-title" id="importModal">Input Directly</h4>
       </div>
       <div class="modal-body">
         <div class="form-group">
-          <label for="comment">Content</label>
-          <textarea class="form-control" rows="10" id="content"></textarea>
+          <div>
+            <label for="comment" style="padding-top: 0.5em;">Content</label>
+            <span class="pull-right">
+              <select class="form-control" id="contentType" style="margin-bottom: 0.5em;">
+                <option value="text/turtle">Turtle</option>
+                <option value="application/ld+json">JSON-LD</option></option>
+              </select>
+            </span>
+          </div>
+          <textarea class="form-control" rows="12" id="content"></textarea>
         </div>
       </div>
       <div class="modal-footer">
@@ -90,7 +98,7 @@
   </div>
 </div>
 
-<div class="modal fade" id="signModal" tabindex="-1" role="dialog" aria-labelledby="signModalLabel">
+<div class="modal fade" id="signModal" tabindex="-1" role="dialog" aria-labelledby="signModalLabel" data-backdrop="static" data-keyboard="false">
   <div class="modal-dialog" role="document">
     <div class="modal-content">
       <div class="modal-header">
@@ -108,7 +116,7 @@
   </div>
 </div>
 
-<div class="modal fade" id="unsignModal" tabindex="-1" role="dialog" aria-labelledby="unsignModalLabel">
+<div class="modal fade" id="unsignModal" tabindex="-1" role="dialog" aria-labelledby="unsignModalLabel" data-backdrop="static" data-keyboard="false">
   <div class="modal-dialog" role="document">
     <div class="modal-content">
       <div class="modal-header">

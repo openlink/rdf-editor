@@ -209,18 +209,30 @@ RDFE.Document.prototype.new = function(success, fail) {
   });
 };
 
-RDFE.Document.prototype.import = function(content, success, fail) {
+RDFE.Document.prototype.import = function(content, contentType, success, fail) {
   var self = this;
 
   // loading local data
-  self.store.loadTurtle(content, self.graph, self.graph, RDFE.prefixes, function(s, results) {
-    if (s && success) {
-      success(s, results);
-    }
-    else if(!s && fail) {
-      fail(s, results);
-    }
-  });
+  if (contentType === 'application/ld+json') {
+    self.store.load('application/ld+json', content, self.graph, function(s, results) {
+      if (s && success) {
+        success(s, results);
+      }
+      else if(!s && fail) {
+        fail(s, results);
+      }
+    });
+  }
+  else {
+    self.store.loadTurtle(content, self.graph, self.graph, RDFE.prefixes, function(s, results) {
+      if (s && success) {
+        success(s, results);
+      }
+      else if(!s && fail) {
+        fail(s, results);
+      }
+    });
+  }
 };
 
 // delete all triplets based on subject URI
