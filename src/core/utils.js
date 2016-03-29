@@ -84,6 +84,10 @@ RDFE.Utils.uriParams = function() {
   if (s.length > 1) {
     s = s.substring(1);
   }
+  if (!s) {
+    s = location.hash;
+    s = s.substring(s.indexOf('?')+1);
+  }
   if (s) {
     var parts = s.split("&");
     for (var i=0; i < parts.length; i++) {

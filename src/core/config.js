@@ -37,11 +37,14 @@ RDFE.Config = function(source, callback, fail) {
       dataType: 'json',
       success: (function(callback) {
         return function(data) {
+          var params = RDFE.Utils.uriParams();
+
           self.options = $.extend(self.options, data);
-
           self.options.ontology = $.extend(RDFE.Config.defaults.ontology, data.ontology);
+          if (params['namingSchema'])
+            self.options.namingSchema = params['namingSchema'];
 
-          if(!self.options.labelProps || self.options.labelProps.length == 0)
+          if (!self.options.labelProps || self.options.labelProps.length == 0)
             self.options.labelProps = RDFE.Config.defaults.labelProps;
 
           if (callback) callback(self);
@@ -59,21 +62,21 @@ RDFE.Config = function(source, callback, fail) {
 
 RDFE.Config.defaults = {
   // configuration related to the ontology manager
-  ontology: {
-    proxy: false,
-    nonTTLProxy: true,
-    fresnelLenses: true,
-    fresnelFormats: true,
-    fresnelGroups: true,
-    forceLoad: false,
-    preloadOnly: false
+  "ontology": {
+    "proxy": false,
+    "nonTTLProxy": true,
+    "fresnelLenses": true,
+    "fresnelFormats": true,
+    "fresnelGroups": true,
+    "forceLoad": false,
+    "preloadOnly": false
   },
 
   // a set of bookmarks which can be loaded from the "bookmarks" action
-  bookmarks: [],
+  "bookmarks": [],
 
   // actions to enable in the UI
-  actions: [
+  "actions": [
     'new',
     'open',
     'save',
@@ -84,19 +87,19 @@ RDFE.Config.defaults = {
   ],
 
   // the properties to use (in order) for fetching resource, class, and property labels
-  labelProps: [
+  "labelProps": [
     'http://www.w3.org/2004/02/skos/core#prefLabel',
     'http://www.w3.org/2000/01/rdf-schema#'
   ],
 
   // the default view that opens on start ("entities" or "triples")
-  defaultView: "entities",
+  "defaultView": "entities",
 
-  sparqlEndpoint: window.location.protocol + '//' + window.location.host + '/sparql',
+  "sparqlEndpoint": window.location.protocol + '//' + window.location.host + '/sparql',
 
-  gspEndpoint: window.location.protocol + '//' + window.location.host + '/sparql-graph-crud',
+  "gspEndpoint": window.location.protocol + '//' + window.location.host + '/sparql-graph-crud',
 
-  prefixes: {
+  "prefixes": {
   },
 
   // the template used to create new entity uris. This can contain two variables:
@@ -107,13 +110,13 @@ RDFE.Config.defaults = {
   // Examples:
   // - {DOC-URI}#{NAME}
   // - urn:test:{NAME}
-  entityUriTmpl: "{DOC-URI}#{NAME}",
+  "entityUriTmpl": "{DOC-URI}#{NAME}",
 
   // if true then the editor will take owl:inverseOf into account and create or delete the values properly
-  autoInverseOfHandling: false,
+  "autoInverseOfHandling": false,
 
   // A list of entity type URIs which when set will be used to filter the entity view
-  entityTypesFiler: null,
+  "entityTypesFiler": null,
 
   "namingSchema": "eavSchema",
   "eavSchema": {
@@ -130,7 +133,7 @@ RDFE.Config.defaults = {
   },
 
   // If true, then the entity editor with template and OWL restriction support is used to edit entities
-  useEntityEditor: false,
+  "useEntityEditor": false,
 
-  maxLabelLength: 0
+  "maxLabelLength": 0
 };
