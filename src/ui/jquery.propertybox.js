@@ -26,13 +26,13 @@
     self.options = $.extend({}, PropertyBox.defaults, options);
     self.options.ontoManager = self.options.ontoManager || new RDFE.OntologyManager();
 
-    self.mainElem = elem;
+    self.mainElement = elem;
 
     $(self.options.ontoManager).on('changed', function(e, om, onto) {
       self.updateOptions();
     });
 
-    $(self.mainElem).selectize({
+    $(self.mainElement).selectize({
       valueField: "URI",
       searchField: [ "title", "label", "prefix", "curi", "URI" ],
       sortField: [ "prefix", "URI" ],
@@ -113,7 +113,25 @@
       }
     });
 
-    self.sel = $(self.mainElem)[0].selectize;
+    // de-reference link
+    if (self.options["dereferenceLink"]) {
+      self.dereferenceLink = $(document.createElement('button'));
+      self.dereferenceLink.attr('type', 'button').addClass('btn btn-default btn-sm');
+      self.dereferenceLink.html('<i class="glyphicon glyphicon-link"></i>');
+      var div = $(document.createElement('div')).addClass('rdfe-reference-link');
+      div.append(self.dereferenceLink);
+      if (self.mainElement.closest('.editable-input').length) {
+        self.mainElement.parent().after(div);
+      }
+      else {
+        self.mainElement.parent().append(div);
+      }
+      self.dereferenceLink.on('click', function() {
+        self.options["dereferenceLink"](self.selectedURI());
+      });
+    }
+
+    self.sel = $(self.mainElement)[0].selectize;
   };
 
   PropertyBox.defaults = {

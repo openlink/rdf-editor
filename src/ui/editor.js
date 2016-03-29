@@ -363,6 +363,30 @@ RDFE.Editor.prototype.unsignDocumentForm = function() {
   $form.modal();
 };
 
+RDFE.Editor.prototype.dereference = function() {
+  var self = this;
+
+  return function(editor) {
+    return function(url) {
+      if (!url)
+        return;
+
+      if (url.startsWith('#')) {
+        if (!editor.doc.url) {
+          return;
+        }
+
+        url = editor.doc.url + url;
+      }
+
+      if (url.startsWith('http')) {
+        var win = window.open(url, '_blank');
+        win.focus();
+      }
+    };
+  }(self);
+};
+
 RDFE.Editor.prototype.createTripleList = function() {
   var self = this;
 
@@ -427,14 +451,15 @@ RDFE.Editor.prototype.editTriple = function(s, p, o) {
     self.formContainer.find('input[name="subject"]').val(s || self.saveSubject);
   }
 
- var objectEditor = self.formContainer.find('input[name="object"]').rdfNodeEditor(self.config.options);
+ var objectEditor = self.formContainer.find('input[name="object"]').rdfNodeEditor($.extend(self.config.options, {"dereferenceLink": self.dereference}));
   // Set object value
   if (o) {
     objectEditor.setValue(new RDFE.RdfNode('literal', o, null, ''));
   }
 
   var predicateEditor = self.formContainer.find('select[name="predicate"]').propertyBox({
-    ontoManager: self.ontologyManager
+    "ontoManager": self.ontologyManager,
+    "dereferenceLink": self.dereference
   }).on('changed', function(e, p) {
     self.changeObjectType(p, objectEditor);
   });

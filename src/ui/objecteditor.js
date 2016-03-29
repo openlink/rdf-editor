@@ -70,63 +70,65 @@
 
       var objectEditorData = function(container, backCallback) {
         $list.bootstrapTable({
-          striped:true,
-          sortName:'subject',
-          pagination:true,
-          search:true,
-          searchAlign: 'left',
-          showHeader: true,
-          editable: true,
-          data: [],
-          dataSetter: objectEditorDataSetter,
-          columns: [{
-            field: 'subject',
-            title: RDFE.Utils.namingSchemaLabel('s', self.namingSchema),
-            aligh: 'left',
-            sortable: true,
-            editable: function(triple) {
+          "striped": true,
+          "sortName": 'subject',
+          "pagination": true,
+          "search": true,
+          "searchAlign": 'left',
+          "showHeader": true,
+          "editable": true,
+          "data": [],
+          "dataSetter": objectEditorDataSetter,
+          "columns": [{
+            "field": 'subject',
+            "title": RDFE.Utils.namingSchemaLabel('s', self.namingSchema),
+            "aligh": 'left',
+            "sortable": true,
+            "editable": function(triple) {
               return {
-                mode: "inline",
-                type: "rdfnode",
-                rdfnode: {
-                  type: 'http://www.w3.org/1999/02/22-rdf-syntax-ns#Resource'
+                "mode": "inline",
+                "type": "rdfnode",
+                "rdfnode": {
+                  "config": $.extend(self.doc.config.options, {"dereferenceLink": self.editor.dereference()}),
+                  "type": 'http://www.w3.org/1999/02/22-rdf-syntax-ns#Resource'
                 },
-                value: triple.subject
+                "value": triple.subject
               }
             },
-            formatter: nodeFormatter
+            "formatter": nodeFormatter
           }, {
-            field: 'predicate',
-            title: RDFE.Utils.namingSchemaLabel('p', self.namingSchema),
-            align: 'left',
-            sortable: true,
-            editable: function(triple) {
+            "field": 'predicate',
+            "title": RDFE.Utils.namingSchemaLabel('p', self.namingSchema),
+            "align": 'left',
+            "sortable": true,
+            "editable": function(triple) {
               return {
-                mode: "inline",
-                type: "rdfnode",
-                rdfnode: {
-                  type: 'http://www.w3.org/1999/02/22-rdf-syntax-ns#Resource'
+                "mode": "inline",
+                "type": "propertyBox",
+                "propertyBox": {
+                  "ontoManager": self.ontologyManager,
+                  "dereferenceLink": self.editor.dereference()
                 },
-                value: triple.predicate
+                "value": triple.predicate.nominalValue
               };
             },
             formatter: nodeFormatter
           }, {
-            field: 'actions',
-            title: '<button class="add btn btn-default" title="Add Relation" style="display: none;"><span class="glyphicon glyphicon-plus" aria-hidden="true"></span> New</button>',
-            align: 'center',
-            valign: 'middle',
-            class: 'rdfe-small-column',
-            clickToSelect: false,
-            editable: false,
-            formatter: function(value, row, index) {
+            "field": 'actions',
+            "title": '<button class="add btn btn-default" title="Add Relation" style="display: none;"><span class="glyphicon glyphicon-plus" aria-hidden="true"></span> New</button>',
+            "align": 'center',
+            "valign": 'middle',
+            "class": 'rdfe-small-column',
+            "clickToSelect": false,
+            "editable": false,
+            "formatter": function(value, row, index) {
               return [
                 '<a class="remove ml10" href="javascript:void(0)" title="Remove">',
                 '<i class="glyphicon glyphicon-remove"></i>',
                 '</a>'
               ].join('');
             },
-            events: {
+            "events": {
               'click .remove': function (e, value, row, index) {
                 self.doc.deleteTriple(row, function() {
                   $list.bootstrapTable('remove', {
@@ -191,7 +193,7 @@
         backCallback();
       });
 
-      var objectInput = container.find('input[name="object"]').rdfNodeEditor(self.doc.config.options);
+      var objectInput = container.find('input[name="object"]').rdfNodeEditor($.extend(self.doc.config.options, {"dereferenceLink": self.editor.dereference()}));
       if (self.object) {
         objectInput.setValue(self.object.object);
       }
@@ -275,7 +277,8 @@
       ).show();
 
       predicateEditor = self.objectFormContainer.find('select[name="predicate"]').propertyBox({
-        ontoManager: self.ontologyManager
+        "ontoManager": self.ontologyManager,
+        "dereferenceLink": self.editor.dereference()
       });
 
       var subjectEditor = self.objectFormContainer.find('input[name="subject"]');

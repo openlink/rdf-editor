@@ -288,6 +288,28 @@
       self.verifyInput();
       self.change();
     });
+
+    // de-reference link
+    if (self.options["dereferenceLink"]) {
+      self.dereferenceLink = $(document.createElement('button'));
+      self.dereferenceLink.attr('type', 'button').addClass('btn btn-default btn-sm');
+      self.dereferenceLink.html('<i class="glyphicon glyphicon-link"></i>');
+      var div = $(document.createElement('div')).addClass('rdfe-reference-link');
+      div.append(self.dereferenceLink);
+      if (self.mainElement.closest('.editable-input').length) {
+        self.container.parent().after(div);
+      }
+      else {
+        self.container.after(div);
+      }
+      self.dereferenceLink.on('click', function() {
+        var uri = self.getValue();
+        if (uri) {
+          self.options["dereferenceLink"](uri.value);
+        };
+      });
+    }
+
     self.updateEditor(true);
   };
 
@@ -299,28 +321,11 @@
     var self = this;
 
     if (!self.resourceContainer) {
-      self.resourceContainer = $(document.createElement('div')).addClass('rdfResourceContainer');
+      // resource selection
       self.resourceSelect = $(document.createElement('select'));
-      var div = $(document.createElement('div')).css('display', 'table-cell').css('width', '100%');
-      div.append(self.resourceSelect);
-      self.resourceContainer.append(div);
-
-      self.resourceLink = $(document.createElement('button'));
-      self.resourceLink.attr('type', 'button').addClass('btn btn-default btn-sm editable-link"');
-      self.resourceLink.attr('style', 'margin-bottom: 24px;');
-      self.resourceLink.html('<i class="glyphicon glyphicon-link"></i>');
-      var div = $(document.createElement('div')).css('display', 'table-cell');
-      div.append(self.resourceLink);
-      self.resourceContainer.append(div);
+      self.resourceContainer = $(document.createElement('div')).addClass('rdfResourceContainer');
+      self.resourceContainer.append(self.resourceSelect);
       self.inputContainer.append(self.resourceContainer);
-
-      self.resourceLink.on('click', function() {
-        var uri = self.getValue();
-        if (uri && uri.value && uri.value.startsWith('http')) {
-          var win = window.open(uri.value, '_blank');
-          win.focus();
-        };
-      });
     }
     if (!self.resourceSelectize) {
       self.resourceSelect.selectize({
@@ -505,8 +510,11 @@
   RdfNodeEditor.prototype.updateView = function(mode) {
     var self = this;
 
+    if (self.dereferenceLink) {
+      (self.currentType === 'http://www.w3.org/1999/02/22-rdf-syntax-ns#Resource')? self.dereferenceLink.show(): self.dereferenceLink.hide();
+    }
+    self.inputContainer.css('width', 'auto');
     if (mode) {
-      self.inputContainer.css('width', null);
       self.mainElement.show();
       if (self.resourceContainer) {
         self.resourceContainer.hide();
@@ -519,7 +527,6 @@
         self.mainElement.hide();
       }
       else {
-        self.inputContainer.css('width', null);
         self.mainElement.show();
       }
     }

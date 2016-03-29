@@ -87,7 +87,7 @@
                 "mode": "inline",
                 "type": "rdfnode",
                 "rdfnode": {
-                  "config": self.doc.config.options,
+                  "config": $.extend(self.doc.config.options, {"dereferenceLink": self.editor.dereference()}),
                   "type": 'http://www.w3.org/1999/02/22-rdf-syntax-ns#Resource'
                 },
                 "value": triple.subject
@@ -104,7 +104,7 @@
                 "mode": "inline",
                 "type": "rdfnode",
                 "rdfnode": {
-                  "config": self.doc.config.options,
+                  "config": $.extend(self.doc.config.options, {"dereferenceLink": self.editor.dereference()}),
                   "predicate": self.predicate.uri,
                   "document": self.doc,
                   "ontologyManager": self.ontologyManager
@@ -204,7 +204,8 @@
       });
 
       var predicateEditor = container.find('select[name="predicate"]').propertyBox({
-        ontoManager: self.ontologyManager
+        "ontoManager": self.ontologyManager,
+        "dereferenceLink": self.editor.dereference()
       });
       if (self.predicate) {
         predicateEditor.setPropertyURI(self.predicate.uri);
@@ -289,7 +290,7 @@
       subjectEditor.focus();
 
       var property = self.ontologyManager.ontologyProperties[self.predicate.uri];
-      var objectEditor = self.predicateFormContainer.find('input[name="object"]').rdfNodeEditor(self.doc.config.options);
+      var objectEditor = self.predicateFormContainer.find('input[name="object"]').rdfNodeEditor($.extend(self.doc.config.options, {"dereferenceLink": self.editor.dereference()}));
       self.editor.changeObjectType(property, objectEditor);
 
       self.predicateFormContainer.find('button.predicate-action-new-cancel').click(function(e) {

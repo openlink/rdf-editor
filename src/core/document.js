@@ -747,7 +747,7 @@ RDFE.Document.prototype.itemsByRange = function(ranges) {
     var ontologyClass = self.ontologyManager.ontologyClassByURI(ranges[i]);
 
     if (!ontologyClass)
-      contnue;
+      continue;
 
     nodeItems = nodeItems || [];
     var items = _.values(ontologyClass.getIndividuals());

@@ -110,7 +110,7 @@
                     "mode": "inline",
                     "type": "rdfnode",
                     "rdfnode": {
-                      "config": self.doc.config.options,
+                      "config": $.extend(self.doc.config.options, {"dereferenceLink": self.editor.dereference()}),
                       "type": 'http://www.w3.org/1999/02/22-rdf-syntax-ns#Resource'
                     },
                     "value": triple.subject
@@ -127,7 +127,8 @@
                     "mode": "inline",
                     "type": "propertyBox",
                     "propertyBox": {
-                      "ontoManager": self.ontologyManager
+                      "ontoManager": self.ontologyManager,
+                      "dereferenceLink": self.editor.dereference()
                     },
                     "value": triple.predicate.nominalValue
                   };
@@ -143,7 +144,7 @@
                     "mode": "inline",
                     "type": "rdfnode",
                     "rdfnode": {
-                      "config": self.doc.config.options,
+                      "config": $.extend(self.doc.config.options, {"dereferenceLink": self.editor.dereference()}),
                       "predicate": triple.predicate.toString(),
                       "document": self.doc,
                       "ontologyManager": self.ontologyManager
