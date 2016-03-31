@@ -52,19 +52,23 @@ angular.module('myApp.editor', ['ngRoute'])
   };
 })
 
-.filter('viewModeKey', function() {
-  return function(input) {
-    switch(input) {
-      case 'triples':
-        return 'spo';
-      case 'predicates':
-        return 'p';
-      case 'entities':
-        return 's';
-      case 'values':
-        return 'o';
-      default:
-        return input;
+.filter('namingSchemaTitle', function() {
+  return function(input, scope) {
+    if (scope.editor) {
+      var namingSchema = scope.editor.config.options["namingSchema"]
+
+      switch(input) {
+        case 'spo':
+          return (namingSchema === 'spoSchema')? 'RDF Statement Graph Representation [Data]': 'Entity Relationship Representation  [Data]';
+        case 's':
+          return (namingSchema === 'spoSchema')? 'Items described by sentence Predicate & Object pairs in this document': 'Items described by Attribute & Value pairs in this document';
+        case 'p':
+          return (namingSchema === 'spoSchema')? 'How Sentence Subjects and Objects are associated': 'How Entities and their Attribute Values are associated';
+        case 'o':
+          return (namingSchema === 'spoSchema')? 'Objects & Data Types associated with a  Sentence Subject via its Predicate': 'Values & Data Types associated with an Entity Attribute';
+        default:
+          return input;
+      }
     }
   };
 })

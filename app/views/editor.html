@@ -39,7 +39,7 @@
 <div class="row">
   <div class="col-xs-6">
     <div class="btn-group">
-	    <label class="btn btn-default" ng-model="viewMode" btn-radio="'triples'" title="Relationship representation"><span class="glyphicon glyphicon-th" aria-hidden="true"></span> {{'spo' | namingSchemaLabel:this:true}}</label>
+	    <label class="btn btn-default" ng-model="viewMode" btn-radio="'triples'" title="{{'spo' | namingSchemaTitle:this}}"><span class="glyphicon glyphicon-th" aria-hidden="true"></span> {{'spo' | namingSchemaLabel:this:true}}</label>
 	    <label class="btn btn-default" ng-model="viewMode" btn-radio="'entities'" title="All entitites/instances in the document"><span class="glyphicon glyphicon-list" aria-hidden="true"></span> {{'s' | namingSchemaLabel:this:true}}</label>
 	    <label class="btn btn-default" ng-model="viewMode" btn-radio="'predicates'" title="How relationship subject and object are associated"><span class="glyphicon glyphicon-list" aria-hidden="true"></span> {{'p' | namingSchemaLabel:this:true}}</label>
 	    <label class="btn btn-default" ng-model="viewMode" btn-radio="'values'" title="Values projection"><span class="glyphicon glyphicon-list" aria-hidden="true"></span> {{'o' | namingSchemaLabel:this:true}}</label>
@@ -80,12 +80,12 @@
         <div class="form-group">
           <div>
             <label for="comment" style="padding-top: 0.5em;">Content</label>
-            <span class="pull-right">
+            <!--span class="pull-right">
               <select class="form-control" id="contentType" style="margin-bottom: 0.5em;">
                 <option value="text/turtle">Turtle</option>
                 <option value="application/ld+json">JSON-LD</option></option>
               </select>
-            </span>
+            </span-->
           </div>
           <textarea class="form-control" rows="12" id="content"></textarea>
         </div>
