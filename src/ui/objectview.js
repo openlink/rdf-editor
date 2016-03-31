@@ -100,16 +100,19 @@
           columns: [{
             field: 'label',
             title: RDFE.Utils.namingSchemaLabel('o', self.namingSchema),
+            titleTooltip: RDFE.Utils.namingSchemaLabel('o', self.namingSchema),
             sortable: true,
             formatter: labelFormatter
           }, {
             field: 'type',
             title: 'Type',
+            titleTooltip: 'Type',
             sortable: true,
             formatter: typeFormatter
           }, {
             field: 'count',
             title: 'Count',
+            titleTooltip: 'Count',
             align: 'right',
             class: 'rdfe-small-column',
             formatter: countFormatter
@@ -166,9 +169,12 @@
       var self = this;
 
       self.doc.getObject(object, function(object) {
-        self.objectsTable.bootstrapTable('update', {
-          field: 'id',
-          data: object
+        var ndx = self.objects.findIndex(function(item, index, items) {
+          return (item.id === object.id);
+        });
+        self.objectsTable.bootstrapTable('updateRow', {
+          "index": ndx,
+          "row": object
         });
       });
     };

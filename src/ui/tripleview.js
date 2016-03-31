@@ -92,7 +92,7 @@
 
             $list.bootstrapTable({
               "striped": true,
-              "sortName": 's',
+              "sortName": 'subject',
               "pagination": true,
               "search": true,
               "searchAlign": 'left',
@@ -103,6 +103,7 @@
               "columns": [{
                 "field": 'subject',
                 "title": RDFE.Utils.namingSchemaLabel('s', self.namingSchema),
+                "titleTooltip": RDFE.Utils.namingSchemaLabel('s', self.namingSchema),
                 "align": 'left',
                 "sortable": true,
                 "editable": function(triple) {
@@ -120,6 +121,7 @@
               }, {
                 "field": 'predicate',
                 "title": RDFE.Utils.namingSchemaLabel('p', self.namingSchema),
+                "titleTooltip": RDFE.Utils.namingSchemaLabel('p', self.namingSchema),
                 "align": 'left',
                 "sortable": true,
                 "editable": function(triple) {
@@ -137,6 +139,7 @@
               }, {
                 "field": 'object',
                 "title": RDFE.Utils.namingSchemaLabel('o', self.namingSchema),
+                "titleTooltip": RDFE.Utils.namingSchemaLabel('o', self.namingSchema),
                 "align": 'left',
                 "sortable": true,
                 "editable": function(triple) {

@@ -107,12 +107,14 @@
           columns: [{
             field: 'uri',
             title: RDFE.Utils.namingSchemaLabel('p', self.namingSchema),
+            titleTooltip: RDFE.Utils.namingSchemaLabel('p', self.namingSchema),
             sortable: true,
             sorter: labelSorter,
             formatter: labelFormatter
           }, {
             field: 'count',
             title: 'Count',
+            titleTooltip: 'Count',
             align: 'right',
             class: 'rdfe-small-column',
             formatter: countFormatter
@@ -166,9 +168,12 @@
       var self = this;
 
       self.doc.getPredicate(uri, function(predicate) {
-        self.predicateTable.bootstrapTable('update', {
-          field: 'uri',
-          data: predicate
+        var ndx = self.predicates.findIndex(function(item, index, items) {
+          return (item.uri === uri);
+        });
+        self.predicateTable.bootstrapTable('updateRow', {
+          "index": ndx,
+          "row": predicate
         });
       });
     };

@@ -87,12 +87,14 @@
           "columns": [{
             field: 'uri',
             title: RDFE.Utils.namingSchemaLabel('s', self.namingSchema),
+            titleTooltip: RDFE.Utils.namingSchemaLabel('s', self.namingSchema),
             sortable: true,
             sorter: labelSorter,
             formatter: labelFormatter
           }, {
             field: 'count',
             title: 'Count',
+            titleTooltip: 'Count',
             align: 'right',
             class: 'rdfe-small-column',
             formatter: countFormatter
@@ -160,9 +162,12 @@
       var self = this;
 
       self.doc.getSubject(uri, function(subject) {
-        self.subjectTable.bootstrapTable('update', {
-          field: 'uri',
-          data: subject
+        var ndx = self.subjects.findIndex(function(item, index, items) {
+          return (item.uri === uri);
+        });
+        self.subjectTable.bootstrapTable('updateRow', {
+          "index": ndx,
+          "row": subject
         });
       });
     };

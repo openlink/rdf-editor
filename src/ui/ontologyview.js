@@ -79,6 +79,7 @@
         "columns": [{
           "field": 'prefix',
           "title": 'Prefix',
+          "titleTooltip": 'Prefix',
           "editable": function(ontology) {
             return {
               "mode": "inline",
@@ -102,6 +103,7 @@
         }, {
           "field": 'uri',
           "title": 'URI',
+          "titleTooltip": 'URI',
           "formatter": function(value, ontology, index) {
             return [
               '<span title="Ontology {0} - {1} classes, {2} properties">'.format(ontology.URI, ontology.classesLength(), ontology.propertiesLength()),

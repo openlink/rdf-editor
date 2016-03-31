@@ -213,6 +213,7 @@
           "columns": [{
             "field": 'predicate',
             "title": RDFE.Utils.namingSchemaLabel('p', self.namingSchema),
+            "titleTooltip": RDFE.Utils.namingSchemaLabel('p', self.namingSchema),
             "sortable": true,
             "editable": function(triple) {
               return {
@@ -229,6 +230,7 @@
           }, {
             "field": 'object',
             "title": RDFE.Utils.namingSchemaLabel('o', self.namingSchema),
+            "titleTooltip": RDFE.Utils.namingSchemaLabel('o', self.namingSchema),
             "sortable": true,
             "editable": function(triple) {
               return {
