@@ -160,16 +160,16 @@ RDFE.Editor.prototype.importForm = function() {
       self.docChanged();
       $(self).trigger('rdf-editor-success', {
         "type": "rdf-editor-success",
-        "message": "Successfully imported turtle content."
+        "message": "Successfully imported turtle/JSON-LD content."
       });
     };
     var fail = function (s, results) {
       $(self).trigger('rdf-editor-error', {
         "type": "rdf-editor-error",
-        "message": "Failed to import turtle content. " + results
+        "message": "Failed to import turtle/JSON-LD content. " + results
       });
     };
-    self.doc.import(content, contentType, success, fail);
+    self.doc.import(content, success, fail);
   });
 };
 

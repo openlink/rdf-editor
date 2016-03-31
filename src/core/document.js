@@ -212,27 +212,54 @@ RDFE.Document.prototype.new = function(success, fail) {
 RDFE.Document.prototype.import = function(content, contentType, success, fail) {
   var self = this;
 
+  if (typeof(contentType) == 'function') {
+    fail = success;
+    success = contentType;
+    contentType = null;
+  }
+
   // loading local data
   if (contentType === 'application/ld+json') {
-    self.store.load('application/ld+json', content, self.graph, function(s, results) {
-      if (s && success) {
-        success(s, results);
-      }
-      else if(!s && fail) {
-        fail(s, results);
-      }
-    });
+    self.importJSON(content, success, fail);
+  }
+  else if (contentType === 'text/turtle') {
+    self.importTurtle(content, success, fail);
   }
   else {
-    self.store.loadTurtle(content, self.graph, self.graph, RDFE.prefixes, function(s, results) {
-      if (s && success) {
-        success(s, results);
-      }
-      else if(!s && fail) {
-        fail(s, results);
-      }
-    });
+    var _fail = function (_s, _results) {
+      var __fail = function (__s, __results) {
+        fail(__s, _results + ' or ' + __results);
+      };
+      self.importJSON(content, success, __fail);
+    };
+    self.importTurtle(content, success, _fail);
   }
+};
+
+RDFE.Document.prototype.importTurtle = function(content, success, fail) {
+  var self = this;
+
+  self.store.loadTurtle(content, self.graph, self.graph, RDFE.prefixes, function(s, results) {
+    if (s && success) {
+      success(s, results);
+    }
+    else if(!s && fail) {
+      fail(s, results);
+    }
+  });
+};
+
+RDFE.Document.prototype.importJSON = function(content, success, fail) {
+  var self = this;
+
+  self.store.load('application/ld+json', content, self.graph, function(s, results) {
+    if (s && success) {
+      success(s, results);
+    }
+    else if(!s && fail) {
+      fail(s, results);
+    }
+  });
 };
 
 // delete all triplets based on subject URI
