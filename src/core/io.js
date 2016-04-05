@@ -35,12 +35,13 @@ String.prototype.format = function() {
   $.ajaxSetup({ cache: false });
 
   RDFE.IO.createIO = function(type, options) {
-    var t = "sparql";
+    var t = "http";
     var o = {};
     if (typeof(type) === 'string') {
       t = type;
       o = options;
-    } else if (typeof(type) === 'object') {
+    }
+    else if (typeof(type) === 'object') {
       o = type;
       if (o.type) {
         t = o.type;
@@ -118,7 +119,7 @@ String.prototype.format = function() {
           ajaxParams.headers["X-Requested-With"] = 'XMLHttpRequest';
         }
       }
-      ajaxParams = $.extend({"crossDomain": true}, ajaxParams);
+      ajaxParams = $.extend({"crossDomain": true, "cache": true}, ajaxParams);
       if (self.options["ioTimeout"]) {
         ajaxParams = $.extend({"timeout": self.options["ioTimeout"]}, ajaxParams);
       }
@@ -194,7 +195,7 @@ String.prototype.format = function() {
       }
     });
 
-    var SPARQL_RETRIEVE = 'CONSTRUCT {?s ?p ?o} WHERE {GRAPH <{0}> {?s ?p ?o}}';
+    var SPARQL_RETRIEVE = 'define get:soft "add" CONSTRUCT {?s ?p ?o} WHERE {GRAPH <{0}> {?s ?p ?o}}';
     var SPARQL_INSERT = 'INSERT DATA {GRAPH <{0}> { {1}}}';
     var SPARQL_INSERT_SINGLE = '<{0}> <{1}> {2}';
     var SPARQL_DELETE = 'DELETE DATA {GRAPH <{0}> { <{1}> <{2}> {3} . }}';
@@ -586,7 +587,7 @@ String.prototype.format = function() {
       };
 
       var host = (params.proxy) ? self.options.httpProxyTemplate.format(encodeURIComponent(URI)) : self.options.httpTemplate.format(URI);
-      var acceptType = (params && params.acceptType) ? params.acceptType : 'text/n3; q=1, text/turtle; q=0.8, application/rdf+xml; q=0.6';
+      var acceptType = (params && params.acceptType) ? params.acceptType : 'text/turtle; q=1, text/n3; q=0.9, application/ld+json; q=0.7 application/rdf+xml; q=0.6';
       var ajaxParams = {
         url: host,
         type: 'GET',
@@ -621,7 +622,7 @@ String.prototype.format = function() {
       })(graph, params);
 
       var host = (params.proxy) ? self.options.httpProxyTemplate.format(encodeURIComponent(URI)) : self.options.httpTemplate.format(URI);
-      var acceptType = (params && params.acceptType) ? params.acceptType : 'text/n3; q=1, text/turtle; q=0.8, application/rdf+xml; q=0.6';
+      var acceptType = (params && params.acceptType) ? params.acceptType : 'text/turtle; q=1, text/n3; q=0.9, application/ld+json; q=0.7 application/rdf+xml; q=0.6';
       var ajaxParams = {
         url: host,
         type: 'GET',
