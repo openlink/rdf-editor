@@ -29,7 +29,6 @@
       this.editor = editor;
       this.doc = editor.doc;
       this.ontologyManager = editor.ontologyManager;
-      this.namingSchema = editor.doc.config.options[editor.doc.config.options["namingSchema"]];
       this.predicate = predicate;
     };
 
@@ -269,11 +268,11 @@
         '  <div class="panel-body"> ' +
         '    <form class="form-horizontal"> ' +
         '      <div class="form-group"> ' +
-        '        <label for="subject" class="col-sm-2 control-label">' + RDFE.Utils.namingSchemaLabel('s', self.namingSchema) + '</label> ' +
+        '        <label for="subject" class="col-sm-2 control-label">' + RDFE.Utils.namingSchemaLabel('s', self.editor.namingSchema()) + '</label> ' +
         '        <div class="col-sm-10"><input name="subject" class="form-control" /></div> ' +
         '      </div> ' +
         '      <div class="form-group"> ' +
-        '        <label for="object" class="col-sm-2 control-label">' + RDFE.Utils.namingSchemaLabel('o', self.namingSchema) + '</label> ' +
+        '        <label for="object" class="col-sm-2 control-label">' + RDFE.Utils.namingSchemaLabel('o', self.editor.namingSchema()) + '</label> ' +
         '        <div class="col-sm-10"><input name="object" class="form-control" /></div> ' +
         '      </div> ' +
         '      <div class="form-group"> ' +

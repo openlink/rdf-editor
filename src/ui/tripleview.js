@@ -27,7 +27,6 @@
     // constructor
     var c = function(doc, ontologyManager, editor) {
       this.doc = doc;
-      this.namingSchema = doc.config.options[doc.config.options["namingSchema"]];
       this.ontologyManager = ontologyManager;
       this.editor = editor;
     };
@@ -180,7 +179,7 @@
                         values: [row.id]
                       });
                     }, function() {
-                      $(self).trigger('rdf-editor-error', { "type": 'triple-delete-failed', "message": 'Failed to delete ' + RDFE.Utils.namingSchemaLabel('spo', self.namingSchema, false, true) + '.' });
+                      $(self).trigger('rdf-editor-error', { "type": 'triple-delete-failed', "message": 'Failed to delete ' + RDFE.Utils.namingSchemaLabel('spo', self.editor.namingSchema(), false, true) + '.' });
                     });
                   }
                 }
@@ -195,7 +194,7 @@
               callback();
             }
           } else {
-            $(self).trigger('rdf-editor-error', 'Failed to query ' + RDFE.Utils.namingSchemaLabel('spo', self.namingSchema, true, true) + ' from document.');
+            $(self).trigger('rdf-editor-error', 'Failed to query ' + RDFE.Utils.namingSchemaLabel('spo', self.editor.namingSchema(), true, true) + ' from document.');
           }
         });
       });

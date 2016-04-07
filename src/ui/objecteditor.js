@@ -260,11 +260,11 @@
         '  <div class="panel-body"> ' +
         '    <form class="form-horizontal"> ' +
         '      <div class="form-group"> ' +
-        '        <label for="subject" class="col-sm-2 control-label">' + RDFE.Utils.namingSchemaLabel('s', self.namingSchema) + '</label> ' +
+        '        <label for="subject" class="col-sm-2 control-label">' + RDFE.Utils.namingSchemaLabel('s', self.editor.namingSchema()) + '</label> ' +
         '        <div class="col-sm-10"><input name="subject" class="form-control" /></div> ' +
         '      </div> ' +
         '      <div class="form-group"> ' +
-        '        <label for="predicate" class="col-sm-2 control-label">' + RDFE.Utils.namingSchemaLabel('p', self.namingSchema) + '</label> ' +
+        '        <label for="predicate" class="col-sm-2 control-label">' + RDFE.Utils.namingSchemaLabel('p', self.editor.namingSchema()) + '</label> ' +
         '        <div class="col-sm-10"><select name="predicate" class="form-control"></select></div> ' +
         '      </div> ' +
         '      <div class="form-group"> ' +

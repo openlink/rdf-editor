@@ -41,8 +41,8 @@ RDFE.Config = function(source, callback, fail) {
 
           self.options = $.extend(self.options, data);
           self.options.ontology = $.extend(RDFE.Config.defaults.ontology, data.ontology);
-          if (params['namingSchema'])
-            self.options.namingSchema = params['namingSchema'];
+          if (params['uiMode'] === 'EAV' || params['uiMode'] === 'SPO')
+            self.options.namingSchema = params['uiMode'];
 
           if (!self.options.labelProps || self.options.labelProps.length == 0)
             self.options.labelProps = RDFE.Config.defaults.labelProps;
@@ -92,9 +92,6 @@ RDFE.Config.defaults = {
     'http://www.w3.org/2000/01/rdf-schema#'
   ],
 
-  // the default view that opens on start ("entities" or "triples")
-  "defaultView": "entities",
-
   "sparqlEndpoint": window.location.protocol + '//' + window.location.host + '/sparql',
 
   "gspEndpoint": window.location.protocol + '//' + window.location.host + '/sparql-graph-crud',
@@ -118,14 +115,17 @@ RDFE.Config.defaults = {
   // A list of entity type URIs which when set will be used to filter the entity view
   "entityTypesFiler": null,
 
-  "namingSchema": "eavSchema",
-  "eavSchema": {
+  // the default view that opens on start ("entities" or "triples")
+  "defaultView": "statements",
+
+  "namingSchema": "EAV",
+  "EAV": {
     "spo": ["Statement", "Statements"],
     "s": ["Entity", "Entities"],
     "p": ["Attribute", "Attributes"],
     "o": ["Value", "Values"]
   },
-  "spoSchema": {
+  "SPO": {
     "spo": ["Triple", "Triples"],
     "s": ["Subject", "Subjects"],
     "p": ["Predicate", "Predicates"],

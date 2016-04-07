@@ -43,7 +43,6 @@ RDFE.Editor = function(config, documentTree, options) {
 
   // store the config for future access
   self.config = config;
-  self.namingSchema = config.options[config.options["namingSchema"]];
   $(self.doc).on('docChanged', function(e, doc) {
     self.docChanged();
   });
@@ -57,7 +56,7 @@ RDFE.Editor.prototype.render = function(container) {
   this.listContainer = $(document.createElement('div')).appendTo(this.container);
   this.formContainer = $(document.createElement('div')).appendTo(this.container);
 
-  this.toggleView(this.config.options.defaultView);
+  // this.toggleView(this.config.options.defaultView);
 };
 
 RDFE.Editor.prototype.docChanged = function() {
@@ -77,7 +76,7 @@ RDFE.Editor.prototype.docChanged = function() {
  * called yet.
  */
 RDFE.Editor.prototype.currentView = function() {
-  return this._currentView;
+  return this._currentView || this.config.options.defaultView;
 };
 
 /**
@@ -87,22 +86,22 @@ RDFE.Editor.prototype.currentView = function() {
  */
 RDFE.Editor.prototype.toggleView = function(view) {
   if (view !== this._currentView) {
-    if (view === 'entities') {
+    if (view === 'subjects') {
       if (this.config.options['useEntityEditor'] === true) {
         this.createEntityList();
       }
       else {
         this.createSubjectList();
       }
-      this._currentView = "entities";
+      this._currentView = view;
     }
     else if (view === 'predicates') {
       this.createPredicateList();
-      this._currentView = "predicates";
+      this._currentView = view;
     }
-    else if (view === 'values') {
+    else if (view === 'objects') {
       this.createObjectList();
-      this._currentView = "values";
+      this._currentView = view;
     }
     else {
       this.createTripleList();
@@ -117,7 +116,7 @@ RDFE.Editor.prototype.toggleView = function(view) {
 RDFE.Editor.prototype.updateView = function() {
   var self = this;
 
-  if (self._currentView === 'entities') {
+  if (self._currentView === 'subjects') {
     if (self.config.options['useEntityEditor'] === true) {
       self.createEntityList();
     }
@@ -128,14 +127,12 @@ RDFE.Editor.prototype.updateView = function() {
   else if (self._currentView === 'predicates') {
     self.createPredicateList();
   }
-  else if (self._currentView === 'values') {
+  else if (self._currentView === 'objects') {
     self.createObjectList();
   }
   else {
     self.createTripleList();
   }
-
-
 };
 
 /**
@@ -420,16 +417,16 @@ RDFE.Editor.prototype.editTriple = function(s, p, o) {
   self.listContainer.hide();
   self.formContainer.html(
     '<div class="panel panel-default">' +
-    '  <div class="panel-heading"><h3 class="panel-title">Add new ' + RDFE.Utils.namingSchemaLabel('spo', self.namingSchema) + '</h3></div>' +
+    '  <div class="panel-heading"><h3 class="panel-title">Add new ' + RDFE.Utils.namingSchemaLabel('spo', self.namingSchema()) + '</h3></div>' +
     '  <div class="panel-body">' +
     '    <form class="form-horizontal">' +
-    '      <div class="form-group"><label for="subject" class="col-sm-2 control-label">' + RDFE.Utils.namingSchemaLabel('s', self.namingSchema) + '</label>' +
+    '      <div class="form-group"><label for="subject" class="col-sm-2 control-label">' + RDFE.Utils.namingSchemaLabel('s', self.namingSchema()) + '</label>' +
     '        <div class="col-sm-10"><input name="subject" class="form-control" /></div>' +
     '      </div>' +
-    '      <div class="form-group"><label for="predicate" class="col-sm-2 control-label">' + RDFE.Utils.namingSchemaLabel('p', self.namingSchema) + '</label>' +
+    '      <div class="form-group"><label for="predicate" class="col-sm-2 control-label">' + RDFE.Utils.namingSchemaLabel('p', self.namingSchema()) + '</label>' +
     '        <div class="col-sm-10"><select name="predicate" class="form-control"></select></div>' +
     '      </div>' +
-    '      <div class="form-group"><label for="object" class="col-sm-2 control-label">' + RDFE.Utils.namingSchemaLabel('o', self.namingSchema) + '</label>' +
+    '      <div class="form-group"><label for="object" class="col-sm-2 control-label">' + RDFE.Utils.namingSchemaLabel('o', self.namingSchema()) + '</label>' +
     '        <div class="col-sm-10"><input name="object" class="form-control" /></div>' +
     '      </div>' +
     '      <div class="form-group">' +
@@ -537,7 +534,7 @@ RDFE.Editor.prototype.createNewEntityEditor = function(forcedType) {
   if (!forcedType) {
     self.formContainer.html(
       '<div class="panel panel-default">' +
-      '<div class="panel-heading"><h3 class="panel-title">Add new ' + RDFE.Utils.namingSchemaLabel('s', self.namingSchema) + '</h3></div>' +
+      '<div class="panel-heading"><h3 class="panel-title">Add new ' + RDFE.Utils.namingSchemaLabel('s', self.namingSchema()) + '</h3></div>' +
       '<div class="panel-body"><div class="form-horizontal"> ' +
       '  <div class="form-group"> ' +
       '    <label for="ontology" class="col-sm-2 control-label">Ontology</label> ' +
@@ -552,7 +549,7 @@ RDFE.Editor.prototype.createNewEntityEditor = function(forcedType) {
       '    </div> ' +
       '  </div> ' +
       '  <div class="form-group"> ' +
-      '     <label for="subject" class="col-sm-2 control-label">' + RDFE.Utils.namingSchemaLabel('s', self.namingSchema) + ' URI</label> ' +
+      '     <label for="subject" class="col-sm-2 control-label">' + RDFE.Utils.namingSchemaLabel('s', self.namingSchema()) + ' URI</label> ' +
       '     <div class="col-sm-10"> ' +
       '       <input name="subject" id="subject" class="form-control" /> ' +
       '     </div> ' +
@@ -611,7 +608,7 @@ RDFE.Editor.prototype.createNewEntityEditor = function(forcedType) {
     var forcedTypeLabel = forcedTypeRes ? forcedTypeRes.label : RDFE.Utils.uri2name(forcedType);
     self.formContainer.html(
       '<div class="panel panel-default">' +
-      '<div class="panel-heading"><h3 class="panel-title">Add new ' + RDFE.Utils.namingSchemaLabel('s', self.namingSchema) + '</h3></div>' +
+      '<div class="panel-heading"><h3 class="panel-title">Add new ' + RDFE.Utils.namingSchemaLabel('s', self.namingSchema()) + '</h3></div>' +
       '<div class="panel-body"><div class="form-horizontal"> ' +
       '  <div class="form-group"> ' +
       '    <label for="class" class="col-sm-2 control-label">Type</label> ' +
@@ -620,7 +617,7 @@ RDFE.Editor.prototype.createNewEntityEditor = function(forcedType) {
       '    </div> ' +
       '  </div> ' +
       '  <div class="form-group"> ' +
-      '     <label for="subject" class="col-sm-2 control-label">' + RDFE.Utils.namingSchemaLabel('s', self.namingSchema) + ' URI</label> ' +
+      '     <label for="subject" class="col-sm-2 control-label">' + RDFE.Utils.namingSchemaLabel('s', self.namingSchema()) + ' URI</label> ' +
       '     <div class="col-sm-10"> ' +
       '       <input name="subject" id="subject" class="form-control" /> ' +
       '     </div> ' +
@@ -637,7 +634,7 @@ RDFE.Editor.prototype.createNewEntityEditor = function(forcedType) {
 
   // if we have an entity uri template we ask the user to provide a nem instead of the uri
   if (self.config.options.entityUriTmpl) {
-    self.formContainer.find('label[for="subject"]').text(RDFE.Utils.namingSchemaLabel('s', self.namingSchema) + ' Name');
+    self.formContainer.find('label[for="subject"]').text(RDFE.Utils.namingSchemaLabel('s', self.namingSchema()) + ' Name');
   }
 
   self.formContainer.find('button.triple-action-new-cancel').click(function(e) {

@@ -29,7 +29,6 @@
       this.editor = editor;
       this.doc = editor.doc;
       this.ontologyManager = editor.ontologyManager;
-      this.namingSchema = editor.doc.config.options[editor.doc.config.options["namingSchema"]];
       this.subject = subject;
     };
 
@@ -78,7 +77,7 @@
         container.html(
           '<div class="panel panel-default">' +
           '  <div class="panel-heading">' +
-          '    <h3 class="panel-title">Add new ' + RDFE.Utils.namingSchemaLabel('s', self.namingSchema) + '</h3>' +
+          '    <h3 class="panel-title">Add new ' + RDFE.Utils.namingSchemaLabel('s', self.editor.namingSchema()) + '</h3>' +
           '  </div>' +
           '  <div class="panel-body">' +
           '    <div class="form-horizontal"> ' +
@@ -95,7 +94,7 @@
           '        </div> ' +
           '      </div> ' +
           '      <div class="form-group"> ' +
-          '         <label for="subject" class="col-sm-2 control-label">' + RDFE.Utils.namingSchemaLabel('s', self.namingSchema) + ((self.doc.config.options.entityUriTmpl) ? ' Name' : ' URI') + '</label> ' +
+          '         <label for="subject" class="col-sm-2 control-label">' + RDFE.Utils.namingSchemaLabel('s', self.editor.namingSchema()) + ((self.doc.config.options.entityUriTmpl) ? ' Name' : ' URI') + '</label> ' +
           '         <div class="col-sm-10"> ' +
           '           <input name="subject" id="subject" class="form-control" /> ' +
           '         </div> ' +
@@ -381,12 +380,12 @@
         '  <div class="panel-body"> ' +
         '    <form class="form-horizontal"> ' +
         '      <div class="form-group"> ' +
-        '        <label for="predicate" class="col-sm-2 control-label">' + RDFE.Utils.namingSchemaLabel('p', self.namingSchema) + '</label> ' +
+        '        <label for="predicate" class="col-sm-2 control-label">' + RDFE.Utils.namingSchemaLabel('p', self.editor.namingSchema()) + '</label> ' +
         '        <div class="col-sm-10"><select name="predicate" class="form-control"></select></div> ' +
         '      </div> ' +
         '      <div class="form-group object-list"> ' +
         '        <div class="col-sm-12 object-item_0" style="padding: 0;"> ' +
-        '          <label for="object_0" class="col-sm-2 control-label">' + RDFE.Utils.namingSchemaLabel('o', self.namingSchema) + '</label> ' +
+        '          <label for="object_0" class="col-sm-2 control-label">' + RDFE.Utils.namingSchemaLabel('o', self.editor.namingSchema()) + '</label> ' +
         '          <div class="col-sm-9"><input name="object_0" class="form-control" /></div> ' +
         '          <div class="col-sm-1 btn_0"><button type="button" class="btn btn-default object-add" title="Add Object"><span class="glyphicon glyphicon-plus" aria-hidden="true"></span></button></div> ' +
         '        </div> ' +

@@ -24,20 +24,20 @@
       "data/gr.ttl"
     ]
   },
-  "defaultView": "triples",
   "labelProps": [
     "http://www.w3.org/2004/02/skos/core#prefLabel",
     "http://www.w3.org/2000/01/rdf-schema#label",
     "http://xmlns.com/foaf/0.1/name"
   ],
-  "namingSchema": "eavSchema",
-  "eavSchema": {
+  "defaultView": "statements",
+  "namingSchema": "EAV",
+  "EAV": {
     "spo": ["Statement", "Statements"],
     "s": ["Entity", "Entities"],
     "p": ["Attribute", "Attributes"],
     "o": ["Value", "Values"]
   },
-  "spoSchema": {
+  "SPO": {
     "spo": ["Triple", "Triples"],
     "s": ["Subject", "Subjects"],
     "p": ["Predicate", "Predicates"],

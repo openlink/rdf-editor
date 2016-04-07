@@ -45,9 +45,9 @@ angular.module('myApp.editor', ['ngRoute'])
 
 .filter('namingSchemaLabel', function() {
   return function(input, scope, plural, lowercase) {
-    if (scope.namingSchema) {
-      var ndx = (plural === true) ? 1 : 0;
-      return scope.namingSchema[input][ndx];
+    if (scope.editor) {
+      var namingSchema = scope.editor.namingSchema();
+      return namingSchema[input][(plural === true) ? 1 : 0];
     }
   };
 })
@@ -55,17 +55,17 @@ angular.module('myApp.editor', ['ngRoute'])
 .filter('namingSchemaTitle', function() {
   return function(input, scope) {
     if (scope.editor) {
-      var namingSchema = scope.editor.config.options["namingSchema"]
+      var namingSchema = scope.editor.namingSchema();
 
       switch(input) {
         case 'spo':
-          return (namingSchema === 'spoSchema')? 'RDF Statement Graph Representation [Data]': 'Entity Relationship Representation  [Data]';
+          return (namingSchema === 'SPO')? 'RDF Statement Graph Representation [Data]': 'Entity Relationship Representation  [Data]';
         case 's':
-          return (namingSchema === 'spoSchema')? 'Items described by sentence Predicate & Object pairs in this document': 'Items described by Attribute & Value pairs in this document';
+          return (namingSchema === 'SPO')? 'Items described by sentence Predicate & Object pairs in this document': 'Items described by Attribute & Value pairs in this document';
         case 'p':
-          return (namingSchema === 'spoSchema')? 'How Sentence Subjects and Objects are associated': 'How Entities and their Attribute Values are associated';
+          return (namingSchema === 'SPO')? 'How Sentence Subjects and Objects are associated': 'How Entities and their Attribute Values are associated';
         case 'o':
-          return (namingSchema === 'spoSchema')? 'Objects & Data Types associated with a  Sentence Subject via its Predicate': 'Values & Data Types associated with an Entity Attribute';
+          return (namingSchema === 'SPO')? 'Objects & Data Types associated with a  Sentence Subject via its Predicate': 'Values & Data Types associated with an Entity Attribute';
         default:
           return input;
       }
@@ -153,18 +153,67 @@ angular.module('myApp.editor', ['ngRoute'])
     var s = $routeParams["statement:subject"];
     var p = $routeParams["statement:predicate"];
     var o = $routeParams["statement:object"];
+    var e = $routeParams["statement:entity"];
+    var a = $routeParams["statement:attribute"];
+    var v = $routeParams["statement:value"];
+    var view = $routeParams["view"];
+    var uiMode = $routeParams["uiMode"];
 
     if (s) {
-      $scope.viewMode = ($routeParams["view"] === 'statements')? 'triples' :'entities';
+      $scope.viewMode = ((view === 'triples') || (view === 'statements'))? view :'subjects';
     }
     else if (p) {
-      $scope.viewMode = ($routeParams["view"] === 'statements')? 'triples' :'predicates';
+      $scope.viewMode = ((view === 'triples') || (view === 'statements'))? view :'predicates';
     }
     else if (o) {
-      $scope.viewMode = ($routeParams["view"] === 'statements')? 'triples' :'values';
+      $scope.viewMode = ((view === 'triples') || (view === 'statements'))? view :'objects';
     }
     else if (s || p || o) {
       $scope.viewMode = 'triples';
+    }
+    if (e) {
+      $scope.viewMode = ((view === 'triples') || (view === 'statements'))? view :'entities';
+    }
+    else if (a) {
+      $scope.viewMode = ((view === 'triples') || (view === 'statements'))? view :'entities';
+    }
+    else if (v) {
+      $scope.viewMode = ((view === 'triples') || (view === 'statements'))? view :'values';
+    }
+    else if (e || a || v) {
+      $scope.viewMode = 'statements';
+    }
+    else if ((view === 'subjects') || (view === 'entities')) {
+      $scope.viewMode = view;
+    }
+    else if ((view === 'predicates') || (view === 'attributes')) {
+      $scope.viewMode = view;
+    }
+    else if ((view === 'objects') || (view === 'values')) {
+      $scope.viewMode = view;
+    }
+    if (!uiMode) {
+      if      (['triples', 'subjects', 'predicates', 'objects'].indexOf($scope.viewMode) > -1) {
+        $scope.editor.config.options.namingSchema = 'SPO';
+        $scope.namingSchema = $scope.editor.config.options['SPO'];
+      }
+      else if (['statements', 'entities', 'entities', 'values'].indexOf($scope.viewMode) > -1) {
+        $scope.editor.config.options.namingSchema = 'EAV';
+        $scope.namingSchema = $scope.editor.config.options['EAV'];
+      }
+    }
+
+    if ($scope.viewMode === 'statements') {
+      $scope.viewMode = 'triples';
+    }
+    else if ($scope.viewMode === 'entities') {
+      $scope.viewMode = 'subjects';
+    }
+    else if ($scope.viewMode === 'attributes') {
+      $scope.viewMode = 'predicates';
+    }
+    else if ($scope.viewMode === 'values') {
+      $scope.viewMode = 'objects';
     }
     $scope.editor.toggleView($scope.viewMode)
   }
@@ -174,28 +223,34 @@ angular.module('myApp.editor', ['ngRoute'])
     var s = $routeParams["statement:subject"];
     var p = $routeParams["statement:predicate"];
     var o = $routeParams["statement:object"];
+    var e = $routeParams["statement:entity"];
+    var a = $routeParams["statement:attribute"];
+    var v = $routeParams["statement:value"];
     var view = $routeParams["view"];
 
-    if (s && (!view || view === 'entities' || view === 'subjects')) {
-      s = $scope.ontologyManager.uriDenormalize(s);
+    if      ((s || e) && (!view || view === 'subjects' || view === 'entities')) {
+      s = $scope.ontologyManager.uriDenormalize(s || e);
       $scope.editor.editSubject(s, newStatement);
     }
-    else if (p && (!view || view === 'predicates')) {
-      p = $scope.ontologyManager.uriDenormalize(p);
+    else if ((p || a) && (!view || view === 'predicates'|| view === 'attributes')) {
+      p = $scope.ontologyManager.uriDenormalize(p || a);
       $scope.editor.editPredicate(p, newStatement);
     }
-    else if (o && (!view || view === 'values' || view === 'objects')) {
-      $scope.editor.editObject(o, newStatement);
+    else if ((o || v) && (!view || view === 'objects' || view === 'values')) {
+      $scope.editor.editObject(o || v, newStatement);
     }
-    else if ((s || p || o || newStatement) && (!view || view === 'statements')) {
+    else if ((s || p || o || newStatement) && (!view || view === 'triples')) {
       $scope.editor.editTriple(s, p, o, newStatement);
+    }
+    else if ((e || a || v || newStatement) && (!view || view === 'statements')) {
+      $scope.editor.editTriple(e, a, v, newStatement);
     }
   }
 
   RDFEditor.getEditor().then(function(editor) {
     $rootScope.editor = editor;
     $scope.editor = editor;
-    $scope.namingSchema = editor.config.options[editor.config.options["namingSchema"]];
+    $scope.namingSchema = editor.namingSchema;
     $scope.mainDoc = $scope.editor.doc;
     $scope.ontologyManager = $scope.editor.ontologyManager;
     $scope.editor.render($("#contents"));
