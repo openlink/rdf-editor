@@ -608,6 +608,9 @@ String.prototype.format = function() {
           var loadResultFct = function(success, results) {
             if (!success) {
               console.error('URI load error =>', graph, results);
+              if (params && params.error) {
+                params.error(results);
+              }
               return;
             }
             if (params && params.__success) {

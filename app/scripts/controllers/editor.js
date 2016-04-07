@@ -106,10 +106,11 @@ angular.module('myApp.editor', ['ngRoute'])
     return io;
   }
 
-  function ioRetrieve(url, type, sparqlEndpoint, ioTimeout) {
+  function ioRetrieve(url, ioType, sparqlEndpoint, ioTimeout) {
     var io_rdfe;
+
     try {
-      io_rdfe = getIO(type || "sparql", sparqlEndpoint, ioTimeout);
+      io_rdfe = getIO(ioType || 'http', sparqlEndpoint, ioTimeout);
 
       // see if we have auth information cached
       var loadUrl= function(url, io_rdfe) {
@@ -123,7 +124,7 @@ angular.module('myApp.editor', ['ngRoute'])
           });
           showViewEditor();
           $scope.editor.docChanged();
-        }, function(state) {
+        }, function(state, data, status, xhr) {
           var msg = (state && state.message)? state.message: 'Failed to load document';
           Notification.notify('error', msg);
           toggleSpinner(false);
@@ -131,7 +132,7 @@ angular.module('myApp.editor', ['ngRoute'])
       };
       if (DocumentTree.getAuthInfo) {
         DocumentTree.getAuthInfo(url, false).then(function(authInfo) {
-          if(authInfo) {
+          if (authInfo) {
             io_rdfe.options.username = authInfo.username;
             io_rdfe.options.password = authInfo.password;
           }
