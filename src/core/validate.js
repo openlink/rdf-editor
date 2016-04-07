@@ -29,7 +29,7 @@ RDFE.Validate = {};
 
 RDFE.Validate.error = function(fld, msg)
 {
-  $.growl({"message": msg}, {"type": 'danger'});
+  $.notify({"message": msg}, {"type": 'danger'});
   setTimeout(function(){fld.focus();}, 1);
 
   return false;

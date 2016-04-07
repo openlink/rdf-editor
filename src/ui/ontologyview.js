@@ -74,7 +74,7 @@
         "classes": 'table-hover table-condensed',
         "height": 157,
         "data": el,
-        "idField": 'uri',
+        "idField": 'URI',
         "dataSetter": editableSetter,
         "columns": [{
           "field": 'prefix',
@@ -101,7 +101,7 @@
             return (ontology.prefix)? ontology.prefix: '';
           }
         }, {
-          "field": 'uri',
+          "field": 'URI',
           "title": 'URI',
           "titleTooltip": 'URI',
           "formatter": function(value, ontology, index) {
@@ -142,7 +142,7 @@
 
                 "error": function (state) {
                   $(self.ontologyManager).trigger('loadingFailed', [self.ontologyManager]);
-                  $.growl({"message": state.message}, {"type": 'danger'});
+                  $.notify({"message": state.message}, {"type": 'danger'});
                   $loading.hide();
                 },
 
