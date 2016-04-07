@@ -83,43 +83,44 @@
         };
 
         $list.bootstrapTable({
-          striped: true,
-          sortName: 'label',
-          pagination: true,
-          search: true,
-          searchAlign: 'left',
-          trimOnSearch: false,
-          showHeader: true,
-          data: objects,
-          idField: 'id',
-          columns: [{
-            field: 'label',
-            title: RDFE.Utils.namingSchemaLabel('o', self.namingSchema),
-            titleTooltip: RDFE.Utils.namingSchemaLabel('o', self.namingSchema),
-            sortable: true,
-            formatter: labelFormatter
+          "striped": true,
+          "sortName": 'label',
+          "pagination": true,
+          "search": true,
+          "searchAlign": 'left',
+          "trimOnSearch": false,
+          "showHeader": true,
+          "data": objects,
+          "idField": 'id',
+          "columns": [{
+            "field": 'label',
+            "title": RDFE.Utils.namingSchemaLabel('o', self.editor.namingSchema()),
+            "titleTooltip": RDFE.Utils.namingSchemaLabel('o', self.editor.namingSchema()),
+            "sortable": true,
+            "formatter": labelFormatter
           }, {
-            field: 'type',
-            title: 'Type',
-            titleTooltip: 'Type',
-            sortable: true,
-            formatter: typeFormatter
+            "field": 'type',
+            "title": 'Type',
+            "titleTooltip": 'Type',
+            "sortable": true,
+            "formatter": typeFormatter
           }, {
-            field: 'count',
-            title: 'Count',
-            titleTooltip: 'Count',
-            align: 'right',
-            class: 'rdfe-small-column',
-            formatter: countFormatter
+            "field": 'count',
+            "title": 'Count',
+            "titleTooltip": 'Count',
+            "sortable": true,
+            "align": 'right',
+            "class": 'rdfe-small-column',
+            "formatter": self.editor.countFormatter
           }, {
-            field: 'actions',
-            title: '<button class="add btn btn-default" title="Click to create a new '+RDFE.Utils.namingSchemaLabel('o', self.namingSchema, false, true)+'"><span class="glyphicon glyphicon-plus" aria-hidden="true"></span> New</button>',
-            align: 'center',
-            valign: 'middle',
-            class: 'rdfe-small-column',
-            clickToSelect: false,
-            formatter: objectListActionsFormatter,
-            events: {
+            "field": 'actions',
+            "title": '<button class="add btn btn-default" title="Click to create a new '+RDFE.Utils.namingSchemaLabel('o', self.editor.namingSchema(), false, true)+'"><span class="glyphicon glyphicon-plus" aria-hidden="true"></span> New</button>',
+            "align": 'center',
+            "valign": 'middle',
+            "class": 'rdfe-small-column',
+            "clickToSelect": false,
+            "formatter": objectListActionsFormatter,
+            "events": {
               'click .edit': function(e, value, row, index) {
                 self.editFct(row);
               },

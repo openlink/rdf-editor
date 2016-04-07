@@ -29,19 +29,7 @@
       this.editor = editor;
       this.doc = editor.doc;
       this.ontologyManager = editor.ontologyManager;
-      this.namingSchema = editor.doc.config.options[editor.doc.config.options["namingSchema"]];
       this.object = object;
-    };
-
-    var nodeFormatter = function(value) {
-      if (value.interfaceName == "Literal") {
-        if (value.datatype == 'http://www.w3.org/2001/XMLSchema#dateTime')
-          return (new Date(value.nominalValue)).toString();
-        else
-          return value.nominalValue;
-      } else {
-        return value.toString();
-      }
     };
 
     c.prototype.template = _.template(' \
@@ -81,40 +69,20 @@
           "dataSetter": objectEditorDataSetter,
           "columns": [{
             "field": 'subject',
-            "title": RDFE.Utils.namingSchemaLabel('s', self.namingSchema),
-            "titleTooltip": RDFE.Utils.namingSchemaLabel('s', self.namingSchema),
+            "title": RDFE.Utils.namingSchemaLabel('s', self.editor.namingSchema()),
+            "titleTooltip": RDFE.Utils.namingSchemaLabel('s', self.editor.namingSchema()),
             "aligh": 'left',
             "sortable": true,
-            "editable": function(triple) {
-              return {
-                "mode": "inline",
-                "type": "rdfnode",
-                "rdfnode": {
-                  "config": $.extend(self.doc.config.options, {"dereferenceLink": self.editor.dereference()}),
-                  "type": 'http://www.w3.org/1999/02/22-rdf-syntax-ns#Resource'
-                },
-                "value": triple.subject
-              }
-            },
-            "formatter": nodeFormatter
+            "editable": self.editor.editableNode(self.editor),
+            "formatter": self.editor.nodeFormatter
           }, {
             "field": 'predicate',
-            "title": RDFE.Utils.namingSchemaLabel('p', self.namingSchema),
-            "titleTooltip": RDFE.Utils.namingSchemaLabel('p', self.namingSchema),
+            "title": RDFE.Utils.namingSchemaLabel('p', self.editor.namingSchema()),
+            "titleTooltip": RDFE.Utils.namingSchemaLabel('p', self.editor.namingSchema()),
             "align": 'left',
             "sortable": true,
-            "editable": function(triple) {
-              return {
-                "mode": "inline",
-                "type": "propertyBox",
-                "propertyBox": {
-                  "ontoManager": self.ontologyManager,
-                  "dereferenceLink": self.editor.dereference()
-                },
-                "value": triple.predicate.nominalValue
-              };
-            },
-            formatter: nodeFormatter
+            "editable": self.editor.editablePredicate(self.editor),
+            "formatter": self.editor.nodeFormatter
           }, {
             "field": 'actions',
             "title": '<button class="add btn btn-default" title="Add Relation" style="display: none;"><span class="glyphicon glyphicon-plus" aria-hidden="true"></span> New</button>',

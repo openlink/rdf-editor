@@ -55,7 +55,7 @@
           },
           "error": function(state) {
             if (state && state.message) {
-              $.growl({message: state.message}, {type: 'danger'});
+              $.notify({message: state.message}, {type: 'danger'});
             }
             cb(that.settings.createOntology(input, true));
           }

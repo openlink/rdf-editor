@@ -47,10 +47,6 @@
       return 0;
     };
 
-    var countFormatter = function(value, row, index) {
-      return row.items.length;
-    };
-
     c.prototype.render = function(container, callback) {
       var self = this;
 
@@ -84,28 +80,29 @@
           "data": subjects,
           "idField": 'uri',
           "columns": [{
-            field: 'uri',
-            title: RDFE.Utils.namingSchemaLabel('s', self.namingSchema),
-            titleTooltip: RDFE.Utils.namingSchemaLabel('s', self.namingSchema),
-            sortable: true,
-            sorter: labelSorter,
-            formatter: labelFormatter
+            "field": 'uri',
+            "title": RDFE.Utils.namingSchemaLabel('s', self.editor.namingSchema()),
+            "titleTooltip": RDFE.Utils.namingSchemaLabel('s', self.editor.namingSchema()),
+            "sortable": true,
+            "sorter": labelSorter,
+            "formatter": labelFormatter
           }, {
-            field: 'count',
-            title: 'Count',
-            titleTooltip: 'Count',
-            align: 'right',
-            class: 'rdfe-small-column',
-            formatter: countFormatter
+            "field": 'count',
+            "title": 'Count',
+            "titleTooltip": 'Count',
+            "sortable": true,
+            "align": 'right',
+            "class": 'rdfe-small-column',
+            "formatter": self.editor.countFormatter
           }, {
-            field: 'actions',
-            title: '<button class="add btn btn-default" title="Click to create a new '+RDFE.Utils.namingSchemaLabel('s', self.namingSchema, false, true)+'"><span class="glyphicon glyphicon-plus" aria-hidden="true"></span> New</button>',
-            align: 'center',
-            valign: 'middle',
-            class: 'rdfe-small-column',
-            clickToSelect: false,
-            formatter: subjectListActionsFormatter,
-            events: {
+            "field": 'actions',
+            "title": '<button class="add btn btn-default" title="Click to create a new '+RDFE.Utils.namingSchemaLabel('s', self.editor.namingSchema(), false, true)+'"><span class="glyphicon glyphicon-plus" aria-hidden="true"></span> New</button>',
+            "align": 'center',
+            "valign": 'middle',
+            "class": 'rdfe-small-column',
+            "clickToSelect": false,
+            "formatter": subjectListActionsFormatter,
+            "events": {
               'click .edit': function(e, value, row, index) {
                 self.editFct(row);
               },

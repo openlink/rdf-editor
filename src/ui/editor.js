@@ -46,6 +46,68 @@ RDFE.Editor = function(config, documentTree, options) {
   $(self.doc).on('docChanged', function(e, doc) {
     self.docChanged();
   });
+  self.maxLength = config.options["maxLabelLength"];
+};
+
+RDFE.Editor.prototype.namingSchema = function() {
+  return this.config.options[this.config.options["namingSchema"]];
+};
+
+RDFE.Editor.prototype.nodeFormatter = function(value) {
+  var self = this;
+
+  if (value.interfaceName == "Literal") {
+    if (value.datatype == 'http://www.w3.org/2001/XMLSchema#dateTime') {
+      return (new Date(value.nominalValue)).toString();
+    }
+    return RDFE.Utils.strAbbreviate(value.nominalValue, self.maxLength);
+  }
+  return RDFE.Utils.uriAbbreviate(value.toString(), self.maxLength);
+};
+
+RDFE.Editor.prototype.countFormatter = function(value, row, index) {
+  return row.items.length;
+};
+
+RDFE.Editor.prototype.editableNode = function(editor, predicate) {
+  return function(triple, field) {
+    var rdfNode;
+
+    if (predicate) {
+      rdfNode = {
+        "config": $.extend({}, editor.config.options, {"dereferenceLink": editor.dereference()}),
+        "predicate": predicate(triple),
+        "document": editor.doc,
+        "ontologyManager": editor.ontologyManager
+      };
+    }
+    else {
+      rdfNode = {
+        "config": $.extend({}, editor.config.options, {"dereferenceLink": editor.dereference()}),
+        "type": 'http://www.w3.org/1999/02/22-rdf-syntax-ns#Resource'
+      };
+    }
+    return {
+      "mode": "inline",
+      "type": "rdfnode",
+      "rdfnode": rdfNode,
+      "value": triple[field]
+    }
+  };
+};
+
+RDFE.Editor.prototype.editablePredicate = function(editor) {
+  return function(triple, field) {
+    return {
+      "mode": "inline",
+      "type": "propertyBox",
+      "propertyBox": {
+        "ontoManager": editor.ontologyManager,
+        "dereferenceLink": editor.dereference()
+      },
+      "value": triple[field].nominalValue
+    };
+  };
 };
 
 RDFE.Editor.prototype.render = function(container) {
@@ -448,15 +510,14 @@ RDFE.Editor.prototype.editTriple = function(s, p, o) {
     self.formContainer.find('input[name="subject"]').val(s || self.saveSubject);
   }
 
- var objectEditor = self.formContainer.find('input[name="object"]').rdfNodeEditor($.extend(self.config.options, {"dereferenceLink": self.dereference}));
+ var objectEditor = self.formContainer.find('input[name="object"]').rdfNodeEditor(self.config.options);
   // Set object value
   if (o) {
     objectEditor.setValue(new RDFE.RdfNode('literal', o, null, ''));
   }
 
   var predicateEditor = self.formContainer.find('select[name="predicate"]').propertyBox({
-    "ontoManager": self.ontologyManager,
-    "dereferenceLink": self.dereference
+    "ontoManager": self.ontologyManager
   }).on('changed', function(e, p) {
     self.changeObjectType(p, objectEditor);
   });

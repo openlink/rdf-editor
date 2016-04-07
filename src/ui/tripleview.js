@@ -33,17 +33,6 @@
 
     c.prototype.render = function(container, callback) {
       var self = this;
-      var maxLength = self.doc.config.options["maxLabelLength"];
-
-      var nodeFormatter = function(value) {
-        if (value.interfaceName == "Literal") {
-          if (value.datatype == 'http://www.w3.org/2001/XMLSchema#dateTime') {
-            return (new Date(value.nominalValue)).toString();
-          }
-          return RDFE.Utils.strAbbreviate(value.nominalValue, maxLength);
-        }
-        return RDFE.Utils.uriAbbreviate(value.toString(), maxLength);
-      };
 
       var tripleEditorDataSetter = function(triple, field, newValue) {
         var newNode = newValue;
@@ -96,65 +85,34 @@
               "search": true,
               "searchAlign": 'left',
               "showHeader": true,
-              "editable": true,
               "data": triples,
               "dataSetter": tripleEditorDataSetter,
+              "editable": true,
+              "dereference": true,
               "columns": [{
                 "field": 'subject',
-                "title": RDFE.Utils.namingSchemaLabel('s', self.namingSchema),
-                "titleTooltip": RDFE.Utils.namingSchemaLabel('s', self.namingSchema),
-                "align": 'left',
+                "title": RDFE.Utils.namingSchemaLabel('s', self.editor.namingSchema()),
+                "titleTooltip": RDFE.Utils.namingSchemaLabel('s', self.editor.namingSchema()),
                 "sortable": true,
-                "editable": function(triple) {
-                  return {
-                    "mode": "inline",
-                    "type": "rdfnode",
-                    "rdfnode": {
-                      "config": $.extend(self.doc.config.options, {"dereferenceLink": self.editor.dereference()}),
-                      "type": 'http://www.w3.org/1999/02/22-rdf-syntax-ns#Resource'
-                    },
-                    "value": triple.subject
-                  }
-                },
-                "formatter": nodeFormatter
+                "editable": self.editor.editableNode(self.editor),
+                "dereference": self.editor.dereference(self.editor),
+                "formatter": self.editor.nodeFormatter
               }, {
                 "field": 'predicate',
-                "title": RDFE.Utils.namingSchemaLabel('p', self.namingSchema),
-                "titleTooltip": RDFE.Utils.namingSchemaLabel('p', self.namingSchema),
-                "align": 'left',
+                "title": RDFE.Utils.namingSchemaLabel('p', self.editor.namingSchema()),
+                "titleTooltip": RDFE.Utils.namingSchemaLabel('p', self.editor.namingSchema()),
                 "sortable": true,
-                "editable": function(triple) {
-                  return {
-                    "mode": "inline",
-                    "type": "propertyBox",
-                    "propertyBox": {
-                      "ontoManager": self.ontologyManager,
-                      "dereferenceLink": self.editor.dereference()
-                    },
-                    "value": triple.predicate.nominalValue
-                  };
-                },
-                "formatter": nodeFormatter
+                "editable": self.editor.editablePredicate(self.editor),
+                "dereference": self.editor.dereference(self.editor),
+                "formatter": self.editor.nodeFormatter
               }, {
                 "field": 'object',
-                "title": RDFE.Utils.namingSchemaLabel('o', self.namingSchema),
-                "titleTooltip": RDFE.Utils.namingSchemaLabel('o', self.namingSchema),
-                "align": 'left',
+                "title": RDFE.Utils.namingSchemaLabel('o', self.editor.namingSchema()),
+                "titleTooltip": RDFE.Utils.namingSchemaLabel('o', self.editor.namingSchema()),
                 "sortable": true,
-                "editable": function(triple) {
-                  return {
-                    "mode": "inline",
-                    "type": "rdfnode",
-                    "rdfnode": {
-                      "config": $.extend(self.doc.config.options, {"dereferenceLink": self.editor.dereference()}),
-                      "predicate": triple.predicate.toString(),
-                      "document": self.doc,
-                      "ontologyManager": self.ontologyManager
-                    },
-                    "value": triple.object
-                  };
-                },
-                "formatter": nodeFormatter
+                "editable": self.editor.editableNode(self.editor),
+                "dereference": self.editor.dereference(self.editor),
+                "formatter": self.editor.nodeFormatter
               }, {
                 "field": 'actions',
                 "title": '<button class="add btn btn-default" title="Add a new statement to the document"><span class="glyphicon glyphicon-plus" aria-hidden="true"></span> New</button>',
