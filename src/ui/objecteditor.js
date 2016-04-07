@@ -67,21 +67,23 @@
           "editable": true,
           "data": [],
           "dataSetter": objectEditorDataSetter,
+          "editable": true,
+          "dereference": true,
           "columns": [{
             "field": 'subject',
             "title": RDFE.Utils.namingSchemaLabel('s', self.editor.namingSchema()),
             "titleTooltip": RDFE.Utils.namingSchemaLabel('s', self.editor.namingSchema()),
-            "aligh": 'left',
             "sortable": true,
             "editable": self.editor.editableNode(self.editor),
+            "dereference": self.editor.dereference(self.editor),
             "formatter": self.editor.nodeFormatter
           }, {
             "field": 'predicate',
             "title": RDFE.Utils.namingSchemaLabel('p', self.editor.namingSchema()),
             "titleTooltip": RDFE.Utils.namingSchemaLabel('p', self.editor.namingSchema()),
-            "align": 'left',
             "sortable": true,
             "editable": self.editor.editablePredicate(self.editor),
+             "dereference": self.editor.dereference(self.editor),
             "formatter": self.editor.nodeFormatter
           }, {
             "field": 'actions',
@@ -163,7 +165,7 @@
         backCallback();
       });
 
-      var objectInput = container.find('input[name="object"]').rdfNodeEditor($.extend(self.doc.config.options, {"dereferenceLink": self.editor.dereference()}));
+      var objectInput = container.find('input[name="object"]').rdfNodeEditor(self.doc.config.options);
       if (self.object) {
         objectInput.setValue(self.object.object);
       }

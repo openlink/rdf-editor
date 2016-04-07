@@ -199,12 +199,15 @@
           "editable": true,
           "data": [],
           "dataSetter": subjectEditorDataSetter,
+          "editable": true,
+          "dereference": true,
           "columns": [{
             "field": 'predicate',
             "title": RDFE.Utils.namingSchemaLabel('p', self.editor.namingSchema()),
             "titleTooltip": RDFE.Utils.namingSchemaLabel('p', self.editor.namingSchema()),
             "sortable": true,
             "editable": self.editor.editablePredicate(self.editor),
+            "dereference": self.editor.dereference(self.editor),
             "formatter": self.editor.nodeFormatter
           }, {
             "field": 'object',
@@ -212,6 +215,7 @@
             "titleTooltip": RDFE.Utils.namingSchemaLabel('o', self.editor.namingSchema()),
             "sortable": true,
             "editable": self.editor.editableNode(self.editor, function(triple){return triple.predicate.toString();}),
+            "dereference": self.editor.dereference(self.editor),
             "formatter": self.editor.nodeFormatter
           }, {
             "field": 'actions',
@@ -384,8 +388,7 @@
       objectEditors.push(objectEditor);
 
       var predicateEditor = self.subjectFormContainer.find('select[name="predicate"]').propertyBox({
-        "ontoManager": self.ontologyManager,
-        "dereferenceLink": self.editor.dereference()
+        "ontoManager": self.ontologyManager
       }).on('changed', function(e, predicate) {
         for (var i = 0; i < objectEditors.length; i++) {
           var objectEditor = objectEditors[i];
@@ -411,7 +414,7 @@
         objectList.append(objectHTML.replace(/<N>/g, objectNo));
         objectList.find('button.object-add').detach().appendTo(objectList.find('div.btn_<N>'.replace(/<N>/g, objectNo)));
         objectList.find('div.btn_<N>'.replace(/<N>/g, lastObjectNo)).append(objectButtonHTML.replace(/<N>/g, lastObjectNo));
-        var objectEditor = self.subjectFormContainer.find('input[name="object_<N>"]'.replace(/<N>/g, objectNo)).rdfNodeEditor($.extend(self.doc.config.options, {"dereferenceLink": self.editor.dereference()}));
+        var objectEditor = self.subjectFormContainer.find('input[name="object_<N>"]'.replace(/<N>/g, objectNo)).rdfNodeEditor(self.doc.config.options);
         objectEditor.setValue(new RDFE.RdfNode('literal', '', null, ''));
         if (predicate) {
           self.editor.changeObjectType(predicate, objectEditor);

@@ -65,21 +65,23 @@
           "editable": true,
           "data": [],
           "dataSetter": predicateEditorDataSetter,
+          "editable": true,
+          "dereference": true,
           "columns": [{
             "field": 'subject',
             "title": RDFE.Utils.namingSchemaLabel('s', self.editor.namingSchema()),
             "titleTooltip": RDFE.Utils.namingSchemaLabel('s', self.editor.namingSchema()),
-            "aligh": 'left',
             "sortable": true,
             "editable": self.editor.editableNode(self.editor),
+            "dereference": self.editor.dereference(self.editor),
             "formatter": self.editor.nodeFormatter
           }, {
             "field": 'object',
             "title": RDFE.Utils.namingSchemaLabel('o', self.editor.namingSchema()),
             "titleTooltip": RDFE.Utils.namingSchemaLabel('o', self.editor.namingSchema()),
-            "align": 'left',
             "sortable": true,
             "editable": self.editor.editableNode(self.editor, function(triple){return self.predicate.uri;}),
+            "dereference": self.editor.dereference(self.editor),
             "formatter": self.editor.nodeFormatter
           }, {
             "field": 'actions',
@@ -172,8 +174,7 @@
       });
 
       var predicateEditor = container.find('select[name="predicate"]').propertyBox({
-        "ontoManager": self.ontologyManager,
-        "dereferenceLink": self.editor.dereference()
+        "ontoManager": self.ontologyManager
       });
       if (self.predicate) {
         predicateEditor.setPropertyURI(self.predicate.uri);
@@ -258,7 +259,7 @@
       subjectEditor.focus();
 
       var property = self.ontologyManager.ontologyProperties[self.predicate.uri];
-      var objectEditor = self.predicateFormContainer.find('input[name="object"]').rdfNodeEditor($.extend(self.doc.config.options, {"dereferenceLink": self.editor.dereference()}));
+      var objectEditor = self.predicateFormContainer.find('input[name="object"]').rdfNodeEditor(self.doc.config.options);
       self.editor.changeObjectType(property, objectEditor);
 
       self.predicateFormContainer.find('button.predicate-action-new-cancel').click(function(e) {
