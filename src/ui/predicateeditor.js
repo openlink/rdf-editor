@@ -37,7 +37,7 @@
         <div class="panel-heading clearfix"> \
           <form class="form-inline"> \
             <div class="form-group" style="width: 80%;"> \
-              <label><%= RDFE.Utils.namingSchemaLabel("p", this.namingSchema) %> </label> \
+              <label><%= RDFE.Utils.namingSchemaLabel("p", this.editor.namingSchema()) %> </label> \
               <select name="predicate" class="form-control" style="width: 85%;"></select> \
             </div> \
             <div class="btn-group pull-right" role="group"> \

@@ -37,7 +37,7 @@
         <div class="panel-heading clearfix"> \
           <div class="form-group"> \
             <div class="col-sm-1"> \
-              <label for="object" class="control-label pull-right" style="padding-top: 5px"><%= RDFE.Utils.namingSchemaLabel("o", this.namingSchema) %> </label> \
+              <label for="object" class="control-label pull-right" style="padding-top: 5px"><%= RDFE.Utils.namingSchemaLabel("o", this.editor.namingSchema()) %> </label> \
             </div> \
             <div class="col-sm-10"> \
               <input name="object" class="form-control" /> \

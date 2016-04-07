@@ -37,7 +37,7 @@
         <div class="panel-heading clearfix"> \
           <form class="form-inline"> \
             <div class="form-group" style="width: 80%;"> \
-              <label>Selected <%= RDFE.Utils.namingSchemaLabel("s", this.namingSchema) %> </label> \
+              <label>Selected <%= RDFE.Utils.namingSchemaLabel("s", this.editor.namingSchema()) %> </label> \
               <input name="subject" class="form-control" style="width: 85%;" disabled="disabled" /> \
             </div> \
             <div class="btn-group pull-right" role="group"> \
