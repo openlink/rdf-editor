@@ -13,7 +13,7 @@ angular.module('myApp.editor', ['ngRoute'])
   var editor = null;
 
   function getEditor() {
-    if(editor) {
+    if (editor) {
       return $q.when(editor);
     }
     else {
@@ -27,9 +27,17 @@ angular.module('myApp.editor', ['ngRoute'])
           }).on('rdf-editor-error', function(e, d) {
             Notification.notify('error', d.message);
           }).on('rdf-editor-start', function(e, d) {
-            usSpinnerService.spin('editor-spinner');
+            editor.spinner++;
+            if (editor.spinner === 1) {
+              usSpinnerService.spin('editor-spinner');
+            }
           }).on('rdf-editor-done', function(e, d) {
-            usSpinnerService.stop('editor-spinner');
+            if (editor.spinner > 0) {
+              editor.spinner--;
+            }
+            if (editor.spinner === 0) {
+              usSpinnerService.stop('editor-spinner');
+            }
           });
 
           resolve(editor);
@@ -78,15 +86,6 @@ angular.module('myApp.editor', ['ngRoute'])
   '$rootScope', '$scope', '$routeParams', '$location', '$timeout', "usSpinnerService", 'RDFEditor', 'DocumentTree', 'Notification',
   function($rootScope, $scope, $routeParams, $location, $timeout, usSpinnerService, RDFEditor, DocumentTree, Notification) {
 
-  function toggleSpinner(on) {
-    if(on) {
-      usSpinnerService.spin('editor-spinner');
-    }
-    else {
-      usSpinnerService.stop('editor-spinner');
-    }
-  }
-
   function getIO(ioType, sparqlEndpoint, ioTimeout) {
     var authFunction;
     if (DocumentTree.getAuthInfo) {
@@ -114,7 +113,7 @@ angular.module('myApp.editor', ['ngRoute'])
 
       // see if we have auth information cached
       var loadUrl= function(url, io_rdfe) {
-        toggleSpinner(true);
+        $scope.editor.toggleSpinner(true);
         $scope.mainDoc.load(url, io_rdfe, function() {
           toggleView();
           $scope.editor.updateView();
@@ -124,10 +123,11 @@ angular.module('myApp.editor', ['ngRoute'])
           });
           showViewEditor();
           $scope.editor.docChanged();
+          $scope.editor.toggleSpinner(false);
         }, function(state, data, status, xhr) {
           var msg = (state && state.message)? state.message: 'Failed to load document';
           Notification.notify('error', msg);
-          toggleSpinner(false);
+          $scope.editor.toggleSpinner(false);
         });
       };
       if (DocumentTree.getAuthInfo) {
@@ -383,12 +383,12 @@ angular.module('myApp.editor', ['ngRoute'])
   $scope.saveDocument = function() {
     if ($scope.mainDoc.url) {
       var cbSave = function () {
-        toggleSpinner(true);
+        $scope.editor.toggleSpinner(true);
         $scope.mainDoc.save(function() {
-          toggleSpinner(false);
+          $scope.editor.toggleSpinner(false);
           Notification.notify('success', "Successfully saved document to <code>" + $scope.mainDoc.url + "</code>");
         }, function(err) {
-          toggleSpinner(false);
+          $scope.editor.toggleSpinner(false);
           Notification.notify('error', (err ? err.message || err : "An unknown error occured"));
         });
       };

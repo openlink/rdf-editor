@@ -14,6 +14,6 @@
     "angular-bootstrap": "~0.14.x",
     "html5-boilerplate": "~4.3.0",
     "spin.js": "~2.0.0",
-    "angular-spinner": "~0.6.x"
+    "angular-spinner": "~0.8.x"
   }
 }
