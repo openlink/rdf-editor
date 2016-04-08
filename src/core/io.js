@@ -135,30 +135,30 @@ String.prototype.format = function() {
         if (params && params.success) {
           params.success(data, status, xhr);
         }
-      }).fail(function(data, status, xhr) {
+      }).fail(function(xhr, status, data) {
         if (params && params.error) {
           var state = {
-            "httpCode": data.status,
-            "message": data.statusText
+            "httpCode": xhr.status,
+            "message": xhr.statusText
           }
           if (this.crossDomain && (state.message === 'error') && (RDFE.Utils.extractDomain(this.url) !== window.location.hostname)) {
-            state.message = "The document failed to load - this could be related to missing CORS settings on the server."
+            state.message = 'CORS Error: ' + ((self.type !== 'sparql')? ajaxParams.url: 'The document') + ' failed to load - this could be related to missing CORS settings on the server.'
           }
-          if ((data.status === 401 || data.status === 403) && params.authFunction) {
+          if ((xhr.status === 401 || xhr.status === 403) && params.authFunction) {
             params.authFunction(ajaxParams.url, function(r) {
               params.username = r.username;
               params.password = r.password;
               self.baseExec(ajaxParams, params);
             }, function() {
               // user did not provide credentials
-              state = 'Error: ' + data.status + ' (' + data.statusText + ')';
+              state = 'Error: ' + xhr.status + ' - ' + xhr.statusText + ((self.type !== 'sparql')? ' (' + ajaxParams.url + ')': '');
               params.error(state, data, status, xhr);
             });
           }
           else if (status === 'timeout') {
             var state = {
               "httpCode": status,
-              "message": 'Failed to load document because of timeout'
+              "message": 'Timeout Error: Failed to load ' + ((self.type !== 'sparql')? ajaxParams.url: 'document')
             }
             params.error(state, data, status, xhr);
           }
