@@ -207,7 +207,6 @@
             "titleTooltip": RDFE.Utils.namingSchemaLabel('p', self.editor.namingSchema()),
             "sortable": true,
             "editable": self.editor.editablePredicate(self.editor),
-            "dereference": self.editor.dereference(self.editor),
             "formatter": self.editor.nodeFormatter
           }, {
             "field": 'object',
@@ -215,7 +214,6 @@
             "titleTooltip": RDFE.Utils.namingSchemaLabel('o', self.editor.namingSchema()),
             "sortable": true,
             "editable": self.editor.editableNode(self.editor, function(triple){return triple.predicate.toString();}),
-            "dereference": self.editor.dereference(self.editor),
             "formatter": self.editor.nodeFormatter
           }, {
             "field": 'actions',
