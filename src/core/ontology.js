@@ -736,6 +736,9 @@ RDFE.OntologyManager.prototype.parseOntologyFile = function(URI, params) {
     "success": parseTripels,
     "error": params.error
   };
+  if (!URI.startsWith(RDFE.Utils.getUrlBase(URI))) {
+    URI = RDFE.Utils.getUrl(URI);
+  }
   self.load(URI, loadParams);
 };
 

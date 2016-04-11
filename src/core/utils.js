@@ -226,6 +226,11 @@ RDFE.Utils.getLabel = function(labels, key) {
   return labels[key];
 }
 
+RDFE.Utils.getUrl = function(url) {
+  var parser = RDFE.Utils.splitUrl(url);
+  return parser.protocol + '//' + parser.host + parser.path;
+};
+
 RDFE.Utils.getUrlBase = function(url) {
   var parser = RDFE.Utils.splitUrl(url);
   return parser.protocol + '//' + parser.host;

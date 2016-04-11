@@ -46,12 +46,17 @@
       create: function(input, cb) {
         // search for and optionally create a new property
         var that = this;
+        var create = false;
 
         input = RDFE.Utils.trim(RDFE.Utils.trim(input, '<'), '>');
         if (input === 'a') {
           input = 'http://www.w3.org/1999/02/22-rdf-syntax-ns#type';
+          create = true;
         }
-        var property = this.settings.createProperty(input);
+        else if (input.startsWith('#')) {
+          create = true;
+        }
+        var property = this.settings.createProperty(input, create);
         if (property) {
           cb(property);
         }
