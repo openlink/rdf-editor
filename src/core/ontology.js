@@ -29,20 +29,25 @@ if(!window.RDFE)
   window.RDFE = {};
 
 RDFE.prefixes = {};
+RDFE.prefixes['adms'] = 'http://www.w3.org/ns/adms#';
 RDFE.prefixes['annotation'] = 'http://www.w3.org/2000/10/annotation-ns#';
 RDFE.prefixes['atom'] = 'http://atomowl.org/ontologies/atomrdf#';
 RDFE.prefixes['bibo'] = 'http://purl.org/ontology/bibo/';
 RDFE.prefixes['book'] = 'http://purl.org/NET/book/vocab#';
 RDFE.prefixes['cc'] = 'http://web.resource.org/cc/';
+RDFE.prefixes['cert'] = 'http://www.w3.org/ns/auth/cert#';
 RDFE.prefixes['dataview'] = 'http://www.w3.org/2003/g/data-view#';
 RDFE.prefixes['dbpedia'] = 'http://dbpedia.org/resource/';
 RDFE.prefixes['dc'] = 'http://purl.org/dc/elements/1.1/';
+RDFE.prefixes['dcam'] = 'http://purl.org/dc/dcam/';
 RDFE.prefixes['dcterms'] = 'http://purl.org/dc/terms/';
+RDFE.prefixes['dctype'] = 'http://purl.org/dc/dcmitype/';
 RDFE.prefixes['doap'] = 'http://usefulinc.com/ns/doap#';
 RDFE.prefixes['foaf'] = 'http://xmlns.com/foaf/0.1/';
 RDFE.prefixes['fresnel'] = 'http://www.w3.org/2004/09/fresnel#';
 RDFE.prefixes['geo'] = 'http://www.w3.org/2003/01/geo/wgs84_pos#';
 RDFE.prefixes['gr'] = 'http://purl.org/goodrelations/v1#';
+RDFE.prefixes['gso'] = 'http://www.w3.org/ns/adms#';
 RDFE.prefixes['ibis'] = 'http://purl.org/ibis#';
 RDFE.prefixes['ical'] = 'http://www.w3.org/2002/12/cal/icaltzd#';
 RDFE.prefixes['like'] = 'http://ontologi.es/like#';
@@ -57,9 +62,11 @@ RDFE.prefixes['scot'] = 'http://scot-project.org/scot/ns';
 RDFE.prefixes['sioc'] = 'http://rdfs.org/sioc/ns#';
 RDFE.prefixes['sioct'] = 'http://rdfs.org/sioc/types#';
 RDFE.prefixes['skos'] = 'http://www.w3.org/2004/02/skos/core#';
+RDFE.prefixes['vcard'] = 'http://www.w3.org/2006/vcard/ns#';
 RDFE.prefixes['void'] = 'http://rdfs.org/ns/void#';
 RDFE.prefixes['vs'] = 'http://www.w3.org/2003/06/sw-vocab-status/ns#';
 RDFE.prefixes['wot'] = 'http://xmlns.com/wot/0.1/';
+RDFE.prefixes['ws'] = 'http://www.w3.org/ns/pim/space#';
 RDFE.prefixes['xhtml'] = 'http://www.w3.org/1999/xhtml';
 RDFE.prefixes['xsd'] = 'http://www.w3.org/2001/XMLSchema#';
 
@@ -432,7 +439,7 @@ RDFE.OntologyManager.prototype.parseOntologyFile = function(URI, params) {
   };
 
   function findOrCreateClass(uri) {
-    if(N3.Util.isBlank(uri)) {
+    if (N3.Util.isBlank(uri)) {
       return null;
     }
 
@@ -440,7 +447,7 @@ RDFE.OntologyManager.prototype.parseOntologyFile = function(URI, params) {
   };
 
   function findOrCreateProperty(uri) {
-    if(N3.Util.isBlank(uri)) {
+    if (N3.Util.isBlank(uri)) {
       return null;
     }
     return self.ontologyPropertyByURI(uri, true);
@@ -454,6 +461,48 @@ RDFE.OntologyManager.prototype.parseOntologyFile = function(URI, params) {
     return (lenses[uri] = lenses[uri] || new RDFE.FresnelLens(self, uri));
   }
 
+  var resolveLabel = function(uri, label) {
+    if (v = self.ontologyProperties[uri]) {
+      v.label = v.label || label;
+    }
+    else if (v = self.ontologyClasses[uri]) {
+      v.label = v.label || label;
+    }
+    else if (v = self.ontologies[uri]) {
+      v.label = v.label || label;
+    }
+    else if (v = self.individuals[uri]) {
+      v.label = v.label || label;
+    }
+    else if (v = lenses[uri]) {
+      v.label = v.label || label;
+    }
+    else {
+      labels[uri] = label;
+    }
+  };
+
+  var resolveComment = function(uri, comment) {
+    if (v = self.ontologyProperties[uri]) {
+      v.comment = v.comment || comment;
+    }
+    else if (v = self.ontologyClasses[uri]) {
+      v.comment = v.comment || comment;
+    }
+    else if (v = self.ontologies[uri]) {
+      v.comment = v.comment || comment;
+    }
+    else if (v = self.individuals[uri]) {
+      v.comment = v.comment || comment;
+    }
+    else if (v = lenses[uri]) {
+      v.comment = v.comment || comment;
+    }
+    else {
+      comments[uri] = comment;
+    }
+  };
+
   /**
    * Resolve an rdf collection for a given node uri (typically a blank node)
    * using the relations in @p collections.
@@ -461,14 +510,17 @@ RDFE.OntologyManager.prototype.parseOntologyFile = function(URI, params) {
   function resolveCollection(uri) {
     var r = [];
     var cur = uri;
-    while(cur) {
+
+    while (cur) {
       var curNode = collections[cur];
-      cur = null;
-      if(curNode) {
-        if(curNode.first) {
+      if (curNode) {
+        if (curNode.first) {
           r.push(curNode.first);
         }
         cur = curNode.rest;
+      }
+      else {
+        cur = null;
       }
     }
     return r;
@@ -483,15 +535,15 @@ RDFE.OntologyManager.prototype.parseOntologyFile = function(URI, params) {
     // handle the type triples
     if (p === 'http://www.w3.org/1999/02/22-rdf-syntax-ns#type') {
       switch(o) {
-        case 'http://www.w3.org/2000/01/rdf-schema##Class':
-        case 'http://www.w3.org/2002/07/owl#Class':
-          findOrCreateClass(s);
-          break;
-
         case 'http://www.w3.org/2002/07/owl#ObjectProperty':
         case 'http://www.w3.org/2002/07/owl#DatatypeProperty':
         case 'http://www.w3.org/1999/02/22-rdf-syntax-ns#Property':
           findOrCreateProperty(s);
+          break;
+
+        case 'http://www.w3.org/2000/01/rdf-schema#Class':
+        case 'http://www.w3.org/2002/07/owl#Class':
+          findOrCreateClass(s);
           break;
 
         case 'http://www.w3.org/2002/07/owl#Restriction':
@@ -522,17 +574,17 @@ RDFE.OntologyManager.prototype.parseOntologyFile = function(URI, params) {
       }
     }
 
-    else if(p === 'http://www.w3.org/2000/01/rdf-schema#label') {
-      labels[s] = N3.Util.getLiteralValue(o);
+    else if (p === 'http://www.w3.org/2000/01/rdf-schema#label') {
+      resolveLabel(s, N3.Util.getLiteralValue(o));
     }
 
-    else if(p === 'http://www.w3.org/2000/01/rdf-schema#comment') {
-      comments[s] = N3.Util.getLiteralValue(o);
+    else if (p === 'http://www.w3.org/2000/01/rdf-schema#comment') {
+      resolveComment(s, N3.Util.getLiteralValue(o));
     }
 
-    else if(p === 'http://www.w3.org/2000/01/rdf-schema#subClassOf') {
+    else if (p === 'http://www.w3.org/2000/01/rdf-schema#subClassOf') {
       var cc = findOrCreateClass(s);
-      if(N3.Util.isBlank(o)) {
+      if (N3.Util.isBlank(o)) {
         // remember blank node for restriction handling later
         var r = restrictionMap[s] = restrictionMap[s] || [];
         r.push(o);
@@ -544,14 +596,15 @@ RDFE.OntologyManager.prototype.parseOntologyFile = function(URI, params) {
       }
     }
 
-    else if(p === 'http://www.w3.org/2000/01/rdf-schema#subPropertyOf') {
+    else if (p === 'http://www.w3.org/2000/01/rdf-schema#subPropertyOf') {
       var pc = findOrCreateProperty(o),
           cc = findOrCreateProperty(s);
       cc.subPropertyOf.push(pc);
       pc.superPropertyOf.push(cc);
     }
 
-    else if ((p === 'http://www.w3.org/2000/01/rdf-schema#domain') || (p === 'http://schema.org/domainIncludes')) {
+    else if (p === 'http://www.w3.org/2000/01/rdf-schema#domain' ||
+             p === 'http://schema.org/domainIncludes') {
       var c = findOrCreateProperty(s);
       if (N3.Util.isBlank(o)) {
         // postpone the collection query for later
@@ -575,36 +628,36 @@ RDFE.OntologyManager.prototype.parseOntologyFile = function(URI, params) {
       c.range.push(r);
     }
 
-    else if(p === 'http://www.w3.org/2002/07/owl#onProperty') {
+    else if (p === 'http://www.w3.org/2002/07/owl#onProperty') {
       var r = restrictions[s] = restrictions[s] || {};
       (r.onProperty = r.onProperty || []).push(o);
     }
 
-    else if(p === 'http://www.w3.org/2002/07/owl#cardinality' ||
-            p === 'http://www.w3.org/2002/07/owl#maxCardinality' ||
-            p === 'http://www.w3.org/2002/07/owl#minCardinality' ||
-            p === 'http://www.openlinksw.com/ontology/oplowl#hasCustomLabel' ||
-            p === 'http://www.openlinksw.com/ontology/oplowl#hasCustomComment') {
+    else if (p === 'http://www.w3.org/2002/07/owl#cardinality' ||
+             p === 'http://www.w3.org/2002/07/owl#maxCardinality' ||
+             p === 'http://www.w3.org/2002/07/owl#minCardinality' ||
+             p === 'http://www.openlinksw.com/ontology/oplowl#hasCustomLabel' ||
+             p === 'http://www.openlinksw.com/ontology/oplowl#hasCustomComment') {
       var r = restrictions[s] = restrictions[s] || {};
       r[RDFE.uriLabel(p)] = N3.Util.getLiteralValue(o);
     }
 
-    else if(p === 'http://www.w3.org/1999/02/22-rdf-syntax-ns#first' ||
-            p === 'http://www.w3.org/1999/02/22-rdf-syntax-ns#rest') {
-      if(o !== 'http://www.w3.org/1999/02/22-rdf-syntax-ns#nil') {
+    else if (p === 'http://www.w3.org/1999/02/22-rdf-syntax-ns#first' ||
+             p === 'http://www.w3.org/1999/02/22-rdf-syntax-ns#rest') {
+      if (o !== 'http://www.w3.org/1999/02/22-rdf-syntax-ns#nil') {
         var c = collections[s] = collections[s] || {};
         c[RDFE.uriLabel(p)] = o;
       }
     }
 
-    else if(p === 'http://www.w3.org/2002/07/owl#unionOf') {
+    else if (p === 'http://www.w3.org/2002/07/owl#unionOf') {
       // poor-man's owl:unionOf handling which simply converts it to a plain rdf collection
       collections[s] = { rest: o };
     }
 
-    else if(p === 'http://www.w3.org/2004/09/fresnel#showProperties' ||
-            p === 'http://www.w3.org/2004/09/fresnel#hideProperties' ||
-            p === 'http://www.w3.org/2004/09/fresnel#classLensDomain') {
+    else if (p === 'http://www.w3.org/2004/09/fresnel#showProperties' ||
+             p === 'http://www.w3.org/2004/09/fresnel#hideProperties' ||
+             p === 'http://www.w3.org/2004/09/fresnel#classLensDomain') {
       var f = findOrCreateLens(s);
       f[RDFE.uriLabel(p)] = o; // this will be resovled as a collection later
     }
@@ -612,28 +665,39 @@ RDFE.OntologyManager.prototype.parseOntologyFile = function(URI, params) {
 
   // map the cached values in labels, comments, and restrictions to the previously parsed classes and properties
   var finishParse = function() {
-    for(uri in self.ontologyClasses) {
+    for (uri in self.ontologyClasses) {
       var c = self.ontologyClasses[uri];
+
       c.label = c.label || labels[uri];
       c.comment = c.comment || comments[uri];
+      delete labels[uri];
+      delete comments[uri];
 
       var rm = restrictionMap[uri];
       if (rm) {
         for (var i = 0; i < rm.length; i++) {
           var r = restrictions[rm[i]];
           var rr = _.clone(r);
-          for(var j = 0; j < r.onProperty.length; j++) {
+          for (var j = 0; j < r.onProperty.length; j++) {
             c.restrictions[r.onProperty[j]] = rr;
           }
           delete rr.onProperty;
         }
+        delete restrictionMap[uri];
       }
     }
 
+    // cleanup restrictions
+    delete restrictionMap;
+    delete restrictions;
+
     for (uri in self.ontologyProperties) {
       var p = self.ontologyProperties[uri];
+
       p.label = p.label || labels[uri];
       p.comment = p.comment || comments[uri];
+      delete labels[uri];
+      delete comments[uri];
 
       // resolve the range in case it is a collection (owl:UnionOf)
       var range = _.clone(p.range);
@@ -650,8 +714,8 @@ RDFE.OntologyManager.prototype.parseOntologyFile = function(URI, params) {
       // we store the domain as a list
       var domain = _.clone(p.domain);
       p.domain = [];
-      for(var i = 0; i < domain.length; i++) {
-        if(!domain[i].URI && N3.Util.isBlank(domain[i])) {
+      for (var i = 0; i < domain.length; i++) {
+        if (!domain[i].URI && N3.Util.isBlank(domain[i])) {
           p.domain = _.union(p.domain, resolveCollection(domain[i]));
         }
         else {
@@ -660,42 +724,53 @@ RDFE.OntologyManager.prototype.parseOntologyFile = function(URI, params) {
       }
     }
 
-    for(uri in self.ontologies) {
-      // ontology URIs often are stripped of the trailing '#'
-      var o = self.ontologies[uri];
-      o.label = o.label || labels[uri] || labels[uri.substring(0, uri.length - 1)];
-      o.comment = o.comment || comments[uri] || comments[uri.substring(0, uri.length - 1)];
-    }
-
-    for(uri in self.individuals) {
-      var p = self.individuals[uri];
-      // TODO: use config.labelProps for individuals
-      p.label = p.label || labels[uri];
-      p.comment = p.comment || comments[uri];
-    }
-
     // assign lenses to classes
-    for(uri in lenses) {
+    for (uri in lenses) {
       var p = lenses[uri];
 
       p.label = p.label || labels[uri];
       p.comment = p.comment || comments[uri];
+      delete labels[uri];
+      delete comments[uri];
+
       p.showProperties = resolveCollection(p.showProperties);
       p.hideProperties = resolveCollection(p.hideProperties);
 
       self.fresnelLenses[uri] = p;
 
-      if(p.classLensDomain) {
+      if (p.classLensDomain) {
         findOrCreateClass(p.classLensDomain).fresnelLens = p;
       }
+    }
+
+    // cleanup collections
+    delete collections;
+
+    // cleanup lenses
+    delete lenses;
+
+    for (uri in self.ontologies) {
+      // ontology URIs often are stripped of the trailing '#'
+      var o = self.ontologies[uri];
+
+      o.label = o.label || labels[uri] || labels[uri.substring(0, uri.length - 1)];
+      o.comment = o.comment || comments[uri] || comments[uri.substring(0, uri.length - 1)];
+      delete labels[uri];
+      delete comments[uri];
+    }
+
+    for (uri in self.individuals) {
+      var p = self.individuals[uri];
+      // TODO: use config.labelProps for individuals
+      p.label = p.label || labels[uri];
+      p.comment = p.comment || comments[uri];
+      delete labels[uri];
+      delete comments[uri];
     }
 
     // cleanup locally
     delete labels;
     delete comments;
-    delete restrictionMap;
-    delete restrictions;
-    delete collections;
 
     $(self).trigger('changed', [ self ]);
   };
@@ -703,7 +778,7 @@ RDFE.OntologyManager.prototype.parseOntologyFile = function(URI, params) {
   // parse the ttl gotten from the URI
   var parseTripels = function(data, status, xhr) {
     var contentType = (xhr.getResponseHeader('content-type') || '').split(';')[0];
-    if(contentType.length > 0 && contentType.indexOf('turtle') < 0) {
+    if (contentType.length > 0 && contentType.indexOf('turtle') < 0) {
       var message = 'Only Turtle files can be parsed in the ontology manager.'
       console.error(message);
       if (params.error) {
@@ -711,16 +786,17 @@ RDFE.OntologyManager.prototype.parseOntologyFile = function(URI, params) {
       }
     }
     else {
+      console.log(URI);
       var parser = N3.Parser();
-      parser.parse(data, function(error, triple, prefixes) {
+      parser.parse(data, function(error, triple) {
         if (error) {
-          if(params.error) {
+          if (params.error) {
             params.error();
           }
         }
-        else if(!triple) {
+        else if (!triple) {
           finishParse();
-          if(params.success) {
+          if (params.success) {
             params.success();
           }
         }

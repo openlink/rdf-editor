@@ -10,6 +10,9 @@
     "fresnelFormats": true,
     "fresnelGroups": true,
     "preloadOntologies": [
+      "data/schema1.ttl",
+      "data/schema2.ttl",
+      "data/schema3.ttl",
       "data/rdf.ttl",
       "data/rdfs.ttl",
       "data/skos.ttl",
@@ -20,7 +23,6 @@
       "data/space.ttl",
       "data/void.ttl",
       "data/sioc.ttl",
-      "data/schema.ttl",
       "data/gr.ttl"
     ]
   },
