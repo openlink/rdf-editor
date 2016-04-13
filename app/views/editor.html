@@ -13,7 +13,7 @@
       <li role="separator" class="divider"></li>
       <li><a ng-click="downloadDocumentAs(); $event.preventDefault();" href="#" title="Download the current document"><span class="glyphicon glyphicon-save" aria-hidden="true"></span> Download</a></li>
       <li role="separator" class="divider"></li>
-      <li><a ng-click="importInto(); $event.preventDefault();" href="#" title="Input Content directly into current document"><span class="glyphicon glyphicon-import" aria-hidden="true"></span> Input Directly</a></li>
+      <li><a ng-click="importInto(); $event.preventDefault();" href="#" title="Input Content directly into current document"><span class="glyphicon glyphicon-import" aria-hidden="true"></span> Direct Input</a></li>
       <li role="separator" class="divider"></li>
       <li ng-show="valInstalled"><a ng-click="signDocument(); $event.preventDefault();" href="#" title="Sign/Resign the current document">Sign</a></li>
       <li><a ng-click="unsignDocument(); $event.preventDefault();" ng-disabled="!$rootScope.userProfile.config.valInstalled" href="#" title="Unsign the current document">Unsign</a></li>
@@ -28,7 +28,7 @@
   </div>
 </div>
 
-<div class="btn-group" role="group" style="width:50px">
+<div class="btn-group" role="group" style="width: 50px">
   <span us-spinner="{ length: 10, radius: 7, lines:10, width:2, shadow: true }" spinner-key="editor-spinner"></span>
 </div>
 
