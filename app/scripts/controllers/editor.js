@@ -119,7 +119,9 @@ angular.module('myApp.editor', ['ngRoute'])
           $scope.editor.updateView();
           $scope.$apply(function() {
             // this is essentially a no-op to force the ui to update the url view
-            $scope.mainDoc.url = url;
+            if ($routeParams.newDocument === "false") {
+              $scope.mainDoc.url = null;
+            }
           });
           showViewEditor();
           $scope.editor.docChanged();
@@ -204,6 +206,13 @@ angular.module('myApp.editor', ['ngRoute'])
       }
     }
 
+    if (!$scope.viewMode) {
+      $scope.viewMode = $scope.editor.config.defaultView;
+      if (!$scope.viewMode) {
+        $scope.viewMode = 'statements';
+      }
+    }
+
     if ($scope.viewMode === 'statements') {
       $scope.viewMode = 'triples';
     }
@@ -265,14 +274,14 @@ angular.module('myApp.editor', ['ngRoute'])
     }
 
     // and if we are told, then we create a new document by clearing the old one
-    else if ($routeParams.newDocument === "true") {
+    else if (($routeParams.newDocument === "true") || (($routeParams.newDocument === "false") && !$routeParams.uri)) {
       $scope.mainDoc.new(function() {
         toggleView();
         $scope.editor.saveSubject = null;
         $scope.editor.updateView();
         $timeout(function() {
           // Any code in here will automatically have an $scope.apply() run afterwards
-          if ($routeParams.uri) {
+          if (($routeParams.newDocument !== "false") && $routeParams.uri) {
             $scope.mainDoc.url = $routeParams.uri;
             $scope.mainDoc.io = getIO($routeParams.ioType, $routeParams.sparqlEndpoint, editor.config.options['ioTimeout']);
           }
@@ -296,8 +305,13 @@ angular.module('myApp.editor', ['ngRoute'])
               $timeout(function() {
                 // this is essentially a no-op to force the ui to update the url view
                 $scope.mainDoc.dirty = true;
-                $scope.mainDoc.url = $routeParams.uri;
-                $scope.mainDoc.io = getIO($routeParams.ioType, $routeParams.sparqlEndpoint, editor.config.options['ioTimeout']);
+                if ($routeParams.newDocument === "false") {
+                  $scope.mainDoc.url = null;
+                }
+                else {
+                  $scope.mainDoc.url = $routeParams.uri;
+                  $scope.mainDoc.io = getIO($routeParams.ioType, $routeParams.sparqlEndpoint, editor.config.options['ioTimeout']);
+                }
               });
               showViewEditor();
             }
@@ -307,6 +321,9 @@ angular.module('myApp.editor', ['ngRoute'])
       else {
         ioRetrieve($routeParams.uri, $routeParams.ioType, $routeParams.sparqlEndpoint, editor.config.options['ioTimeout']);
       }
+    }
+    else {
+      toggleView();
     }
     $.jStorage.deleteKey('rdfe:savedDocument');
 
