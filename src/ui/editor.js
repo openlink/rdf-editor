@@ -28,26 +28,37 @@ if (typeof String.prototype.startsWith != 'function') {
 if (!window.RDFE)
   window.RDFE = {};
 
-RDFE.Editor = function(config, documentTree, options) {
+RDFE.Editor = function(params, callback) {
   var self = this;
-  var options = $.extend({"initOntologyManager": true}, options);
+  var options = $.extend({"initOntologyManager": true}, params["options"]);
 
   // initialize our ontology manager
-  self.ontologyManager = new RDFE.OntologyManager(config.options);
+  self.ontologyManager = new RDFE.OntologyManager(params["config"].options);
   if (options.initOntologyManager === true) {
     self.ontologyManager.init();
   }
+  self.config = params["config"];
+  self.maxLength = self.config.options["maxLabelLength"];
+  self.spinner = 0;
 
   // create our main document
-  self.doc = new RDFE.Document(self.ontologyManager, config, documentTree);
+  var docParams = {
+    "config": params["config"],
+    "documentTree": params["documentTree"],
+    "ontologyManager": self.ontologyManager
+  };
+  new RDFE.Document(docParams, function(doc) {
+    self.doc = doc;
 
-  // store the config for future access
-  self.config = config;
-  $(self.doc).on('docChanged', function(e, doc) {
-    self.docChanged();
+    // store the config for future access
+    $(self.doc).on('docChanged', function(e, doc) {
+      self.docChanged();
+    });
+
+    if (callback) {
+      callback(self);
+    }
   });
-  self.maxLength = config.options["maxLabelLength"];
-  self.spinner = 0;
 };
 
 RDFE.Editor.prototype.namingSchema = function() {
@@ -230,19 +241,19 @@ RDFE.Editor.prototype.importForm = function() {
 
     var content = $form.find('#content').val();
     var contentType = $form.find('#contentType').val();
-    var success = function (s, results) {
+    var success = function (result) {
       $form.modal('hide');
       self.updateView();
       self.docChanged();
       $(self).trigger('rdf-editor-success', {
         "type": "rdf-editor-success",
-        "message": "Successfully imported turtle/JSON-LD content."
+        "message": "Successfully imported RDF data."
       });
     };
-    var fail = function (s, results) {
+    var fail = function (error) {
       $(self).trigger('rdf-editor-error', {
         "type": "rdf-editor-error",
-        "message": "Failed to import turtle/JSON-LD content. " + results
+        "message": "Failed to import RDF data. <br /> " + error.message
       });
     };
     self.doc.import(content, success, fail);
@@ -1047,8 +1058,8 @@ RDFE.Editor.prototype.objectsLookup = function (objectEditor, ranges) {
       var url = sources[i].url.format(encodeURIComponent(range));
       var success = function(graph, range, label) {
         return function (data, status, xhr) {
-          store.loadTurtle(data, graph, graph, null, function(success, result) {
-            if (success) {
+          store.loadTurtle(data, graph, graph, null, function(error, result) {
+            if (!error) {
               var sparql = 'select ?s from <{0}> where {?s a <{1}>}'.format(graph, range);
               store.execute(sparql, function (success, result) {
                 var nodeItems = [];

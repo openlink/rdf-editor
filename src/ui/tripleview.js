@@ -65,8 +65,8 @@
       };
 
       self.doc.listProperties(function (pl) {
-        self.doc.store.graph(self.doc.graph, function(success, g) {
-          if(success) {
+        self.doc.store.graph(self.doc.graph, function(error, g) {
+          if (!error) {
             container.empty();
             var $list = $(document.createElement('table')).addClass('table');
             container.append($list);

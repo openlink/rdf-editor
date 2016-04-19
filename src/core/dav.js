@@ -453,8 +453,8 @@ RDFE.IO.LDPFolder = (function() {
       '          optional { ?s posix:size ?size . } .  ' +
       '          optional { ?s posix:mtime ?mtime . }  ' +
       '        }',
-      function(status, result) {
-        if (!status) {
+      function(error, result) {
+        if (error) {
           fail('Failed to query LDP the container at ' + baseUrl + '.');
           return;
         }
@@ -489,8 +489,8 @@ RDFE.IO.LDPFolder = (function() {
           '          optional { ?s posix:mtime ?mtime }  ' +
           '          optional { ?s ldp:contains ?contains }  ' +
           '        }',
-          function(status, result) {
-            if (!status) {
+          function(error, result) {
+            if (error) {
               fail('Failed to query LDP the container at ' + baseUrl + '.');
               return;
             }
@@ -548,14 +548,15 @@ RDFE.IO.LDPFolder = (function() {
       }
       else {
         // look for LDP resources
-        var store = rdfstore.create();
-        store.load('text/turtle', data, 'urn:default', function() {
-          findLdpFiles(store, self.url, function(newFiles) {
-            self.children = newFiles;
-            if(success) {
-              success();
-            }
-          }, fail);
+        rdfstore.create(function(error, store) {
+          store.load('text/turtle', data, 'urn:default', function() {
+            findLdpFiles(store, self.url, function(newFiles) {
+              self.children = newFiles;
+              if(success) {
+                success();
+              }
+            }, fail);
+          });
         });
       }
     }).fail(function(jqXHR) {

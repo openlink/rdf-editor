@@ -19,28 +19,32 @@ angular.module('myApp.editor', ['ngRoute'])
     else {
       return $q(function(resolve, reject) {
         RDFEConfig.getConfig().then(function(config) {
-          editor = new RDFE.Editor(config, DocumentTree);
+          var params = {
+            "config": config,
+            "documentTree": DocumentTree
+          };
+          new RDFE.Editor(params, function(editor) {
+            // subscribe to editor events FIXME: a service does not seem like the best place to do this
+            $(editor).on('rdf-editor-success', function(e, d) {
+              Notification.notify('success', d.message);
+            }).on('rdf-editor-error', function(e, d) {
+              Notification.notify('error', d.message);
+            }).on('rdf-editor-start', function(e, d) {
+              editor.spinner++;
+              if (editor.spinner === 1) {
+                usSpinnerService.spin('editor-spinner');
+              }
+            }).on('rdf-editor-done', function(e, d) {
+              if (editor.spinner > 0) {
+                editor.spinner--;
+              }
+              if (editor.spinner === 0) {
+                usSpinnerService.stop('editor-spinner');
+              }
+            });
 
-          // subscribe to editor events FIXME: a service does not seem like the best place to do this
-          $(editor).on('rdf-editor-success', function(e, d) {
-            Notification.notify('success', d.message);
-          }).on('rdf-editor-error', function(e, d) {
-            Notification.notify('error', d.message);
-          }).on('rdf-editor-start', function(e, d) {
-            editor.spinner++;
-            if (editor.spinner === 1) {
-              usSpinnerService.spin('editor-spinner');
-            }
-          }).on('rdf-editor-done', function(e, d) {
-            if (editor.spinner > 0) {
-              editor.spinner--;
-            }
-            if (editor.spinner === 0) {
-              usSpinnerService.stop('editor-spinner');
-            }
+            resolve(editor);
           });
-
-          resolve(editor);
         });
       });
     }
@@ -103,53 +107,6 @@ angular.module('myApp.editor', ['ngRoute'])
     io.options.authFunction = authFunction;
 
     return io;
-  }
-
-  function ioRetrieve(url, ioType, sparqlEndpoint, ioTimeout) {
-    var io_rdfe;
-
-    try {
-      io_rdfe = getIO(ioType || 'http', sparqlEndpoint, ioTimeout);
-
-      // see if we have auth information cached
-      var loadUrl= function(url, io_rdfe) {
-        $scope.editor.toggleSpinner(true);
-        $scope.mainDoc.load(url, io_rdfe, function() {
-          toggleView();
-          $scope.editor.updateView();
-          $scope.$apply(function() {
-            // this is essentially a no-op to force the ui to update the url view
-            if ($routeParams.newDocument === "false") {
-              $scope.mainDoc.url = null;
-            }
-          });
-          showViewEditor();
-          $scope.editor.docChanged();
-          $scope.editor.toggleSpinner(false);
-        }, function(state, data, status, xhr) {
-          var msg = (state && state.message)? state.message: 'Failed to load document';
-          Notification.notify('error', msg);
-          $scope.editor.toggleSpinner(false);
-        });
-      };
-      if (DocumentTree.getAuthInfo) {
-        DocumentTree.getAuthInfo(url, false).then(function(authInfo) {
-          if (authInfo) {
-            io_rdfe.options.username = authInfo.username;
-            io_rdfe.options.password = authInfo.password;
-          }
-          loadUrl(url, io_rdfe);
-        });
-      }
-      else {
-        loadUrl(url, io_rdfe);
-      }
-    }
-    catch(e) {
-      Notification.notify('error', e);
-      return;
-    }
-
   }
 
   function toggleView() {
@@ -297,8 +254,8 @@ angular.module('myApp.editor', ['ngRoute'])
       var content = $.jStorage.get('rdfe:savedDocument', null);
       if (content) {
         $scope.mainDoc.store.clear(function() {
-          $scope.mainDoc.store.loadTurtle(content, $scope.mainDoc.graph, $scope.mainDoc.graph, null, function(success, r) {
-            if (success) {
+          $scope.mainDoc.store.loadTurtle(content, $scope.mainDoc.graph, $scope.mainDoc.graph, null, function(error) {
+            if (!error) {
               toggleView();
               $scope.editor.saveSubject = null;
               $scope.editor.updateView();
@@ -319,7 +276,50 @@ angular.module('myApp.editor', ['ngRoute'])
         });
       }
       else {
-        ioRetrieve($routeParams.uri, $routeParams.ioType, $routeParams.sparqlEndpoint, editor.config.options['ioTimeout']);
+        try {
+          var io = getIO($routeParams.ioType || 'http', $routeParams.sparqlEndpoint, editor.config.options['ioTimeout']);
+          var loadUrl= function(url, io) {
+            $scope.editor.toggleSpinner(true);
+            $scope.mainDoc.load(url, io, function() {
+              toggleView();
+              $scope.editor.updateView();
+              $scope.$apply(function() {
+                // this is essentially a no-op to force the ui to update the url view
+                if ($routeParams.newDocument === "false") {
+                  $scope.mainDoc.url = null;
+                }
+                else {
+                  $scope.mainDoc.url = $routeParams.uri;
+                  $scope.mainDoc.io = io;
+                }
+              });
+              showViewEditor();
+              $scope.editor.docChanged();
+              $scope.editor.toggleSpinner(false);
+            }, function(state, data, status, xhr) {
+              var msg = (state && state.message)? state.message: 'Failed to load document';
+              Notification.notify('error', msg);
+              $scope.editor.toggleSpinner(false);
+            });
+          };
+
+          // see if we have auth information cached
+          if (DocumentTree.getAuthInfo) {
+            DocumentTree.getAuthInfo($routeParams.uri, false).then(function(authInfo) {
+              if (authInfo) {
+                io_rdfe.options.username = authInfo.username;
+                io_rdfe.options.password = authInfo.password;
+              }
+              loadUrl($routeParams.uri, io);
+            });
+          }
+          else {
+            loadUrl($routeParams.uri, io);
+          }
+        }
+        catch(e) {
+          Notification.notify('error', e);
+        }
       }
     }
     else {

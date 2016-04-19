@@ -99,7 +99,7 @@
           '  </div>' +
           '</div>\n');
 
-        ontologiesSelect = $('#ontology').ontoBox({ "ontoManager": self.ontologyManager });
+        ontologiesSelect = $('#ontology').ontoBox({ "ontologyManager": self.ontologyManager });
         ontologiesSelect.on('changed', classesList);
         ontologiesSelect.sel.focus();
 

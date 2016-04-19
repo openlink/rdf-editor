@@ -563,15 +563,13 @@ RDFE.OntologyManager.prototype.parseOntologyFile = function(URI, params) {
         case 'http://www.w3.org/2004/09/fresnel#Lens':
           findOrCreateLens(s);
           break;
-
-        default:
-          // any other type is an individual to us
-          var indi = findOrCreateIndividual(s),
-              oc = findOrCreateClass(o);
-          indi.type = oc;
-          oc.individuals[s] = indi;
-          break;
       }
+
+      // any other type is an individual to us
+      var individual = findOrCreateIndividual(s),
+          individualClass = findOrCreateClass(o);
+      individual.type = individualClass;
+      individualClass.individuals[s] = individual;
     }
 
     else if (p === 'http://www.w3.org/2000/01/rdf-schema#label') {
@@ -786,7 +784,7 @@ RDFE.OntologyManager.prototype.parseOntologyFile = function(URI, params) {
       }
     }
     else {
-      console.log(URI);
+      // console.log(URI);
       var parser = N3.Parser();
       parser.parse(data, function(error, triple) {
         if (error) {

@@ -272,9 +272,11 @@
     };
 
     c.prototype.addOntologies = function(ontologies) {
+      var self = this;
+
       for (var i = 0; i < ontologies.length; i++) {
         if (!_.find(self.ontologies, function(o){return o.URI === ontologies[i].URI})) {
-          this.table.bootstrapTable('append', ontologies[i]);
+          self.table.bootstrapTable('append', ontologies[i]);
         }
       }
       self.ontologies = ontologies;
