@@ -110,9 +110,9 @@ angular.module('myApp.editor', ['ngRoute'])
   }
 
   function toggleView() {
-    var s = $routeParams["statement:subject"];
-    var p = $routeParams["statement:predicate"];
-    var o = $routeParams["statement:object"];
+    var s = $routeParams["triple:subject"];
+    var p = $routeParams["triple:predicate"];
+    var o = $routeParams["triple:object"];
     var e = $routeParams["statement:entity"];
     var a = $routeParams["statement:attribute"];
     var v = $routeParams["statement:value"];
@@ -170,30 +170,18 @@ angular.module('myApp.editor', ['ngRoute'])
       }
     }
 
-    if ($scope.viewMode === 'statements') {
-      $scope.viewMode = 'triples';
-    }
-    else if ($scope.viewMode === 'entities') {
-      $scope.viewMode = 'subjects';
-    }
-    else if ($scope.viewMode === 'attributes') {
-      $scope.viewMode = 'predicates';
-    }
-    else if ($scope.viewMode === 'values') {
-      $scope.viewMode = 'objects';
-    }
     $scope.editor.toggleView($scope.viewMode)
   }
 
   function showViewEditor() {
     var newStatement = $routeParams["newStatement"];
-    var s = $routeParams["statement:subject"];
-    var p = $routeParams["statement:predicate"];
-    var o = $routeParams["statement:object"];
+    var s = $routeParams["triple:subject"];
+    var p = $routeParams["triple:predicate"];
+    var o = $routeParams["triple:object"];
     var e = $routeParams["statement:entity"];
     var a = $routeParams["statement:attribute"];
     var v = $routeParams["statement:value"];
-    var view = $routeParams["view"];
+    var view = $scope.viewMode;
 
     if      ((s || e) && (!view || view === 'subjects' || view === 'entities')) {
       s = $scope.ontologyManager.uriDenormalize(s || e);

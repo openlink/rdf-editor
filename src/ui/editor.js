@@ -176,7 +176,7 @@ RDFE.Editor.prototype.toggleView = function(view) {
   var self = this;
 
   if (view !== self._currentView) {
-    if (view === 'subjects') {
+    if ((view === 'subjects') || (view === 'entities')) {
       if (self.config.options['useEntityEditor'] === true) {
         self.createEntityList();
       }
@@ -185,11 +185,11 @@ RDFE.Editor.prototype.toggleView = function(view) {
       }
       self._currentView = view;
     }
-    else if (view === 'predicates') {
+    else if ((view === 'predicates') || ((view === 'attributes'))) {
       self.createPredicateList();
       self._currentView = view;
     }
-    else if (view === 'objects') {
+    else if ((view === 'objects') || (view === 'values')) {
       self.createObjectList();
       self._currentView = view;
     }
@@ -206,7 +206,7 @@ RDFE.Editor.prototype.toggleView = function(view) {
 RDFE.Editor.prototype.updateView = function() {
   var self = this;
 
-  if (self._currentView === 'subjects') {
+  if ((self._currentView === 'subjects') || (self._currentView === 'entities')) {
     if (self.config.options['useEntityEditor'] === true) {
       self.createEntityList();
     }
@@ -214,10 +214,10 @@ RDFE.Editor.prototype.updateView = function() {
       self.createSubjectList();
     }
   }
-  else if (self._currentView === 'predicates') {
+  else if ((self._currentView === 'predicates') || (self._currentView === 'attributes')) {
     self.createPredicateList();
   }
-  else if (self._currentView === 'objects') {
+  else if ((self._currentView === 'objects') || (self._currentView === 'values')) {
     self.createObjectList();
   }
   else {
