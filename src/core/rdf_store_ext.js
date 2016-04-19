@@ -25,14 +25,14 @@
  * @return The abbreviated CURI string or a @p null if no prefix could be found to match the URI.
  */
 rdfstore.Store.prototype.uriToCuri = function(uri) {
-    var x = node.toString();
-    for (prefix in this.rdf.prefixes) {
-        var ns = this.rdf.prefixes[prefix];
-        if(ns.length > 0 && x.startsWith(ns)) {
-            return x.replace(ns, prefix + ':');
-        }
+  var x = node.toString();
+  for (prefix in this.rdf.prefixes) {
+    var ns = this.rdf.prefixes[prefix];
+    if(ns.length > 0 && x.startsWith(ns)) {
+        return x.replace(ns, prefix + ':');
     }
-    return null;
+  }
+  return null;
 };
 
 /**
@@ -41,11 +41,12 @@ rdfstore.Store.prototype.uriToCuri = function(uri) {
  * @return The full URI if the prefix could be found, @p null otherwise.
  */
 rdfstore.Store.prototype.curiToUri = function(curi) {
-    return this.rdf.resolve(curi);
+  return this.rdf.resolve(curi);
 };
 
 rdfstore.Store.prototype.parseLiteral = function(literalString) {
     var parts = literalString.lastIndexOf("@");
+
     if(parts!=-1 && literalString[parts-1]==='"' && literalString.substring(parts, literalString.length).match(/^@[a-zA-Z\-]+$/g)!=null) {
         var value = literalString.substring(1,parts-1);
         var lang = literalString.substring(parts+1, literalString.length);
@@ -65,10 +66,11 @@ rdfstore.Store.prototype.parseLiteral = function(literalString) {
 rdfstore.Store.prototype.termToNode = function(term) {
   if (term.token == "literal")
     return this.rdf.createLiteral(term.value, term.lang, term.type);
-  else if(term.token == "uri")
+
+  if(term.token == "uri")
     return this.rdf.createNamedNode(term.value);
-  else
-    return this.rdf.createNamedNode(term.value); // FIXME: blank nodes are so much trouble. We need to find a way to handle them properly
+
+  return this.rdf.createNamedNode(term.value); // FIXME: blank nodes are so much trouble. We need to find a way to handle them properly
 };
 
 rdfstore.Store.prototype.rdf.api.RDFNode.prototype.localeCompare = function(compareNode, locales, options) {
@@ -83,52 +85,37 @@ rdfstore.Store.prototype.loadTurtle = function(data, graph, baseUri, knownPrefix
   var bns = {};
 
   var convertNode = function(node) {
-    if(!node) {
+    if (!node) {
       return self.rdf.createNamedNode(baseUri);
     }
-    else if(N3.Util.isLiteral(node)) {
+
+    if (N3.Util.isLiteral(node)) {
       // rdfstore treats the empty string as a valid language
       var l = N3.Util.getLiteralLanguage(node);
-      if(l == '')
+      if (l == '') {
         l = null;
+      }
       return self.rdf.createLiteral(N3.Util.getLiteralValue(node), l, N3.Util.getLiteralType(node));
     }
-    else if(N3.Util.isBlank(node)) {
+
+    if (N3.Util.isBlank(node)) {
       var bn = bns[node];
-      if(!bn) {
+      if (!bn) {
         bn = self.rdf.createBlankNode();
         bns[node] = bn;
       }
       return bn;
     }
-    else {
-      return self.rdf.createNamedNode(node);
-    }
+
+    return self.rdf.createNamedNode(node);
   };
 
   var convertTriple = function(triple) {
     return self.rdf.createTriple(convertNode(triple.subject), convertNode(triple.predicate), convertNode(triple.object));
   };
 
-  var addTriples = function(triples) {
-    if(triples.length) {
-      try {
-        self.insert(self.rdf.createGraph(triples), graph, function(s, r) {
-          if(!s) {
-            if(callback)
-              callback(false, 'Failed to add new triple to store: ' + r.toString());
-          }
-        });
-      }
-      catch(e) {
-        if(callback)
-          callback(false, 'Failed to add new triple to store: ' + e.toString());
-      }
-    }
-  };
-
-  var cnt = 0;
   var triples = [];
+  var blanks = [];
   parser.parse(data, function(error, triple, prefixes) {
     if (error) {
       if (error.message.startsWith('Undefined prefix') && knownPrefixes) {
@@ -142,27 +129,52 @@ rdfstore.Store.prototype.loadTurtle = function(data, graph, baseUri, knownPrefix
         }
       }
       if (callback) {
-        callback(false, error);
+        callback(error);
       }
       return;
     }
-    if (triple == null) {
-      addTriples(triples);
-
-      // exec success function
-      if (callback) {
-        callback(true, cnt);
-      }
+    if (triple === null) {
+      self.insert(self.rdf.createGraph(triples), graph, function() {
+        if (blanks.length) {
+          try {
+            self.insert(self.rdf.createGraph(blanks), graph, function(error) {
+              if (error) {
+                // exec callback (error) function
+                if (callback) {
+                  callback(error);
+                }
+              }
+              else {
+                // exec callback (success) function
+                if (callback) {
+                  callback(null);
+                }
+              }
+            });
+          }
+          catch(e) {
+            // exec callback (error) function
+            if (callback) {
+              callback(e);
+            }
+          }
+        }
+        else {
+          // exec callback (success) function
+          if (callback) {
+            callback(null);
+          }
+        }
+      });
     }
     else {
-      var t = convertTriple(triple);
-      if (t.subject.interfaceName == 'BlankNode' || t.object.interfaceName == "BlankNode") {
-        triples.push(t);
+      var triple = convertTriple(triple);
+      if (triple.subject.interfaceName === 'BlankNode' || triple.object.interfaceName === "BlankNode") {
+        blanks.push(triple);
       }
       else {
-        self.insert(self.rdf.createGraph([t]), graph, function() {});
+        triples.push(triple);
       }
-      cnt++;
     }
   });
 };
