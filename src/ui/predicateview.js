@@ -56,6 +56,9 @@
             '<a class="edit ml10" href="javascript:void(0)" title="Edit or add a new '+RDFE.Utils.namingSchemaLabel('s', self.editor.namingSchema(), false, true)+' and '+RDFE.Utils.namingSchemaLabel('o', self.editor.namingSchema(), false, true)+' pairs associated with this '+RDFE.Utils.namingSchemaLabel('p', self.editor.namingSchema(), false, true)+'">',
             '  <i class="glyphicon glyphicon-edit"></i>',
             '</a>',
+            '<a class="dereference ml10" href="javascript:void(0)" title="Dereference this '+RDFE.Utils.namingSchemaLabel('p', self.editor.namingSchema(), true, true)+'">',
+            '  <i class="glyphicon glyphicon-link"></i>',
+            '</a>',
             '<a class="remove ml10" href="javascript:void(0)" title="Remove all '+RDFE.Utils.namingSchemaLabel('spo', self.editor.namingSchema(), true, true)+' associated with this '+RDFE.Utils.namingSchemaLabel('p', self.editor.namingSchema(), false, true)+'">',
             '  <i class="glyphicon glyphicon-remove"></i>',
             '</a>'
@@ -125,6 +128,10 @@
             "events": {
               'click .edit': function(e, value, row, index) {
                 self.editFct(row);
+              },
+              'click .dereference': function(e, value, row, index) {
+                var dereference = self.editor.dereference();
+                dereference(row.uri);
               },
               'click .remove': function(e, value, row, index) {
                 deleteFct(row);
