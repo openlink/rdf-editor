@@ -245,7 +245,7 @@
       ).show();
 
       predicateEditor = self.objectFormContainer.find('select[name="predicate"]').propertyBox({
-        "ontoManager": self.editor.ontologyManager
+        "ontologyManager": self.editor.ontologyManager
       });
 
       var subjectEditor = self.objectFormContainer.find('input[name="subject"]');

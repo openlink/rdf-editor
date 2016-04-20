@@ -170,7 +170,7 @@
       });
 
       var predicateEditor = container.find('select[name="predicate"]').propertyBox({
-        "ontoManager": self.editor.ontologyManager
+        "ontologyManager": self.editor.ontologyManager
       });
       if (self.predicate) {
         predicateEditor.setPropertyURI(self.predicate.uri);

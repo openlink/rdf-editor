@@ -24,11 +24,11 @@
     var self = this;
 
     self.options = $.extend({}, PropertyBox.defaults, options);
-    self.options.ontoManager = self.options.ontoManager || new RDFE.OntologyManager();
+    self.options.ontologyManager = self.options.ontologyManager || new RDFE.OntologyManager();
 
     self.mainElement = elem;
 
-    $(self.options.ontoManager).on('changed', function(e, om, onto) {
+    $(self.options.ontologyManager).on('changed', function(e, om, onto) {
       self.updateOptions();
     });
 
@@ -41,7 +41,7 @@
         $(self).trigger('changed', self.sel.options[value]);
       },
       createProperty: function(input, create) {
-        return self.options.ontoManager.ontologyPropertyByURI(self.options.ontoManager.uriDenormalize(input), create);
+        return self.options.ontologyManager.ontologyPropertyByURI(self.options.ontologyManager.uriDenormalize(input), create);
       },
       create: function(input, cb) {
         // search for and optionally create a new property
@@ -61,11 +61,11 @@
           cb(property);
         }
         else {
-          var url = self.options.ontoManager.ontologyDetermine(input);
+          var url = self.options.ontologyManager.ontologyDetermine(input);
           if (!url) {
-            url = self.options.ontoManager.prefixes[input] || input;
+            url = self.options.ontologyManager.prefixes[input] || input;
           }
-          self.options.ontoManager.parseOntologyFile(url, {
+          self.options.ontologyManager.parseOntologyFile(url, {
             "success": function() {
               cb(that.settings.createProperty(input, true));
             },
@@ -75,11 +75,11 @@
               console.log(message);
               bootbox.confirm(message + '. Do you want to create new property?', function(result) {
                 if (result) {
-                  var ontology = self.options.ontoManager.ontologyByURI(url);
+                  var ontology = self.options.ontologyManager.ontologyByURI(url);
                   if (!ontology) {
-                    var ontology = self.options.ontoManager.ontologyByURI(url);
+                    var ontology = self.options.ontologyManager.ontologyByURI(url);
                     if (!ontology) {
-                      ontology = new RDFE.Ontology(self.options.ontoManager, url);
+                      ontology = new RDFE.Ontology(self.options.ontologyManager, url);
                     }
                     cb(that.settings.createProperty(input, true));
                   }
@@ -109,7 +109,7 @@
         'option_create': function(data, escape) {
           var url = data.input;
           url = RDFE.Utils.trim(RDFE.Utils.trim(url, '<'), '>');
-          url = self.options.ontoManager.uriDenormalize(url);
+          url = self.options.ontologyManager.uriDenormalize(url);
           if (url != data.input)
             return '<div class="create">Add <strong>' + escape(data.input) + '</strong> <small>(' + escape(url) + ')</small>&hellip;</div>';
           else
@@ -140,7 +140,7 @@
   };
 
   PropertyBox.defaults = {
-    'ontoManager': null,
+    'ontologyManager': null,
     'ontology': null
   };
 
@@ -157,7 +157,7 @@
       list = this.options.ontology.allProperties();
     }
     else {
-      list = this.options.ontoManager.allProperties();
+      list = this.options.ontologyManager.allProperties();
     }
     return list;
   };
@@ -175,10 +175,10 @@
   PropertyBox.prototype.setPropertyURI = function(uri) {
     // console.log('PropertyBox.setPropertyURI', uri);
     if (uri) {
-      var u = this.options.ontoManager.uriDenormalize(uri);
+      var u = this.options.ontologyManager.uriDenormalize(uri);
       u = RDFE.Utils.trim(RDFE.Utils.trim(u, '<'), '>');
       if (!this.sel.options[u]) {
-        this.sel.addOption(this.options.ontoManager.ontologyPropertyByURI(u, true));
+        this.sel.addOption(this.options.ontologyManager.ontologyPropertyByURI(u, true));
       }
       this.sel.setValue(u);
     }

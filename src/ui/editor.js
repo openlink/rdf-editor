@@ -114,7 +114,7 @@ RDFE.Editor.prototype.editablePredicate = function(editor) {
       "mode": "inline",
       "type": "propertyBox",
       "propertyBox": {
-        "ontoManager": editor.ontologyManager,
+        "ontologyManager": editor.ontologyManager,
         "dereferenceLink": editor.dereference()
       },
       "value": triple[field].nominalValue
@@ -546,7 +546,7 @@ RDFE.Editor.prototype.editTriple = function(s, p, o) {
   }
 
   var predicateEditor = self.formContainer.find('select[name="predicate"]').propertyBox({
-    "ontoManager": self.ontologyManager
+    "ontologyManager": self.ontologyManager
   }).on('changed', function(e, p) {
     self.changeObjectType(p, objectEditor);
   });
@@ -652,7 +652,7 @@ RDFE.Editor.prototype.createNewEntityEditor = function(forcedType) {
       '  </div> ' +
       '</div></div></div>\n');
 
-    ontologiesSelect = $('#ontology').ontoBox({ "ontoManager": self.ontologyManager });
+    ontologiesSelect = $('#ontology').ontoBox({ "ontologyManager": self.ontologyManager });
     ontologiesSelect.on('changed', classesList);
     ontologiesSelect.sel.focus();
 

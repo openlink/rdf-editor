@@ -25,10 +25,10 @@
 
   RDFE.EntityEditor = (function() {
     // constructor
-    var c = function(doc, ontoMan) {
+    var c = function(doc, ontologyManager) {
       this.doc = doc;
       this.namingSchema = doc.config.options[doc.config.options["namingSchema"]];
-      this.ontologyManager = ontoMan;
+      this.ontologyManager = ontologyManager;
     };
 
     // custom form which allows adding new properties
@@ -70,7 +70,7 @@
             .append(cnclBtn);
 
           ps = ps.propertyBox({
-            "ontoManager": self.model.doc.ontologyManager
+            "ontologyManager": self.model.doc.ontologyManager
           });
 
           cnclBtn.click(function(e) {

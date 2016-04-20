@@ -384,7 +384,7 @@
       objectEditors.push(objectEditor);
 
       var predicateEditor = self.subjectFormContainer.find('select[name="predicate"]').propertyBox({
-        "ontoManager": self.editor.ontologyManager
+        "ontologyManager": self.editor.ontologyManager
       }).on('changed', function(e, predicate) {
         for (var i = 0; i < objectEditors.length; i++) {
           var objectEditor = objectEditors[i];
