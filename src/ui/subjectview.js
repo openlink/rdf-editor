@@ -25,9 +25,7 @@
 
   RDFE.SubjectView = (function() {
     // constructor
-    var c = function(doc, ontologyManager, editor, params) {
-      this.doc = doc;
-      this.ontologyManager = ontologyManager;
+    var c = function(editor, params) {
       this.editor = editor;
       this.editFct = params.editFct;
     };
@@ -50,7 +48,7 @@
     c.prototype.render = function(container, callback) {
       var self = this;
 
-      self.doc.listSubjects(function(subjects) {
+      self.editor.doc.listSubjects(function(subjects) {
         var subjectListActionsFormatter = function(value, row, index) {
           return [
             '<a class="edit ml10" href="javascript:void(0)" title="Edit or add a new '+RDFE.Utils.namingSchemaLabel('p', self.editor.namingSchema(), false, true)+' name and '+RDFE.Utils.namingSchemaLabel('o', self.editor.namingSchema(), false, true)+' pairs associated with this '+RDFE.Utils.namingSchemaLabel('s', self.editor.namingSchema(), false, true)+'">',
@@ -99,7 +97,7 @@
             "formatter": self.editor.countFormatter
           }, {
             "field": 'actions',
-            "title": '<button class="add btn btn-default" title="Click to create a new '+RDFE.Utils.namingSchemaLabel('s', self.editor.namingSchema(), false, true)+'">' + '<span class="glyphicon glyphicon-plus" aria-hidden="true"></span> New</button>',
+            "title": '<button class="add btn btn-default btn-sm" title="Click to create a new '+RDFE.Utils.namingSchemaLabel('s', self.editor.namingSchema(), false, true)+'">' + '<span class="glyphicon glyphicon-plus" aria-hidden="true"></span> New</button>',
             "align": 'center',
             "valign": 'middle',
             "class": 'rdfe-small-column',
@@ -114,7 +112,7 @@
                 dereference(row.uri);
               },
               'click .remove': function(e, value, row, index) {
-                self.doc.deleteBySubject (row.uri, function() {
+                self.editor.doc.deleteBySubject (row.uri, function() {
                   $list.bootstrapTable('remove', {
                     field: 'uri',
                     values: [row.uri]
@@ -164,7 +162,7 @@
     c.prototype.updateSubject = function(uri) {
       var self = this;
 
-      self.doc.getSubject(uri, function(subject) {
+      self.editor.doc.getSubject(uri, function(subject) {
         var ndx = self.subjects.findIndex(function(item, index, items) {
           return (item.uri === uri);
         });

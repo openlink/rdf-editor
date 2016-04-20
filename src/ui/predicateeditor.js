@@ -27,8 +27,6 @@
     // constructor
     var c = function(editor, predicate) {
       this.editor = editor;
-      this.doc = editor.doc;
-      this.ontologyManager = editor.ontologyManager;
       this.predicate = predicate;
     };
 
@@ -83,7 +81,7 @@
             "formatter": self.editor.nodeFormatter
           }, {
             "field": 'actions',
-            "title": '<button class="add btn btn-default" title="Add Relation" style="display: none;"><span class="glyphicon glyphicon-plus" aria-hidden="true"></span> New</button>',
+            "title": '<button class="add btn btn-default btn-sm" title="Add Relation" style="display: none;"><span class="glyphicon glyphicon-plus" aria-hidden="true"></span> New</button>',
             "align": 'center',
             "valign": 'middle',
             "class": 'rdfe-small-column',
@@ -98,7 +96,7 @@
             },
             "events": {
               'click .remove': function (e, value, row, index) {
-                self.doc.deleteTriple(row, function() {
+                self.editor.doc.deleteTriple(row, function() {
                   $list.bootstrapTable('remove', {
                     field: 'id',
                     values: [row.id]
@@ -131,26 +129,26 @@
         var newNode = newValue;
 
         if (field === 'predicate') {
-          newNode = self.doc.store.rdf.createNamedNode(newValue);
+          newNode = self.editor.doc.store.rdf.createNamedNode(newValue);
         }
         if (newValue.toStoreNode) {
-          newNode = newValue.toStoreNode(self.doc.store);
+          newNode = newValue.toStoreNode(self.editor.doc.store);
         }
         else if (field != 'object' ||
           triple.object.interfaceName == 'NamedNode') {
-          newNode = self.doc.store.rdf.createNamedNode(newValue);
+          newNode = self.editor.doc.store.rdf.createNamedNode(newValue);
         }
         else if (triple.object.datatype == 'http://www.w3.org/2001/XMLSchema#dateTime') {
           var d = new Date(newValue);
-          newNode = self.doc.store.rdf.createLiteral(d.toISOString(), triple.object.language, triple.object.datatype);
+          newNode = self.editor.doc.store.rdf.createLiteral(d.toISOString(), triple.object.language, triple.object.datatype);
         }
         else {
-          newNode = self.doc.store.rdf.createLiteral(newValue, triple.object.language, triple.object.datatype);
+          newNode = self.editor.doc.store.rdf.createLiteral(newValue, triple.object.language, triple.object.datatype);
         }
 
-        var newTriple = self.doc.store.rdf.createTriple(triple.subject, triple.predicate, triple.object);
+        var newTriple = self.editor.doc.store.rdf.createTriple(triple.subject, triple.predicate, triple.object);
         newTriple[field] = newNode;
-        self.doc.updateTriple(triple, newTriple, function(success) {
+        self.editor.doc.updateTriple(triple, newTriple, function(success) {
           // do nothing
         }, function(msg) {
           $(self).trigger('rdf-editor-error', { message: 'Failed to update triple in document: ' + msg });
@@ -172,7 +170,7 @@
       });
 
       var predicateEditor = container.find('select[name="predicate"]').propertyBox({
-        "ontoManager": self.ontologyManager
+        "ontoManager": self.editor.ontologyManager
       });
       if (self.predicate) {
         predicateEditor.setPropertyURI(self.predicate.uri);
@@ -185,7 +183,7 @@
 
       predicateEditor.sel.on('change', function(predicateUri) {
         if (predicateUri) {
-          self.doc.getPredicate(predicateUri, function (predicate) {
+          self.editor.doc.getPredicate(predicateUri, function (predicate) {
             self.predicateView.addPredicate(predicate);
 
             self.predicate = predicate;
@@ -256,8 +254,8 @@
       // Set focus
       subjectEditor.focus();
 
-      var property = self.ontologyManager.ontologyProperties[self.predicate.uri];
-      var objectEditor = self.predicateFormContainer.find('input[name="object"]').rdfNodeEditor(self.doc.config.options);
+      var property = self.editor.ontologyManager.ontologyProperties[self.predicate.uri];
+      var objectEditor = self.predicateFormContainer.find('input[name="object"]').rdfNodeEditor(self.editor.doc.config.options);
       self.editor.changeObjectType(property, objectEditor);
 
       self.predicateFormContainer.find('button.predicate-action-new-cancel').click(function(e) {
@@ -278,8 +276,8 @@
         if (!RDFE.Validate.check(objectEditor.getField(), o.value))
           return;
 
-        var t = self.doc.store.rdf.createTriple(self.doc.store.rdf.createNamedNode(s), self.doc.store.rdf.createNamedNode(p), o.toStoreNode(self.doc.store));
-        self.doc.addTriples([t], function() {
+        var t = self.editor.doc.store.rdf.createTriple(self.editor.doc.store.rdf.createNamedNode(s), self.editor.doc.store.rdf.createNamedNode(p), o.toStoreNode(self.editor.doc.store));
+        self.editor.doc.addTriples([t], function() {
           self.addTriple(t);
           $(self).trigger('rdf-editor-success', {
             "type": "triple-insert-success",

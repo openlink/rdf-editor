@@ -25,9 +25,7 @@
 
   RDFE.TripleView = (function() {
     // constructor
-    var c = function(doc, ontologyManager, editor) {
-      this.doc = doc;
-      this.ontologyManager = ontologyManager;
+    var c = function(editor) {
       this.editor = editor;
     };
 
@@ -38,34 +36,34 @@
         var newNode = newValue;
 
         if (field === 'predicate') {
-          newNode = self.doc.store.rdf.createNamedNode(newValue);
+          newNode = self.editor.doc.store.rdf.createNamedNode(newValue);
         }
         if (newValue.toStoreNode) {
-          newNode = newValue.toStoreNode(self.doc.store);
+          newNode = newValue.toStoreNode(self.editor.doc.store);
         }
         else if (field != 'object' ||
           triple.object.interfaceName == 'NamedNode') {
-          newNode = self.doc.store.rdf.createNamedNode(newValue);
+          newNode = self.editor.doc.store.rdf.createNamedNode(newValue);
         }
         else if (triple.object.datatype == 'http://www.w3.org/2001/XMLSchema#dateTime') {
           var d = new Date(newValue);
-          newNode = self.doc.store.rdf.createLiteral(d.toISOString(), triple.object.language, triple.object.datatype);
+          newNode = self.editor.doc.store.rdf.createLiteral(d.toISOString(), triple.object.language, triple.object.datatype);
         }
         else {
-          newNode = self.doc.store.rdf.createLiteral(newValue, triple.object.language, triple.object.datatype);
+          newNode = self.editor.doc.store.rdf.createLiteral(newValue, triple.object.language, triple.object.datatype);
         }
 
-        var newTriple = self.doc.store.rdf.createTriple(triple.subject, triple.predicate, triple.object);
+        var newTriple = self.editor.doc.store.rdf.createTriple(triple.subject, triple.predicate, triple.object);
         newTriple[field] = newNode;
-        self.doc.updateTriple(triple, newTriple, function(success) {
+        self.editor.doc.updateTriple(triple, newTriple, function(success) {
           // do nothing
         }, function(msg) {
           $(self).trigger('rdf-editor-error', { message: 'Failed to update triple in document: ' + msg });
         });
       };
 
-      self.doc.listProperties(function (pl) {
-        self.doc.store.graph(self.doc.graph, function(error, g) {
+      self.editor.doc.listProperties(function (pl) {
+        self.editor.doc.store.graph(self.editor.doc.graph, function(error, g) {
           if (!error) {
             container.empty();
             var $list = $(document.createElement('table')).addClass('table');
@@ -112,7 +110,7 @@
                 "formatter": self.editor.nodeFormatter
               }, {
                 "field": 'actions',
-                "title": '<button class="add btn btn-default" title="Add a new statement to the document"><span class="glyphicon glyphicon-plus" aria-hidden="true"></span> New</button>',
+                "title": '<button class="add btn btn-default btn-sm" title="Add a new statement to the document"><span class="glyphicon glyphicon-plus" aria-hidden="true"></span> New</button>',
                 "align": 'center',
                 "valign": 'middle',
                 "class": 'rdfe-small-column',
@@ -128,7 +126,7 @@
                 "events": {
                   'click .remove': function (e, value, row, index) {
                     var triple = row;
-                    self.doc.deleteTriple(triple, function() {
+                    self.editor.doc.deleteTriple(triple, function() {
                       $list.bootstrapTable('remove', {
                         field: 'id',
                         values: [row.id]

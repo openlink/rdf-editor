@@ -480,7 +480,7 @@ RDFE.Editor.prototype.createTripleList = function() {
   self.toggleSpinner(true);
 
   if (!self.tripleView) {
-    self.tripleView = new RDFE.TripleView(self.doc, self.ontologyManager, self);
+    self.tripleView = new RDFE.TripleView(self);
     $(self.tripleView).on('rdf-editor-error', function(e, d) {
       $(self).trigger('rdf-editor-error', d);
     }).on('rdf-editor-success', function(e, d) {
@@ -833,7 +833,7 @@ RDFE.Editor.prototype.createSubjectList = function() {
   self.toggleSpinner(true);
 
   if (!self.subjectView) {
-    self.subjectView = new RDFE.SubjectView(self.doc, self.ontologyManager, self, {
+    self.subjectView = new RDFE.SubjectView(self, {
       editFct: function(subject) {
         self.editSubject.call(self, subject);
       }
@@ -891,7 +891,7 @@ RDFE.Editor.prototype.createPredicateList = function() {
   self.toggleSpinner(true);
 
   if (!self.predicateView) {
-    self.predicateView = new RDFE.PredicateView(self.doc, self.ontologyManager, self, {
+    self.predicateView = new RDFE.PredicateView(self, {
       editFct: function(predicate) {
         self.editPredicate.call(self, predicate);
       }
@@ -954,7 +954,7 @@ RDFE.Editor.prototype.createObjectList = function() {
   self.toggleSpinner(true);
 
   if (!self.objectView) {
-    self.objectView = new RDFE.ObjectView(self.doc, self.ontologyManager, self, {
+    self.objectView = new RDFE.ObjectView(self, {
       editFct: function(object) {
         self.editObject.call(self, object);
       }

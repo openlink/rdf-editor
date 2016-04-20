@@ -27,8 +27,6 @@
     // constructor
     var c = function(editor, object) {
       this.editor = editor;
-      this.doc = editor.doc;
-      this.ontologyManager = editor.ontologyManager;
       this.object = object;
     };
 
@@ -85,7 +83,7 @@
             "formatter": self.editor.nodeFormatter
           }, {
             "field": 'actions',
-            "title": '<button class="add btn btn-default" title="Add Relation" style="display: none;"><span class="glyphicon glyphicon-plus" aria-hidden="true"></span> New</button>',
+            "title": '<button class="add btn btn-default btn-sm" title="Add Relation" style="display: none;"><span class="glyphicon glyphicon-plus" aria-hidden="true"></span> New</button>',
             "align": 'center',
             "valign": 'middle',
             "class": 'rdfe-small-column',
@@ -100,7 +98,7 @@
             },
             "events": {
               'click .remove': function (e, value, row, index) {
-                self.doc.deleteTriple(row, function() {
+                self.editor.doc.deleteTriple(row, function() {
                   $list.bootstrapTable('remove', {
                     field: 'id',
                     values: [row.id]
@@ -133,15 +131,15 @@
         var newNode = newValue;
 
         if (field === 'subject') {
-          newNode = self.doc.store.rdf.createNamedNode(newValue);
+          newNode = self.editor.doc.store.rdf.createNamedNode(newValue);
         }
         else if (field === 'predicate') {
-          newNode = self.doc.store.rdf.createNamedNode(newValue);
+          newNode = self.editor.doc.store.rdf.createNamedNode(newValue);
         }
 
-        var newTriple = self.doc.store.rdf.createTriple(triple.subject, triple.object, triple.object);
+        var newTriple = self.editor.doc.store.rdf.createTriple(triple.subject, triple.object, triple.object);
         newTriple[field] = newNode;
-        self.doc.updateTriple(triple, newTriple, function(success) {
+        self.editor.doc.updateTriple(triple, newTriple, function(success) {
           // do nothing
         }, function(msg) {
           $(self).trigger('rdf-editor-error', { message: 'Failed to update triple in document: ' + msg });
@@ -163,7 +161,7 @@
         backCallback();
       });
 
-      var objectInput = container.find('input[name="object"]').rdfNodeEditor(self.doc.config.options);
+      var objectInput = container.find('input[name="object"]').rdfNodeEditor(self.editor.doc.config.options);
       if (self.object) {
         objectInput.setValue(self.object.object);
       }
@@ -171,10 +169,10 @@
         var node = value.getValue();
         if (node.value) {
           if (node.type == 'uri') {
-            node.value = self.ontologyManager.uriDenormalize(node.value);
+            node.value = self.editor.ontologyManager.uriDenormalize(node.value);
           }
-          var o = node.toStoreNode(self.doc.store);
-          self.doc.getObject(o, function (object) {
+          var o = node.toStoreNode(self.editor.doc.store);
+          self.editor.doc.getObject(o, function (object) {
             self.objectView.removeObject(self.object);
             self.objectView.addObject(object);
 
@@ -247,7 +245,7 @@
       ).show();
 
       predicateEditor = self.objectFormContainer.find('select[name="predicate"]').propertyBox({
-        "ontoManager": self.ontologyManager
+        "ontoManager": self.editor.ontologyManager
       });
 
       var subjectEditor = self.objectFormContainer.find('input[name="subject"]');
@@ -272,8 +270,8 @@
         if (!RDFE.Validate.check(predicateEditor.sel, p))
           return;
 
-        var t = self.doc.store.rdf.createTriple(self.doc.store.rdf.createNamedNode(s), self.doc.store.rdf.createNamedNode(p), self.object.object);
-        self.doc.addTriples([t], function() {
+        var t = self.editor.doc.store.rdf.createTriple(self.editor.doc.store.rdf.createNamedNode(s), self.editor.doc.store.rdf.createNamedNode(p), self.object.object);
+        self.editor.doc.addTriples([t], function() {
           self.addTriple(t);
           $(self).trigger('rdf-editor-success', {
             "type": "triple-insert-success",
