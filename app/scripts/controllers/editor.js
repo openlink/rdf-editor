@@ -171,6 +171,18 @@ angular.module('myApp.editor', ['ngRoute'])
     }
 
     $scope.editor.toggleView($scope.viewMode)
+    if      ($scope.viewMode === 'statements') {
+      $scope.viewMode = 'triples';
+    }
+    else if ($scope.viewMode === 'entities') {
+      $scope.viewMode = 'subjects';
+    }
+    else if ($scope.viewMode === 'attributes') {
+      $scope.viewMode = 'predicates';
+    }
+    else if ($scope.viewMode === 'values') {
+      $scope.viewMode = 'objects';
+    }
   }
 
   function showViewEditor() {
