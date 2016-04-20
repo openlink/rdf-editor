@@ -110,12 +110,12 @@ angular.module('myApp.editor', ['ngRoute'])
   }
 
   function toggleView() {
-    var s = $routeParams["triple:subject"];
-    var p = $routeParams["triple:predicate"];
-    var o = $routeParams["triple:object"];
-    var e = $routeParams["statement:entity"];
-    var a = $routeParams["statement:attribute"];
-    var v = $routeParams["statement:value"];
+    var s = $routeParams["triple:subject"]      || $routeParams["spo:subject"];
+    var p = $routeParams["triple:predicate"]    || $routeParams["spo:predicate"];
+    var o = $routeParams["triple:object"]       || $routeParams["spo:object"];
+    var e = $routeParams["statement:entity"]    || $routeParams["eav:entity"];    ;
+    var a = $routeParams["statement:attribute"] || $routeParams["eav:attribute"];
+    var v = $routeParams["statement:value"]     || $routeParams["eav:value"];
     var view = $routeParams["view"];
     var uiMode = $routeParams["uiMode"];
 
@@ -175,12 +175,12 @@ angular.module('myApp.editor', ['ngRoute'])
 
   function showViewEditor() {
     var newStatement = $routeParams["newStatement"];
-    var s = $routeParams["triple:subject"];
-    var p = $routeParams["triple:predicate"];
-    var o = $routeParams["triple:object"];
-    var e = $routeParams["statement:entity"];
-    var a = $routeParams["statement:attribute"];
-    var v = $routeParams["statement:value"];
+    var s = $routeParams["triple:subject"]      || $routeParams["spo:subject"];
+    var p = $routeParams["triple:predicate"]    || $routeParams["spo:predicate"];
+    var o = $routeParams["triple:object"]       || $routeParams["spo:object"];
+    var e = $routeParams["statement:entity"]    || $routeParams["eav:entity"];    ;
+    var a = $routeParams["statement:attribute"] || $routeParams["eav:attribute"];
+    var v = $routeParams["statement:value"]     || $routeParams["eav:value"];
     var view = $scope.viewMode;
 
     if      ((s || e) && (!view || view === 'subjects' || view === 'entities')) {
@@ -312,6 +312,7 @@ angular.module('myApp.editor', ['ngRoute'])
     }
     else {
       toggleView();
+      showViewEditor();
     }
     $.jStorage.deleteKey('rdfe:savedDocument');
 
