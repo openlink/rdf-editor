@@ -134,38 +134,51 @@ rdfstore.Store.prototype.loadTurtle = function(data, graph, baseUri, knownPrefix
       return;
     }
     if (triple === null) {
-      self.insert(self.rdf.createGraph(triples), graph, function() {
-        if (blanks.length) {
-          try {
-            self.insert(self.rdf.createGraph(blanks), graph, function(error) {
-              if (error) {
-                // exec callback (error) function
-                if (callback) {
-                  callback(error);
-                }
-              }
-              else {
-                // exec callback (success) function
-                if (callback) {
-                  callback(null);
-                }
-              }
-            });
-          }
-          catch(e) {
-            // exec callback (error) function
+      try {
+        self.insert(self.rdf.createGraph(triples), graph, function(error) {
+          if (error) {
             if (callback) {
-              callback(e);
+              callback(error);
             }
           }
-        }
-        else {
-          // exec callback (success) function
-          if (callback) {
-            callback(null);
+          else if (blanks.length) {
+            try {
+              self.insert(self.rdf.createGraph(blanks), graph, function(error) {
+                if (error) {
+                  // exec callback (error) function
+                  if (callback) {
+                    callback(error);
+                  }
+                }
+                else {
+                  // exec callback (success) function
+                  if (callback) {
+                    callback(null);
+                  }
+                }
+              });
+            }
+            catch(e) {
+              // exec callback (error) function
+              if (callback) {
+                callback(e);
+              }
+            }
           }
+          else {
+            // exec callback (success) function
+            if (callback) {
+              callback(null);
+            }
+          }
+        });
+      }
+      catch(e) {
+        // exec callback (error) function
+        if (callback) {
+          callback(e);
         }
-      });
+      }
     }
     else {
       var triple = convertTriple(triple);
