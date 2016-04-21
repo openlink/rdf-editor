@@ -167,8 +167,17 @@ String.prototype.format = function() {
           }
         }
       });
-    }
+    };
 
+    c.prototype.acceptParameter = function(params) {
+      var self = this;
+
+      if (params && params.accept) {
+        return params.accept;
+      }
+
+      return self.options.accept;
+    };
 
     return c;
   })();
@@ -580,13 +589,16 @@ String.prototype.format = function() {
     c.prototype.retrieve = function(URI, params) {
       var self = this;
       var host = (params.proxy) ? self.options.httpProxyTemplate.format(encodeURIComponent(URI)) : self.options.httpTemplate.format(URI);
-      var acceptType = (params && params.acceptType) ? params.acceptType : 'text/turtle; q=1, text/n3; q=0.9, application/ld+json; q=0.7 application/rdf+xml; q=0.6';
+      var accept = self.acceptParameter();
+      if (!accept) {
+        accept = 'text/turtle; q=1, text/n3; q=0.9, application/ld+json; q=0.7 application/rdf+xml; q=0.6';
+      }
       var ajaxParams = {
         "url": host,
         "type": 'GET',
         "dataType": 'text',
         "beforeSend": function(xhr) {
-          xhr.setRequestHeader("Accept", acceptType);
+          xhr.setRequestHeader("Accept", accept);
         }
       };
       return self.baseExec(ajaxParams, params);
@@ -620,13 +632,16 @@ String.prototype.format = function() {
       })(graph, params);
 
       var host = (params.proxy) ? self.options.httpProxyTemplate.format(encodeURIComponent(URI)) : self.options.httpTemplate.format(URI);
-      var acceptType = (params && params.acceptType) ? params.acceptType : 'text/turtle; q=1, text/n3; q=0.9, application/ld+json; q=0.7 application/rdf+xml; q=0.6';
+      var accept = self.acceptParameter();
+      if (!accept) {
+        accept = 'text/turtle; q=1, text/n3; q=0.9, application/ld+json; q=0.7 application/rdf+xml; q=0.6';
+      }
       var ajaxParams = {
         "url": host,
         "type": 'GET',
         "dataType": 'text',
         "beforeSend": function(xhr) {
-          xhr.setRequestHeader("Accept", acceptType);
+          xhr.setRequestHeader("Accept", accept);
         }
       };
       return self.baseExec(ajaxParams, params);

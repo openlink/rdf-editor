@@ -90,7 +90,7 @@ angular.module('myApp.editor', ['ngRoute'])
   '$rootScope', '$scope', '$routeParams', '$location', '$timeout', "usSpinnerService", 'RDFEditor', 'DocumentTree', 'Notification',
   function($rootScope, $scope, $routeParams, $location, $timeout, usSpinnerService, RDFEditor, DocumentTree, Notification) {
 
-  function getIO(ioType, sparqlEndpoint, ioTimeout) {
+  function getIO(accept, ioType, sparqlEndpoint, ioTimeout) {
     var authFunction;
     if (DocumentTree.getAuthInfo) {
       authFunction = function(url, success, fail) {
@@ -101,7 +101,8 @@ angular.module('myApp.editor', ['ngRoute'])
     var io = RDFE.IO.createIO(ioType, {
       "sparqlEndpoint": sparqlEndpoint,
       "gspEndpoint": $('#gspEndpoint').val(),
-      "ioTimeout": ioTimeout
+      "ioTimeout": ioTimeout,
+      "accept": accept
     });
     io.type = ioType;
     io.options.authFunction = authFunction;
@@ -196,11 +197,11 @@ angular.module('myApp.editor', ['ngRoute'])
     var view = $scope.viewMode;
 
     if      ((s || e) && (!view || view === 'subjects' || view === 'entities')) {
-      s = $scope.ontologyManager.uriDenormalize(s || e);
+      s = $scope.editor.ontologyManager.uriDenormalize(s || e);
       $scope.editor.editSubject(s, newStatement);
     }
     else if ((p || a) && (!view || view === 'predicates'|| view === 'attributes')) {
-      p = $scope.ontologyManager.uriDenormalize(p || a);
+      p = $scope.editor.ontologyManager.uriDenormalize(p || a);
       $scope.editor.editPredicate(p, newStatement);
     }
     else if ((o || v) && (!view || view === 'objects' || view === 'values')) {
@@ -215,32 +216,43 @@ angular.module('myApp.editor', ['ngRoute'])
   }
 
   RDFEditor.getEditor().then(function(editor) {
+    var uri = $routeParams.uri;
+    var accept = $routeParams.accept;
+    if (accept === 'turtle') {
+      accept = 'text/turtle';
+    }
+    else if (accept === 'jsonld') {
+      accept = 'application/ld+json';
+    }
+    var ioType = $routeParams.ioType || 'http';
+    var ioTimeout = $routeParams.ioTimeout || editor.config.options['ioTimeout'];
+    var sparqlEndpoint = $routeParams.sparqlEndpoint;
+    var newDocument = $routeParams.newDocument;
+
     $rootScope.editor = editor;
     $scope.editor = editor;
-    $scope.namingSchema = editor.namingSchema;
-    $scope.mainDoc = $scope.editor.doc;
-    $scope.ontologyManager = $scope.editor.ontologyManager;
+    $scope.doc = $scope.editor.doc;
     $scope.editor.render($("#contents"));
 
     // the browser requested that we save the current document
     if ($routeParams.saveDocument === "true") {
-      $scope.mainDoc.url = $routeParams.uri;
-      $scope.mainDoc.io = getIO($routeParams.ioType, $routeParams.sparqlEndpoint, editor.config.options['ioTimeout']);
+      $scope.doc.url = uri;
+      $scope.doc.io = getIO(accept, ioType, sparqlEndpoint, ioTimeout);
       $scope.saveDocument();
       $scope.editor.updateView();
     }
 
     // and if we are told, then we create a new document by clearing the old one
-    else if (($routeParams.newDocument === "true") || (($routeParams.newDocument === "false") && !$routeParams.uri)) {
-      $scope.mainDoc.new(function() {
+    else if ((newDocument === "true") || ((newDocument === "false") && !uri)) {
+      $scope.doc.new(function() {
         toggleView();
         $scope.editor.saveSubject = null;
         $scope.editor.updateView();
         $timeout(function() {
           // Any code in here will automatically have an $scope.apply() run afterwards
-          if (($routeParams.newDocument !== "false") && $routeParams.uri) {
-            $scope.mainDoc.url = $routeParams.uri;
-            $scope.mainDoc.io = getIO($routeParams.ioType, $routeParams.sparqlEndpoint, editor.config.options['ioTimeout']);
+          if ((newDocument !== "false") && uri) {
+            $scope.doc.url = uri;
+            $scope.doc.io = getIO(accept, ioType, sparqlEndpoint, ioTimeout);
           }
         });
         showViewEditor();
@@ -250,24 +262,24 @@ angular.module('myApp.editor', ['ngRoute'])
     }
 
     // otherwise we try to load the requested document
-    else if ($routeParams.uri) {
+    else if (uri) {
       var content = $.jStorage.get('rdfe:savedDocument', null);
       if (content) {
-        $scope.mainDoc.store.clear(function() {
-          $scope.mainDoc.store.loadTurtle(content, $scope.mainDoc.graph, $scope.mainDoc.graph, null, function(error) {
+        $scope.doc.store.clear(function() {
+          $scope.doc.store.loadTurtle(content, $scope.doc.graph, $scope.doc.graph, null, function(error) {
             if (!error) {
               toggleView();
               $scope.editor.saveSubject = null;
               $scope.editor.updateView();
               $timeout(function() {
                 // this is essentially a no-op to force the ui to update the url view
-                $scope.mainDoc.dirty = true;
-                if ($routeParams.newDocument === "false") {
-                  $scope.mainDoc.url = null;
+                $scope.doc.dirty = true;
+                if (newDocument === "false") {
+                  $scope.doc.url = null;
                 }
                 else {
-                  $scope.mainDoc.url = $routeParams.uri;
-                  $scope.mainDoc.io = getIO($routeParams.ioType, $routeParams.sparqlEndpoint, editor.config.options['ioTimeout']);
+                  $scope.doc.url = uri;
+                  $scope.doc.io = getIO(accept, ioType, sparqlEndpoint, ioTimeout);
                 }
               });
               showViewEditor();
@@ -277,20 +289,20 @@ angular.module('myApp.editor', ['ngRoute'])
       }
       else {
         try {
-          var io = getIO($routeParams.ioType || 'http', $routeParams.sparqlEndpoint, editor.config.options['ioTimeout']);
+          var io = getIO(accept, ioType, sparqlEndpoint, ioTimeout);
           var loadUrl= function(url, io) {
             $scope.editor.toggleSpinner(true);
-            $scope.mainDoc.load(url, io, function() {
+            $scope.doc.load(url, io, function() {
               toggleView();
               $scope.editor.updateView();
               $scope.$apply(function() {
                 // this is essentially a no-op to force the ui to update the url view
-                if ($routeParams.newDocument === "false") {
-                  $scope.mainDoc.url = null;
+                if (newDocument === "false") {
+                  $scope.doc.url = null;
                 }
                 else {
-                  $scope.mainDoc.url = $routeParams.uri;
-                  $scope.mainDoc.io = io;
+                  $scope.doc.url = uri;
+                  $scope.doc.io = io;
                 }
               });
               showViewEditor();
@@ -305,16 +317,16 @@ angular.module('myApp.editor', ['ngRoute'])
 
           // see if we have auth information cached
           if (DocumentTree.getAuthInfo) {
-            DocumentTree.getAuthInfo($routeParams.uri, false).then(function(authInfo) {
+            DocumentTree.getAuthInfo(uri, false).then(function(authInfo) {
               if (authInfo) {
                 io_rdfe.options.username = authInfo.username;
                 io_rdfe.options.password = authInfo.password;
               }
-              loadUrl($routeParams.uri, io);
+              loadUrl(uri, io);
             });
           }
           else {
-            loadUrl($routeParams.uri, io);
+            loadUrl(uri, io);
           }
         }
         catch(e) {
@@ -340,7 +352,7 @@ angular.module('myApp.editor', ['ngRoute'])
       $scope.editor.toggleView(mode);
     });
 
-    $scope.ontologyView = new RDFE.OntologyView($scope.ontologyManager);
+    $scope.ontologyView = new RDFE.OntologyView($scope.editor.ontologyManager);
     $scope.ontologyView.render($('#container-ontologies'));
     $('#ontology-add').click(function (e) {
       e.stopPropagation();
@@ -350,14 +362,14 @@ angular.module('myApp.editor', ['ngRoute'])
 
   function saveCheck(cbSave, myUrl, myIo) {
     if (!myUrl) {
-      myUrl = $scope.mainDoc.url;
+      myUrl = $scope.doc.url;
     }
     if (!myIo) {
-      myIo = $scope.mainDoc.io;
+      myIo = $scope.doc.io;
     }
     var mySave = function (data, status, xhr) {
       if (status === 'success') {
-        if ((!$scope.mainDoc.url || ($scope.mainDoc.io && ($scope.mainDoc.io !== myIo))) && data.length)  {
+        if ((!$scope.doc.url || ($scope.doc.io && ($scope.doc.io !== myIo))) && data.length)  {
           bootbox.confirm("Target document exists. Do you really want to overwrite it?", function(result) {
             if (result)
               cbSave(myUrl, myIo);
@@ -365,7 +377,7 @@ angular.module('myApp.editor', ['ngRoute'])
 
           return;
         }
-        if ($scope.mainDoc.srcParams && (($scope.mainDoc.srcParams.length !== data.length) || ($scope.mainDoc.srcParams.md5 !== $.md5(data)))) {
+        if ($scope.doc.srcParams && (($scope.doc.srcParams.length !== data.length) || ($scope.doc.srcParams.md5 !== $.md5(data)))) {
           bootbox.confirm("Target document was updated after last open/save. Do you really want to overwrite it?", function(result) {
             if (result)
               cbSave(myUrl, myIo);
@@ -386,7 +398,7 @@ angular.module('myApp.editor', ['ngRoute'])
     function doOpen() {
       $location.url('/browser');
     };
-    if($scope.mainDoc.dirty) {
+    if($scope.doc.dirty) {
       bootbox.confirm("Your document has unsaved changes. Do you really want to open another document?", function(r) {
         if(r) {
           $scope.$apply(doOpen);
@@ -399,12 +411,12 @@ angular.module('myApp.editor', ['ngRoute'])
   };
 
   $scope.saveDocument = function() {
-    if ($scope.mainDoc.url) {
+    if ($scope.doc.url) {
       var cbSave = function () {
         $scope.editor.toggleSpinner(true);
-        $scope.mainDoc.save(function() {
+        $scope.doc.save(function() {
           $scope.editor.toggleSpinner(false);
-          Notification.notify('success', "Successfully saved document to <code>" + $scope.mainDoc.url + "</code>");
+          Notification.notify('success', "Successfully saved document to <code>" + $scope.doc.url + "</code>");
         }, function(err) {
           $scope.editor.toggleSpinner(false);
           Notification.notify('error', (err ? err.message || err : "An unknown error occured"));
@@ -438,7 +450,7 @@ angular.module('myApp.editor', ['ngRoute'])
         pom.click();
       }
     }
-    $scope.mainDoc.store.graph($scope.mainDoc.graph, function(success, graph){
+    $scope.doc.store.graph($scope.doc.graph, function(success, graph){
       var serialized = graph.toNT();
       download('document.ttl', serialized);
     });
@@ -461,7 +473,7 @@ angular.module('myApp.editor', ['ngRoute'])
     function doClose() {
       $location.url('/');
     };
-    if($scope.mainDoc.dirty) {
+    if($scope.doc.dirty) {
       bootbox.confirm("Your document has unsaved changes. Do you really want to close the document?", function(r) {
         if(r) {
           $scope.$apply(doClose);
