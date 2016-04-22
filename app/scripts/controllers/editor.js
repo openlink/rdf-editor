@@ -144,23 +144,15 @@ angular.module('myApp.editor', ['ngRoute'])
     else if (e || a || v) {
       $scope.viewMode = 'statements';
     }
-    else if ((view === 'subjects') || (view === 'entities')) {
-      $scope.viewMode = view;
-    }
-    else if ((view === 'predicates') || (view === 'attributes')) {
-      $scope.viewMode = view;
-    }
-    else if ((view === 'objects') || (view === 'values')) {
+    else if (view) {
       $scope.viewMode = view;
     }
     if (!uiMode) {
       if      (['triples', 'subjects', 'predicates', 'objects'].indexOf($scope.viewMode) > -1) {
         $scope.editor.config.options.namingSchema = 'SPO';
-        $scope.namingSchema = $scope.editor.config.options['SPO'];
       }
       else if (['statements', 'entities', 'entities', 'values'].indexOf($scope.viewMode) > -1) {
         $scope.editor.config.options.namingSchema = 'EAV';
-        $scope.namingSchema = $scope.editor.config.options['EAV'];
       }
     }
 
@@ -207,11 +199,8 @@ angular.module('myApp.editor', ['ngRoute'])
     else if ((o || v) && (!view || view === 'objects' || view === 'values')) {
       $scope.editor.editObject(o || v, newStatement);
     }
-    else if ((s || p || o || newStatement) && (!view || view === 'triples')) {
-      $scope.editor.editTriple(s, p, o, newStatement);
-    }
-    else if ((e || a || v || newStatement) && (!view || view === 'statements')) {
-      $scope.editor.editTriple(e, a, v, newStatement);
+    else if ((s || p || o || e || a || v || newStatement) && (!view || view === 'statements' || view === 'triples')) {
+      $scope.editor.editTriple(s || e, p || a, o || v, newStatement);
     }
   }
 
