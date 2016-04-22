@@ -45,21 +45,21 @@ rdfstore.Store.prototype.curiToUri = function(curi) {
 };
 
 rdfstore.Store.prototype.parseLiteral = function(literalString) {
-    var parts = literalString.lastIndexOf("@");
+  var parts = literalString.lastIndexOf("@");
 
-    if(parts!=-1 && literalString[parts-1]==='"' && literalString.substring(parts, literalString.length).match(/^@[a-zA-Z\-]+$/g)!=null) {
-        var value = literalString.substring(1,parts-1);
-        var lang = literalString.substring(parts+1, literalString.length);
-        return {token: "literal", value:value, lang:lang};
-    }
-    var parts = literalString.lastIndexOf("^^");
-    if(parts!=-1 && literalString[parts-1]==='"' && literalString[parts+2] === '<' && literalString[literalString.length-1] === '>') {
-        var value = literalString.substring(1,parts-1);
-        var type = literalString.substring(parts+3, literalString.length-1);
-        return {token: "literal", value:value, type:type};
-    }
-    var value = literalString.substring(1,literalString.length-1);
-    return {token:"literal", value:value};
+  if(parts!=-1 && literalString[parts-1]==='"' && literalString.substring(parts, literalString.length).match(/^@[a-zA-Z\-]+$/g)!=null) {
+      var value = literalString.substring(1,parts-1);
+      var lang = literalString.substring(parts+1, literalString.length);
+      return {token: "literal", value:value, lang:lang};
+  }
+  var parts = literalString.lastIndexOf("^^");
+  if(parts!=-1 && literalString[parts-1]==='"' && literalString[parts+2] === '<' && literalString[literalString.length-1] === '>') {
+      var value = literalString.substring(1,parts-1);
+      var type = literalString.substring(parts+3, literalString.length-1);
+      return {token: "literal", value:value, type:type};
+  }
+  var value = literalString.substring(1,literalString.length-1);
+  return {token:"literal", value:value};
 };
 
 
@@ -80,42 +80,76 @@ rdfstore.Store.prototype.rdf.api.RDFNode.prototype.localeCompare = function(comp
 rdfstore.Store.prototype.loadTurtle = function(data, graph, baseUri, knownPrefixes, callback) {
   var self = this;
   var parser = N3.Parser();
-
-  // mapping for blank nodes
-  var bns = {};
+  var triples = [];
+  var blanks = [];
 
   var convertNode = function(node) {
-    if (!node) {
-      return self.rdf.createNamedNode(baseUri);
+    switch (node[0]) {
+        case '"': {
+            if(node.indexOf("^^") > 0) {
+                var parts = node.split("^^");
+                return {literal: parts[0] + "^^<" + parts[1] + ">" };
+            } else {
+                return { literal: node };
+            }
+        }
+        case '_': return { blank: node.replace('b', '') };
+        default:  return { token: 'uri', value: node, prefix: null, suffix: null };
     }
-
-    if (N3.Util.isLiteral(node)) {
-      // rdfstore treats the empty string as a valid language
-      var l = N3.Util.getLiteralLanguage(node);
-      if (l == '') {
-        l = null;
-      }
-      return self.rdf.createLiteral(N3.Util.getLiteralValue(node), l, N3.Util.getLiteralType(node));
-    }
-
-    if (N3.Util.isBlank(node)) {
-      var bn = bns[node];
-      if (!bn) {
-        bn = self.rdf.createBlankNode();
-        bns[node] = bn;
-      }
-      return bn;
-    }
-
-    return self.rdf.createNamedNode(node);
   };
 
   var convertTriple = function(triple) {
     return self.rdf.createTriple(convertNode(triple.subject), convertNode(triple.predicate), convertNode(triple.object));
   };
 
-  var triples = [];
-  var blanks = [];
+  var insertTriples = function() {
+    try {
+      self.insert(self.rdf.createGraph(triples), graph, function(error) {
+        if (error) {
+          if (callback) {
+            callback(error);
+          }
+        }
+        else if (blanks.length) {
+          try {
+            self.insert(self.rdf.createGraph(blanks), graph, function(error) {
+              if (error) {
+                // exec callback (error) function
+                if (callback) {
+                  callback(error);
+                }
+              }
+              else {
+                // exec callback (success) function
+                if (callback) {
+                  callback(null);
+                }
+              }
+            });
+          }
+          catch(e) {
+            // exec callback (error) function
+            if (callback) {
+              callback(e);
+            }
+          }
+        }
+        else {
+          // exec callback (success) function
+          if (callback) {
+            callback(null);
+          }
+        }
+      });
+    }
+    catch(e) {
+      // exec callback (error) function
+      if (callback) {
+        callback(e);
+      }
+    }
+  };
+
   parser.parse(data, function(error, triple, prefixes) {
     if (error) {
       if (error.message.startsWith('Undefined prefix') && knownPrefixes) {
@@ -134,51 +168,7 @@ rdfstore.Store.prototype.loadTurtle = function(data, graph, baseUri, knownPrefix
       return;
     }
     if (triple === null) {
-      try {
-        self.insert(self.rdf.createGraph(triples), graph, function(error) {
-          if (error) {
-            if (callback) {
-              callback(error);
-            }
-          }
-          else if (blanks.length) {
-            try {
-              self.insert(self.rdf.createGraph(blanks), graph, function(error) {
-                if (error) {
-                  // exec callback (error) function
-                  if (callback) {
-                    callback(error);
-                  }
-                }
-                else {
-                  // exec callback (success) function
-                  if (callback) {
-                    callback(null);
-                  }
-                }
-              });
-            }
-            catch(e) {
-              // exec callback (error) function
-              if (callback) {
-                callback(e);
-              }
-            }
-          }
-          else {
-            // exec callback (success) function
-            if (callback) {
-              callback(null);
-            }
-          }
-        });
-      }
-      catch(e) {
-        // exec callback (error) function
-        if (callback) {
-          callback(e);
-        }
-      }
+      insertTriples();
     }
     else {
       var triple = convertTriple(triple);

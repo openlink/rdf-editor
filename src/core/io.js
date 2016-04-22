@@ -622,12 +622,7 @@ String.prototype.format = function() {
               params.__success(data, status, xhr);
             }
           };
-          if (contentType.indexOf('turtle') > 0 || contentType.length === 0) {
-            store.loadTurtle(data, URI, URI, null, callback);
-          }
-          else {
-            store.load(contentType, data, URI, callback);
-          }
+          store.load(contentType, data, URI, callback);
         }
       })(graph, params);
 
