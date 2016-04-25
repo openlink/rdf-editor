@@ -13,6 +13,10 @@ angular.module('myApp', [
   $routeProvider.otherwise({redirectTo: '/welcome'});
 }])
 
+.run(function($rootScope) {
+  $rootScope.version = '##VERSION##';
+})
+
 .factory('Notification', function() {
   // set defaults
   $.notifyDefaults({
