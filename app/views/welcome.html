@@ -1,17 +1,23 @@
 <div class="container" id="welcomePanel">
   <div class="page-header">
-    <h1>OpenLink RDF Editor <small>Make Statements</small></h1>
+    <h1>OpenLink Structured Data Editor<small> - Enabling a Read-Write Web of Linked Data</small></h1>
   </div>
 
   <div>
     <div class="jumbotron">
-      <p>This Editor enables editing of RDF documents (in TURTLE notation) stored in a
-        variety of HTTP accessible documents. Actual document access requires the
-        target document is served from a system that supports at least one of the
-        following open standards: <strong>Linked Data Platform (LDP)</strong>,
-        <strong>WebDAV</strong>, <strong>SPARQL 1.1 Update</strong>,
-        or the <strong>SPARQL Graph Protocol</strong>. Get started by attempting a
-        brand new document or applying edits to an existing document.</p>
+      <p>
+        This Editor enables editing of Structured Data documents (using abstract RDF Language) stored
+        in a variety of HTTP accessible documents (Turtle or JSON-LD content formats).
+        Actual document access requires the target document is served from a system that supports at
+        least one of the following HTTP based open standards: <strong>Linked Data Platform (LDP)</strong>, <strong>WebDAV</strong>, <strong>SPARQL 1.1 Update</strong>, or the <strong>SPARQL Graph Protocol</strong>.
+        Get started by creating a brand new document or opening up an existing document.
+        <br /><br />
+        <strong>Examples</strong>:
+        <br />
+        [1] <a href="/rdf-editor/#/editor?uri=http:%2F%2Fdbpedia.org%2Fresource%2FDBpedia" title="About DBpedia">About DBpedia</a>
+        <br />
+        [2] <a href="/rdf-editor/#/editor?uri=http:%2F%2Fwww.openlinksw.com%2Fdata%2Fturtle%2Fopenlink.ttl" title="About OpenLink Software">About OpenLink Software</a>
+        </p>
     </div>
 
     <a href="#/editor?newDocument=true" class="btn btn-primary btn-lg btn-block"><span class="glyphicon glyphicon-plus"></span> Create New Document</button>

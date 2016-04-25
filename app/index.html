@@ -59,12 +59,13 @@
           <span class="icon-bar"></span>
           <span class="icon-bar"></span>
         </button>
-        <a class="navbar-brand" style="padding: 5px 15px" href=""><img src="images/oplogo_std_100x40.png" alt="OpenLink Software RDF Editor" /></a></li>
+        <a class="navbar-brand" style="padding: 5px 15px" href="http://www.openlinksw.com/" title="OpenLink Software Home Page"><img src="images/oplogo_std_100x40.png" alt="OpenLink Software Home Page" /></a></li>
       </div>
 
       <div class="collapse navbar-collapse" id="rdfe-navbar-collapse" style="margin-right: 80px;">
         <ul class="nav navbar-nav navbar-right">
-          <li><a class="navbar-link" href="#about">About</a></li>
+          <li><a class="navbar-link" href="#about" title="About OSD Editor, version {{version}}">About</a></li>
+          <li><a class="navbar-link" href="http://osde.openlinksw.com/" title="OSDE Home" style="padding-left: 0px;">Home</a></li>
         </ul>
 
         <p ng-show="valInstalled" class="navbar-text navbar-right" style="margin-left: 0;">
@@ -73,8 +74,8 @@
         </p>
 
         <ul ng-show="valInstalled" class="nav navbar-nav navbar-right">
-          <li ng-hide="profile"><a class="navbar-link" ng-click="login();" href="">Login</a></li>
-          <li ng-show="profile"><a class="navbar-link" ng-click="logout();" href="">Logout</a></li>
+          <li ng-hide="profile"><a class="navbar-link" ng-click="login();" href="" title="Login">Login</a></li>
+          <li ng-show="profile"><a class="navbar-link" ng-click="logout();" href="" title="Logout">Logout</a></li>
         </ul>
       </div>
       <a href="https://github.com/openlink/rdf-editor">
