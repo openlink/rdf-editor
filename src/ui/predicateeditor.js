@@ -51,6 +51,7 @@
 
     c.prototype.render = function(editor, container, newStatement, backCallback) {
       var self = this;
+      var oldTriple;
 
       var predicateEditorData = function(container, backCallback) {
         $list.bootstrapTable({
@@ -62,7 +63,6 @@
           "showHeader": true,
           "editable": true,
           "data": [],
-          "dataSetter": predicateEditorDataSetter,
           "editable": true,
           "dereference": true,
           "columns": [{
@@ -70,14 +70,14 @@
             "title": RDFE.Utils.namingSchemaLabel('s', self.editor.namingSchema()),
             "titleTooltip": RDFE.Utils.namingSchemaLabel('s', self.editor.namingSchema()),
             "sortable": true,
-            "editable": self.editor.editableNode(self.editor),
+            "editable": self.editor.editableSubject(self.editor),
             "formatter": self.editor.nodeFormatter
           }, {
             "field": 'object',
             "title": RDFE.Utils.namingSchemaLabel('o', self.editor.namingSchema()),
             "titleTooltip": RDFE.Utils.namingSchemaLabel('o', self.editor.namingSchema()),
             "sortable": true,
-            "editable": self.editor.editableNode(self.editor, function(triple){return self.predicate.uri;}),
+            "editable": self.editor.editableObject(self.editor, function(triple){return triple.predicate.toString();}),
             "formatter": self.editor.nodeFormatter
           }, {
             "field": 'actions',
@@ -101,12 +101,27 @@
                     field: 'id',
                     values: [row.id]
                   });
-                }, function() {
-                  $(self).trigger('rdf-editor-error', { "type": 'triple-delete-failed', "message": 'Failed to delete triple.' });
+                  $(self.editor).trigger('rdf-editor-success', {
+                    "type": 'predicate-delete-success',
+                    "message": "Successfully deleted triple."
+                  });
+                }, function(error) {
+                  $(self.editor).trigger('rdf-editor-error', {
+                    "type": 'predicate-delete-error',
+                    "message": 'Failed to delete triple.'
+                  });
                 });
               }
             }
           }]
+        });
+
+        $list.on('editable-shown.bs.table', function(e, field, triple) {
+          oldTriple = _.clone(triple);
+        });
+
+        $list.on('editable-save.bs.table', function(e, field, triple) {
+          self.editor.dataSetter(field, oldTriple, triple);
         });
 
         self.predicateView = editor.predicateView;
@@ -123,36 +138,6 @@
         if (newStatement) {
           self.createNewRelationEditor();
         }
-      };
-
-      var predicateEditorDataSetter = function(triple, field, newValue) {
-        var newNode = newValue;
-
-        if (field === 'predicate') {
-          newNode = self.editor.doc.store.rdf.createNamedNode(newValue);
-        }
-        if (newValue.toStoreNode) {
-          newNode = newValue.toStoreNode(self.editor.doc.store);
-        }
-        else if (field != 'object' ||
-          triple.object.interfaceName == 'NamedNode') {
-          newNode = self.editor.doc.store.rdf.createNamedNode(newValue);
-        }
-        else if (triple.object.datatype == 'http://www.w3.org/2001/XMLSchema#dateTime') {
-          var d = new Date(newValue);
-          newNode = self.editor.doc.store.rdf.createLiteral(d.toISOString(), triple.object.language, triple.object.datatype);
-        }
-        else {
-          newNode = self.editor.doc.store.rdf.createLiteral(newValue, triple.object.language, triple.object.datatype);
-        }
-
-        var newTriple = self.editor.doc.store.rdf.createTriple(triple.subject, triple.predicate, triple.object);
-        newTriple[field] = newNode;
-        self.editor.doc.updateTriple(triple, newTriple, function(success) {
-          // do nothing
-        }, function(msg) {
-          $(self).trigger('rdf-editor-error', { message: 'Failed to update triple in document: ' + msg });
-        });
       };
 
       container.empty();
@@ -279,16 +264,16 @@
         var t = self.editor.doc.store.rdf.createTriple(self.editor.doc.store.rdf.createNamedNode(s), self.editor.doc.store.rdf.createNamedNode(p), o.toStoreNode(self.editor.doc.store));
         self.editor.doc.addTriples([t], function() {
           self.addTriple(t);
-          $(self).trigger('rdf-editor-success', {
-            "type": "triple-insert-success",
-            "message": "Successfully added new statement."
+          $(self.editor).trigger('rdf-editor-success', {
+            "type": "predicate-insert-success",
+            "message": "Successfully added new triple."
           });
           self.predicateFormContainer.hide();
           self.predicateTableContainer.show();
         }, function() {
-          $(self).trigger('rdf-editor-error', {
-            "type": 'triple-insert-failed',
-            "message": "Failed to add new statement to store."
+          $(self.editor).trigger('rdf-editor-error', {
+            "type": 'predicate-insert-error',
+            "message": "Failed to add new triple."
           });
         });
       });

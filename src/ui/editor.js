@@ -81,35 +81,23 @@ RDFE.Editor.prototype.countFormatter = function(value, row, index) {
   return row.items.length;
 };
 
-RDFE.Editor.prototype.editableNode = function(editor, predicate) {
-  return function(triple, field) {
-    var rdfNode;
-
-    if (predicate) {
-      rdfNode = {
-        "config": $.extend({}, editor.config.options, {"dereferenceLink": editor.dereference()}),
-        "predicate": predicate(triple),
-        "document": editor.doc,
-        "ontologyManager": editor.ontologyManager
-      };
-    }
-    else {
-      rdfNode = {
-        "config": $.extend({}, editor.config.options, {"dereferenceLink": editor.dereference()}),
-        "type": 'http://www.w3.org/1999/02/22-rdf-syntax-ns#Resource'
-      };
-    }
+RDFE.Editor.prototype.editableSubject = function(editor) {
+  return function(triple) {
     return {
       "mode": "inline",
       "type": "rdfnode",
-      "rdfnode": rdfNode,
-      "value": triple[field]
+      "rdfnode": {
+        "config": $.extend({}, editor.config.options, {"dereferenceLink": editor.dereference()}),
+        "type": 'http://www.w3.org/1999/02/22-rdf-syntax-ns#Resource',
+        "dereferenceLink": editor.dereference()
+      },
+      "value": triple["subject"]
     }
   };
 };
 
 RDFE.Editor.prototype.editablePredicate = function(editor) {
-  return function(triple, field) {
+  return function(triple) {
     return {
       "mode": "inline",
       "type": "propertyBox",
@@ -117,8 +105,25 @@ RDFE.Editor.prototype.editablePredicate = function(editor) {
         "ontologyManager": editor.ontologyManager,
         "dereferenceLink": editor.dereference()
       },
-      "value": triple[field].nominalValue
+      "value": triple["predicate"].nominalValue
     };
+  };
+};
+
+RDFE.Editor.prototype.editableObject = function(editor, predicate) {
+  return function(triple) {
+    return {
+      "mode": "inline",
+      "type": "rdfnode",
+      "rdfnode": {
+        "config": $.extend({}, editor.config.options, {"dereferenceLink": editor.dereference()}),
+        "predicate": (predicate)? predicate(triple): null,
+        "document": editor.doc,
+        "ontologyManager": editor.ontologyManager,
+        "dereferenceLink": editor.dereference()
+      },
+      "value": triple["object"]
+    }
   };
 };
 
@@ -481,11 +486,6 @@ RDFE.Editor.prototype.createTripleList = function() {
 
   if (!self.tripleView) {
     self.tripleView = new RDFE.TripleView(self);
-    $(self.tripleView).on('rdf-editor-error', function(e, d) {
-      $(self).trigger('rdf-editor-error', d);
-    }).on('rdf-editor-success', function(e, d) {
-      $(self).trigger('rdf-editor-success', d);
-    });
   }
 
   self.formContainer.hide();
@@ -834,14 +834,9 @@ RDFE.Editor.prototype.createSubjectList = function() {
 
   if (!self.subjectView) {
     self.subjectView = new RDFE.SubjectView(self, {
-      editFct: function(subject) {
+      "editFct": function(subject) {
         self.editSubject.call(self, subject);
       }
-    });
-    $(self.subjectView).on('rdf-editor-error', function(e) {
-      $(self).trigger('rdf-editor-error', d);
-    }).on('rdf-editor-success', function(e, d) {
-      $(self).trigger('rdf-editor-success', d);
     });
   }
 
@@ -859,11 +854,6 @@ RDFE.Editor.prototype.editSubject = function(subject, newStatement) {
 
   if (!self.subjectEditor) {
     self.subjectEditor = new RDFE.SubjectEditor(self);
-    $(self.subjectEditor).on('rdf-editor-error', function(e) {
-      $(self).trigger('rdf-editor-error', d);
-    }).on('rdf-editor-success', function(e, d) {
-      $(self).trigger('rdf-editor-success', d);
-    });
   }
 
   // subject as URL parameter
@@ -896,11 +886,6 @@ RDFE.Editor.prototype.createPredicateList = function() {
         self.editPredicate.call(self, predicate);
       }
     });
-    $(self.predicateView).on('rdf-editor-error', function(e, d) {
-      $(self).trigger('rdf-editor-error', d);
-    }).on('rdf-editor-success', function(e, d) {
-      $(self).trigger('rdf-editor-success', d);
-    });
   }
 
   self.formContainer.hide();
@@ -917,11 +902,6 @@ RDFE.Editor.prototype.editPredicate = function(predicate, newStatement) {
 
   if (!self.predicateEditor) {
     self.predicateEditor = new RDFE.PredicateEditor(self);
-    $(self.predicateEditor).on('rdf-editor-error', function(e, d) {
-      $(self).trigger('rdf-editor-error', d);
-    }).on('rdf-editor-success', function(e, d) {
-      $(self).trigger('rdf-editor-success', d);
-    });
   }
 
   // render the entity editor and re-create the entity list once the editor is done
@@ -959,11 +939,6 @@ RDFE.Editor.prototype.createObjectList = function() {
         self.editObject.call(self, object);
       }
     });
-    $(self.objectView).on('rdf-editor-error', function(e, d) {
-      $(self).trigger('rdf-editor-error', d);
-    }).on('rdf-editor-success', function(e, d) {
-      $(self).trigger('rdf-editor-success', d);
-    });
   }
 
   self.formContainer.hide();
@@ -980,11 +955,6 @@ RDFE.Editor.prototype.editObject = function(object, newStatement) {
 
   if (!self.objectEditor) {
     self.objectEditor = new RDFE.ObjectEditor(self);
-    $(self.objectEditor).on('rdf-editor-error', function(e, d) {
-      $(self).trigger('rdf-editor-error', d);
-    }).on('rdf-editor-success', function(e, d) {
-      $(self).trigger('rdf-editor-success', d);
-    });
   }
 
   // subject as URL parameter
@@ -1079,4 +1049,41 @@ RDFE.Editor.prototype.objectsLookup = function (objectEditor, ranges) {
       io.retrieveToStore(url, store, graph, params);
     }
   }
+};
+
+RDFE.Editor.prototype.dataSetter = function(field, oldTriple, newTriple) {
+  var self = this;
+  var node = newTriple[field];
+
+  if      (field === 'subject') {
+    node = self.doc.store.rdf.createNamedNode(node.value);
+  }
+  else if (field === 'predicate') {
+    node = self.doc.store.rdf.createNamedNode(node);
+  }
+  else if (field === 'object') {
+    if (node.type === 'uri') {
+      node = self.doc.store.rdf.createNamedNode(node.value);
+    }
+    else if (node.type === 'http://www.w3.org/2001/XMLSchema#dateTime') {
+      var dt = new Date(node.value);
+      node = self.doc.store.rdf.createLiteral(dt.toISOString(), node.language, node.type);
+    }
+    else {
+      node = self.doc.store.rdf.createLiteral(node.value, node.language, node.type);
+    }
+  }
+  newTriple[field] = node;
+  self.doc.updateTriple(oldTriple, newTriple, function(success) {
+    // do nothing
+    $(self).trigger('rdf-editor-success', {
+      "type": 'triple-update-success',
+      "message": "Successfully updated triple."
+    });
+  }, function(error) {
+    $(self).trigger('rdf-editor-error', {
+      "type": 'triple-update-error',
+      "message": 'Failed to update triple.'
+    });
+  });
 };

@@ -70,26 +70,6 @@
         var $list = $(document.createElement('table')).addClass('table');
         container.append($list);
 
-        // create entries
-        var deleteFct = function(predicate) {
-          self.editor.doc.deletePredicate(predicate.uri, function() {
-            $list.bootstrapTable('remove', {
-              field: 'uri',
-              values: [predicate.uri]
-            });
-            $(self).trigger('rdf-editor-success', {
-              "type": 'predicate-delete-done',
-              "uri": predicate.uri,
-              "message": "Successfully deleted attribute " + uri + "."
-            });
-          }, function(msg) {
-            $(self).trigger('rdf-editor-error', {
-              "type": 'predicate-delete-failed',
-              "message": msg
-            });
-          });
-        };
-
         $list.bootstrapTable({
           "striped": true,
           "sortName": 'uri',
@@ -132,7 +112,21 @@
                 dereference(row.uri);
               },
               'click .remove': function(e, value, row, index) {
-                deleteFct(row);
+                self.editor.doc.deletePredicate(row.uri, function() {
+                  $list.bootstrapTable('remove', {
+                    field: 'uri',
+                    values: [row.uri]
+                  });
+                  $(self.editor).trigger('rdf-editor-success', {
+                    "type": 'predicate-delete-success',
+                    "message": "Successfully deleted predicate " + row.uri + "."
+                  });
+                }, function(error) {
+                  $(self.editor).trigger('rdf-editor-error', {
+                    "type": 'predicate-delete-error',
+                    "message": error
+                  });
+                });
               }
             }
           }]
@@ -145,10 +139,10 @@
         if (callback) {
           callback();
         }
-      }, function(r) {
-        $(self).trigger('rdf-editor-error', {
-          "type": 'predicate-list-failed',
-          "message": r
+      }, function(error) {
+        $(self.editor).trigger('rdf-editor-error', {
+          "type": 'predicate-list-error',
+          "message": error
         });
       });
     };

@@ -117,15 +117,14 @@
                     field: 'uri',
                     values: [row.uri]
                   });
-                  $(self).trigger('rdf-editor-success', {
-                    "type": 'subject-delete-done',
-                    "uri": row.uri,
-                    "message": "Successfully deleted attribute " + uri + "."
+                  $(self.editor).trigger('rdf-editor-success', {
+                    "type": 'subject-delete-success',
+                    "message": "Successfully deleted triples with subject " + row.uri + "."
                   });
-                }, function(msg) {
-                  $(self).trigger('rdf-editor-error', {
-                    "type": 'subject-delete-failed',
-                    "message": msg
+                }, function(error) {
+                  $(self.editor).trigger('rdf-editor-error', {
+                    "type": 'subject-delete-error',
+                    "message": error
                   });
                 });
               }
@@ -140,10 +139,10 @@
         if (callback) {
           callback();
         }
-      }, function(r) {
-        $(self).trigger('rdf-editor-error', {
-          "type": 'subject-list-failed',
-          "message": r
+      }, function(error) {
+        $(self.editor).trigger('rdf-editor-error', {
+          "type": 'subject-list-error',
+          "message": error
         });
       });
     };

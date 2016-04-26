@@ -60,26 +60,6 @@
         var $list = $(document.createElement('table')).addClass('table');
         container.append($list);
 
-        // create entries
-        var deleteFct = function(row) {
-          self.editor.doc.deleteObject(row.object, function() {
-            $list.bootstrapTable('remove', {
-              field: 'id',
-              values: [row.id]
-            });
-            $(self).trigger('rdf-editor-success', {
-              "type": 'object-delete-done',
-              "uri": row.id,
-              "message": "Successfully deleted attribute " + row.id + "."
-            });
-          }, function(msg) {
--            $(self).trigger('rdf-editor-error', {
-              "type": 'object-delete-failed',
-              "message": msg
-            });
-          });
-        };
-
         $list.bootstrapTable({
           "striped": true,
           "sortName": 'label',
@@ -123,7 +103,21 @@
                 self.editFct(row);
               },
               'click .remove': function(e, value, row, index) {
-                deleteFct(row);
+                self.editor.doc.deleteObject(row.object, function() {
+                  $list.bootstrapTable('remove', {
+                    field: 'id',
+                    values: [row.id]
+                  });
+                  $(self.editor).trigger('rdf-editor-success', {
+                    "type": 'object-delete-success',
+                    "message": "Successfully deleted object."
+                  });
+                }, function(error) {
+      -           $(self.editor).trigger('rdf-editor-error', {
+                    "type": 'object-delete-error',
+                    "message": error
+                  });
+                });
               }
             }
           }]
@@ -136,10 +130,10 @@
         if (callback) {
           callback();
         }
-      }, function(r) {
-        $(self).trigger('rdf-editor-error', {
-          "type": 'object-list-failed',
-          "message": r
+      }, function(error) {
+        $(self.editor).trigger('rdf-editor-error', {
+          "type": 'object-list-error',
+          "message": error
         });
       });
     };

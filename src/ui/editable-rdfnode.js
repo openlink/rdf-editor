@@ -30,7 +30,7 @@
     render: function() {
       this.$input = this.$tpl.filter('input');
       this.setClass();
-      this.$input.rdfNodeEditor(this.options.rdfnode.config);
+      this.$input.rdfNodeEditor(this.options.rdfnode);
     },
     activate: function() {
       this.$input.rdfNodeEditor().setEditFocus();
