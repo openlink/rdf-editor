@@ -81,7 +81,7 @@ RDFE.coalesce = function() {
       return arguments[i];
     }
   }
-}
+};
 
 /*
  *
@@ -100,7 +100,7 @@ RDFE.uriPrefix = function(v) {
   }
   */
   return null;
-}
+};
 
 /*
  *
@@ -118,7 +118,7 @@ RDFE.uriLabel = function(v) {
     return v.substring(m+1);
   }
   return null;
-}
+};
 
 /*
  *
@@ -128,7 +128,7 @@ RDFE.uriLabel = function(v) {
  */
 RDFE.isUriPrefix = function(v) {
   return (Math.max(v.lastIndexOf(':'), v.lastIndexOf('/'), v.lastIndexOf('#')) == -1);
-}
+};
 
 /*
  *
@@ -144,7 +144,7 @@ RDFE.uriOntology = function(v) {
     return v.substring(0, m + 1);
   }
   return null;
-}
+};
 
 /*
  *
@@ -159,24 +159,54 @@ RDFE.isBlankNode = function(v) {
     return RDFE.isBlankNode(v.URI);
 
   return false;
-}
+};
 
 /*
  *
  * Find ontology by prefix
  *
  */
-RDFE.ontologyByPrefix = function(prefix) {
+RDFE.ontologyByPrefix = function(prefix, callback) {
   var host = 'http://prefix.cc/{0}.file.json'.format(prefix);
   $.ajax({
-    url: host,
-    type: 'GET',
-    async: false
+    "url": host,
+    "type": 'GET',
+    "async": (callback)? true: false
   }).done(function(data) {
     RDFE.prefixes[prefix] = data[prefix];
+    if (callback) {
+      callback(data[prefix]);
+    }
   });
   return RDFE.prefixes[prefix];
-}
+};
+
+/*
+ *
+ * Find ontology by prefix
+ *
+ */
+RDFE.prefixByOntology = function(uri, callback) {
+  var host = 'http://lov.okfn.org/dataset/lov/api/v2/vocabulary/autocomplete?q='+encodeURIComponent(RDFE.Utils.trim(uri, '#'));
+  $.ajax({
+    "url": host,
+    "type": 'GET',
+    "dataType": "json",
+    "async": false
+  }).done(function(data) {
+    var results = data.results;
+    for (var i = 0; i < results.length; i++) {
+      for (var j = 0; j < results[i].uri.length; i++) {
+        if (RDFE.Utils.trim(results[i].uri[j], '#') === RDFE.Utils.trim(uri, '#')) {
+          if (callback) {
+            callback(results[i].prefix[j]);
+          }
+          return;
+        }
+      }
+    }
+  });
+};
 
 /*
  *
@@ -214,8 +244,7 @@ RDFE.schema2ontology_range = function(range) {
     v = 'http://www.w3.org/2001/XMLSchema#string';
   }
   return v;
-}
-;
+};
 
 /*
  *
@@ -229,7 +258,7 @@ RDFE.OntologyManager = function(config) {
   this.reset();
 
   this.prefixes = $.extend({}, RDFE.prefixes, this.config.prefixes);
-}
+};
 
 RDFE.OntologyManager.prototype.init = function(options) {
   var self = this;
@@ -263,7 +292,7 @@ RDFE.OntologyManager.prototype.init = function(options) {
   };
 
   fn(0, options);
-}
+};
 
 RDFE.OntologyManager.prototype.reset = function(options) {
   // ontologies
@@ -272,15 +301,16 @@ RDFE.OntologyManager.prototype.reset = function(options) {
   this.ontologyProperties = {};
   this.individuals = {};
   this.fresnelLenses = {};
-}
+};
 
 RDFE.OntologyManager.prototype.prefixByOntology = function(url) {
-  for (prefix in this.prefixes)
-    if (this.prefixes[prefix] == url)
+  for (prefix in this.prefixes) {
+    if (this.prefixes[prefix] === url) {
       return prefix;
-
+    }
+  }
   return null;
-}
+};
 
 /*
  *
@@ -299,7 +329,7 @@ RDFE.OntologyManager.prototype.uriDenormalize = function(v) {
     }
   }
   return v;
-}
+};
 
 /*
  *
@@ -318,11 +348,11 @@ RDFE.OntologyManager.prototype.uriNormalize = function(v, fb) {
   }
   // nothing found, return the fallback, undefined by default
   return fb;
-}
+};
 
 RDFE.OntologyManager.prototype.ontologiesAsArray = function() {
   return _.values(this.ontologies);
-}
+};
 
 RDFE.OntologyManager.prototype.ontologyByURI = function(uri, create) {
   var o = this.ontologies[uri];
@@ -330,11 +360,11 @@ RDFE.OntologyManager.prototype.ontologyByURI = function(uri, create) {
     this.ontologies[uri] = o = new RDFE.Ontology(this, uri);
   }
   return o;
-}
+};
 
 RDFE.OntologyManager.prototype.ontologyByPrefix = function(prefix) {
   return this.ontologies[this.prefixes[prefix]];
-}
+};
 
 RDFE.OntologyManager.prototype.ontologyRemove = function(URI) {
   var ontology = this.ontologyByURI(URI);
@@ -351,15 +381,15 @@ RDFE.OntologyManager.prototype.ontologyRemove = function(URI) {
 
     $(this).trigger('changed', [ this ]);
   }
-}
+};
 
 RDFE.OntologyManager.prototype.ontologyClassRemove = function(URI) {
   delete this.ontologyClasses[URI];
-}
+};
 
 RDFE.OntologyManager.prototype.ontologyPropertyRemove = function(URI) {
   delete this.ontologyProperties[URI];
-}
+};
 
 RDFE.OntologyManager.prototype.ontologyClassByURI = function(uri, create) {
   var c = this.ontologyClasses[uri];
@@ -369,7 +399,7 @@ RDFE.OntologyManager.prototype.ontologyClassByURI = function(uri, create) {
     c.ontology.classes[uri] = c;
   }
   return c;
-}
+};
 
 RDFE.OntologyManager.prototype.ontologyPropertyByURI = function(uri, create) {
   var p = this.ontologyProperties[uri];
@@ -379,11 +409,11 @@ RDFE.OntologyManager.prototype.ontologyPropertyByURI = function(uri, create) {
     p.ontology.properties[uri] = p;
   }
   return p;
-}
+};
 
 RDFE.OntologyManager.prototype.individualByURI = function(URI) {
   return this.individuals[URI];
-}
+};
 
 RDFE.OntologyManager.prototype.load = function(URI, params) {
   var self = this;
@@ -422,7 +452,7 @@ RDFE.OntologyManager.prototype.load = function(URI, params) {
   };
   var proxy = ((RDFE.Utils.getProtocol(URI) !== document.location.protocol) && (document.location.protocol === 'https:')) ? true: self.options.proxy;
   IO.retrieve(URI, $.extend({"proxy": proxy}, params));
-}
+};
 
 RDFE.OntologyManager.prototype.parseOntologyFile = function(URI, params) {
   var self = this,
@@ -828,7 +858,7 @@ RDFE.OntologyManager.prototype.findFresnelLens = function(domainURI) {
     return c.getFresnelLens();
   }
   return null;
-}
+};
 
 RDFE.OntologyManager.prototype.ontologyDetermine = function(URI) {
   var self = this;
@@ -845,7 +875,7 @@ RDFE.OntologyManager.prototype.ontologyDetermine = function(URI) {
     ontology = RDFE.uriOntology(URI);
   }
   return ontology;
-}
+};
 
 RDFE.OntologyManager.prototype.allOntologies = function() {
   return _.values(this.ontologies);
@@ -905,35 +935,45 @@ RDFE.Ontology = function(ontologyManager, URI, options) {
   // console.log('ontology =>', URI);
   var self = this;
 
-  this.options = $.extend({}, options);
-  this.URI = URI;
-  this.prefix = ontologyManager.prefixByOntology(URI);
-  this.classes = {};
-  this.properties = {};
+  self.options = $.extend({}, options);
+  self.URI = URI;
+  self.classes = {};
+  self.properties = {};
 
-  this.manager = ontologyManager;
-  this.manager.ontologies[URI] = this;
-}
+  self.manager = ontologyManager;
+  self.manager.ontologies[URI] = self;
+  self.prefix = ontologyManager.prefixByOntology(URI);
+  if (!self.prefix) {
+    var callback = function(prefix) {
+      if (prefix) {
+        self.prefix = prefix;
+        self.manager.prefixes[prefix] = URI;
+        $(self.manager).trigger('changed', [ self.manager ]);
+      }
+    };
+    RDFE.prefixByOntology(URI, callback);
+  }
+};
 
 RDFE.Ontology.prototype.classesAsArray = function() {
   return _.values(this.classes);
-}
+};
 
 RDFE.Ontology.prototype.classesLength = function() {
   return this.classesAsArray().length;
-}
+};
 
 RDFE.Ontology.prototype.ontologyClassByURI = function(classURI) {
   return this.classes[URI];
-}
+};
 
 RDFE.Ontology.prototype.propertyByURI = function(propertyURI) {
   return this.properties[URI];
-}
+};
 
 RDFE.Ontology.prototype.propertiesLength = function() {
   return _.values(this.properties).length;
-}
+};
 
 RDFE.Ontology.prototype.allProperties = function(domain) {
   var pl = [];
@@ -964,7 +1004,7 @@ RDFE.OntologyClass = function(ontologyManager, URI) {
   this.restrictions = {};
 
   this.manager = ontologyManager;
-}
+};
 
 RDFE.OntologyClass.prototype.propertiesAsArray = function() {
   var self = this;
@@ -973,7 +1013,7 @@ RDFE.OntologyClass.prototype.propertiesAsArray = function() {
     properties.push(self.properties[v]);
   }
   return properties;
-}
+};
 
 /**
  * Find the max cardinality for the given property.
@@ -1147,7 +1187,7 @@ RDFE.OntologyProperty = function(ontologyManager, URI) {
 
   this.manager = ontologyManager;
   this.manager.ontologyProperties[URI] = self;
-}
+};
 
 RDFE.OntologyProperty.prototype.hasDomain = function(domain) {
   var self = this;
@@ -1186,7 +1226,7 @@ RDFE.OntologyProperty.prototype.getRange = function(subProperties) {
   }
 
   return undefined;
-}
+};
 
 RDFE.OntologyProperty.prototype.getSuperProperties = function(includeSub, superProperties, checkedProperties) {
   superProperties = superProperties || [];
@@ -1219,7 +1259,7 @@ RDFE.OntologyIndividual = function(ontologyManager, URI, options) {
 
   this.manager = ontologyManager;
   this.manager.individuals[URI] = this;
-}
+};
 
 /*
  *
@@ -1233,4 +1273,4 @@ RDFE.FresnelLens = function(ontologyManager, URI) {
   this.manager = ontologyManager;
   this.showProperties = [];
   this.hideProperties = [];
-}
+};
