@@ -329,6 +329,7 @@
     }
     if (!self.resourceSelectize) {
       self.resourceSelect.selectize({
+        "delimiter": null,
         "valueField": "value",
         "searchField": "label",
         "sortField": "label",

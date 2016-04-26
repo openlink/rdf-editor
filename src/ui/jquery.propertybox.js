@@ -33,17 +33,18 @@
     });
 
     $(self.mainElement).selectize({
-      valueField: "URI",
-      searchField: [ "title", "label", "prefix", "curi", "URI" ],
-      sortField: [ "prefix", "URI" ],
-      options: self.propertyList(),
-      onChange: function(value) {
+      "delimiter": null,
+      "valueField": "URI",
+      "searchField": [ "title", "label", "prefix", "curi", "URI" ],
+      "sortField": [ "prefix", "URI" ],
+      "options": self.propertyList(),
+      "onChange": function(value) {
         $(self).trigger('changed', self.sel.options[value]);
       },
-      createProperty: function(input, create) {
+      "createProperty": function(input, create) {
         return self.options.ontologyManager.ontologyPropertyByURI(self.options.ontologyManager.uriDenormalize(input), create);
       },
-      create: function(input, cb) {
+      "create": function(input, cb) {
         // search for and optionally create a new property
         var that = this;
         var create = false;
@@ -92,8 +93,8 @@
           });
         }
       },
-      render: {
-        item: function(item, escape) {
+      "render": {
+        "item": function(item, escape) {
           var x = item.title || item.label || item.curi || item.name;
           if(item.curi && item.curi != x) {
             x = escape(x) + ' <small>(' + escape(item.curi) + ')</small>';
@@ -103,10 +104,10 @@
           }
           return '<div>' + x + '</div>';
         },
-        option: function(item, escape) {
+        "option": function(item, escape) {
           return '<div>' + escape(item.title || item.label || item.curi || item.name) + '<br/><small>(' + escape(item.URI) + ')</small></div>';
         },
-        'option_create': function(data, escape) {
+        "option_create": function(data, escape) {
           var url = data.input;
           url = RDFE.Utils.trim(RDFE.Utils.trim(url, '<'), '>');
           url = self.options.ontologyManager.uriDenormalize(url);
