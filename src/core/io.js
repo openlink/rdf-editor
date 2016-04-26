@@ -225,7 +225,7 @@ String.prototype.format = function() {
       params = extendParams(params, self.options);
       var __success = function(data, status, xhr) {
         clearGraph(store, storeGraph);
-        store.loadTurtle(data, storeGraph, graph, null, function(error, result) {
+        store.load('text/turtle', data, graph, function(error, result) {
           if (!error && params["__success"]) {
             params["__success"](data, status, xhr);
           }
@@ -474,11 +474,11 @@ String.prototype.format = function() {
       this.exec('GET', path, headers, null, params);
     }
 
-    c.prototype.retrieveToStore = function(path, store, storeGraph, params) {
+    c.prototype.retrieveToStore = function(path, store, graph, params) {
       params = extendParams(params, this.options);
       var __success = function(data, status, xhr) {
-        clearGraph(store, storeGraph);
-        store.loadTurtle(data, storeGraph, path, null, function(error, result) {
+        clearGraph(store, graph);
+        store.load('text/turtle', data, graph, function(error, result) {
           if (!error && params["__success"]) {
             params["__success"](data, status, xhr);
           }
@@ -507,10 +507,10 @@ String.prototype.format = function() {
       this.exec(method, path, headers, content, params);
     }
 
-    c.prototype.insertFromStore = function(path, store, storeGraph, params) {
+    c.prototype.insertFromStore = function(path, store, graph, params) {
       var self = this;
       params = extendParams(params, self.options);
-      store.graph(storeGraph, function(success, result) {
+      store.graph(graph, function(success, result) {
         if (!success) {
           if (params.error) {
             params.error(result);
