@@ -448,8 +448,8 @@ RDFE.IO.LDPFolder = (function() {
       ' select distinct ?s ?size ?mtime ' +
       '   from <urn:default>  ' +
       '  where {  ' +
-      '          ?s a ?t .  ' +
-      '          FILTER(?t in (posix:File, rdfs:Resource, ldp:Resource)) .  ' +
+      '          ?s a ?t . ' +
+      '          FILTER(str(?t) = \'http://www.w3.org/ns/posix/stat#File\' || str(?t) = \'http://www.w3.org/2000/01/rdf-schema#Resource\' || str(?t) = \'http://www.w3.org/ns/ldp#Resource\') .  ' +
       '          optional { ?s posix:size ?size . } .  ' +
       '          optional { ?s posix:mtime ?mtime . }  ' +
       '        }',
@@ -485,7 +485,7 @@ RDFE.IO.LDPFolder = (function() {
           '   from <urn:default>  ' +
           '  where {  ' +
           '          ?s a ?t .  ' +
-          '          FILTER(?t in (posix:Directory, ldp:Container, ldp:BasicContainer)) .  ' +
+          '          FILTER(str(?t) = \'http://www.w3.org/ns/posix/stat#Directory\' || str(?t) = \'http://www.w3.org/ns/ldp#Container\' || str(?t) = \'http://www.w3.org/ns/ldp#BasicContainer\') .  ' +
           '          optional { ?s posix:mtime ?mtime }  ' +
           '          optional { ?s ldp:contains ?contains }  ' +
           '        }',
