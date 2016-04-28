@@ -256,12 +256,27 @@ RDFE.Document.prototype.import = function(content, contentType, success, fail) {
 RDFE.Document.prototype.importTurtle = function(content, success, fail) {
   var self = this;
 
-  self.store.loadTurtle(content, self.graph, self.graph, RDFE.prefixes, function(error, result) {
-    if (!error && success) {
-      success(result);
+  self.store.load('text/turtle', content, self.graph, function(error, result) {
+    if (!error) {
+      if (success) {
+        success(result);
+      }
     }
-    else if (error && fail) {
-      fail(error);
+    else {
+      if (error.message.startsWith('Undefined prefix')) {
+        var ndx = error.message.indexOf('"');
+        var prefix = error.message.substring(ndx+1);
+        ndx = prefix.indexOf('"');
+        prefix = prefix.substring(0, ndx-1);
+        var uri = self.ontologyManager.prefixes[prefix];
+        if (uri) {
+          content = '@prefix {0}: <{1}> .'.format(prefix, uri) + content;
+          return self.importTurtle(content, success, fail);
+        }
+      }
+      if (fail) {
+        fail(error);
+      }
     }
   });
 };
