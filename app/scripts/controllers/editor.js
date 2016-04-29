@@ -341,7 +341,7 @@ angular.module('myApp.editor', ['ngRoute'])
       $scope.editor.toggleView(mode);
     });
 
-    $scope.ontologyView = new RDFE.OntologyView($scope.editor.ontologyManager);
+    $scope.ontologyView = new RDFE.OntologyView($scope.editor);
     $scope.ontologyView.render($('#container-ontologies'));
     $('#ontology-add').click(function (e) {
       e.stopPropagation();

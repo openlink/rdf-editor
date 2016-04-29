@@ -25,10 +25,11 @@
 
   RDFE.OntologyView = (function() {
     // constructor
-    var c = function(ontologyManager, params) {
+    var c = function(editor, params) {
       params = $.extend({}, params);
 
-      this.ontologyManager = ontologyManager;
+      this.editor = editor;
+      this.ontologyManager = editor.ontologyManager;
       this.ontologies = this.ontologyManager.allOntologies();
     };
 
@@ -106,7 +107,7 @@
           "titleTooltip": 'URI',
           "formatter": function(value, ontology, index) {
             return [
-              '<span title="Ontology {0} - {1} classes, {2} properties">'.format(ontology.URI, ontology.classesLength(), ontology.propertiesLength()),
+              '<span title="Vocabulary {0} - {1} classes, {2} properties">'.format(ontology.URI, ontology.classesLength(), ontology.propertiesLength()),
               '{0} - {1}/{2}'.format(ontology.URI, ontology.classesLength(), ontology.propertiesLength()),
               '</span>',
             ].join('');
@@ -119,10 +120,13 @@
           "clickToSelect": false,
           "formatter": function(value, row, index) {
             return [
-              '<a class="refresh ml10" href="javascript:void(0)" title="Refresh ontology">',
+              '<a class="refresh ml10" href="javascript:void(0)" title="Refresh vocabulary">',
               '  <i class="glyphicon glyphicon-refresh"></i>',
               '</a>',
-              '<a class="remove ml10" href="javascript:void(0)" title="Remove ontology">',
+              '<a class="dereference ml10" href="javascript:void(0)" title="Dereference this vocabulary">',
+              '  <i class="glyphicon glyphicon-link"></i>',
+              '</a>',
+              '<a class="remove ml10" href="javascript:void(0)" title="Remove vocabulary">',
               '  <i class="glyphicon glyphicon-remove"></i>',
               '</a>'
             ].join('');
@@ -149,6 +153,10 @@
                 "ioType": 'http'
               };
               self.ontologyManager.parseOntologyFile(ontology.URI, params);
+            },
+            'click .dereference': function(e, value, ontology, index) {
+              var dereference = self.editor.dereference();
+              dereference(ontology.URI);
             },
             'click .remove': function(e, value, ontology, index) {
               self.ontologyManager.ontologyRemove(ontology.URI);

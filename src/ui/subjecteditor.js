@@ -71,7 +71,7 @@
           '  <div class="panel-body">' +
           '    <div class="form-horizontal"> ' +
           '      <div class="form-group"> ' +
-          '        <label for="ontology" class="col-sm-2 control-label">Ontology</label> ' +
+          '        <label for="ontology" class="col-sm-2 control-label">Vocabulary</label> ' +
           '        <div class="col-sm-10"> ' +
           '          <select name="ontology" id="ontology" class="form-control" /> ' +
           '        </div> ' +
