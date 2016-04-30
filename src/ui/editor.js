@@ -984,18 +984,27 @@ RDFE.Editor.prototype.changeObjectType = function (predicate, objectEditor) {
   var currentNode = objectEditor.getValue();
   if (predicate) {
     ranges = predicate.getRange();
-    if (ranges) {
-      nodeItems = self.doc.itemsByRange(ranges);
-      if (nodeItems) {
-        node = new RDFE.RdfNode('uri', currentNode.value);
-        if (predicate.URI !== 'http://www.w3.org/1999/02/22-rdf-syntax-ns#type') {
-          self.objectsLookup(objectEditor, ranges);
+    if (ranges && ranges.length) {
+      for (var i = 0; i < ranges.length; i++) {
+        if (objectEditor.isLiteralType(ranges[i])) {
+          node = new RDFE.RdfNode('literal', currentNode.value, ranges[i], currentNode.language);
+          break;
         }
       }
-      else {
-        for (var i = 0; i < ranges.length; i++) {
-          if (objectEditor.isLiteralType(ranges[i])) {
-            node = new RDFE.RdfNode('literal', currentNode.value, ranges[i], currentNode.language);
+
+      if (!node) {
+        nodeItems = self.doc.itemsByRange(ranges);
+        if (nodeItems) {
+          node = new RDFE.RdfNode('uri', currentNode.value);
+          if (predicate.URI !== 'http://www.w3.org/1999/02/22-rdf-syntax-ns#type') {
+            self.objectsLookup(objectEditor, ranges);
+          }
+        }
+        else {
+          for (var i = 0; i < ranges.length; i++) {
+            if (objectEditor.isLiteralType(ranges[i])) {
+              node = new RDFE.RdfNode('literal', currentNode.value, ranges[i], currentNode.language);
+            }
           }
         }
       }

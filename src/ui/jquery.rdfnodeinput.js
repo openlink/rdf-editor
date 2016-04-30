@@ -449,7 +449,7 @@
       return new RDFE.RdfNode(
         'literal',
         (nodeTypes[this.currentType].getValue ? nodeTypes[this.currentType].getValue(this.mainElement) : this.mainElement.val()),
-        (this.currentType !== 'http://www.w3.org/2000/01/rdf-schema#Literal' ? this.currentType : undefined),
+        this.currentType,
         (this.lang ? this.lang : undefined)
       );
   };

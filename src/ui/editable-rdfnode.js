@@ -49,18 +49,45 @@
       return this.$input.rdfNodeEditor().getValue();
     },
     value2input: function(value) {
+      var node = value;
       var nodeItems;
       if (this.options && this.options.rdfnode) {
         var rdfnode = this.options.rdfnode;
         var ontologyManager = rdfnode.ontologyManager;
         if (ontologyManager) {
           var predicate = ontologyManager.ontologyPropertyByURI(rdfnode.predicate);
-          var range = predicate.getRange();
+          if (predicate) {
+            var ranges = predicate.getRange();
+            if (ranges && ranges.length) {
+              var editor = this.$input.rdfNodeEditor();
+              for (var i = 0; i < ranges.length; i++) {
+                if (editor.isLiteralType(ranges[i])) {
+                  node = new RDFE.RdfNode('literal', value, ranges[i]);
+                  break;
+                }
+              }
 
-          nodeItems = rdfnode.document.itemsByRange(range);
+              if (!node) {
+                nodeItems = self.doc.itemsByRange(ranges);
+                if (nodeItems) {
+                  node = new RDFE.RdfNode('uri', value);
+                }
+                else {
+                  for (var i = 0; i < ranges.length; i++) {
+                    if (editor.isLiteralType(ranges[i])) {
+                      node = new RDFE.RdfNode('literal', value, ranges[i]);
+                    }
+                  }
+                }
+              }
+            }
+          }
         }
       }
-      this.$input.rdfNodeEditor().setValue(value, nodeItems);
+      if (!node) {
+        node = new RDFE.RdfNode('literal', value);
+      }
+      this.$input.rdfNodeEditor().setValue(node, nodeItems);
     }
   });
   RdfNode.defaults = $.extend({}, $.fn.editabletypes.abstractinput.defaults, {
