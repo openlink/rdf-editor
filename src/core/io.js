@@ -384,10 +384,10 @@ String.prototype.format = function() {
     c.prototype.insertFromStore = function(graph, store, storeGraph, params) {
       var self = this;
       params = extendParams(params, self.options);
-      store.graph(storeGraph, function(success, result) {
-        if (!success) {
+      store.graph(storeGraph, function(error, result) {
+        if (error) {
           if (params.error) {
-            params.error(result);
+            params.error(error);
           }
           return;
         }
@@ -510,10 +510,10 @@ String.prototype.format = function() {
     c.prototype.insertFromStore = function(path, store, graph, params) {
       var self = this;
       params = extendParams(params, self.options);
-      store.graph(graph, function(success, result) {
-        if (!success) {
+      store.graph(graph, function(error, result) {
+        if (error) {
           if (params.error) {
-            params.error(result);
+            params.error(error);
           }
           return;
         }
