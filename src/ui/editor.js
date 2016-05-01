@@ -72,7 +72,7 @@ RDFE.Editor.prototype.nodeFormatter = function(value) {
     if (value.datatype == 'http://www.w3.org/2001/XMLSchema#dateTime') {
       return (new Date(value.nominalValue)).toString();
     }
-    return RDFE.Utils.strAbbreviate(value.nominalValue, self.maxLength);
+    return RDFE.Utils.escapeXml(RDFE.Utils.strAbbreviate(value.nominalValue, self.maxLength));
   }
   return RDFE.Utils.uriAbbreviate(value.toString(), self.maxLength);
 };
