@@ -47,7 +47,7 @@
   },
   "autoInverseOfHandling": true,
   "startHashSignAsResource": true,
-  "validateEmptyNodes": true,
+  "validateEmptyNodes": false,
   "storage": [],
   "ioTimeout": 60000,
   "objectLookups": {
