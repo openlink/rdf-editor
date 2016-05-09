@@ -485,7 +485,7 @@
       }
     }
     self.lang = node.language;
-    if (node.value.indexOf('\n') !== -1) {
+    if (node.value && node.value.indexOf('\n') !== -1) {
       self.transformToTextarea();
     }
     self.mainElement.val(node.value);
