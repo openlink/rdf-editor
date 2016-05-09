@@ -204,7 +204,7 @@ angular.module('myApp.editor', ['ngRoute'])
     }
   }
 
-  RDFEditor.getEditor().then(function(editor) {
+  function processParams() {
     var uri = $routeParams.uri;
     var accept = $routeParams.accept;
     if (accept === 'turtle') {
@@ -214,12 +214,10 @@ angular.module('myApp.editor', ['ngRoute'])
       accept = 'application/ld+json';
     }
     var ioType = $routeParams.ioType || 'http';
-    var ioTimeout = $routeParams.ioTimeout || editor.config.options['ioTimeout'];
+    var ioTimeout = $routeParams.ioTimeout || $scope.editor.config.options['ioTimeout'];
     var sparqlEndpoint = $routeParams.sparqlEndpoint;
     var newDocument = $routeParams.newDocument;
 
-    $rootScope.editor = editor;
-    $scope.editor = editor;
     $scope.doc = $scope.editor.doc;
     $scope.editor.render($("#contents"));
 
@@ -347,7 +345,7 @@ angular.module('myApp.editor', ['ngRoute'])
       e.stopPropagation();
       $scope.ontologyView.editor();
     });
-  });
+  }
 
   function saveCheck(cbSave, myUrl, myIo) {
     if (!myUrl) {
@@ -481,4 +479,18 @@ angular.module('myApp.editor', ['ngRoute'])
     $('#container-ontologies').toggle();
     $('#ontology-add').toggle();
   };
+
+  // Create editor instance
+  if ($scope.editor) {
+    processParams();
+  }
+  else {
+    RDFEditor.getEditor().then(function(editor) {
+      $rootScope.editor = editor;
+      $scope.editor = editor;
+
+      processParams();
+    });
+  }
+
 }]);

@@ -80,8 +80,9 @@ String.prototype.format = function() {
   */
   var dummyFct = function() {}
 
-  var clearGraph = function(store, graph) {
-    store.clear(graph, dummyFct);
+  var clearGraph = function(store, graph, callback) {
+    callback = callback || dummyFct;
+    store.clear(graph, callback);
   }
 
   RDFE.IO.Base = (function() {
@@ -224,14 +225,19 @@ String.prototype.format = function() {
       var self = this;
       params = extendParams(params, self.options);
       var __success = function(data, status, xhr) {
-        clearGraph(store, storeGraph);
-        store.load('text/turtle', data, graph, function(error, result) {
-          if (!error && params["__success"]) {
-            params["__success"](data, status, xhr);
-          }
-          else if (error && params["error"]) {
-            params["error"](result);
-          }
+        clearGraph(store, storeGraph, function () {
+          store.load('text/turtle', data, graph, function(error) {
+            if (!error) {
+              if (params["__success"]) {
+                params["__success"](data, status, xhr);
+              }
+            }
+            else {
+              if (params["error"]) {
+                params["error"](error);
+              }
+            }
+          });
         });
       };
       params["__success"] = params["success"];
@@ -361,14 +367,19 @@ String.prototype.format = function() {
       var self = this;
       params = extendParams(params, self.options);
       var __success = function(data, status, xhr) {
-        clearGraph(store, storeGraph);
-        store.loadTurtle(data, storeGraph, graph, null, function(error, result) {
-          if (!error && params["__success"]) {
-            params["__success"](data, status, xhr);
-          }
-          else if (error && params["error"]) {
-            params["error"](result);
-          }
+        clearGraph(store, storeGraph, function() {
+          store.loadTurtle(data, storeGraph, graph, null, function(error) {
+            if (!error) {
+              if (params["__success"]) {
+                params["__success"](data, status, xhr);
+              }
+            }
+            else {
+              if (params["error"]) {
+                params["error"](error);
+              }
+            }
+          });
         });
       };
       params["__success"] = params["success"];
@@ -477,14 +488,19 @@ String.prototype.format = function() {
     c.prototype.retrieveToStore = function(path, store, graph, params) {
       params = extendParams(params, this.options);
       var __success = function(data, status, xhr) {
-        clearGraph(store, graph);
-        store.load('text/turtle', data, graph, function(error, result) {
-          if (!error && params["__success"]) {
-            params["__success"](data, status, xhr);
-          }
-          else if (error && params["error"]) {
-            params["error"](result);
-          }
+        clearGraph(store, graph, function() {
+          store.load('text/turtle', data, graph, function(error) {
+            if (!error) {
+              if (params["__success"]) {
+                params["__success"](data, status, xhr);
+              }
+            }
+            else {
+              if (params["error"]) {
+                params["error"](error);
+              }
+            }
+          });
         });
       };
       params["__success"] = params["success"];
