@@ -448,13 +448,13 @@ RDFE.IO.LDPFolder = (function() {
       ' select distinct ?s ?size ?mtime ' +
       '   from <urn:default>  ' +
       '  where {  ' +
-      '          ?s a ?t .  ' +
-      '          FILTER(?t in (posix:File, rdfs:Resource, ldp:Resource)) .  ' +
+      '          ?s a ?t . ' +
+      '          FILTER(str(?t) = \'http://www.w3.org/ns/posix/stat#File\' || str(?t) = \'http://www.w3.org/2000/01/rdf-schema#Resource\' || str(?t) = \'http://www.w3.org/ns/ldp#Resource\') .  ' +
       '          optional { ?s posix:size ?size . } .  ' +
       '          optional { ?s posix:mtime ?mtime . }  ' +
       '        }',
-      function(status, result) {
-        if (!status) {
+      function(error, result) {
+        if (error) {
           fail('Failed to query LDP the container at ' + baseUrl + '.');
           return;
         }
@@ -485,12 +485,12 @@ RDFE.IO.LDPFolder = (function() {
           '   from <urn:default>  ' +
           '  where {  ' +
           '          ?s a ?t .  ' +
-          '          FILTER(?t in (posix:Directory, ldp:Container, ldp:BasicContainer)) .  ' +
+          '          FILTER(str(?t) = \'http://www.w3.org/ns/posix/stat#Directory\' || str(?t) = \'http://www.w3.org/ns/ldp#Container\' || str(?t) = \'http://www.w3.org/ns/ldp#BasicContainer\') .  ' +
           '          optional { ?s posix:mtime ?mtime }  ' +
           '          optional { ?s ldp:contains ?contains }  ' +
           '        }',
-          function(status, result) {
-            if (!status) {
+          function(error, result) {
+            if (error) {
               fail('Failed to query LDP the container at ' + baseUrl + '.');
               return;
             }
@@ -548,14 +548,15 @@ RDFE.IO.LDPFolder = (function() {
       }
       else {
         // look for LDP resources
-        var store = rdfstore.create();
-        store.load('text/turtle', data, 'urn:default', function() {
-          findLdpFiles(store, self.url, function(newFiles) {
-            self.children = newFiles;
-            if(success) {
-              success();
-            }
-          }, fail);
+        rdfstore.create(function(error, store) {
+          store.load('text/turtle', data, 'urn:default', function() {
+            findLdpFiles(store, self.url, function(newFiles) {
+              self.children = newFiles;
+              if(success) {
+                success();
+              }
+            }, fail);
+          });
         });
       }
     }).fail(function(jqXHR) {

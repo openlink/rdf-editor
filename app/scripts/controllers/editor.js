@@ -13,26 +13,38 @@ angular.module('myApp.editor', ['ngRoute'])
   var editor = null;
 
   function getEditor() {
-    if(editor) {
+    if (editor) {
       return $q.when(editor);
     }
     else {
       return $q(function(resolve, reject) {
         RDFEConfig.getConfig().then(function(config) {
-          editor = new RDFE.Editor(config, DocumentTree);
+          var params = {
+            "config": config,
+            "documentTree": DocumentTree
+          };
+          new RDFE.Editor(params, function(editor) {
+            // subscribe to editor events FIXME: a service does not seem like the best place to do this
+            $(editor).on('rdf-editor-success', function(e, d) {
+              Notification.notify('success', d.message);
+            }).on('rdf-editor-error', function(e, d) {
+              Notification.notify('error', d.message);
+            }).on('rdf-editor-start', function(e, d) {
+              editor.spinner++;
+              if (editor.spinner === 1) {
+                usSpinnerService.spin('editor-spinner');
+              }
+            }).on('rdf-editor-done', function(e, d) {
+              if (editor.spinner > 0) {
+                editor.spinner--;
+              }
+              if (editor.spinner === 0) {
+                usSpinnerService.stop('editor-spinner');
+              }
+            });
 
-          // subscribe to editor events FIXME: a service does not seem like the best place to do this
-          $(editor).on('rdf-editor-success', function(e, d) {
-            Notification.notify('success', d.message);
-          }).on('rdf-editor-error', function(e, d) {
-            Notification.notify('error', d.message);
-          }).on('rdf-editor-start', function(e, d) {
-            usSpinnerService.spin('editor-spinner');
-          }).on('rdf-editor-done', function(e, d) {
-            usSpinnerService.stop('editor-spinner');
+            resolve(editor);
           });
-
-          resolve(editor);
         });
       });
     }
@@ -45,26 +57,30 @@ angular.module('myApp.editor', ['ngRoute'])
 
 .filter('namingSchemaLabel', function() {
   return function(input, scope, plural, lowercase) {
-    if (scope.namingSchema) {
-      var ndx = (plural === true) ? 1 : 0;
-      return scope.namingSchema[input][ndx];
+    if (scope.editor) {
+      var namingSchema = scope.editor.namingSchema();
+      return namingSchema[input][(plural === true) ? 1 : 0];
     }
   };
 })
 
-.filter('viewModeKey', function() {
-  return function(input) {
-    switch(input) {
-      case 'triples':
-        return 'spo';
-      case 'predicates':
-        return 'p';
-      case 'entities':
-        return 's';
-      case 'values':
-        return 'o';
-      default:
-        return input;
+.filter('namingSchemaTitle', function() {
+  return function(input, scope) {
+    if (scope.editor) {
+      var namingSchema = scope.editor.namingSchema();
+
+      switch(input) {
+        case 'spo':
+          return (namingSchema === 'SPO')? 'RDF Statement Graph Representation [Data]': 'Entity Relationship Representation  [Data]';
+        case 's':
+          return (namingSchema === 'SPO')? 'Items described by sentence Predicate & Object pairs in this document': 'Items described by Attribute & Value pairs in this document';
+        case 'p':
+          return (namingSchema === 'SPO')? 'How Sentence Subjects and Objects are associated': 'How Entities and their Attribute Values are associated';
+        case 'o':
+          return (namingSchema === 'SPO')? 'Objects & Data Types associated with a  Sentence Subject via its Predicate': 'Values & Data Types associated with an Entity Attribute';
+        default:
+          return input;
+      }
     }
   };
 })
@@ -74,16 +90,7 @@ angular.module('myApp.editor', ['ngRoute'])
   '$rootScope', '$scope', '$routeParams', '$location', '$timeout', "usSpinnerService", 'RDFEditor', 'DocumentTree', 'Notification',
   function($rootScope, $scope, $routeParams, $location, $timeout, usSpinnerService, RDFEditor, DocumentTree, Notification) {
 
-  function toggleSpinner(on) {
-    if(on) {
-      usSpinnerService.spin('editor-spinner');
-    }
-    else {
-      usSpinnerService.stop('editor-spinner');
-    }
-  }
-
-  function getIO(ioType, sparqlEndpoint, ioTimeout) {
+  function getIO(accept, ioType, sparqlEndpoint, ioTimeout) {
     var authFunction;
     if (DocumentTree.getAuthInfo) {
       authFunction = function(url, success, fail) {
@@ -94,7 +101,8 @@ angular.module('myApp.editor', ['ngRoute'])
     var io = RDFE.IO.createIO(ioType, {
       "sparqlEndpoint": sparqlEndpoint,
       "gspEndpoint": $('#gspEndpoint').val(),
-      "ioTimeout": ioTimeout
+      "ioTimeout": ioTimeout,
+      "accept": accept
     });
     io.type = ioType;
     io.options.authFunction = authFunction;
@@ -102,117 +110,136 @@ angular.module('myApp.editor', ['ngRoute'])
     return io;
   }
 
-  function ioRetrieve(url, type, sparqlEndpoint, ioTimeout) {
-    var io_rdfe;
-    try {
-      io_rdfe = getIO(type || "sparql", sparqlEndpoint, ioTimeout);
-
-      // see if we have auth information cached
-      var loadUrl= function(url, io_rdfe) {
-        toggleSpinner(true);
-        $scope.mainDoc.load(url, io_rdfe, function() {
-          toggleView();
-          $scope.editor.updateView();
-          $scope.$apply(function() {
-            // this is essentially a no-op to force the ui to update the url view
-            $scope.mainDoc.url = url;
-          });
-          showViewEditor();
-          $scope.editor.docChanged();
-        }, function(state) {
-          var msg = (state && state.message)? state.message: 'Failed to load document';
-          Notification.notify('error', msg);
-          toggleSpinner(false);
-        });
-      };
-      if (DocumentTree.getAuthInfo) {
-        DocumentTree.getAuthInfo(url, false).then(function(authInfo) {
-          if(authInfo) {
-            io_rdfe.options.username = authInfo.username;
-            io_rdfe.options.password = authInfo.password;
-          }
-          loadUrl(url, io_rdfe);
-        });
-      }
-      else {
-        loadUrl(url, io_rdfe);
-      }
-    }
-    catch(e) {
-      Notification.notify('error', e);
-      return;
-    }
-
-  }
-
   function toggleView() {
-    var s = $routeParams["statement:subject"];
-    var p = $routeParams["statement:predicate"];
-    var o = $routeParams["statement:object"];
+    var s = $routeParams["triple:subject"]      || $routeParams["spo:subject"];
+    var p = $routeParams["triple:predicate"]    || $routeParams["spo:predicate"];
+    var o = $routeParams["triple:object"]       || $routeParams["spo:object"];
+    var e = $routeParams["statement:entity"]    || $routeParams["eav:entity"];    ;
+    var a = $routeParams["statement:attribute"] || $routeParams["eav:attribute"];
+    var v = $routeParams["statement:value"]     || $routeParams["eav:value"];
+    var view = $routeParams["view"];
+    var uiMode = $routeParams["uiMode"];
 
     if (s) {
-      $scope.viewMode = ($routeParams["view"] === 'statements')? 'triples' :'entities';
+      $scope.viewMode = ((view === 'triples') || (view === 'statements'))? view :'subjects';
     }
     else if (p) {
-      $scope.viewMode = ($routeParams["view"] === 'statements')? 'triples' :'predicates';
+      $scope.viewMode = ((view === 'triples') || (view === 'statements'))? view :'predicates';
     }
     else if (o) {
-      $scope.viewMode = ($routeParams["view"] === 'statements')? 'triples' :'values';
+      $scope.viewMode = ((view === 'triples') || (view === 'statements'))? view :'objects';
     }
     else if (s || p || o) {
       $scope.viewMode = 'triples';
     }
+    if (e) {
+      $scope.viewMode = ((view === 'triples') || (view === 'statements'))? view :'entities';
+    }
+    else if (a) {
+      $scope.viewMode = ((view === 'triples') || (view === 'statements'))? view :'entities';
+    }
+    else if (v) {
+      $scope.viewMode = ((view === 'triples') || (view === 'statements'))? view :'values';
+    }
+    else if (e || a || v) {
+      $scope.viewMode = 'statements';
+    }
+    else if (view) {
+      $scope.viewMode = view;
+    }
+    if (!uiMode) {
+      if      (['triples', 'subjects', 'predicates', 'objects'].indexOf($scope.viewMode) > -1) {
+        $scope.editor.config.options.namingSchema = 'SPO';
+      }
+      else if (['statements', 'entities', 'entities', 'values'].indexOf($scope.viewMode) > -1) {
+        $scope.editor.config.options.namingSchema = 'EAV';
+      }
+    }
+
+    if (!$scope.viewMode) {
+      $scope.viewMode = $scope.editor.config.defaultView;
+      if (!$scope.viewMode) {
+        $scope.viewMode = 'statements';
+      }
+    }
+
     $scope.editor.toggleView($scope.viewMode)
+    if      ($scope.viewMode === 'statements') {
+      $scope.viewMode = 'triples';
+    }
+    else if ($scope.viewMode === 'entities') {
+      $scope.viewMode = 'subjects';
+    }
+    else if ($scope.viewMode === 'attributes') {
+      $scope.viewMode = 'predicates';
+    }
+    else if ($scope.viewMode === 'values') {
+      $scope.viewMode = 'objects';
+    }
   }
 
   function showViewEditor() {
     var newStatement = $routeParams["newStatement"];
-    var s = $routeParams["statement:subject"];
-    var p = $routeParams["statement:predicate"];
-    var o = $routeParams["statement:object"];
-    var view = $routeParams["view"];
+    var s = $routeParams["triple:subject"]      || $routeParams["spo:subject"];
+    var p = $routeParams["triple:predicate"]    || $routeParams["spo:predicate"];
+    var o = $routeParams["triple:object"]       || $routeParams["spo:object"];
+    var e = $routeParams["statement:entity"]    || $routeParams["eav:entity"];    ;
+    var a = $routeParams["statement:attribute"] || $routeParams["eav:attribute"];
+    var v = $routeParams["statement:value"]     || $routeParams["eav:value"];
+    var view = $scope.viewMode;
 
-    if (s && (!view || view === 'entities')) {
+    if      ((s || e) && (!view || view === 'subjects' || view === 'entities')) {
+      s = $scope.editor.ontologyManager.uriDenormalize(s || e);
       $scope.editor.editSubject(s, newStatement);
     }
-    else if (p && (!view || view === 'predicates')) {
+    else if ((p || a) && (!view || view === 'predicates'|| view === 'attributes')) {
+      p = $scope.editor.ontologyManager.uriDenormalize(p || a);
       $scope.editor.editPredicate(p, newStatement);
     }
-    else if (o && (!view || view === 'values')) {
-      $scope.editor.editObject(o, newStatement);
+    else if ((o || v) && (!view || view === 'objects' || view === 'values')) {
+      $scope.editor.editObject(o || v, newStatement);
     }
-    else if ((s || p || o || newStatement) && (!view || view === 'statements')) {
-      $scope.editor.editTriple(s, p, o, newStatement);
+    else if ((s || p || o || e || a || v || newStatement) && (!view || view === 'statements' || view === 'triples')) {
+      $scope.editor.editTriple(s || e, p || a, o || v, newStatement);
     }
   }
 
-  RDFEditor.getEditor().then(function(editor) {
-    $rootScope.editor = editor;
-    $scope.editor = editor;
-    $scope.namingSchema = editor.config.options[editor.config.options["namingSchema"]];
-    $scope.mainDoc = $scope.editor.doc;
-    $scope.ontologyManager = $scope.editor.ontologyManager;
+  function processParams() {
+    var uri = $routeParams.uri;
+    var accept = $routeParams.accept;
+    if (accept === 'turtle') {
+      accept = 'text/turtle';
+    }
+    else if (accept === 'jsonld') {
+      accept = 'application/ld+json';
+    }
+    var ioType = $routeParams.ioType || 'http';
+    var ioTimeout = $routeParams.ioTimeout || $scope.editor.config.options['ioTimeout'];
+    var sparqlEndpoint = $routeParams.sparqlEndpoint;
+    var newDocument = $routeParams.newDocument;
+
+    $scope.doc = $scope.editor.doc;
     $scope.editor.render($("#contents"));
 
     // the browser requested that we save the current document
-    if ($routeParams.saveDocument) {
-      $scope.mainDoc.url = $routeParams.uri;
-      $scope.mainDoc.io = getIO($routeParams.ioType, $routeParams.sparqlEndpoint, editor.config.options['ioTimeout']);
+    if ($routeParams.saveDocument === "true") {
+      $scope.doc.url = uri;
+      $scope.doc.io = getIO(accept, ioType, sparqlEndpoint, ioTimeout);
       $scope.saveDocument();
       $scope.editor.updateView();
     }
 
     // and if we are told, then we create a new document by clearing the old one
-    else if ($routeParams.newDocument) {
-      $scope.mainDoc.new(function() {
+    else if ((newDocument === "true") || ((newDocument === "false") && !uri)) {
+      $scope.doc.new(function() {
         toggleView();
         $scope.editor.saveSubject = null;
         $scope.editor.updateView();
         $timeout(function() {
           // Any code in here will automatically have an $scope.apply() run afterwards
-          if ($routeParams.uri) {
-            $scope.mainDoc.url = $routeParams.uri;
-            $scope.mainDoc.io = getIO($routeParams.ioType, $routeParams.sparqlEndpoint, editor.config.options['ioTimeout']);
+          if ((newDocument !== "false") && uri) {
+            $scope.doc.url = uri;
+            $scope.doc.io = getIO(accept, ioType, sparqlEndpoint, ioTimeout);
           }
         });
         showViewEditor();
@@ -222,20 +249,25 @@ angular.module('myApp.editor', ['ngRoute'])
     }
 
     // otherwise we try to load the requested document
-    else if ($routeParams.uri) {
+    else if (uri) {
       var content = $.jStorage.get('rdfe:savedDocument', null);
       if (content) {
-        $scope.mainDoc.store.clear(function() {
-          $scope.mainDoc.store.loadTurtle(content, $scope.mainDoc.graph, $scope.mainDoc.graph, function(success, r) {
-            if (success) {
+        $scope.doc.store.clear(function() {
+          $scope.doc.store.loadTurtle(content, $scope.doc.graph, $scope.doc.graph, null, function(error) {
+            if (!error) {
               toggleView();
               $scope.editor.saveSubject = null;
               $scope.editor.updateView();
               $timeout(function() {
                 // this is essentially a no-op to force the ui to update the url view
-                $scope.mainDoc.dirty = true;
-                $scope.mainDoc.url = $routeParams.uri;
-                $scope.mainDoc.io = getIO($routeParams.ioType, $routeParams.sparqlEndpoint, editor.config.options['ioTimeout']);
+                $scope.doc.dirty = true;
+                if (newDocument === "false") {
+                  $scope.doc.url = null;
+                }
+                else {
+                  $scope.doc.url = uri;
+                  $scope.doc.io = getIO(accept, ioType, sparqlEndpoint, ioTimeout);
+                }
               });
               showViewEditor();
             }
@@ -243,8 +275,55 @@ angular.module('myApp.editor', ['ngRoute'])
         });
       }
       else {
-        ioRetrieve($routeParams.uri, $routeParams.ioType, $routeParams.sparqlEndpoint, editor.config.options['ioTimeout']);
+        try {
+          var io = getIO(accept, ioType, sparqlEndpoint, ioTimeout);
+          var loadUrl= function(url, io) {
+            $scope.editor.toggleSpinner(true);
+            $scope.doc.load(url, io, function() {
+              toggleView();
+              $scope.editor.updateView();
+              $scope.$apply(function() {
+                // this is essentially a no-op to force the ui to update the url view
+                if (newDocument === "false") {
+                  $scope.doc.url = null;
+                }
+                else {
+                  $scope.doc.url = uri;
+                  $scope.doc.io = io;
+                }
+              });
+              showViewEditor();
+              $scope.editor.docChanged();
+              $scope.editor.toggleSpinner(false);
+            }, function(state, data, status, xhr) {
+              var msg = (state && state.message)? state.message: 'Failed to load document';
+              Notification.notify('error', msg);
+              $scope.editor.toggleSpinner(false);
+            });
+          };
+
+          // see if we have auth information cached
+          if (DocumentTree.getAuthInfo) {
+            DocumentTree.getAuthInfo(uri, false).then(function(authInfo) {
+              if (authInfo) {
+                io_rdfe.options.username = authInfo.username;
+                io_rdfe.options.password = authInfo.password;
+              }
+              loadUrl(uri, io);
+            });
+          }
+          else {
+            loadUrl(uri, io);
+          }
+        }
+        catch(e) {
+          Notification.notify('error', e);
+        }
       }
+    }
+    else {
+      toggleView();
+      showViewEditor();
     }
     $.jStorage.deleteKey('rdfe:savedDocument');
 
@@ -260,24 +339,24 @@ angular.module('myApp.editor', ['ngRoute'])
       $scope.editor.toggleView(mode);
     });
 
-    $scope.ontologyView = new RDFE.OntologyView($scope.ontologyManager);
+    $scope.ontologyView = new RDFE.OntologyView($scope.editor);
     $scope.ontologyView.render($('#container-ontologies'));
     $('#ontology-add').click(function (e) {
       e.stopPropagation();
       $scope.ontologyView.editor();
     });
-  });
+  }
 
   function saveCheck(cbSave, myUrl, myIo) {
     if (!myUrl) {
-      myUrl = $scope.mainDoc.url;
+      myUrl = $scope.doc.url;
     }
     if (!myIo) {
-      myIo = $scope.mainDoc.io;
+      myIo = $scope.doc.io;
     }
     var mySave = function (data, status, xhr) {
       if (status === 'success') {
-        if ((!$scope.mainDoc.url || ($scope.mainDoc.io && ($scope.mainDoc.io !== myIo))) && data.length)  {
+        if ((!$scope.doc.url || ($scope.doc.io && ($scope.doc.io !== myIo))) && data.length)  {
           bootbox.confirm("Target document exists. Do you really want to overwrite it?", function(result) {
             if (result)
               cbSave(myUrl, myIo);
@@ -285,7 +364,7 @@ angular.module('myApp.editor', ['ngRoute'])
 
           return;
         }
-        if ($scope.mainDoc.srcParams && (($scope.mainDoc.srcParams.length !== data.length) || ($scope.mainDoc.srcParams.md5 !== $.md5(data)))) {
+        if ($scope.doc.srcParams && (($scope.doc.srcParams.length !== data.length) || ($scope.doc.srcParams.md5 !== $.md5(data)))) {
           bootbox.confirm("Target document was updated after last open/save. Do you really want to overwrite it?", function(result) {
             if (result)
               cbSave(myUrl, myIo);
@@ -302,15 +381,31 @@ angular.module('myApp.editor', ['ngRoute'])
     });
   }
 
+  $scope.openDocument = function() {
+    function doOpen() {
+      $location.url('/browser');
+    };
+    if($scope.doc.dirty) {
+      bootbox.confirm("Your document has unsaved changes. Do you really want to open another document?", function(r) {
+        if(r) {
+          $scope.$apply(doOpen);
+        }
+      });
+    }
+    else {
+      doOpen();
+    }
+  };
+
   $scope.saveDocument = function() {
-    if ($scope.mainDoc.url) {
+    if ($scope.doc.url) {
       var cbSave = function () {
-        toggleSpinner(true);
-        $scope.mainDoc.save(function() {
-          toggleSpinner(false);
-          Notification.notify('success', "Successfully saved document to <code>" + $scope.mainDoc.url + "</code>");
+        $scope.editor.toggleSpinner(true);
+        $scope.doc.save(function() {
+          $scope.editor.toggleSpinner(false);
+          Notification.notify('success', "Successfully saved document to <code>" + $scope.doc.url + "</code>");
         }, function(err) {
-          toggleSpinner(false);
+          $scope.editor.toggleSpinner(false);
           Notification.notify('error', (err ? err.message || err : "An unknown error occured"));
         });
       };
@@ -342,26 +437,22 @@ angular.module('myApp.editor', ['ngRoute'])
         pom.click();
       }
     }
-    $scope.mainDoc.store.graph($scope.mainDoc.graph, function(success, graph){
+    $scope.doc.store.graph($scope.doc.graph, function(success, graph){
       var serialized = graph.toNT();
       download('document.ttl', serialized);
     });
   };
 
-  $scope.openDocument = function() {
-    function doOpen() {
-      $location.url('/browser');
-    };
-    if($scope.mainDoc.dirty) {
-      bootbox.confirm("Your document has unsaved changes. Do you really want to open another document?", function(r) {
-        if(r) {
-          $scope.$apply(doOpen);
-        }
-      });
-    }
-    else {
-      doOpen();
-    }
+  $scope.signDocument = function() {
+    $scope.editor.signDocumentForm();
+  };
+
+  $scope.importInto = function() {
+    $scope.editor.importForm();
+  };
+
+  $scope.unsignDocument = function() {
+    $scope.editor.unsignDocumentForm();
   };
 
   $scope.closeDocument = function() {
@@ -369,7 +460,7 @@ angular.module('myApp.editor', ['ngRoute'])
     function doClose() {
       $location.url('/');
     };
-    if($scope.mainDoc.dirty) {
+    if($scope.doc.dirty) {
       bootbox.confirm("Your document has unsaved changes. Do you really want to close the document?", function(r) {
         if(r) {
           $scope.$apply(doClose);
@@ -388,4 +479,18 @@ angular.module('myApp.editor', ['ngRoute'])
     $('#container-ontologies').toggle();
     $('#ontology-add').toggle();
   };
+
+  // Create editor instance
+  if ($scope.editor) {
+    processParams();
+  }
+  else {
+    RDFEditor.getEditor().then(function(editor) {
+      $rootScope.editor = editor;
+      $scope.editor = editor;
+
+      processParams();
+    });
+  }
+
 }]);

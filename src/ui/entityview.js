@@ -117,12 +117,14 @@
           columns: [{
             field: 'label',
             title: RDFE.Utils.namingSchemaLabel('s', self.namingSchema) + ' Name',
+            titleTooltip: RDFE.Utils.namingSchemaLabel('s', self.namingSchema) + ' Name',
             aligh: 'left',
             sortable: true,
             formatter: labelFormatter
           }, {
             field: 'types',
             title: 'Entity Types',
+            titleTooltip: 'Entity Types',
             aligh: 'left',
             class: 'rdfe-small-column',
             sortable: true,

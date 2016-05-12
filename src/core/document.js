@@ -21,16 +21,26 @@
 if (!window.RDFE)
   window.RDFE = {};
 
-RDFE.Document = function(ontologyManager, config, documentTree) {
+RDFE.Document = function(params, callback) {
   var self = this;
 
-  self.ontologyManager = ontologyManager;
-  self.config = config;
-  self.documentTree = documentTree;
-  self.store = rdfstore.create();
-  self.store.registerDefaultNamespace('skos', 'http://www.w3.org/2004/02/skos/core#');
+  self.ontologyManager = params["ontologyManager"];
+  self.config = params["config"];
+  self.documentTree = params["documentTree"];
   self.graph = 'urn:graph:default';
   self.dirty = false;
+
+  // create document RDF store
+  rdfstore.create(function(error, store) {
+    if (!error) {
+      self.store = store;
+      self.store.registerDefaultNamespace('skos', 'http://www.w3.org/2004/02/skos/core#');
+
+      if (callback) {
+        callback(self);
+      }
+    }
+  });
 };
 
 RDFE.Document.prototype.setChanged = function(dirty) {
@@ -56,8 +66,12 @@ RDFE.Document.prototype.load = function(url, io, success, fail) {
       "md5": $.md5(data)
     }
 
-    if (success)
+    // check for signed document
+    self.checkForSignature();
+
+    if (success) {
       success();
+    }
   };
 
   // clear the store and then load the new data
@@ -82,38 +96,39 @@ RDFE.Document.prototype.load = function(url, io, success, fail) {
  * goes wrong. This does not include an invalid document but errors
  * like a failed query or the like.
  */
-RDFE.Document.prototype.verifyData = function(callback, fail) {
+RDFE.Document.prototype.verifyData = function(callback) {
   var self = this;
 
   if (self.config.options.validateEmptyNodes) {
     // check if there are any invalid uris in the document
-    self.store.execute("select * from <" + self.graph + "> where {{ <> ?p ?o } union { ?s2 ?p2 <> }}", function(success, result) {
-      if (success) {
+    var sparql = "select * from <" + self.graph + "> where {{ <> ?p ?o } union { ?s2 ?p2 <> }}";
+    self.store.execute(sparql, function(error, result) {
+      if (!error) {
         if (result.length > 0) {
-          if (callback)
-            callback(false, "The document is not valid. It contains empty URI nodes.");
-
+          if (callback) {
+            callback(new Error("The document is not valid. It contains empty URI nodes."));
+          }
           return false;
         }
         else {
-          if (callback)
-            callback(true);
-
+          if (callback) {
+            callback();
+          }
           return true;
         }
       }
       else {
-        if (fail)
-          fail();
-
+        if (callback) {
+          callback(error);
+        }
         return false;
       }
     });
   }
   else {
-    if (callback)
-      callback(true);
-
+    if (callback) {
+      callback();
+    }
     return true;
   }
 };
@@ -127,31 +142,31 @@ RDFE.Document.prototype.save = function(url, io, success, fail) {
 
     // url is optional
     if (typeof(url) != 'string') {
-       myUrl = self.url;
-       myIo = url;
-       mySuccess = io;
-       myFail = success;
-     }
+      myUrl = self.url;
+      myIo = url;
+      mySuccess = io;
+      myFail = success;
+    }
 
     // io is optional
     if (typeof(myIo) == 'function' || !myIo) {
-        myFail = mySuccess
-        mySuccess = myIo;
-        myIo = self.io;
+      myFail = mySuccess
+      mySuccess = myIo;
+      myIo = self.io;
     }
 
     if (!myUrl) {
       if (myFail) {
         myFail("No document loaded");
-    }
+      }
     }
     else {
       if (!myIo.insertFromStore) {
         myIo = RDFE.IO.createIO('webdav', myIo.options);
         myIo.type = 'webdav';
       }
-      self.verifyData(function(s, m) {
-        if (s) {
+      self.verifyData(function(error) {
+        if (!error) {
           var __success = function() {
             self.url = myUrl;
             self.io = myIo;
@@ -182,9 +197,9 @@ RDFE.Document.prototype.save = function(url, io, success, fail) {
           });
         }
         else if (myFail) {
-          myFail(m);
+          myFail(error);
         }
-      }, myFail);
+      });
     }
 };
 
@@ -194,13 +209,87 @@ RDFE.Document.prototype.new = function(success, fail) {
   self.url = null;
   self.io = null;
   self.srcParams = null;
-  self.store.clear(self.graph, function(s) {
-    if (s && success) {
+  self.signature = null;
+  self.store.clear(self.graph, function(error) {
+    if (!error) {
       self.setChanged(false);
-      success();
+      if (success) {
+        success();
+      }
     }
-    else if (!s && fail) {
-      fail();
+    else if (error && fail) {
+      fail(error);
+    }
+  });
+};
+
+RDFE.Document.prototype.import = function(content, contentType, success, fail) {
+  var self = this;
+
+  if (typeof(contentType) == 'function') {
+    fail = success;
+    success = contentType;
+    contentType = null;
+  }
+
+  // loading local data
+  if (contentType === 'application/ld+json') {
+    self.importJSON(content, success, fail);
+  }
+  else if (contentType === 'text/turtle') {
+    self.importTurtle(content, success, fail);
+  }
+  else {
+    var _fail = function (_error) {
+      var __fail = function (__error) {
+        var error = new Error();
+        error.name = 'SyntaxError';
+        error.message = _error.message + ' or ' + __error.message;
+        fail(error);
+      };
+      self.importJSON(content, success, __fail);
+    };
+    self.importTurtle(content, success, _fail);
+  }
+};
+
+RDFE.Document.prototype.importTurtle = function(content, success, fail) {
+  var self = this;
+
+  self.store.load('text/turtle', content, self.graph, function(error, result) {
+    if (!error) {
+      if (success) {
+        success(result);
+      }
+    }
+    else {
+      if (error.message.startsWith('Undefined prefix')) {
+        var ndx = error.message.indexOf('"');
+        var prefix = error.message.substring(ndx+1);
+        ndx = prefix.indexOf('"');
+        prefix = prefix.substring(0, ndx-1);
+        var uri = self.ontologyManager.prefixes[prefix];
+        if (uri) {
+          content = '@prefix {0}: <{1}> .'.format(prefix, uri) + content;
+          return self.importTurtle(content, success, fail);
+        }
+      }
+      if (fail) {
+        fail(error);
+      }
+    }
+  });
+};
+
+RDFE.Document.prototype.importJSON = function(content, success, fail) {
+  var self = this;
+
+  self.store.load('application/ld+json', content, self.graph, function(error, result) {
+    if (!error && success) {
+      success(result);
+    }
+    else if (error && fail) {
+      fail(error);
     }
   });
 };
@@ -209,25 +298,27 @@ RDFE.Document.prototype.new = function(success, fail) {
 RDFE.Document.prototype.deleteBySubject = function(uri, success, fail) {
   var self = this;
 
-  if(self.config.options.autoInverseOfHandling) {
-    var sparql = 'construct { <{1}> ?p ?o } FROM <{0}> WHERE { <{1}> ?p ?o. } '.format(self.graph, uri);
-    self.store.execute(sparql, function(s, results) {
-      if (!s) {
+  if (self.config.options.autoInverseOfHandling) {
+    var sparql = 'construct { <{1}> ?p ?o } from <{0}> where { <{1}> ?p ?o. } '.format(self.graph, uri);
+    self.store.execute(sparql, function(error, result) {
+      if (error) {
         if (fail) {
-          fail(results);
+          fail(error);
         }
-      } else {
-        self.deleteTriples(results.triples, success, fail);
+      }
+      else {
+        self.deleteTriples(result.triples, success, fail);
       }
     });
   }
   else {
-    self.store.execute('with <' + self.graph + '> delete { <' + uri + '> ?p ?o } where { <' + uri + '> ?p ?o }', function(s, r) {
-      if(s && success) {
+    var sparql = 'with <{0}> delete { <{1}> ?p ?o } where { <{1}> ?p ?o }'.format(self.graph, uri);
+    self.store.execute(sparql, function(error, result) {
+      if (!error && success) {
         success();
       }
-      else if(!s && fail) {
-        fail(r);
+      else if (error && fail) {
+        fail(error);
       }
     });
   }
@@ -238,24 +329,26 @@ RDFE.Document.prototype.deleteByPredicate = function(uri, success, fail) {
   var self = this;
 
   if (self.config.options.autoInverseOfHandling) {
-    var sparql = 'construct { ?s <{1}> ?o} FROM <{0}> WHERE { ?s <{1}> ?o . } '.format(self.graph, uri);
-    self.store.execute(sparql, function(s, results) {
-      if (!s) {
+    var sparql = 'construct { ?s <{1}> ?o} from <{0}> where { ?s <{1}> ?o . } '.format(self.graph, uri);
+    self.store.execute(sparql, function(error, result) {
+      if (error) {
         if (fail) {
-          fail(results);
+          fail(error);
         }
-      } else {
-        self.deleteTriples(results.triples, success, fail);
+      }
+      else {
+        self.deleteTriples(result.triples, success, fail);
       }
     });
   }
   else {
-    self.store.execute('with <' + self.graph + '> delete { ?s <' + uri + '> ?o} where { ?s <' + uri + '> ?o . }', function(s, r) {
-      if (s && success) {
+    var sparql = 'with <{0}> delete { ?s <{1}> ?o} where { ?s <{1}> ?o . }'.format(self.graph, uri);
+    self.store.execute(sparql, function(error, result) {
+      if (!error && success) {
         success();
       }
-      else if (!s && fail) {
-        fail(r);
+      else if (error && fail) {
+        fail(error);
       }
     });
   }
@@ -266,24 +359,26 @@ RDFE.Document.prototype.deleteByObjectIRI = function(uri, success, fail) {
   var self = this;
 
   if (self.config.options.autoInverseOfHandling) {
-    var sparql = 'construct { ?s ?p <{1}> } FROM <{0}> WHERE { ?s ?p <{1}> . } '.format(self.graph, uri);
-    self.store.execute(sparql, function(s, results) {
-      if (!s) {
+    var sparql = 'construct { ?s ?p <{1}> } from <{0}> where { ?s ?p <{1}> . } '.format(self.graph, uri);
+    self.store.execute(sparql, function(error, result) {
+      if (error) {
         if (fail) {
-          fail(results);
+          fail(error);
         }
-      } else {
-        self.deleteTriples(results.triples, success, fail);
+      }
+      else {
+        self.deleteTriples(result.triples, success, fail);
       }
     });
   }
   else {
-    self.store.execute('with <' + self.graph + '> delete { ?s ?p <' + uri + '> } where { ?s ?p <' + uri + '> . }', function(s, r) {
-      if(s && success) {
+    var sparql = 'with <{0}> delete { ?s ?p <{1}> } where { ?s ?p <{1}> . }'.format(self.graph, uri);
+    self.store.execute(sparql, function(error, result) {
+      if (!error && success) {
         success();
       }
-      else if(!s && fail) {
-        fail(r);
+      else if(error && fail) {
+        fail(error);
       }
     });
   }
@@ -295,19 +390,20 @@ RDFE.Document.prototype.deleteByObject = function(object, success, fail) {
 
   var sparql;
   if (object.interfaceName === "Literal") {
-    var sparql = 'construct { ?s ?p ?o } FROM <{0}> WHERE { ?s ?p ?o. FILTER (str(?o) = "{1}"). } '.format(self.graph, (object.datatype == 'http://www.w3.org/2001/XMLSchema#dateTime')? (new Date(object.nominalValue)).toString(): object.nominalValue);
+    sparql = 'construct { ?s ?p ?o } from <{0}> where { ?s ?p ?o. FILTER (str(?o) = "{1}"). } '.format(self.graph, (object.datatype == 'http://www.w3.org/2001/XMLSchema#dateTime')? (new Date(object.nominalValue)).toString(): object.nominalValue);
   }
   else {
-    var sparql = 'construct { ?s ?p <{1}> } FROM <{0}> WHERE { ?s ?p <{1}> . } '.format(self.graph, object.toString());
+    sparql = 'construct { ?s ?p <{1}> } from <{0}> where { ?s ?p <{1}> . } '.format(self.graph, object.toString());
   }
 
-  self.store.execute(sparql, function(s, results) {
-    if (!s) {
+  self.store.execute(sparql, function(error, result) {
+    if (error) {
       if (fail) {
-        fail(results);
+        fail(error);
       }
-    } else {
-      self.deleteTriples(results.triples, success, fail);
+    }
+    else {
+      self.deleteTriples(result.triples, success, fail);
     }
   });
 };
@@ -320,7 +416,8 @@ RDFE.Document.prototype.deleteEntity = function(uri, success, fail) {
     if (fail) {
       fail('Need Entity URI for deletion.');
     }
-  } else {
+  }
+  else {
     self.deleteBySubject(
       uri,
       function () {
@@ -333,8 +430,8 @@ RDFE.Document.prototype.deleteEntity = function(uri, success, fail) {
 
 RDFE.Document.prototype.deleteEntities = function(uris, success, fail) {
   var self = this;
-  function delUri(i) {
-    if(i < uris.length) {
+  function deleteUri(i) {
+    if (i < uris.length) {
       self.deleteEntity(uris[i], function() {
         delUri(i+1);
       }, fail);
@@ -343,7 +440,7 @@ RDFE.Document.prototype.deleteEntities = function(uris, success, fail) {
       success();
     }
   }
-  delUri(0);
+  deleteUri(0);
 };
 
 // delete all triplets of predicate
@@ -371,13 +468,29 @@ RDFE.Document.prototype.deleteObject = function(object, success, fail) {
     if (fail) {
       fail('Need object for deletion.');
     }
-  } else {
+  }
+  else {
     self.deleteByObject (
       object,
       success,
       fail
     )
   }
+};
+
+// add triplet(s)
+RDFE.Document.prototype.checkTriple = function(triple, success, fail) {
+  var self = this;
+
+  self.store.node(triple.subject.nominalValue, self.graph, function(error, graph) {
+    if (error && fail) {
+      fail(false);
+    }
+    else if (!errors && success) {
+      var g = graph.match(null, triple.predicate, triple.object);
+      success(g.triples.length > 0);
+    }
+  });
 };
 
 // add triplet(s)
@@ -392,9 +505,8 @@ RDFE.Document.prototype.addTriples = function(triple, success, fail, isInverseTr
     return;
   }
 
-  self.store.insert(self.store.rdf.createGraph(triples), self.graph, function(s) {
-    if (s) {
-
+  self.store.insert(self.store.rdf.createGraph(triples), self.graph, function(error, result) {
+    if (!error) {
       if (self.config.options.autoInverseOfHandling === true && !isInverseTripple) {
         var inverseTriples = self.inverseTriples(triples);
         if (!_.isEmpty(inverseTriples)) {
@@ -409,11 +521,12 @@ RDFE.Document.prototype.addTriples = function(triple, success, fail, isInverseTr
       }
       else {
         self.setChanged(true);
-        if(success) {
+        if (success) {
           success();
         }
       }
-    } else if (fail) {
+    }
+    else if (fail) {
       fail();
     }
   });
@@ -433,8 +546,8 @@ RDFE.Document.prototype.deleteTriples = function(triple, success, fail, isInvers
     return;
   }
 
-  self.store.delete(self.store.rdf.createGraph(triples), self.graph, function(s) {
-    if (s) {
+  self.store.delete(self.store.rdf.createGraph(triples), self.graph, function(error, result) {
+    if (!error) {
       self.setChanged(true);
 
       if (self.config.options.autoInverseOfHandling === true && !isInverseTripple) {
@@ -444,19 +557,20 @@ RDFE.Document.prototype.deleteTriples = function(triple, success, fail, isInvers
         }
         else {
           self.setChanged(true);
-          if(success) {
+          if (success) {
             success();
           }
         }
       }
       else {
         self.setChanged(true);
-        if(success) {
+        if (success) {
           success();
         }
       }
-    } else if (fail) {
-      fail();
+    }
+    else if (fail) {
+      fail(error);
     }
   });
 };
@@ -540,24 +654,26 @@ RDFE.Document.prototype.getEntityLabel = function(url, properties, success) {
   var self = this,
       props = properties,
       success_ = success;
-  if(typeof(props) == 'function') {
+  if (typeof(props) == 'function') {
     success_ = props;
     props = undefined;
   }
 
   var getLabel = function(lps, i) {
     // fall back to the last section of the uri
-    if(i >= lps.length)
+    if(i >= lps.length) {
       success_(RDFE.Utils.uri2name(url), false);
-    else
-      self.store.execute('select ?l from <' + self.graph + '> where { <' + url + '> <' + lps[i] + '> ?l . }', function(s, r) {
-        if(s && r.length > 0 && r[0].l.value.length > 0) {
-          success_(r[0].l.value, true);
+    }
+    else {
+      self.store.execute('select ?l from <' + self.graph + '> where { <' + url + '> <' + lps[i] + '> ?l . }', function(error, result) {
+        if (!error && result.length > 0 && result[0].l.value.length > 0) {
+          success_(result[0].l.value, true);
         }
         else {
           getLabel(lps, i+1);
         }
       });
+    }
   };
   getLabel(props || self.config.options.labelProps, 0);
 };
@@ -566,7 +682,7 @@ RDFE.Document.prototype.getEntity = function(url, success) {
   var self = this;
 
   // Iterating over all triples of the entity is faster than a specific sparql query.
-  self.store.node(url, self.graph, function(s, r) {
+  self.store.node(url, self.graph, function(error, result) {
     var e = {
       uri: url,
       label: RDFE.Utils.uri2name(url),
@@ -574,8 +690,8 @@ RDFE.Document.prototype.getEntity = function(url, success) {
       properties: {}
     };
 
-    if(s) {
-      r = r.triples;
+    if (!error) {
+      var r = result.triples;
       for(var i = 0; i < r.length; i++) {
         var p = r[i].predicate.nominalValue;
         (e.properties[p] = e.properties[p] || []).push(RDFE.RdfNode.fromStoreNode(r[i].object));
@@ -598,12 +714,13 @@ RDFE.Document.prototype.getEntity = function(url, success) {
 
 RDFE.Document.prototype.listProperties = function(callback) {
   var self = this;
-  self.store.execute("select distinct ?p from <" + self.graph + "> where { ?s ?p ?o }", function(success, r) {
+
+  self.store.execute("select distinct ?p from <" + self.graph + "> where { ?s ?p ?o }", function(error, result) {
     var pl = [];
 
-    if(success) {
-      for(var i = 0; i < r.length; i++)
-        pl.push(r[i].p.value);
+    if (!error) {
+      for (var i = 0; i < result.length; i++)
+        pl.push(result[i].p.value);
     }
 
     callback(pl);
@@ -614,63 +731,55 @@ RDFE.Document.prototype.listProperties = function(callback) {
  * List all entities by Iterating over all triples in the store rather than using
  * a sparql query. Experiments showed a 10x performance improvement this way.
  *
- * @param type optional type(s) the entities should have. Can be a list or a string.
- * @param callback a function which takes an array of rdfstore nodes as input.
- * @param errorCb Callback function in case an error occurs, takes err msg as input.
+ * @param types optional type(s) the entities should have. Can be a list or a string.
+ * @param success a function which takes an array of rdfstore nodes as input.
+ * @param fail Callback function in case an error occurs, takes err msg as input.
  */
-RDFE.Document.prototype.listEntities = function(type, callback, errorCb) {
-  var t = type,
-      cb = callback,
-      errCb = errorCb,
-      self = this;
+RDFE.Document.prototype.listEntities = function(types, success, fail) {
+  var self = this;
 
-  if(typeof(t) == 'function') {
-    cb = type;
-    errCb = callback;
-    t = null;
-  }
-  else if(typeof(t) == 'string')
-    t = [t];
+  if (typeof(types) == 'string')
+    types = [types];
 
-  var q = "select ?s ?p ?o from <" + self.graph + "> where { ?s ?p ?o . ";
-
+  var sparql = 'select ?s ?p ?o from <{0}> where { ?s ?p ?o . '.format(self.graph);
   // FIXME: add super-types to t like so: self.ontologyManager.getAllSuperTypes(t)
-  if(t && t.length > 0) {
-    q += "?s a ?t . filter(";
-    for(var i = 0; i < t.length; i++) {
-      if(i > 0) q += "||";
-      q += "?t = <" + t[i] + ">";
+  if (types.length > 0) {
+    sparql += '?s a ?t . filter(';
+    for (var i = 0; i < types.length; i++) {
+      if (i > 0) {
+        sparql += ' || ';
+      }
+      sparql += '(str(?t) = "{0}")'.format(types[i]);
     }
-    q += ") . ";
+    sparql += ') . ';
   }
+  sparql += '}';
 
-  q += '}';
-
-  self.store.execute(q, function(success, r) {
+  self.store.execute(sparql, function(error, result) {
     var sl = {};
 
-    if(success) {
-      for(var i = 0; i < r.length; i++) {
-        var s = r[i].s.value,
-            p = r[i].p.value;
+    if (!error) {
+      for (var i = 0; i < result.length; i++) {
+        var s = result[i].s.value,
+            p = result[i].p.value;
 
         // create an initial entity which only contains the uri
-        if(!sl[s]) {
+        if (!sl[s]) {
           sl[s] = {
-            uri: s,
-            types: []
+            "uri": s,
+            "types": []
           };
         }
         var e = sl[s];
 
         // add types to the entity
-        if(p == 'http://www.w3.org/1999/02/22-rdf-syntax-ns#type') {
-          e.types.push(r[i].o.value);
+        if (p == 'http://www.w3.org/1999/02/22-rdf-syntax-ns#type') {
+          e.types.push(result[i].o.value);
         }
 
         // store labels from the list of configured label props
-        else if(_.indexOf(self.config.options.labelProps, p) >= 0) {
-          e[p] = r[i].o.value;
+        else if (_.indexOf(self.config.options.labelProps, p) >= 0) {
+          e[p] = result[i].o.value;
         }
       }
 
@@ -683,23 +792,25 @@ RDFE.Document.prototype.listEntities = function(type, callback, errorCb) {
         sl[i].label = self.getEntityLabel(sl[i]);
       }
     }
-    else if(errorCb) {
-      errorCb(r);
+    else if (fail) {
+      fail(error);
     }
-
-    cb(sl);
+    success(sl);
   });
 };
 
-RDFE.Document.prototype.itemsByRange = function(range) {
+RDFE.Document.prototype.itemsByRange = function(ranges) {
   var self = this;
-
   var nodeItems;
-  for (var i = 0; i < range.length; i++) {
-    var ontologyClass = self.ontologyManager.ontologyClassByURI(range[i]);
+
+  if (!ranges)
+    return;
+
+  for (var i = 0; i < ranges.length; i++) {
+    var ontologyClass = self.ontologyManager.ontologyClassByURI(ranges[i]);
 
     if (!ontologyClass)
-      contnue;
+      continue;
 
     nodeItems = nodeItems || [];
     var items = _.values(ontologyClass.getIndividuals());
@@ -709,7 +820,7 @@ RDFE.Document.prototype.itemsByRange = function(range) {
       nodeItems.push(nodeItem);
     }
     self.listEntities(
-      range,
+      ranges[i],
       function(items) {
         for (var j = 0; j < items.length; j++) {
           var nodeItem = RDFE.RdfNode.fromStoreNode(items[j].uri)
@@ -747,9 +858,9 @@ RDFE.Document.prototype.buildEntityUri = function(name) {
   var nuri = uri,
       self = this;
   var uq = function(i) {
-    self.store.node(nuri, self.graph, function(s, r) {
-      console.log(s,r)
-      if(s && r.length) {
+    self.store.node(nuri, self.graph, function(error, result) {
+      console.log(error, result)
+      if (!error && result.length) {
         nuri = uri + i;
         uq(i+1);
       }
@@ -818,11 +929,11 @@ RDFE.Document.prototype.addEntity = function(uri, name, type, cb, failCb) {
  * @param success a function which takes an array of rdfstore nodes as input.
  * @param error a function in case an error occurs, takes error message as input.
  */
-RDFE.Document.prototype.listSubjects = function(success, error) {
+RDFE.Document.prototype.listSubjects = function(success, fail) {
   var self = this;
 
-  self.store.graph(self.graph, function(s, result) {
-    if (s) {
+  self.store.graph(self.graph, function(error, result) {
+    if (!error) {
       var sl = {};
       var triples = result.toArray();
       for (var i = 0; i < triples.length; i+=1) {
@@ -835,17 +946,17 @@ RDFE.Document.prototype.listSubjects = function(success, error) {
       sl = _.values(sl);
       success(sl);
     }
-    else if (error) {
-      error(result);
+    else if (fail) {
+      fail(error);
     }
   });
 };
 
-RDFE.Document.prototype.getSubject = function(uri, success, error) {
+RDFE.Document.prototype.getSubject = function(uri, success, fail) {
   var self = this;
 
-  self.store.graph(self.graph, function(s, result) {
-    if (s) {
+  self.store.graph(self.graph, function(error, result) {
+    if (!error) {
       var sl = self.newSubject(uri);
       var triples = result.toArray();
       for (var i = 0; i < triples.length; i+=1) {
@@ -857,8 +968,8 @@ RDFE.Document.prototype.getSubject = function(uri, success, error) {
         success(sl);
       }
     }
-    else if (error) {
-      error(result);
+    else if (fail) {
+      fail(error);
     }
   });
 };
@@ -873,11 +984,11 @@ RDFE.Document.prototype.newSubject = function(uri) {
  * @param success a function which takes an array of rdfstore nodes as input.
  * @param error a function in case an error occurs, takes error message as input.
  */
-RDFE.Document.prototype.listPredicates = function(success, error) {
+RDFE.Document.prototype.listPredicates = function(success, fail) {
   var self = this;
 
-  self.store.graph(self.graph, function(s, result) {
-    if (s) {
+  self.store.graph(self.graph, function(error, result) {
+    if (!error) {
       var sl = {};
       var triples = result.toArray();
       for (var i = 0; i < triples.length; i+=1) {
@@ -890,17 +1001,17 @@ RDFE.Document.prototype.listPredicates = function(success, error) {
       sl = _.values(sl);
       success(sl);
     }
-    else if (error) {
-      error(result);
+    else if (fail) {
+      fail(error);
     }
   });
 };
 
-RDFE.Document.prototype.getPredicate = function(uri, success, error) {
+RDFE.Document.prototype.getPredicate = function(uri, success, fail) {
   var self = this;
 
-  self.store.graph(self.graph, function(s, result) {
-    if (s) {
+  self.store.graph(self.graph, function(error, result) {
+    if (!error) {
       var sl = self.newPredicate(uri);
       var triples = result.toArray();
       for (var i = 0; i < triples.length; i+=1) {
@@ -912,8 +1023,8 @@ RDFE.Document.prototype.getPredicate = function(uri, success, error) {
         success(sl);
       }
     }
-    else if (error) {
-      error(result);
+    else if (fail) {
+      fail(error);
     }
   });
 };
@@ -928,11 +1039,11 @@ RDFE.Document.prototype.newPredicate = function(uri) {
  * @param success a function which takes an array of rdfstore nodes as input.
  * @param error a function in case an error occurs, takes error message as input.
  */
-RDFE.Document.prototype.listObjects = function(success, error) {
+RDFE.Document.prototype.listObjects = function(success, fail) {
   var self = this;
 
-  self.store.graph(self.graph, function(s, result) {
-    if (s) {
+  self.store.graph(self.graph, function(error, result) {
+    if (!error) {
       var sl = {};
       var triples = result.toArray();
       for (var i = 0; i < triples.length; i+=1) {
@@ -946,17 +1057,17 @@ RDFE.Document.prototype.listObjects = function(success, error) {
       sl = _.values(sl);
       success(sl);
     }
-    else if (error) {
-      error(result);
+    else if (fail) {
+      fail(error);
     }
   });
 };
 
-RDFE.Document.prototype.getObject = function(object, success, error) {
+RDFE.Document.prototype.getObject = function(object, success, fail) {
   var self = this;
 
-  self.store.graph(self.graph, function(s, result) {
-    if (s) {
+  self.store.graph(self.graph, function(error, result) {
+    if (!error) {
       var sl = self.newObject(object);
       var triples = result.toArray();
       for (var i = 0; i < triples.length; i+=1) {
@@ -968,8 +1079,8 @@ RDFE.Document.prototype.getObject = function(object, success, error) {
         success(sl);
       }
     }
-    else if (error) {
-      error(result);
+    else if (fail) {
+      fail(error);
     }
   });
 };
@@ -1058,21 +1169,49 @@ RDFE.Document.prototype.getUniqueValue = function() {
     }
     else if (integerTypes.indexOf(range) !== -1) {
       uniqueValue = 1;
-      var sparql = 'SELECT (MAX(?v) as ?mv) FROM <{0}> WHERE {?s <{1}> ?v}'.format(self.graph, property.URI);
-      self.store.execute(sparql, function(success, results) {
-        if (success) {
-          if (results.length !== 0) {
-            uniqueValue = parseInt(RDFE.coalesce(results[0]["mv"].value, 0));
+      var sparql = 'select (MAX(?v) as ?mv) from <{0}> where {?s <{1}> ?v}'.format(self.graph, property.URI);
+      self.store.execute(sparql, function(error, result) {
+        if (!errors) {
+          if (result.length !== 0) {
+            uniqueValue = parseInt(RDFE.coalesce(result[0]["mv"].value, 0));
             if (isNaN(uniqueValue)) {
               uniqueValue = 0;
             }
             uniqueValue++;
           }
-        } else {
-          console.log('Failed to determine unique value for ', uri, ' and ', property.URI, results);
+        }
+        else {
+          console.log('Failed to determine unique value for ', uri, ' and ', property.URI, result);
         }
       });
     }
     return uniqueValue;
   };
 }();
+
+RDFE.Document.prototype.checkForSignature = function(callback) {
+  var self = this;
+
+  self.store.registerDefaultNamespace('rdfs', 'http://www.w3.org/2000/01/rdf-schema#');
+  self.store.registerDefaultNamespace('cert', 'http://www.w3.org/ns/auth/cert#');
+  self.store.registerDefaultNamespace('oplcert', 'http://www.openlinksw.com/schemas/cert#');
+  var sparql =
+     'SELECT ?signatureDocURI\
+        FROM <{0}> \
+       WHERE { \
+               <{1}> oplcert:hasSignature ?signatureDocURI . \
+             }';
+  sparql = sparql.format(self.graph, self.url);
+  self.store.execute(sparql, function(error, result) {
+    if (!error && result.length) {
+      self.signature = result[0]['signatureDocURI'].value;
+    }
+    else {
+      self.signature = null;
+    }
+    if (callback) {
+      callback(self.signature);
+    }
+  });
+};
+

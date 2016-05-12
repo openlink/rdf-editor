@@ -1,27 +1,37 @@
-<button ng-click="openDocument()" class="btn btn-default" title="Open a Document"><span class="glyphicon glyphicon-open"></span> Open Document</button>
-<div class="btn-group" role="group">
-  <button ng-click="saveDocument()" type="button" class="btn btn-default" title="Save the current document"><span class="glyphicon glyphicon-save" aria-hidden="true"></span> Save</button>
-  <button ng-click="saveDocumentAs()" type="button" class="btn btn-default" title="Save the current document to a new location"><span class="glyphicon glyphicon-save" aria-hidden="true"></span> Save As...</button>
-  <button ng-click="downloadDocumentAs()" type="button" class="btn btn-default" title="Download the current document"><span class="glyphicon glyphicon-save" aria-hidden="true"></span> Download</button>
 </div>
-<button ng-click="closeDocument()" class="btn btn-default" title="Close the document and return to the start page"><span class="glyphicon glyphicon-log-out"></span> Close</button>
-
-<div class="btn-group" role="group" style="width:50px">
-  <span us-spinner="{ length: 10, radius: 7, lines:10, width:2, shadow: true }" spinner-key="editor-spinner"></span>
-</div>
-
-<hr />
-
-<div class="form-horizontal">
-  <div class="form-group">
-    <label for="documentUri" class="col-sm-2 control-label">Document URI</label>
-    <div class="col-sm-4">
-      <p class="form-control-static">
-        <a ng-show="mainDoc.url" ng-href="{{mainDoc.url}}">{{mainDoc.url}}</a>
-        <span ng-hide="mainDoc.url">new document</span>
-      </p>
-    </div>
+  <div class="btn-group dropdown" role="group">
+    <button class="dropdown-toggle btn btn-default" type="button" id="dropdownMenu1" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">
+      Actions
+      <span class="caret"></span>
+    </button>
+    <ul class="dropdown-menu" aria-labelledby="dropdownMenu1">
+      <li><a href="#/editor?newDocument=true" title="New Document"><span class="glyphicon glyphicon-open" aria-hidden="true"></span> New</a></li>
+      <li><a ng-click="openDocument(); $event.preventDefault();" href="#" title="Open a Document"><span class="glyphicon glyphicon-open" aria-hidden="true"></span> Open</a></li>
+      <li role="separator" class="divider"></li>
+      <li><a ng-click="saveDocument(); $event.preventDefault();" href="#" title="Save the current document"><span class="glyphicon glyphicon-save" aria-hidden="true"></span> Save</a></li>
+      <li><a ng-click="saveDocumentAs(); $event.preventDefault();" href="#" title="Save the current document to a new location"><span class="glyphicon glyphicon-save" aria-hidden="true"></span> Save As...</a></li>
+      <li role="separator" class="divider"></li>
+      <li><a ng-click="downloadDocumentAs(); $event.preventDefault();" href="#" title="Download the current document"><span class="glyphicon glyphicon-save" aria-hidden="true"></span> Download</a></li>
+      <li role="separator" class="divider"></li>
+      <li><a ng-click="importInto(); $event.preventDefault();" href="#" title="Input Content directly into current document"><span class="glyphicon glyphicon-import" aria-hidden="true"></span> Direct Input</a></li>
+      <!--
+      <li role="separator" class="divider"></li>
+      <li ng-show="valInstalled"><a ng-click="signDocument(); $event.preventDefault();" href="#" title="Sign/Resign the current document">Sign</a></li>
+      <li><a ng-click="unsignDocument(); $event.preventDefault();" ng-disabled="!$rootScope.userProfile.config.valInstalled" href="#" title="Unsign the current document">Unsign</a></li>
+      -->
+      <li role="separator" class="divider"></li>
+      <li><a ng-click="closeDocument(); $event.preventDefault();" href="#" title="Close the document and return to the start page"><span class="glyphicon glyphicon-log-out"></span> Close</a></li>
+    </ul>
   </div>
+  <div class="form-horizontal" style="display: inline;">
+    <label class="control-label" style="margin: 0 5px 0 15px;">Document:</label>
+    <a ng-show="doc.url" ng-href="{{doc.url}}">{{doc.url}}</a>
+    <span ng-hide="doc.url">new document</span>
+  </div>
+</div>
+
+<div class="btn-group" role="group" style="width: 50px">
+  <span us-spinner="{ length: 10, radius: 7, lines:10, width:2, shadow: true }" spinner-key="editor-spinner"></span>
 </div>
 
 <div class="clearfix"></div>
@@ -31,20 +41,20 @@
 <div class="row">
   <div class="col-xs-6">
     <div class="btn-group">
-	    <label class="btn btn-default" ng-model="viewMode" btn-radio="'triples'" title="Relationship representation"><span class="glyphicon glyphicon-th" aria-hidden="true"></span> {{'spo' | namingSchemaLabel:this:true}}</label>
-	    <label class="btn btn-default" ng-model="viewMode" btn-radio="'entities'" title="All entitites/instances in the document"><span class="glyphicon glyphicon-list" aria-hidden="true"></span> {{'s' | namingSchemaLabel:this:true}}</label>
+	    <label class="btn btn-default" ng-model="viewMode" btn-radio="'triples'" title="{{'spo' | namingSchemaTitle:this}}"><span class="glyphicon glyphicon-th" aria-hidden="true"></span> {{'spo' | namingSchemaLabel:this:true}}</label>
+	    <label class="btn btn-default" ng-model="viewMode" btn-radio="'subjects'" title="All entitites/instances in the document"><span class="glyphicon glyphicon-list" aria-hidden="true"></span> {{'s' | namingSchemaLabel:this:true}}</label>
 	    <label class="btn btn-default" ng-model="viewMode" btn-radio="'predicates'" title="How relationship subject and object are associated"><span class="glyphicon glyphicon-list" aria-hidden="true"></span> {{'p' | namingSchemaLabel:this:true}}</label>
-	    <label class="btn btn-default" ng-model="viewMode" btn-radio="'values'" title="Values projection"><span class="glyphicon glyphicon-list" aria-hidden="true"></span> {{'o' | namingSchemaLabel:this:true}}</label>
+	    <label class="btn btn-default" ng-model="viewMode" btn-radio="'objects'" title="Values projection"><span class="glyphicon glyphicon-list" aria-hidden="true"></span> {{'o' | namingSchemaLabel:this:true}}</label>
     </div>
   </div>
 
   <div class="col-xs-6">
     <div id="panel-ontologies" class="panel panel-default" style="margin-bottom: 0px; cursor: pointer; ">
       <div class="panel-heading" style="padding: 6px 12px 6px 12px" ng-click="toggleOntologyView()">
-        Bound Ontologies&nbsp;<span class="dropup up" style="display: none;"><span class="caret"></span></span><span class="caret down"></span>
+        Linked Vocabularies&nbsp;<span class="dropup up" style="display: none;"><span class="caret"></span></span><span class="caret down"></span>
         <span class="pull-right">
           <span id="ontology-loading" aria-hidden="true" style="display: none;"><img src="images/loading.gif" /></span>&nbsp;
-          <span id="ontology-add" class="glyphicon glyphicon-plus pull-right" aria-hidden="true" style="display: none;" title="Bound ontology"></span>
+          <span id="ontology-add" class="glyphicon glyphicon-plus pull-right" aria-hidden="true" style="display: none;" title="Bound Vocabulary"></span>
         </span>
       </div>
       <div id="container-ontologies" class="panel-body" style="height: 157px; cursor: auto; padding: 0; overflow: auto; display: none;">
@@ -58,6 +68,72 @@
 <hr class="editor" />
 
 <div id="contents">
+</div>
+
+<!-- Modal -->
+<div class="modal fade" id="importModal" tabindex="-1" role="dialog" aria-labelledby="importModalLabel" data-backdrop="static" data-keyboard="false">
+  <div class="modal-dialog modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        <h4 class="modal-title" id="importModal">Input Directly</h4>
+      </div>
+      <div class="modal-body">
+        <div class="form-group">
+          <div>
+            <label for="comment" style="padding-top: 0.5em;">Content</label>
+            <!--span class="pull-right">
+              <select class="form-control" id="contentType" style="margin-bottom: 0.5em;">
+                <option value="text/turtle">Turtle</option>
+                <option value="application/ld+json">JSON-LD</option></option>
+              </select>
+            </span-->
+          </div>
+          <textarea class="form-control" rows="12" id="content"></textarea>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+        <button type="button" class="btn btn-primary ok">Import</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal fade" id="signModal" tabindex="-1" role="dialog" aria-labelledby="signModalLabel" data-backdrop="static" data-keyboard="false">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        <h4 class="modal-title" id="signModal">Sign Document</h4>
+      </div>
+      <div class="modal-body form-horizontal">
+        ...
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+        <button type="button" class="btn btn-primary ok">Sign</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal fade" id="unsignModal" tabindex="-1" role="dialog" aria-labelledby="unsignModalLabel" data-backdrop="static" data-keyboard="false">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        <h4 class="modal-title" id="unsignModal">Unsign Document</h4>
+      </div>
+      <div class="modal-body form-horizontal">
+        ...
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+        <button type="button" class="btn btn-primary ok">Unsign</button>
+      </div>
+    </div>
+  </div>
 </div>
 
 <script type="text/turtle" id="document">

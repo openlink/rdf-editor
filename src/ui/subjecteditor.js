@@ -27,20 +27,7 @@
     // constructor
     var c = function(editor, subject) {
       this.editor = editor;
-      this.doc = editor.doc;
-      this.ontologyManager = editor.ontologyManager;
-      this.namingSchema = editor.doc.config.options[editor.doc.config.options["namingSchema"]];
       this.subject = subject;
-    };
-
-    var nodeFormatter = function(value) {
-      if (value.interfaceName == "Literal") {
-        if (value.datatype == 'http://www.w3.org/2001/XMLSchema#dateTime') {
-          return (new Date(value.nominalValue)).toString();
-        }
-        return value.nominalValue;
-      }
-      return value.toString();
     };
 
     c.prototype.template = _.template(' \
@@ -48,7 +35,7 @@
         <div class="panel-heading clearfix"> \
           <form class="form-inline"> \
             <div class="form-group" style="width: 80%;"> \
-              <label>Selected <%= RDFE.Utils.namingSchemaLabel("s", this.namingSchema) %> </label> \
+              <label>Selected <%= RDFE.Utils.namingSchemaLabel("s", this.editor.namingSchema()) %> </label> \
               <input name="subject" class="form-control" style="width: 85%;" disabled="disabled" /> \
             </div> \
             <div class="btn-group pull-right" role="group"> \
@@ -64,26 +51,27 @@
 
     c.prototype.render = function(editor, container, newStatement, backCallback) {
       var self = this;
+      var oldTriple;
 
       var subjectEditorNew = function(container, backCallback) {
         var $ontologiesSelect, ontologiesSelect;
         var $classesSelect, classesSelect;
 
         var classesList = function (e) {
-          var ontology = self.ontologyManager.ontologyByURI(e.currentTarget.selectedOntologyURI());
+          var ontology = self.editor.ontologyManager.ontologyByURI(e.currentTarget.selectedOntologyURI());
           classesSelect.clearOptions();
-          classesSelect.addOption(ontology ? ontology.classesAsArray() : self.ontologyManager.allClasses());
+          classesSelect.addOption(ontology ? ontology.classesAsArray() : self.editor.ontologyManager.allClasses());
         };
 
         container.html(
           '<div class="panel panel-default">' +
           '  <div class="panel-heading">' +
-          '    <h3 class="panel-title">Add new ' + RDFE.Utils.namingSchemaLabel('s', self.namingSchema) + '</h3>' +
+          '    <h3 class="panel-title">Add new ' + RDFE.Utils.namingSchemaLabel('s', self.editor.namingSchema()) + '</h3>' +
           '  </div>' +
           '  <div class="panel-body">' +
           '    <div class="form-horizontal"> ' +
           '      <div class="form-group"> ' +
-          '        <label for="ontology" class="col-sm-2 control-label">Ontology</label> ' +
+          '        <label for="ontology" class="col-sm-2 control-label">Vocabulary</label> ' +
           '        <div class="col-sm-10"> ' +
           '          <select name="ontology" id="ontology" class="form-control" /> ' +
           '        </div> ' +
@@ -95,7 +83,7 @@
           '        </div> ' +
           '      </div> ' +
           '      <div class="form-group"> ' +
-          '         <label for="subject" class="col-sm-2 control-label">' + RDFE.Utils.namingSchemaLabel('s', self.namingSchema) + ((self.doc.config.options.entityUriTmpl) ? ' Name' : ' URI') + '</label> ' +
+          '         <label for="subject" class="col-sm-2 control-label">' + RDFE.Utils.namingSchemaLabel('s', self.editor.namingSchema()) + ((self.editor.doc.config.options.entityUriTmpl) ? ' Name' : ' URI') + '</label> ' +
           '         <div class="col-sm-10"> ' +
           '           <input name="subject" id="subject" class="form-control" /> ' +
           '         </div> ' +
@@ -110,7 +98,7 @@
           '  </div>' +
           '</div>\n');
 
-        ontologiesSelect = $('#ontology').ontoBox({ "ontoManager": self.ontologyManager });
+        ontologiesSelect = $('#ontology').ontoBox({ "ontologyManager": self.editor.ontologyManager });
         ontologiesSelect.on('changed', classesList);
         ontologiesSelect.sel.focus();
 
@@ -121,10 +109,10 @@
           "labelField": 'URI',
           "searchField": [ "title", "label", "prefix", "URI" ],
           "sortField": [ "prefix", "URI" ],
-          "options": self.ontologyManager.allClasses(),
+          "options": self.editor.ontologyManager.allClasses(),
           "create": function(input, cb) {
             // search for and optionally create a new class
-            cb(self.ontologyManager.ontologyClassByURI(self.ontologyManager.uriDenormalize(input), true));
+            cb(self.editor.ontologyManager.ontologyClassByURI(self.editor.ontologyManager.uriDenormalize(input), true));
           },
           "render": {
             "item": function(item, escape) {
@@ -141,7 +129,7 @@
               return '<div>' + escape(item.title || item.label || name.curi || item.name) + '<br/><small>(' + escape(item.URI) + ')</small></div>';
             },
             "option_create": function(data, escape) {
-              var url = self.ontologyManager.uriDenormalize(data.input);
+              var url = self.editor.ontologyManager.uriDenormalize(data.input);
               if (url !== data.input) {
                 return '<div class="create">Add <strong>' + escape(data.input) + '</strong> <small>(' + escape(url) + ')</small>&hellip;</div>';
               }
@@ -162,26 +150,26 @@
               name = null,
               type = container.find('#class')[0].selectize.getValue();
 
-          if (self.doc.config.options.entityUriTmpl) {
+          if (self.editor.doc.config.options.entityUriTmpl) {
             name = uri;
             uri = null;
           }
 
-          self.doc.addEntity(uri, name, type, function(entity) {
-            $(self).trigger('rdf-editor-success', {
-              "type": "entity-insert-success",
-              "message": "Successfully created new entity."
+          self.editor.doc.addEntity(uri, name, type, function(entity) {
+            $(self.editor).trigger('rdf-editor-success', {
+              "type": "triple-insert-success",
+              "message": "Successfully created new triple."
             });
-            self.doc.getSubject(entity.uri, function (subject) {
+            self.editor.doc.getSubject(entity.uri, function (subject) {
               editor.subjectView.addSubject(subject);
 
               self.subject = subject;
               self.render(editor, container, newStatement, backCallback);
             });
           }, function() {
-            $(self).trigger('rdf-editor-error', {
-              "type": 'triple-insert-failed',
-              "message": "Failed to add new triple to store."
+            $(self.editor).trigger('rdf-editor-error', {
+              "type": 'triple-insert-error',
+              "message": "Failed to add new triple."
             });
           });
         };
@@ -209,44 +197,25 @@
           "showHeader": true,
           "editable": true,
           "data": [],
-          "dataSetter": subjectEditorDataSetter,
+          "editable": true,
+          "dereference": true,
           "columns": [{
             "field": 'predicate',
-            "title": RDFE.Utils.namingSchemaLabel('p', self.namingSchema),
+            "title": RDFE.Utils.namingSchemaLabel('p', self.editor.namingSchema()),
+            "titleTooltip": RDFE.Utils.namingSchemaLabel('p', self.editor.namingSchema()),
             "sortable": true,
-            "editable": function(triple) {
-              return {
-                "mode": "inline",
-                "type": "rdfnode",
-                "rdfnode": {
-                  "config": self.doc.config.options,
-                  "type": 'http://www.w3.org/1999/02/22-rdf-syntax-ns#Resource'
-                },
-                "value": triple.predicate
-              }
-            },
-            "formatter": nodeFormatter
+            "editable": self.editor.editablePredicate(self.editor),
+            "formatter": self.editor.nodeFormatter
           }, {
             "field": 'object',
-            "title": RDFE.Utils.namingSchemaLabel('o', self.namingSchema),
+            "title": RDFE.Utils.namingSchemaLabel('o', self.editor.namingSchema()),
+            "titleTooltip": RDFE.Utils.namingSchemaLabel('o', self.editor.namingSchema()),
             "sortable": true,
-            "editable": function(triple) {
-              return {
-                "mode": "inline",
-                "type": "rdfnode",
-                "rdfnode": {
-                  "config": self.doc.config.options,
-                  "predicate": triple.predicate.toString(),
-                  "document": self.doc,
-                  "ontologyManager": self.ontologyManager
-                },
-                "value": triple.object
-              };
-            },
-            formatter: nodeFormatter
+            "editable": self.editor.editableObject(self.editor, function(triple){return triple.predicate.toString();}),
+            "formatter": self.editor.nodeFormatter
           }, {
             "field": 'actions',
-            "title": '<button class="add btn btn-default" title="Add Relation" style="display: none;"><span class="glyphicon glyphicon-plus" aria-hidden="true"></span> New</button>',
+            "title": '<button class="add btn btn-default btn-sm" title="Add Relation" style="display: none;"><span class="glyphicon glyphicon-plus" aria-hidden="true"></span> New</button>',
             "align": 'center',
             "valign": 'middle',
             "class": 'rdfe-small-column',
@@ -261,17 +230,32 @@
             },
             "events": {
               'click .remove': function (e, value, row, index) {
-                self.doc.deleteTriple(row, function() {
+                self.editor.doc.deleteTriple(row, function() {
                   $list.bootstrapTable('remove', {
                     field: 'id',
                     values: [row.id]
                   });
-                }, function() {
-                  $(self).trigger('rdf-editor-error', { "type": 'triple-delete-failed', "message": 'Failed to delete triple.' });
+                  $(self.editor).trigger('rdf-editor-success', {
+                    "type": 'triple-delete-success',
+                    "message": "Successfully deleted triple."
+                  });
+                }, function(error) {
+                  $(self.editor).trigger('rdf-editor-error', {
+                    "type": 'triple-delete-error',
+                    "message": 'Failed to delete triple.'
+                  });
                 });
               }
             }
           }]
+        });
+
+        $list.on('editable-shown.bs.table', function(e, field, triple) {
+          oldTriple = _.clone(triple);
+        });
+
+        $list.on('editable-save.bs.table', function(e, field, triple) {
+          self.editor.dataSetter(field, oldTriple, triple);
         });
 
         self.subjectTable = $list;
@@ -287,36 +271,6 @@
         if (newStatement) {
           self.createNewRelationEditor();
         }
-      };
-
-      var subjectEditorDataSetter = function(triple, field, newValue) {
-        var newNode = newValue;
-
-        if (field === 'subject') {
-          newNode = self.doc.store.rdf.createNamedNode(newValue);
-        }
-        if (newValue.toStoreNode) {
-          newNode = newValue.toStoreNode(self.doc.store);
-        }
-        else if (field != 'object' ||
-          triple.object.interfaceName == 'NamedNode') {
-          newNode = self.doc.store.rdf.createNamedNode(newValue);
-        }
-        else if (triple.object.datatype == 'http://www.w3.org/2001/XMLSchema#dateTime') {
-          var d = new Date(newValue);
-          newNode = self.doc.store.rdf.createLiteral(d.toISOString(), triple.object.language, triple.object.datatype);
-        }
-        else {
-          newNode = self.doc.store.rdf.createLiteral(newValue, triple.object.language, triple.object.datatype);
-        }
-
-        var newTriple = self.doc.store.rdf.createTriple(triple.subject, triple.subject, triple.object);
-        newTriple[field] = newNode;
-        self.doc.updateTriple(triple, newTriple, function(success) {
-          // do nothing
-        }, function(msg) {
-          $(self).trigger('rdf-editor-error', { message: 'Failed to update triple in document: ' + msg });
-        });
       };
 
       container.empty();
@@ -379,12 +333,12 @@
         '  <div class="panel-body"> ' +
         '    <form class="form-horizontal"> ' +
         '      <div class="form-group"> ' +
-        '        <label for="predicate" class="col-sm-2 control-label">' + RDFE.Utils.namingSchemaLabel('p', self.namingSchema) + '</label> ' +
+        '        <label for="predicate" class="col-sm-2 control-label">' + RDFE.Utils.namingSchemaLabel('p', self.editor.namingSchema()) + '</label> ' +
         '        <div class="col-sm-10"><select name="predicate" class="form-control"></select></div> ' +
         '      </div> ' +
         '      <div class="form-group object-list"> ' +
         '        <div class="col-sm-12 object-item_0" style="padding: 0;"> ' +
-        '          <label for="object_0" class="col-sm-2 control-label">' + RDFE.Utils.namingSchemaLabel('o', self.namingSchema) + '</label> ' +
+        '          <label for="object_0" class="col-sm-2 control-label">' + RDFE.Utils.namingSchemaLabel('o', self.editor.namingSchema()) + '</label> ' +
         '          <div class="col-sm-9"><input name="object_0" class="form-control" /></div> ' +
         '          <div class="col-sm-1 btn_0"><button type="button" class="btn btn-default object-add" title="Add Object"><span class="glyphicon glyphicon-plus" aria-hidden="true"></span></button></div> ' +
         '        </div> ' +
@@ -410,12 +364,12 @@
       var objectButtonHTML =
         ' <button type="button" class="btn btn-default object-remove_<N>" title="Remove Object"><span class="glyphicon glyphicon-remove" aria-hidden="true"></span></button>';
       var objectEditors = [];
-      var objectEditor = self.subjectFormContainer.find('input[name="object_0"]').rdfNodeEditor(self.doc.config.options);
+      var objectEditor = self.subjectFormContainer.find('input[name="object_0"]').rdfNodeEditor(self.editor.doc.config.options);
       objectEditor.setValue(new RDFE.RdfNode('literal', '', null, ''));
       objectEditors.push(objectEditor);
 
       var predicateEditor = self.subjectFormContainer.find('select[name="predicate"]').propertyBox({
-        ontoManager: self.ontologyManager
+        "ontologyManager": self.editor.ontologyManager
       }).on('changed', function(e, predicate) {
         for (var i = 0; i < objectEditors.length; i++) {
           var objectEditor = objectEditors[i];
@@ -436,12 +390,12 @@
             break;
           }
         }
-        var predicate = self.ontologyManager.ontologyPropertyByURI(predicateEditor.selectedURI());
+        var predicate = self.editor.ontologyManager.ontologyPropertyByURI(predicateEditor.selectedURI());
         var objectList = self.subjectFormContainer.find('div.object-list');
         objectList.append(objectHTML.replace(/<N>/g, objectNo));
         objectList.find('button.object-add').detach().appendTo(objectList.find('div.btn_<N>'.replace(/<N>/g, objectNo)));
         objectList.find('div.btn_<N>'.replace(/<N>/g, lastObjectNo)).append(objectButtonHTML.replace(/<N>/g, lastObjectNo));
-        var objectEditor = self.subjectFormContainer.find('input[name="object_<N>"]'.replace(/<N>/g, objectNo)).rdfNodeEditor(self.doc.config.options);
+        var objectEditor = self.subjectFormContainer.find('input[name="object_<N>"]'.replace(/<N>/g, objectNo)).rdfNodeEditor(self.editor.doc.config.options);
         objectEditor.setValue(new RDFE.RdfNode('literal', '', null, ''));
         if (predicate) {
           self.editor.changeObjectType(predicate, objectEditor);
@@ -484,21 +438,21 @@
             continue;
           }
 
-          var t = self.doc.store.rdf.createTriple(self.doc.store.rdf.createNamedNode(s), self.doc.store.rdf.createNamedNode(p), o.toStoreNode(self.doc.store));
-          self.doc.addTriples([t], function() {
+          var t = self.editor.doc.store.rdf.createTriple(self.editor.doc.store.rdf.createNamedNode(s), self.editor.doc.store.rdf.createNamedNode(p), o.toStoreNode(self.editor.doc.store));
+          self.editor.doc.addTriples([t], function() {
             if (!self.subjectView) {
               self.addTriple(t);
             }
-            $(self).trigger('rdf-editor-success', {
+            $(self.editor).trigger('rdf-editor-success', {
               "type": "triple-insert-success",
-              "message": "Successfully added new statement."
+              "message": "Successfully added new triple."
             });
             self.subjectFormContainer.find('div.object-item_<N>'.replace(/<N>/g, i)).remove();
             objectEditors[i] = null;
-          }, function() {
-            $(self).trigger('rdf-editor-error', {
-              "type": 'triple-insert-failed',
-              "message": "Failed to add new statement to store."
+          }, function(error) {
+            $(self.editor).trigger('rdf-editor-error', {
+              "type": 'triple-insert-error',
+              "message": "Failed to add new triple."
             });
             success = false;
           });

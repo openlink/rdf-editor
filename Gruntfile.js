@@ -329,6 +329,25 @@ module.exports = function (grunt) {
       }
     },
 
+    'string-replace': {
+      dist: {
+        files: {
+          'dist/': '<%= yeoman.dist %>/scripts/{,*/}*.js'
+        },
+        options: {
+          replacements: [
+            {
+              pattern: '##VERSION##',
+              replacement: function (match, param) {
+                var gen_version = grunt.file.read('gen_version');
+                return gen_version.substring(0, gen_version.length-1);
+              }
+            }
+          ]
+        }
+      }
+    },
+
     // Copies remaining files to places other tasks can use
     copy: {
       dist: {
@@ -441,7 +460,8 @@ module.exports = function (grunt) {
     'uglify',
     'filerev',
     'usemin',
-    'htmlmin'
+    'htmlmin',
+    'string-replace'
   ]);
 
   grunt.registerTask('default', [

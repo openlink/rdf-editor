@@ -25,10 +25,7 @@
 
   RDFE.SubjectView = (function() {
     // constructor
-    var c = function(doc, ontologyManager, editor, params) {
-      this.doc = doc;
-      this.namingSchema = doc.config.options[doc.config.options["namingSchema"]];
-      this.ontologyManager = ontologyManager;
+    var c = function(editor, params) {
       this.editor = editor;
       this.editFct = params.editFct;
     };
@@ -48,20 +45,19 @@
       return 0;
     };
 
-    var countFormatter = function(value, row, index) {
-      return row.items.length;
-    };
-
     c.prototype.render = function(container, callback) {
       var self = this;
 
-      self.doc.listSubjects(function(subjects) {
+      self.editor.doc.listSubjects(function(subjects) {
         var subjectListActionsFormatter = function(value, row, index) {
           return [
-            '<a class="edit ml10" href="javascript:void(0)" title="Edit or add a new '+RDFE.Utils.namingSchemaLabel('p', self.namingSchema, false, true)+' name and '+RDFE.Utils.namingSchemaLabel('o', self.namingSchema, false, true)+' pairs associated with this '+RDFE.Utils.namingSchemaLabel('s', self.namingSchema, false, true)+'">',
+            '<a class="edit ml10" href="javascript:void(0)" title="Edit or add a new '+RDFE.Utils.namingSchemaLabel('p', self.editor.namingSchema(), false, true)+' name and '+RDFE.Utils.namingSchemaLabel('o', self.editor.namingSchema(), false, true)+' pairs associated with this '+RDFE.Utils.namingSchemaLabel('s', self.editor.namingSchema(), false, true)+'">',
             '  <i class="glyphicon glyphicon-edit"></i>',
             '</a>',
-            '<a class="remove ml10" href="javascript:void(0)" title="Remove all '+RDFE.Utils.namingSchemaLabel('spo', self.namingSchema, true, true)+' associated with this '+RDFE.Utils.namingSchemaLabel('s', self.namingSchema, false, true)+'">',
+            '<a class="dereference ml10" href="javascript:void(0)" title="Dereference this '+RDFE.Utils.namingSchemaLabel('s', self.editor.namingSchema(), true, true)+'">',
+            '  <i class="glyphicon glyphicon-link"></i>',
+            '</a>',
+            '<a class="remove ml10" href="javascript:void(0)" title="Remove all '+RDFE.Utils.namingSchemaLabel('spo', self.editor.namingSchema(), true, true)+' associated with this '+RDFE.Utils.namingSchemaLabel('s', self.editor.namingSchema(), false, true)+'">',
             '  <i class="glyphicon glyphicon-remove"></i>',
             '</a>'
           ].join('');
@@ -85,44 +81,50 @@
           "data": subjects,
           "idField": 'uri',
           "columns": [{
-            field: 'uri',
-            title: RDFE.Utils.namingSchemaLabel('s', self.namingSchema),
-            sortable: true,
-            sorter: labelSorter,
-            formatter: labelFormatter
+            "field": 'uri',
+            "title": RDFE.Utils.namingSchemaLabel('s', self.editor.namingSchema()),
+            "titleTooltip": RDFE.Utils.namingSchemaLabel('s', self.editor.namingSchema()),
+            "sortable": true,
+            "sorter": labelSorter,
+            "formatter": labelFormatter
           }, {
-            field: 'count',
-            title: 'Count',
-            align: 'right',
-            class: 'rdfe-small-column',
-            formatter: countFormatter
+            "field": 'count',
+            "title": 'Count',
+            "titleTooltip": 'Count',
+            "sortable": true,
+            "align": 'right',
+            "class": 'rdfe-small-column',
+            "formatter": self.editor.countFormatter
           }, {
-            field: 'actions',
-            title: '<button class="add btn btn-default" title="Click to create a new '+RDFE.Utils.namingSchemaLabel('s', self.namingSchema, false, true)+'"><span class="glyphicon glyphicon-plus" aria-hidden="true"></span> New</button>',
-            align: 'center',
-            valign: 'middle',
-            class: 'rdfe-small-column',
-            clickToSelect: false,
-            formatter: subjectListActionsFormatter,
-            events: {
+            "field": 'actions',
+            "title": '<button class="add btn btn-default btn-sm" title="Click to create a new '+RDFE.Utils.namingSchemaLabel('s', self.editor.namingSchema(), false, true)+'">' + '<span class="glyphicon glyphicon-plus" aria-hidden="true"></span> New</button>',
+            "align": 'center',
+            "valign": 'middle',
+            "class": 'rdfe-small-column',
+            "clickToSelect": false,
+            "formatter": subjectListActionsFormatter,
+            "events": {
               'click .edit': function(e, value, row, index) {
                 self.editFct(row);
               },
-              'click .remove': function(e, value, subject, index) {
-                self.doc.deleteBySubject (subject.uri, function() {
+              'click .dereference': function(e, value, row, index) {
+                var dereference = self.editor.dereference();
+                dereference(row.uri);
+              },
+              'click .remove': function(e, value, row, index) {
+                self.editor.doc.deleteBySubject (row.uri, function() {
                   $list.bootstrapTable('remove', {
                     field: 'uri',
-                    values: [subject.uri]
+                    values: [row.uri]
                   });
-                  $(self).trigger('rdf-editor-success', {
-                    "type": 'subject-delete-done',
-                    "uri": subject.uri,
-                    "message": "Successfully deleted attribute " + uri + "."
+                  $(self.editor).trigger('rdf-editor-success', {
+                    "type": 'subject-delete-success',
+                    "message": "Successfully deleted triples with subject " + row.uri + "."
                   });
-                }, function(msg) {
-                  $(self).trigger('rdf-editor-error', {
-                    "type": 'subject-delete-failed',
-                    "message": msg
+                }, function(error) {
+                  $(self.editor).trigger('rdf-editor-error', {
+                    "type": 'subject-delete-error',
+                    "message": error
                   });
                 });
               }
@@ -137,10 +139,10 @@
         if (callback) {
           callback();
         }
-      }, function(r) {
-        $(self).trigger('rdf-editor-error', {
-          "type": 'subject-list-failed',
-          "message": r
+      }, function(error) {
+        $(self.editor).trigger('rdf-editor-error', {
+          "type": 'subject-list-error',
+          "message": error
         });
       });
     };
@@ -159,10 +161,13 @@
     c.prototype.updateSubject = function(uri) {
       var self = this;
 
-      self.doc.getSubject(uri, function(subject) {
-        self.subjectTable.bootstrapTable('update', {
-          field: 'uri',
-          data: subject
+      self.editor.doc.getSubject(uri, function(subject) {
+        var ndx = self.subjects.findIndex(function(item, index, items) {
+          return (item.uri === uri);
+        });
+        self.subjectTable.bootstrapTable('updateRow', {
+          "index": ndx,
+          "row": subject
         });
       });
     };

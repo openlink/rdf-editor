@@ -35,12 +35,13 @@ String.prototype.format = function() {
   $.ajaxSetup({ cache: false });
 
   RDFE.IO.createIO = function(type, options) {
-    var t = "sparql";
+    var t = "http";
     var o = {};
     if (typeof(type) === 'string') {
       t = type;
       o = options;
-    } else if (typeof(type) === 'object') {
+    }
+    else if (typeof(type) === 'object') {
       o = type;
       if (o.type) {
         t = o.type;
@@ -79,8 +80,9 @@ String.prototype.format = function() {
   */
   var dummyFct = function() {}
 
-  var clearGraph = function(store, graph) {
-    store.clear(graph, dummyFct);
+  var clearGraph = function(store, graph, callback) {
+    callback = callback || dummyFct;
+    store.clear(graph, callback);
   }
 
   RDFE.IO.Base = (function() {
@@ -118,7 +120,7 @@ String.prototype.format = function() {
           ajaxParams.headers["X-Requested-With"] = 'XMLHttpRequest';
         }
       }
-      ajaxParams = $.extend({"crossDomain": true}, ajaxParams);
+      ajaxParams = $.extend({"crossDomain": true, "cache": true}, ajaxParams);
       if (self.options["ioTimeout"]) {
         ajaxParams = $.extend({"timeout": self.options["ioTimeout"]}, ajaxParams);
       }
@@ -134,30 +136,30 @@ String.prototype.format = function() {
         if (params && params.success) {
           params.success(data, status, xhr);
         }
-      }).fail(function(data, status, xhr) {
+      }).fail(function(xhr, status, data) {
         if (params && params.error) {
           var state = {
-            "httpCode": data.status,
-            "message": data.statusText
+            "httpCode": xhr.status,
+            "message": xhr.statusText
           }
           if (this.crossDomain && (state.message === 'error') && (RDFE.Utils.extractDomain(this.url) !== window.location.hostname)) {
-            state.message = "The document failed to load - this could be related to missing CORS settings on the server."
+            state.message = 'CORS Error: ' + ((self.type !== 'sparql')? ajaxParams.url: 'The document') + ' failed to load - this could be related to missing CORS settings on the server.'
           }
-          if ((data.status === 401 || data.status === 403) && params.authFunction) {
+          if ((xhr.status === 401 || xhr.status === 403) && params.authFunction) {
             params.authFunction(ajaxParams.url, function(r) {
               params.username = r.username;
               params.password = r.password;
               self.baseExec(ajaxParams, params);
             }, function() {
               // user did not provide credentials
-              state = 'Error: ' + data.status + ' (' + data.statusText + ')';
+              state = 'Error: ' + xhr.status + ' - ' + xhr.statusText + ((self.type !== 'sparql')? ' (' + ajaxParams.url + ')': '');
               params.error(state, data, status, xhr);
             });
           }
           else if (status === 'timeout') {
             var state = {
               "httpCode": status,
-              "message": 'Failed to load document because of timeout'
+              "message": 'Timeout Error: Failed to load ' + ((self.type !== 'sparql')? ajaxParams.url: 'document')
             }
             params.error(state, data, status, xhr);
           }
@@ -166,8 +168,17 @@ String.prototype.format = function() {
           }
         }
       });
-    }
+    };
 
+    c.prototype.acceptParameter = function(params) {
+      var self = this;
+
+      if (params && params.accept) {
+        return params.accept;
+      }
+
+      return self.options.accept;
+    };
 
     return c;
   })();
@@ -194,7 +205,7 @@ String.prototype.format = function() {
       }
     });
 
-    var SPARQL_RETRIEVE = 'CONSTRUCT {?s ?p ?o} WHERE {GRAPH <{0}> {?s ?p ?o}}';
+    var SPARQL_RETRIEVE = 'define get:soft "add" CONSTRUCT {?s ?p ?o} WHERE {GRAPH <{0}> {?s ?p ?o}}';
     var SPARQL_INSERT = 'INSERT DATA {GRAPH <{0}> { {1}}}';
     var SPARQL_INSERT_SINGLE = '<{0}> <{1}> {2}';
     var SPARQL_DELETE = 'DELETE DATA {GRAPH <{0}> { <{1}> <{2}> {3} . }}';
@@ -214,14 +225,19 @@ String.prototype.format = function() {
       var self = this;
       params = extendParams(params, self.options);
       var __success = function(data, status, xhr) {
-        clearGraph(store, storeGraph);
-        store.loadTurtle(data, storeGraph, graph, function(success, r) {
-          if (success && params["__success"]) {
-            params["__success"](data, status, xhr);
-          }
-          else if(!success && params["error"]) {
-            params["error"](r);
-          }
+        clearGraph(store, storeGraph, function () {
+          store.load('text/turtle', data, graph, function(error) {
+            if (!error) {
+              if (params["__success"]) {
+                params["__success"](data, status, xhr);
+              }
+            }
+            else {
+              if (params["error"]) {
+                params["error"](error);
+              }
+            }
+          });
         });
       };
       params["__success"] = params["success"];
@@ -238,8 +254,8 @@ String.prototype.format = function() {
     c.prototype.insertFromStore = function(graph, store, storeGraph, params) {
       var self = this;
       params = extendParams(params, self.options);
-      store.graph(storeGraph, function(success, result) {
-        if (!success) {
+      store.graph(storeGraph, function(error, result) {
+        if (error) {
           if (params.error) {
             params.error(result);
           }
@@ -351,14 +367,19 @@ String.prototype.format = function() {
       var self = this;
       params = extendParams(params, self.options);
       var __success = function(data, status, xhr) {
-        clearGraph(store, storeGraph);
-        store.loadTurtle(data, storeGraph, graph, function(success, r) {
-          if (success && params["__success"]) {
-            params["__success"](data, status, xhr);
-          }
-          else if(!success && params["error"]) {
-            params["error"](r);
-          }
+        clearGraph(store, storeGraph, function() {
+          store.loadTurtle(data, storeGraph, graph, null, function(error) {
+            if (!error) {
+              if (params["__success"]) {
+                params["__success"](data, status, xhr);
+              }
+            }
+            else {
+              if (params["error"]) {
+                params["error"](error);
+              }
+            }
+          });
         });
       };
       params["__success"] = params["success"];
@@ -374,10 +395,10 @@ String.prototype.format = function() {
     c.prototype.insertFromStore = function(graph, store, storeGraph, params) {
       var self = this;
       params = extendParams(params, self.options);
-      store.graph(storeGraph, function(success, result) {
-        if (!success) {
+      store.graph(storeGraph, function(error, result) {
+        if (error) {
           if (params.error) {
-            params.error(result);
+            params.error(error);
           }
           return;
         }
@@ -464,17 +485,22 @@ String.prototype.format = function() {
       this.exec('GET', path, headers, null, params);
     }
 
-    c.prototype.retrieveToStore = function(path, store, storeGraph, params) {
+    c.prototype.retrieveToStore = function(path, store, graph, params) {
       params = extendParams(params, this.options);
       var __success = function(data, status, xhr) {
-        clearGraph(store, storeGraph);
-        store.loadTurtle(data, storeGraph, path, function(success, r) {
-          if (success && params["__success"]) {
-            params["__success"](data, status, xhr);
-          }
-          else if(!success && params["error"]) {
-            params["error"](r);
-          }
+        clearGraph(store, graph, function() {
+          store.load('text/turtle', data, graph, function(error) {
+            if (!error) {
+              if (params["__success"]) {
+                params["__success"](data, status, xhr);
+              }
+            }
+            else {
+              if (params["error"]) {
+                params["error"](error);
+              }
+            }
+          });
         });
       };
       params["__success"] = params["success"];
@@ -497,13 +523,13 @@ String.prototype.format = function() {
       this.exec(method, path, headers, content, params);
     }
 
-    c.prototype.insertFromStore = function(path, store, storeGraph, params) {
+    c.prototype.insertFromStore = function(path, store, graph, params) {
       var self = this;
       params = extendParams(params, self.options);
-      store.graph(storeGraph, function(success, result) {
-        if (!success) {
+      store.graph(graph, function(error, result) {
+        if (error) {
           if (params.error) {
-            params.error(result);
+            params.error(error);
           }
           return;
         }
@@ -537,7 +563,7 @@ String.prototype.format = function() {
         url: path,
         type: method,
         headers: headers,
-        contentType: 'text/turtle',
+        contentType: ((params.contentType)? params.contentType: 'text/turtle'),
         processData: false,
         data: content,
         dataType: params.dataType
@@ -578,21 +604,17 @@ String.prototype.format = function() {
 
     c.prototype.retrieve = function(URI, params) {
       var self = this;
-      params.__success = params.success;
-      params.success = function(data, status, xhr) {
-        if (params && params.__success) {
-          params.__success(data, status, xhr);
-        }
-      };
-
       var host = (params.proxy) ? self.options.httpProxyTemplate.format(encodeURIComponent(URI)) : self.options.httpTemplate.format(URI);
-      var acceptType = (params && params.acceptType) ? params.acceptType : 'text/n3; q=1, text/turtle; q=0.8, application/rdf+xml; q=0.6';
+      var accept = self.acceptParameter();
+      if (!accept) {
+        accept = 'text/turtle; q=1, text/n3; q=0.9, application/ld+json; q=0.7 application/rdf+xml; q=0.6';
+      }
       var ajaxParams = {
-        url: host,
-        type: 'GET',
-        dataType: 'text',
-        beforeSend: function(xhr) {
-          xhr.setRequestHeader("Accept", acceptType);
+        "url": host,
+        "type": 'GET',
+        "dataType": 'text',
+        "beforeSend": function(xhr) {
+          xhr.setRequestHeader("Accept", accept);
         }
       };
       return self.baseExec(ajaxParams, params);
@@ -600,34 +622,37 @@ String.prototype.format = function() {
 
     c.prototype.retrieveToStore = function(URI, store, graph, params) {
       var self = this;
+
       params.__success = params.success;
       params.success = (function(URI, params) {
         return function(data, status, xhr) {
           var contentType = (xhr.getResponseHeader('content-type') || '').split(';')[0];
-          var loadResultFct = function(success, results) {
-            if (!success) {
-              console.error('URI load error =>', graph, results);
-              return;
+          var callback = function(error) {
+            if (error) {
+              console.error('URI load error =>', graph, error);
+              if (params && params.error) {
+                params.error(error);
+              }
             }
-            if (params && params.__success) {
+            else if (params && params.__success) {
               params.__success(data, status, xhr);
             }
           };
-          if(contentType.indexOf('turtle') > 0 || contentType.length === 0)
-            store.loadTurtle(data, URI, loadResultFct);
-          else
-            store.load(contentType, data, URI, loadResultFct);
+          store.load(contentType, data, URI, callback);
         }
       })(graph, params);
 
       var host = (params.proxy) ? self.options.httpProxyTemplate.format(encodeURIComponent(URI)) : self.options.httpTemplate.format(URI);
-      var acceptType = (params && params.acceptType) ? params.acceptType : 'text/n3; q=1, text/turtle; q=0.8, application/rdf+xml; q=0.6';
+      var accept = self.acceptParameter();
+      if (!accept) {
+        accept = 'text/turtle; q=1, text/n3; q=0.9, application/ld+json; q=0.7 application/rdf+xml; q=0.6';
+      }
       var ajaxParams = {
-        url: host,
-        type: 'GET',
-        dataType: 'text',
-        beforeSend: function(xhr) {
-          xhr.setRequestHeader("Accept", acceptType);
+        "url": host,
+        "type": 'GET',
+        "dataType": 'text',
+        "beforeSend": function(xhr) {
+          xhr.setRequestHeader("Accept", accept);
         }
       };
       return self.baseExec(ajaxParams, params);

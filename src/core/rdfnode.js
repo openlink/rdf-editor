@@ -57,6 +57,10 @@ RDFE.RdfNode.fromStoreNode = function(node) {
     return new RDFE.RdfNode('uri', node);
   }
 
+  if (typeof(node) === 'number') {
+    return new RDFE.RdfNode('literal', node);
+  }
+
   // already an RdfNode
   if (node instanceof RDFE.RdfNode) {
     return node;

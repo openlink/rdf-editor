@@ -27,21 +27,7 @@
     // constructor
     var c = function(editor, predicate) {
       this.editor = editor;
-      this.doc = editor.doc;
-      this.ontologyManager = editor.ontologyManager;
-      this.namingSchema = editor.doc.config.options[editor.doc.config.options["namingSchema"]];
       this.predicate = predicate;
-    };
-
-    var nodeFormatter = function(value) {
-      if (value.interfaceName == "Literal") {
-        if (value.datatype == 'http://www.w3.org/2001/XMLSchema#dateTime')
-          return (new Date(value.nominalValue)).toString();
-        else
-          return value.nominalValue;
-      } else {
-        return value.toString();
-      }
     };
 
     c.prototype.template = _.template(' \
@@ -49,7 +35,7 @@
         <div class="panel-heading clearfix"> \
           <form class="form-inline"> \
             <div class="form-group" style="width: 80%;"> \
-              <label><%= RDFE.Utils.namingSchemaLabel("p", this.namingSchema) %> </label> \
+              <label><%= RDFE.Utils.namingSchemaLabel("p", this.editor.namingSchema()) %> </label> \
               <select name="predicate" class="form-control" style="width: 85%;"></select> \
             </div> \
             <div class="btn-group pull-right" role="group"> \
@@ -65,6 +51,7 @@
 
     c.prototype.render = function(editor, container, newStatement, backCallback) {
       var self = this;
+      var oldTriple;
 
       var predicateEditorData = function(container, backCallback) {
         $list.bootstrapTable({
@@ -76,46 +63,25 @@
           "showHeader": true,
           "editable": true,
           "data": [],
-          "dataSetter": predicateEditorDataSetter,
+          "editable": true,
+          "dereference": true,
           "columns": [{
             "field": 'subject',
-            "title": RDFE.Utils.namingSchemaLabel('s', self.namingSchema),
-            "aligh": 'left',
+            "title": RDFE.Utils.namingSchemaLabel('s', self.editor.namingSchema()),
+            "titleTooltip": RDFE.Utils.namingSchemaLabel('s', self.editor.namingSchema()),
             "sortable": true,
-            "editable": function(triple) {
-              return {
-                "mode": "inline",
-                "type": "rdfnode",
-                "rdfnode": {
-                  "config": self.doc.config.options,
-                  "type": 'http://www.w3.org/1999/02/22-rdf-syntax-ns#Resource'
-                },
-                "value": triple.subject
-              }
-            },
-            formatter: nodeFormatter
+            "editable": self.editor.editableSubject(self.editor),
+            "formatter": self.editor.nodeFormatter
           }, {
             "field": 'object',
-            "title": RDFE.Utils.namingSchemaLabel('o', self.namingSchema),
-            "align": 'left',
+            "title": RDFE.Utils.namingSchemaLabel('o', self.editor.namingSchema()),
+            "titleTooltip": RDFE.Utils.namingSchemaLabel('o', self.editor.namingSchema()),
             "sortable": true,
-            "editable": function(triple) {
-              return {
-                "mode": "inline",
-                "type": "rdfnode",
-                "rdfnode": {
-                  "config": self.doc.config.options,
-                  "predicate": self.predicate.uri,
-                  "document": self.doc,
-                  "ontologyManager": self.ontologyManager
-                },
-                "value": triple.object
-              };
-            },
-            formatter: nodeFormatter
+            "editable": self.editor.editableObject(self.editor, function(triple){return triple.predicate.toString();}),
+            "formatter": self.editor.nodeFormatter
           }, {
             "field": 'actions',
-            "title": '<button class="add btn btn-default" title="Add Relation" style="display: none;"><span class="glyphicon glyphicon-plus" aria-hidden="true"></span> New</button>',
+            "title": '<button class="add btn btn-default btn-sm" title="Add Relation" style="display: none;"><span class="glyphicon glyphicon-plus" aria-hidden="true"></span> New</button>',
             "align": 'center',
             "valign": 'middle',
             "class": 'rdfe-small-column',
@@ -130,17 +96,32 @@
             },
             "events": {
               'click .remove': function (e, value, row, index) {
-                self.doc.deleteTriple(row, function() {
+                self.editor.doc.deleteTriple(row, function() {
                   $list.bootstrapTable('remove', {
                     field: 'id',
                     values: [row.id]
                   });
-                }, function() {
-                  $(self).trigger('rdf-editor-error', { "type": 'triple-delete-failed', "message": 'Failed to delete triple.' });
+                  $(self.editor).trigger('rdf-editor-success', {
+                    "type": 'predicate-delete-success',
+                    "message": "Successfully deleted triple."
+                  });
+                }, function(error) {
+                  $(self.editor).trigger('rdf-editor-error', {
+                    "type": 'predicate-delete-error',
+                    "message": 'Failed to delete triple.'
+                  });
                 });
               }
             }
           }]
+        });
+
+        $list.on('editable-shown.bs.table', function(e, field, triple) {
+          oldTriple = _.clone(triple);
+        });
+
+        $list.on('editable-save.bs.table', function(e, field, triple) {
+          self.editor.dataSetter(field, oldTriple, triple);
         });
 
         self.predicateView = editor.predicateView;
@@ -159,36 +140,6 @@
         }
       };
 
-      var predicateEditorDataSetter = function(triple, field, newValue) {
-        var newNode = newValue;
-
-        if (field === 'predicate') {
-          newNode = self.doc.store.rdf.createNamedNode(newValue);
-        }
-        if (newValue.toStoreNode) {
-          newNode = newValue.toStoreNode(self.doc.store);
-        }
-        else if (field != 'object' ||
-          triple.object.interfaceName == 'NamedNode') {
-          newNode = self.doc.store.rdf.createNamedNode(newValue);
-        }
-        else if (triple.object.datatype == 'http://www.w3.org/2001/XMLSchema#dateTime') {
-          var d = new Date(newValue);
-          newNode = self.doc.store.rdf.createLiteral(d.toISOString(), triple.object.language, triple.object.datatype);
-        }
-        else {
-          newNode = self.doc.store.rdf.createLiteral(newValue, triple.object.language, triple.object.datatype);
-        }
-
-        var newTriple = self.doc.store.rdf.createTriple(triple.subject, triple.predicate, triple.object);
-        newTriple[field] = newNode;
-        self.doc.updateTriple(triple, newTriple, function(success) {
-          // do nothing
-        }, function(msg) {
-          $(self).trigger('rdf-editor-error', { message: 'Failed to update triple in document: ' + msg });
-        });
-      };
-
       container.empty();
 
       // create the basic entity editor layout using the template above
@@ -204,7 +155,7 @@
       });
 
       var predicateEditor = container.find('select[name="predicate"]').propertyBox({
-        ontoManager: self.ontologyManager
+        "ontologyManager": self.editor.ontologyManager
       });
       if (self.predicate) {
         predicateEditor.setPropertyURI(self.predicate.uri);
@@ -217,7 +168,7 @@
 
       predicateEditor.sel.on('change', function(predicateUri) {
         if (predicateUri) {
-          self.doc.getPredicate(predicateUri, function (predicate) {
+          self.editor.doc.getPredicate(predicateUri, function (predicate) {
             self.predicateView.addPredicate(predicate);
 
             self.predicate = predicate;
@@ -266,11 +217,11 @@
         '  <div class="panel-body"> ' +
         '    <form class="form-horizontal"> ' +
         '      <div class="form-group"> ' +
-        '        <label for="subject" class="col-sm-2 control-label">' + RDFE.Utils.namingSchemaLabel('s', self.namingSchema) + '</label> ' +
+        '        <label for="subject" class="col-sm-2 control-label">' + RDFE.Utils.namingSchemaLabel('s', self.editor.namingSchema()) + '</label> ' +
         '        <div class="col-sm-10"><input name="subject" class="form-control" /></div> ' +
         '      </div> ' +
         '      <div class="form-group"> ' +
-        '        <label for="object" class="col-sm-2 control-label">' + RDFE.Utils.namingSchemaLabel('o', self.namingSchema) + '</label> ' +
+        '        <label for="object" class="col-sm-2 control-label">' + RDFE.Utils.namingSchemaLabel('o', self.editor.namingSchema()) + '</label> ' +
         '        <div class="col-sm-10"><input name="object" class="form-control" /></div> ' +
         '      </div> ' +
         '      <div class="form-group"> ' +
@@ -288,8 +239,8 @@
       // Set focus
       subjectEditor.focus();
 
-      var property = self.ontologyManager.ontologyProperties[self.predicate.uri];
-      var objectEditor = self.predicateFormContainer.find('input[name="object"]').rdfNodeEditor(self.doc.config.options);
+      var property = self.editor.ontologyManager.ontologyProperties[self.predicate.uri];
+      var objectEditor = self.predicateFormContainer.find('input[name="object"]').rdfNodeEditor(self.editor.doc.config.options);
       self.editor.changeObjectType(property, objectEditor);
 
       self.predicateFormContainer.find('button.predicate-action-new-cancel').click(function(e) {
@@ -310,19 +261,19 @@
         if (!RDFE.Validate.check(objectEditor.getField(), o.value))
           return;
 
-        var t = self.doc.store.rdf.createTriple(self.doc.store.rdf.createNamedNode(s), self.doc.store.rdf.createNamedNode(p), o.toStoreNode(self.doc.store));
-        self.doc.addTriples([t], function() {
+        var t = self.editor.doc.store.rdf.createTriple(self.editor.doc.store.rdf.createNamedNode(s), self.editor.doc.store.rdf.createNamedNode(p), o.toStoreNode(self.editor.doc.store));
+        self.editor.doc.addTriples([t], function() {
           self.addTriple(t);
-          $(self).trigger('rdf-editor-success', {
-            "type": "triple-insert-success",
-            "message": "Successfully added new statement."
+          $(self.editor).trigger('rdf-editor-success', {
+            "type": "predicate-insert-success",
+            "message": "Successfully added new triple."
           });
           self.predicateFormContainer.hide();
           self.predicateTableContainer.show();
         }, function() {
-          $(self).trigger('rdf-editor-error', {
-            "type": 'triple-insert-failed',
-            "message": "Failed to add new statement to store."
+          $(self.editor).trigger('rdf-editor-error', {
+            "type": 'predicate-insert-error',
+            "message": "Failed to add new triple."
           });
         });
       });

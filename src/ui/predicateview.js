@@ -25,10 +25,7 @@
 
   RDFE.PredicateView = (function() {
     // constructor
-    var c = function(doc, ontologyManager, editor, params) {
-      this.doc = doc;
-      this.namingSchema = doc.config.options[doc.config.options["namingSchema"]];
-      this.ontologyManager = ontologyManager;
+    var c = function(editor, params) {
       this.editor = editor;
       this.editFct = params.editFct;
     };
@@ -48,20 +45,19 @@
       return 0;
     };
 
-    var countFormatter = function(value, row, index) {
-      return row.items.length;
-    };
-
     c.prototype.render = function(container, callback) {
       var self = this;
 
-      self.doc.listPredicates(function(predicates) {
+      self.editor.doc.listPredicates(function(predicates) {
         var predicateListActionsFormatter = function(value, row, index) {
           return [
-            '<a class="edit ml10" href="javascript:void(0)" title="Edit or add a new '+RDFE.Utils.namingSchemaLabel('s', self.namingSchema, false, true)+' and '+RDFE.Utils.namingSchemaLabel('o', self.namingSchema, false, true)+' pairs associated with this '+RDFE.Utils.namingSchemaLabel('p', self.namingSchema, false, true)+'">',
+            '<a class="edit ml10" href="javascript:void(0)" title="Edit or add a new '+RDFE.Utils.namingSchemaLabel('s', self.editor.namingSchema(), false, true)+' and '+RDFE.Utils.namingSchemaLabel('o', self.editor.namingSchema(), false, true)+' pairs associated with this '+RDFE.Utils.namingSchemaLabel('p', self.editor.namingSchema(), false, true)+'">',
             '  <i class="glyphicon glyphicon-edit"></i>',
             '</a>',
-            '<a class="remove ml10" href="javascript:void(0)" title="Remove all '+RDFE.Utils.namingSchemaLabel('spo', self.namingSchema, true, true)+' associated with this '+RDFE.Utils.namingSchemaLabel('p', self.namingSchema, false, true)+'">',
+            '<a class="dereference ml10" href="javascript:void(0)" title="Dereference this '+RDFE.Utils.namingSchemaLabel('p', self.editor.namingSchema(), true, true)+'">',
+            '  <i class="glyphicon glyphicon-link"></i>',
+            '</a>',
+            '<a class="remove ml10" href="javascript:void(0)" title="Remove all '+RDFE.Utils.namingSchemaLabel('spo', self.editor.namingSchema(), true, true)+' associated with this '+RDFE.Utils.namingSchemaLabel('p', self.editor.namingSchema(), false, true)+'">',
             '  <i class="glyphicon glyphicon-remove"></i>',
             '</a>'
           ].join('');
@@ -74,62 +70,63 @@
         var $list = $(document.createElement('table')).addClass('table');
         container.append($list);
 
-        // create entries
-        var deleteFct = function(predicate) {
-          self.doc.deletePredicate(predicate.uri, function() {
-            $list.bootstrapTable('remove', {
-              field: 'uri',
-              values: [predicate.uri]
-            });
-            $(self).trigger('rdf-editor-success', {
-              "type": 'predicate-delete-done',
-              "uri": predicate.uri,
-              "message": "Successfully deleted attribute " + uri + "."
-            });
-          }, function(msg) {
-            $(self).trigger('rdf-editor-error', {
-              "type": 'predicate-delete-failed',
-              "message": msg
-            });
-          });
-        };
-
         $list.bootstrapTable({
-          striped: true,
-          sortName: 'uri',
-          pagination: true,
-          search: true,
-          searchAlign: 'left',
-          trimOnSearch: false,
-          showHeader: true,
-          data: predicates,
-          idField: 'uri',
-          columns: [{
-            field: 'uri',
-            title: RDFE.Utils.namingSchemaLabel('p', self.namingSchema),
-            sortable: true,
-            sorter: labelSorter,
-            formatter: labelFormatter
+          "striped": true,
+          "sortName": 'uri',
+          "pagination": true,
+          "search": true,
+          "searchAlign": 'left',
+          "trimOnSearch": false,
+          "showHeader": true,
+          "data": predicates,
+          "idField": 'uri',
+          "columns": [{
+            "field": 'uri',
+            "title": RDFE.Utils.namingSchemaLabel('p', self.editor.namingSchema()),
+            "titleTooltip": RDFE.Utils.namingSchemaLabel('p', self.editor.namingSchema()),
+            "sortable": true,
+            "sorter": labelSorter,
+            "formatter": labelFormatter
           }, {
-            field: 'count',
-            title: 'Count',
-            align: 'right',
-            class: 'rdfe-small-column',
-            formatter: countFormatter
+            "field": 'count',
+            "title": 'Count',
+            "titleTooltip": 'Count',
+            "sortable": true,
+            "align": 'right',
+            "class": 'rdfe-small-column',
+            "formatter": self.editor.countFormatter
           }, {
-            field: 'actions',
-            title: '<button class="add btn btn-default" title="Click to create a new '+RDFE.Utils.namingSchemaLabel('p', self.namingSchema, false, true)+'"><span class="glyphicon glyphicon-plus" aria-hidden="true"></span> New</button>',
-            align: 'center',
-            valign: 'middle',
-            class: 'rdfe-small-column',
-            clickToSelect: false,
-            formatter: predicateListActionsFormatter,
-            events: {
+            "field": 'actions',
+            "title": '<button class="add btn btn-default btn-sm" title="Click to create a new '+RDFE.Utils.namingSchemaLabel('p', self.editor.namingSchema(), false, true)+'"><span class="glyphicon glyphicon-plus" aria-hidden="true"></span> New</button>',
+            "align": 'center',
+            "valign": 'middle',
+            "class": 'rdfe-small-column',
+            "clickToSelect": false,
+            "formatter": predicateListActionsFormatter,
+            "events": {
               'click .edit': function(e, value, row, index) {
                 self.editFct(row);
               },
+              'click .dereference': function(e, value, row, index) {
+                var dereference = self.editor.dereference();
+                dereference(row.uri);
+              },
               'click .remove': function(e, value, row, index) {
-                deleteFct(row);
+                self.editor.doc.deletePredicate(row.uri, function() {
+                  $list.bootstrapTable('remove', {
+                    field: 'uri',
+                    values: [row.uri]
+                  });
+                  $(self.editor).trigger('rdf-editor-success', {
+                    "type": 'predicate-delete-success',
+                    "message": "Successfully deleted predicate " + row.uri + "."
+                  });
+                }, function(error) {
+                  $(self.editor).trigger('rdf-editor-error', {
+                    "type": 'predicate-delete-error',
+                    "message": error
+                  });
+                });
               }
             }
           }]
@@ -142,10 +139,10 @@
         if (callback) {
           callback();
         }
-      }, function(r) {
-        $(self).trigger('rdf-editor-error', {
-          "type": 'predicate-list-failed',
-          "message": r
+      }, function(error) {
+        $(self.editor).trigger('rdf-editor-error', {
+          "type": 'predicate-list-error',
+          "message": error
         });
       });
     };
@@ -165,10 +162,13 @@
     c.prototype.updatePredicate = function(uri) {
       var self = this;
 
-      self.doc.getPredicate(uri, function(predicate) {
-        self.predicateTable.bootstrapTable('update', {
-          field: 'uri',
-          data: predicate
+      self.editor.doc.getPredicate(uri, function(predicate) {
+        var ndx = self.predicates.findIndex(function(item, index, items) {
+          return (item.uri === uri);
+        });
+        self.predicateTable.bootstrapTable('updateRow', {
+          "index": ndx,
+          "row": predicate
         });
       });
     };

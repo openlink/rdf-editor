@@ -1,0 +1,4007 @@
+@prefix schema: <http://schema.org/> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix dc: <http://purl.org/dc/terms/> .
+@prefix owl: <http://www.w3.org/2002/07/owl#> .
+@prefix bibo: <http://purl.org/ontology/bibo/> .
+@prefix dcat: <http://www.w3.org/ns/dcat#> .
+@prefix void: <http://rdfs.org/ns/void#> .
+@prefix foaf: <http://xmlns.com/foaf/0.1/> .
+
+schema:GeneralContractor
+  rdfs:subClassOf schema:HomeAndConstructionBusiness ;
+  rdfs:comment "A general contractor." ;
+  a rdfs:Class ;
+  rdfs:label "GeneralContractor" .
+
+schema:addressRegion
+  a rdf:Property ;
+  rdfs:comment "The region. For example, CA." ;
+  rdfs:label "addressRegion" ;
+  schema:domainIncludes schema:PostalAddress ;
+  schema:rangeIncludes schema:Text .
+
+schema:ParkingFacility
+  a rdfs:Class ;
+  rdfs:subClassOf schema:CivicStructure ;
+  rdfs:label "ParkingFacility" ;
+  rdfs:comment "A parking lot or other parking facility." .
+
+schema:paymentDue
+  a rdf:Property ;
+  schema:domainIncludes schema:Order, schema:Invoice ;
+  rdfs:label "paymentDue" ;
+  schema:rangeIncludes schema:DateTime ;
+  rdfs:comment "The date that payment is due." ;
+  schema:supersededBy schema:paymentDueDate .
+
+schema:seeks
+  rdfs:label "seeks" ;
+  schema:rangeIncludes schema:Demand ;
+  schema:domainIncludes schema:Person, schema:Organization ;
+  rdfs:comment "A pointer to products or services sought by the organization or person (demand)." ;
+  a rdf:Property .
+
+schema:addressLocality
+  rdfs:label "addressLocality" ;
+  schema:domainIncludes schema:PostalAddress ;
+  schema:rangeIncludes schema:Text ;
+  a rdf:Property ;
+  rdfs:comment "The locality. For example, Mountain View." .
+
+schema:dateCreated
+  a rdf:Property ;
+  rdfs:label "dateCreated" ;
+  schema:domainIncludes schema:CreativeWork, schema:DataFeedItem ;
+  schema:rangeIncludes schema:Date, schema:DateTime ;
+  rdfs:comment "The date on which the CreativeWork was created or the item was added to a DataFeed." .
+
+schema:RVPark
+  a rdfs:Class ;
+  rdfs:label "RVPark" ;
+  rdfs:subClassOf schema:CivicStructure ;
+  rdfs:comment "A place offering space for \"Recreational Vehicles\", Caravans, mobile homes and the like." .
+
+schema:follows
+  schema:rangeIncludes schema:Person ;
+  rdfs:label "follows" ;
+  a rdf:Property ;
+  rdfs:comment "The most generic uni-directional social relation." ;
+  schema:domainIncludes schema:Person .
+
+schema:subReservation
+  rdfs:comment "The individual reservations included in the package. Typically a repeated property." ;
+  schema:domainIncludes schema:ReservationPackage ;
+  schema:rangeIncludes schema:Reservation ;
+  rdfs:label "subReservation" ;
+  a rdf:Property .
+
+schema:SkiResort
+  rdfs:comment "A ski resort." ;
+  rdfs:label "SkiResort" ;
+  a rdfs:Class ;
+  rdfs:subClassOf schema:SportsActivityLocation .
+
+schema:copyrightHolder
+  schema:rangeIncludes schema:Person, schema:Organization ;
+  schema:domainIncludes schema:CreativeWork ;
+  a rdf:Property ;
+  rdfs:label "copyrightHolder" ;
+  rdfs:comment "The party holding the legal copyright to the CreativeWork." .
+
+<http://www.w3.org/wiki/WebSchemas/SchemaDotOrgSources#source_LRMIClass>
+  a schema:Organization ;
+  rdfs:label "LRMIClass" ;
+  rdfs:comment "This class is based on the work of the LRMI project, see lrmi.net for details." .
+
+schema:targetCollection
+  rdfs:label "targetCollection" ;
+  schema:rangeIncludes schema:Thing ;
+  rdfs:comment "A sub property of object. The collection target of the action." ;
+  schema:domainIncludes schema:UpdateAction ;
+  a rdf:Property ;
+  rdfs:subPropertyOf schema:object .
+
+schema:ImagingTest
+  rdfs:subClassOf schema:MedicalTest ;
+  a rdfs:Class ;
+  rdfs:comment "Any medical imaging modality typically used for diagnostic purposes." ;
+  rdfs:label "ImagingTest" ;
+  dc:source <http://www.w3.org/wiki/WebSchemas/SchemaDotOrgSources#source_WikiDoc> .
+
+schema:reviewedBy
+  schema:rangeIncludes schema:Person, schema:Organization ;
+  schema:domainIncludes schema:WebPage ;
+  a rdf:Property ;
+  rdfs:label "reviewedBy" ;
+  rdfs:comment "People or organizations that have reviewed the content on this web page for accuracy and/or completeness." .
+
+schema:openingHours
+  rdfs:label "openingHours" ;
+  a rdf:Property ;
+  schema:domainIncludes schema:LocalBusiness, schema:CivicStructure ;
+  schema:rangeIncludes schema:Text ;
+  rdfs:comment "The opening hours for a business. Opening hours can be specified as a weekly time range, starting with days, then times per day. Multiple days can be listed with commas ',' separating each day. Day or time ranges are specified using a hyphen '-'.<br />- Days are specified using the following two-letter combinations: <code>Mo</code>, <code>Tu</code>, <code>We</code>, <code>Th</code>, <code>Fr</code>, <code>Sa</code>, <code>Su</code>.<br />- Times are specified using 24:00 time. For example, 3pm is specified as <code>15:00</code>. <br />- Here is an example: <code>&lt;time itemprop=&quot;openingHours&quot; datetime=&quot;Tu,Th 16:00-20:00&quot;&gt;Tuesdays and Thursdays 4-8pm&lt;/time&gt;</code>. <br />- If a business is open 7 days a week, then it can be specified as <code>&lt;time itemprop=&quot;openingHours&quot; datetime=&quot;Mo-Su&quot;&gt;Monday through Sunday, all day&lt;/time&gt;</code>." .
+
+schema:isRelatedTo
+  a rdf:Property ;
+  rdfs:comment "A pointer to another, somehow related product (or multiple products)." ;
+  schema:rangeIncludes schema:Product ;
+  rdfs:label "isRelatedTo" ;
+  schema:domainIncludes schema:Product .
+
+schema:productionDate
+  dc:source <http://www.w3.org/wiki/WebSchemas/SchemaDotOrgSources#Automotive_Ontology_Working_Group> ;
+  schema:domainIncludes schema:Vehicle, schema:Product ;
+  rdfs:comment "The date of production of the item, e.g. vehicle." ;
+  schema:rangeIncludes schema:Date ;
+  rdfs:label "productionDate" ;
+  a rdf:Property .
+
+schema:priceType
+  rdfs:comment "A short text or acronym indicating multiple price specifications for the same offer, e.g. SRP for the suggested retail price or INVOICE for the invoice price, mostly used in the car industry." ;
+  schema:domainIncludes schema:UnitPriceSpecification ;
+  rdfs:label "priceType" ;
+  schema:rangeIncludes schema:Text ;
+  a rdf:Property .
+
+schema:BroadcastRelease
+  dc:source <http://www.w3.org/wiki/WebSchemas/SchemaDotOrgSources#MBZ> ;
+  rdfs:label "BroadcastRelease" ;
+  rdfs:comment "BroadcastRelease." ;
+  a schema:MusicAlbumReleaseType .
+
+schema:videoFrameSize
+  schema:domainIncludes schema:VideoObject ;
+  a rdf:Property ;
+  rdfs:comment "The frame size of the video." ;
+  schema:rangeIncludes schema:Text ;
+  rdfs:label "videoFrameSize" .
+
+schema:availableFrom
+  rdfs:label "availableFrom" ;
+  schema:rangeIncludes schema:DateTime ;
+  rdfs:comment "When the item is available for pickup from the store, locker, etc." ;
+  schema:domainIncludes schema:DeliveryEvent ;
+  a rdf:Property .
+
+schema:numberedPosition
+  rdfs:label "numberedPosition" ;
+  a rdf:Property ;
+  schema:domainIncludes schema:OrganizationRole ;
+  schema:rangeIncludes schema:Number ;
+  rdfs:comment "A number associated with a role in an organization, for example, the number on an athlete's jersey." .
+
+schema:JobPosting
+  rdfs:label "JobPosting" ;
+  rdfs:comment "A listing that describes a job opening in a certain organization." ;
+  a rdfs:Class ;
+  rdfs:subClassOf schema:Intangible .
+
+schema:isProprietary
+  rdfs:comment "True if this item's name is a proprietary/brand name (vs. generic name)." ;
+  schema:rangeIncludes schema:Boolean ;
+  a rdf:Property ;
+  schema:domainIncludes schema:DietarySupplement, schema:Drug ;
+  rdfs:label "isProprietary" .
+
+schema:TollFree
+  rdfs:comment "The associated telephone number is toll free." ;
+  a schema:ContactPointOption ;
+  rdfs:label "TollFree" .
+
+schema:billingAddress
+  rdfs:comment "The billing address for the order." ;
+  a rdf:Property ;
+  schema:rangeIncludes schema:PostalAddress ;
+  schema:domainIncludes schema:Order ;
+  rdfs:label "billingAddress" .
+
+schema:knows
+  rdfs:comment "The most generic bi-directional social/work relation." ;
+  schema:rangeIncludes schema:Person ;
+  schema:domainIncludes schema:Person ;
+  a rdf:Property ;
+  rdfs:label "knows" .
+
+schema:exerciseRelatedDiet
+  schema:rangeIncludes schema:Diet ;
+  rdfs:comment "A sub property of instrument. The diet used in this action." ;
+  rdfs:label "exerciseRelatedDiet" ;
+  rdfs:subPropertyOf schema:instrument ;
+  schema:domainIncludes schema:ExerciseAction ;
+  a rdf:Property .
+
+schema:GamePlayMode
+  rdfs:label "GamePlayMode" ;
+  rdfs:comment "Indicates whether this game is multi-player, co-op or single-player." ;
+  a rdfs:Class ;
+  rdfs:subClassOf schema:Enumeration .
+
+schema:Airline
+  rdfs:subClassOf schema:Organization ;
+  a rdfs:Class ;
+  rdfs:label "Airline" ;
+  rdfs:comment "An organization that provides flights for passengers." .
+
+schema:Head
+  rdfs:comment "Head." ;
+  a schema:PhysicalExam ;
+  rdfs:label "Head" .
+
+schema:SurgicalProcedure
+  a schema:MedicalProcedureType ;
+  rdfs:label "SurgicalProcedure" ;
+  rdfs:comment "A type of medical procedure that involves invasive surgical techniques." .
+
+schema:Anesthesia
+  a schema:MedicalSpecialty ;
+  rdfs:label "Anesthesia" ;
+  rdfs:comment "A specific branch of medical science that pertains to study of anesthetics and their application." .
+
+schema:Oncologic
+  rdfs:label "Oncologic" ;
+  a schema:MedicalSpecialty ;
+  rdfs:comment "A specific branch of medical science that deals with benign and malignant tumors, including the study of their development, diagnosis, treatment and prevention." .
+
+schema:InternetCafe
+  rdfs:label "InternetCafe" ;
+  rdfs:comment "An internet cafe." ;
+  rdfs:subClassOf schema:LocalBusiness ;
+  a rdfs:Class .
+
+schema:commentText
+  rdfs:comment "The text of the UserComment." ;
+  a rdf:Property ;
+  rdfs:label "commentText" ;
+  schema:domainIncludes schema:UserComments ;
+  schema:rangeIncludes schema:Text .
+
+schema:LeaveAction
+  rdfs:subClassOf schema:InteractAction ;
+  rdfs:comment "An agent leaves an event / group with participants/friends at a location.<p>Related actions:</p><ul><li><a href=\"http://schema.org/JoinAction\">JoinAction</a>: The antonym of LeaveAction.</li><li><a href=\"http://schema.org/UnRegisterAction\">UnRegisterAction</a>: Unlike UnRegisterAction, LeaveAction implies leaving a group/team of people rather than a service</li></ul>." ;
+  a rdfs:Class ;
+  rdfs:label "LeaveAction" .
+
+schema:contentSize
+  rdfs:comment "File size in (mega/kilo) bytes." ;
+  a rdf:Property ;
+  schema:rangeIncludes schema:Text ;
+  schema:domainIncludes schema:MediaObject ;
+  rdfs:label "contentSize" .
+
+schema:BoardingPolicyType
+  rdfs:subClassOf schema:Enumeration ;
+  rdfs:comment "A type of boarding policy used by an airline." ;
+  a rdfs:Class ;
+  rdfs:label "BoardingPolicyType" .
+
+schema:AutoRental
+  rdfs:subClassOf schema:AutomotiveBusiness ;
+  rdfs:label "AutoRental" ;
+  rdfs:comment "A car rental business." ;
+  a rdfs:Class .
+
+schema:recipeCategory
+  a rdf:Property ;
+  schema:domainIncludes schema:Recipe ;
+  schema:rangeIncludes schema:Text ;
+  rdfs:comment "The category of the recipe&#x2014;for example, appetizer, entree, etc." ;
+  rdfs:label "recipeCategory" .
+
+schema:ProfilePage
+  rdfs:subClassOf schema:WebPage ;
+  rdfs:label "ProfilePage" ;
+  rdfs:comment "Web page type: Profile page." ;
+  a rdfs:Class .
+
+schema:recipeInstructions
+  rdfs:comment "A step or instruction involved in making the recipe." ;
+  schema:rangeIncludes schema:ItemList, schema:Text ;
+  rdfs:label "recipeInstructions" ;
+  schema:domainIncludes schema:Recipe ;
+  a rdf:Property .
+
+schema:regionDrained
+  rdfs:label "regionDrained" ;
+  schema:rangeIncludes schema:AnatomicalStructure, schema:AnatomicalSystem ;
+  a rdf:Property ;
+  schema:domainIncludes schema:LymphaticVessel, schema:Vein ;
+  rdfs:comment "The anatomical or organ system drained by this vessel; generally refers to a specific part of an organ." .
+
+schema:relatedAnatomy
+  schema:rangeIncludes schema:AnatomicalSystem, schema:AnatomicalStructure ;
+  a rdf:Property ;
+  schema:domainIncludes schema:SuperficialAnatomy ;
+  rdfs:comment "Anatomical systems or structures that relate to the superficial anatomy." ;
+  rdfs:label "relatedAnatomy" .
+
+schema:MedicalProcedure
+  rdfs:label "MedicalProcedure" ;
+  dc:source <http://www.w3.org/wiki/WebSchemas/SchemaDotOrgSources#source_WikiDoc> ;
+  rdfs:comment "A process of care used in either a diagnostic, therapeutic, or palliative capacity that relies on invasive (surgical), non-invasive, or percutaneous techniques." ;
+  rdfs:subClassOf schema:MedicalEntity ;
+  a rdfs:Class .
+
+schema:ticketToken
+  rdfs:label "ticketToken" ;
+  schema:domainIncludes schema:Ticket ;
+  rdfs:comment "Reference to an asset (e.g., Barcode, QR code image or PDF) usable for entrance." ;
+  schema:rangeIncludes schema:URL, schema:Text ;
+  a rdf:Property .
+
+schema:baseSalary
+  schema:domainIncludes schema:EmployeeRole, schema:JobPosting ;
+  rdfs:comment "The base salary of the job or of an employee in an EmployeeRole." ;
+  schema:rangeIncludes schema:Number, schema:PriceSpecification ;
+  rdfs:label "baseSalary" ;
+  a rdf:Property .
+
+schema:Dataset
+  rdfs:comment "A body of structured information describing some topic(s) of interest." ;
+  owl:equivalentClass void:Dataset, dcat:Dataset, <http://purl.org/dc/dcmitype/Dataset> ;
+  rdfs:label "Dataset" ;
+  dc:source <http://www.w3.org/wiki/WebSchemas/SchemaDotOrgSources#source_DatasetClass> ;
+  a rdfs:Class ;
+  rdfs:subClassOf schema:CreativeWork .
+
+schema:Diet
+  rdfs:subClassOf schema:CreativeWork, schema:LifestyleModification ;
+  rdfs:comment "A strategy of regulating the intake of food to achieve or maintain a specific health-related goal." ;
+  dc:source <http://www.w3.org/wiki/WebSchemas/SchemaDotOrgSources#source_WikiDoc> ;
+  a rdfs:Class ;
+  rdfs:label "Diet" .
+
+schema:releaseNotes
+  a rdf:Property ;
+  rdfs:label "releaseNotes" ;
+  schema:domainIncludes schema:SoftwareApplication ;
+  schema:rangeIncludes schema:Text, schema:URL ;
+  rdfs:comment "Description of what changed in this version." .
+
+schema:SinglePlayer
+  rdfs:comment "Play mode: SinglePlayer. Which is played by a lone player." ;
+  a schema:GamePlayMode ;
+  rdfs:label "SinglePlayer" .
+
+schema:frequency
+  rdfs:label "frequency" ;
+  schema:rangeIncludes schema:Text ;
+  a rdf:Property ;
+  schema:domainIncludes schema:DoseSchedule ;
+  rdfs:comment "How often the dose is taken, e.g. 'daily'." .
+
+schema:suggestedGender
+  schema:rangeIncludes schema:Text ;
+  rdfs:label "suggestedGender" ;
+  rdfs:comment "The gender of the person or audience." ;
+  a rdf:Property ;
+  schema:domainIncludes schema:PeopleAudience .
+
+schema:actionPlatform
+  schema:domainIncludes schema:EntryPoint ;
+  a rdf:Property ;
+  schema:rangeIncludes schema:Text, schema:URL ;
+  rdfs:comment "The high level platform(s) where the Action can be performed for the given URL. To specify a specific application or operating system instance, use actionApplication." ;
+  rdfs:label "actionPlatform" .
+
+schema:hoursAvailable
+  schema:rangeIncludes schema:OpeningHoursSpecification ;
+  schema:domainIncludes schema:Service, schema:ContactPoint ;
+  rdfs:comment "The hours during which this service or contact is available." ;
+  rdfs:label "hoursAvailable" ;
+  a rdf:Property .
+
+schema:offerCount
+  a rdf:Property ;
+  schema:domainIncludes schema:AggregateOffer ;
+  schema:rangeIncludes schema:Integer ;
+  rdfs:comment "The number of offers for the product." ;
+  rdfs:label "offerCount" .
+
+schema:prescriptionStatus
+  rdfs:comment "Indicates whether this drug is available by prescription or over-the-counter." ;
+  schema:domainIncludes schema:Drug ;
+  rdfs:label "prescriptionStatus" ;
+  a rdf:Property ;
+  schema:rangeIncludes schema:DrugPrescriptionStatus .
+
+schema:printColumn
+  a rdf:Property ;
+  rdfs:label "printColumn" ;
+  schema:rangeIncludes schema:Text ;
+  rdfs:comment "The number of the column in which the NewsArticle appears in the print edition." ;
+  schema:domainIncludes schema:NewsArticle .
+
+schema:PotentialActionStatus
+  rdfs:comment "A description of an action that is supported." ;
+  a schema:ActionStatusType ;
+  rdfs:label "PotentialActionStatus" .
+
+schema:Organization
+  rdfs:subClassOf schema:Thing ;
+  rdfs:comment "An organization such as a school, NGO, corporation, club, etc." ;
+  rdfs:label "Organization" ;
+  a rdfs:Class .
+
+schema:logo
+  schema:rangeIncludes schema:ImageObject, schema:URL ;
+  schema:domainIncludes schema:Product, schema:Organization, schema:Place, schema:Brand ;
+  a rdf:Property ;
+  rdfs:comment "An associated logo." ;
+  rdfs:label "logo" ;
+  rdfs:subPropertyOf schema:image .
+
+schema:TravelAction
+  a rdfs:Class ;
+  rdfs:label "TravelAction" ;
+  rdfs:subClassOf schema:MoveAction ;
+  rdfs:comment "The act of traveling from an fromLocation to a destination by a specified mode of transport, optionally with participants." .
+
+schema:Diagnostic
+  rdfs:comment "A medical device used for diagnostic purposes." ;
+  a schema:MedicalDevicePurpose ;
+  rdfs:label "Diagnostic" .
+
+schema:hasPart
+  a rdf:Property ;
+  dc:source <http://www.w3.org/wiki/WebSchemas/SchemaDotOrgSources#source_bibex> ;
+  schema:domainIncludes schema:CreativeWork ;
+  schema:rangeIncludes schema:CreativeWork ;
+  rdfs:comment "Indicates a CreativeWork that is (in some sense) a part of this CreativeWork." ;
+  rdfs:label "hasPart" ;
+  schema:inverseOf schema:isPartOf .
+
+schema:procedure
+  rdfs:comment "A description of the procedure involved in setting up, using, and/or installing the device." ;
+  schema:rangeIncludes schema:Text ;
+  schema:domainIncludes schema:MedicalDevice ;
+  rdfs:label "procedure" ;
+  a rdf:Property .
+
+schema:AggregateRating
+  a rdfs:Class ;
+  rdfs:label "AggregateRating" ;
+  rdfs:comment "The average rating based on multiple ratings or reviews." ;
+  rdfs:subClassOf schema:Rating .
+
+schema:MedicalRiskScore
+  dc:source <http://www.w3.org/wiki/WebSchemas/SchemaDotOrgSources#source_WikiDoc> ;
+  rdfs:comment "A simple system that adds up the number of risk factors to yield a score that is associated with prognosis, e.g. CHAD score, TIMI risk score." ;
+  rdfs:label "MedicalRiskScore" ;
+  rdfs:subClassOf schema:MedicalRiskEstimator ;
+  a rdfs:Class .
+
+schema:pregnancyCategory
+  schema:rangeIncludes schema:DrugPregnancyCategory ;
+  a rdf:Property ;
+  rdfs:comment "Pregnancy category of this drug." ;
+  schema:domainIncludes schema:Drug ;
+  rdfs:label "pregnancyCategory" .
+
+schema:LymphaticVessel
+  dc:source <http://www.w3.org/wiki/WebSchemas/SchemaDotOrgSources#source_WikiDoc> ;
+  rdfs:comment "A type of blood vessel that specifically carries lymph fluid unidirectionally toward the heart." ;
+  rdfs:label "LymphaticVessel" ;
+  rdfs:subClassOf schema:Vessel ;
+  a rdfs:Class .
+
+schema:polygon
+  rdfs:label "polygon" ;
+  a rdf:Property ;
+  rdfs:comment "A polygon is the area enclosed by a point-to-point path for which the starting and ending points are the same. A polygon is expressed as a series of four or more space delimited points where the first and final points are identical." ;
+  schema:domainIncludes schema:GeoShape ;
+  schema:rangeIncludes schema:Text .
+
+schema:CaseSeries
+  a schema:MedicalObservationalStudyDesign ;
+  rdfs:label "CaseSeries" ;
+  rdfs:comment "A case series (also known as a clinical series) is a medical research study that tracks patients with a known exposure given similar treatment or examines their medical records for exposure and outcome. A case series can be retrospective or prospective and usually involves a smaller number of patients than the more powerful case-control studies or randomized controlled trials. Case series may be consecutive or non-consecutive, depending on whether all cases presenting to the reporting authors over a period of time were included, or only a selection." .
+
+schema:LeisureTimeActivity
+  a schema:PhysicalActivityCategory ;
+  rdfs:comment "Any physical activity engaged in for recreational purposes. Examples may include ballroom dancing, roller skating, canoeing, fishing, etc." ;
+  rdfs:label "LeisureTimeActivity" .
+
+schema:typeOfGood
+  schema:domainIncludes schema:TypeAndQuantityNode, schema:OwnershipInfo ;
+  rdfs:label "typeOfGood" ;
+  rdfs:comment "The product that this structured value is referring to." ;
+  a rdf:Property ;
+  schema:rangeIncludes schema:Product .
+
+schema:availableAtOrFrom
+  schema:rangeIncludes schema:Place ;
+  rdfs:label "availableAtOrFrom" ;
+  schema:domainIncludes schema:Demand, schema:Offer ;
+  rdfs:subPropertyOf schema:areaServed ;
+  a rdf:Property ;
+  rdfs:comment "The place(s) from which the offer can be obtained (e.g. store locations)." .
+
+schema:worksFor
+  rdfs:label "worksFor" ;
+  schema:rangeIncludes schema:Organization ;
+  schema:domainIncludes schema:Person ;
+  a rdf:Property ;
+  rdfs:comment "Organizations that the person works for." .
+
+schema:SiteNavigationElement
+  a rdfs:Class ;
+  rdfs:label "SiteNavigationElement" ;
+  rdfs:subClassOf schema:WebPageElement ;
+  rdfs:comment "A navigation element of the page." .
+
+schema:additionalProperty
+  schema:rangeIncludes schema:PropertyValue ;
+  rdfs:comment """A property-value pair representing an additional characteristics of the entitity, e.g. a product feature or another characteristic for which there is no matching property in schema.org. <br /><br />
+
+Note: Publishers should be aware that applications designed to use specific schema.org properties (e.g. http://schema.org/width, http://schema.org/color, http://schema.org/gtin13, ...) will typically expect such data to be provided using those properties, rather than using the generic property/value mechanism.
+""" ;
+  schema:domainIncludes schema:QualitativeValue, schema:QuantitativeValue, schema:Product, schema:Place ;
+  rdfs:label "additionalProperty" ;
+  a rdf:Property .
+
+schema:valueRequired
+  rdfs:comment "Whether the property must be filled in to complete the action.  Default is false." ;
+  schema:domainIncludes schema:PropertyValueSpecification ;
+  rdfs:label "valueRequired" ;
+  a rdf:Property ;
+  schema:rangeIncludes schema:Boolean .
+
+schema:QuantitativeValue
+  rdfs:label "QuantitativeValue" ;
+  a rdfs:Class ;
+  dc:source <http://www.w3.org/wiki/WebSchemas/SchemaDotOrgSources#source_GoodRelationsClass> ;
+  rdfs:subClassOf schema:StructuredValue ;
+  rdfs:comment " A point value or interval for product characteristics and other purposes." .
+
+schema:episodes
+  schema:rangeIncludes schema:Episode ;
+  schema:domainIncludes schema:TVSeries, schema:RadioSeries, schema:VideoGameSeries, schema:CreativeWorkSeason ;
+  schema:supersededBy schema:episode ;
+  rdfs:label "episodes" ;
+  rdfs:comment "An episode of a TV/radio series or season." ;
+  a rdf:Property .
+
+schema:DrugPregnancyCategory
+  rdfs:subClassOf schema:Enumeration, schema:MedicalEnumeration ;
+  rdfs:comment "Categories that represent an assessment of the risk of fetal injury due to a drug or pharmaceutical used as directed by the mother during pregnancy." ;
+  a rdfs:Class ;
+  rdfs:label "DrugPregnancyCategory" .
+
+schema:background
+  schema:rangeIncludes schema:Text ;
+  rdfs:label "background" ;
+  a rdf:Property ;
+  schema:domainIncludes schema:DietarySupplement ;
+  rdfs:comment "Descriptive information establishing a historical perspective on the supplement. May include the rationale for the name, the population where the supplement first came to prominence, etc." .
+
+schema:MusicAlbum
+  rdfs:comment "A collection of music tracks." ;
+  a rdfs:Class ;
+  rdfs:subClassOf schema:MusicPlaylist ;
+  rdfs:label "MusicAlbum" .
+
+schema:Drug
+  rdfs:comment "A chemical or biologic substance, used as a medical therapy, that has a physiological effect on an organism." ;
+  a rdfs:Class ;
+  rdfs:label "Drug" ;
+  dc:source <http://www.w3.org/wiki/WebSchemas/SchemaDotOrgSources#source_WikiDoc> ;
+  rdfs:subClassOf schema:MedicalTherapy .
+
+schema:MedicalTestPanel
+  dc:source <http://www.w3.org/wiki/WebSchemas/SchemaDotOrgSources#source_WikiDoc> ;
+  rdfs:subClassOf schema:MedicalTest ;
+  a rdfs:Class ;
+  rdfs:label "MedicalTestPanel" ;
+  rdfs:comment "Any collection of tests commonly ordered together." .
+
+schema:FilmAction
+  rdfs:subClassOf schema:CreateAction ;
+  rdfs:label "FilmAction" ;
+  a rdfs:Class ;
+  rdfs:comment "The act of capturing sound and moving images on film, video, or digitally." .
+
+schema:DeliveryChargeSpecification
+  a rdfs:Class ;
+  dc:source <http://www.w3.org/wiki/WebSchemas/SchemaDotOrgSources#source_GoodRelationsClass> ;
+  rdfs:subClassOf schema:PriceSpecification ;
+  rdfs:comment "The price for the delivery of an offer using a particular delivery method." ;
+  rdfs:label "DeliveryChargeSpecification" .
+
+schema:sameAs
+  schema:rangeIncludes schema:URL ;
+  a rdf:Property ;
+  schema:domainIncludes schema:Thing ;
+  rdfs:label "sameAs" ;
+  rdfs:comment "URL of a reference Web page that unambiguously indicates the item's identity. E.g. the URL of the item's Wikipedia page, Freebase page, or official website." .
+
+schema:jobTitle
+  rdfs:label "jobTitle" ;
+  schema:rangeIncludes schema:Text ;
+  a rdf:Property ;
+  schema:domainIncludes schema:Person ;
+  rdfs:comment "The job title of the person (for example, Financial Manager)." .
+
+schema:DDxElement
+  rdfs:comment "An alternative, closely-related condition typically considered later in the differential diagnosis process along with the signs that are used to distinguish it." ;
+  rdfs:subClassOf schema:MedicalIntangible ;
+  a rdfs:Class ;
+  dc:source <http://www.w3.org/wiki/WebSchemas/SchemaDotOrgSources#source_WikiDoc> ;
+  rdfs:label "DDxElement" .
+
+schema:CancelAction
+  rdfs:label "CancelAction" ;
+  rdfs:comment "The act of asserting that a future event/action is no longer going to happen.<p>Related actions:</p><ul><li><a href=\"http://schema.org/ConfirmAction\">ConfirmAction</a>: The antonym of CancelAction</li></ul>." ;
+  a rdfs:Class ;
+  rdfs:subClassOf schema:PlanAction .
+
+schema:CatholicChurch
+  rdfs:label "CatholicChurch" ;
+  rdfs:comment "A Catholic church." ;
+  rdfs:subClassOf schema:PlaceOfWorship ;
+  a rdfs:Class .
+
+schema:Florist
+  rdfs:subClassOf schema:Store ;
+  a rdfs:Class ;
+  rdfs:label "Florist" ;
+  rdfs:comment "A florist." .
+
+schema:WearAction
+  rdfs:subClassOf schema:UseAction ;
+  a rdfs:Class ;
+  rdfs:comment "The act of dressing oneself in clothing." ;
+  rdfs:label "WearAction" .
+
+schema:Language
+  rdfs:subClassOf schema:Intangible ;
+  rdfs:label "Language" ;
+  a rdfs:Class ;
+  rdfs:comment "Natural languages such as Spanish, Tamil, Hindi, English, etc. and programming languages such as Scheme and Lisp." .
+
+schema:AuthorizeAction
+  a rdfs:Class ;
+  rdfs:label "AuthorizeAction" ;
+  rdfs:comment "The act of granting permission to an object." ;
+  rdfs:subClassOf schema:AllocateAction .
+
+schema:SportsActivityLocation
+  rdfs:label "SportsActivityLocation" ;
+  rdfs:comment "A sports location, such as a playing field." ;
+  rdfs:subClassOf schema:LocalBusiness ;
+  a rdfs:Class .
+
+schema:codeValue
+  schema:domainIncludes schema:MedicalCode ;
+  schema:rangeIncludes schema:Text ;
+  rdfs:label "codeValue" ;
+  rdfs:comment "The actual code." ;
+  a rdf:Property .
+
+schema:costOrigin
+  schema:rangeIncludes schema:Text ;
+  schema:domainIncludes schema:DrugCost ;
+  rdfs:label "costOrigin" ;
+  a rdf:Property ;
+  rdfs:comment "Additional details to capture the origin of the cost data. For example, 'Medicare Part B'." .
+
+schema:ArtGallery
+  rdfs:subClassOf schema:EntertainmentBusiness ;
+  rdfs:comment "An art gallery." ;
+  rdfs:label "ArtGallery" ;
+  a rdfs:Class .
+
+schema:FailedActionStatus
+  a schema:ActionStatusType ;
+  rdfs:label "FailedActionStatus" ;
+  rdfs:comment "An action that failed to complete. The action's error property and the HTTP return code contain more information about the failure." .
+
+schema:Joint
+  dc:source <http://www.w3.org/wiki/WebSchemas/SchemaDotOrgSources#source_WikiDoc> ;
+  rdfs:comment "The anatomical location at which two or more bones make contact." ;
+  rdfs:subClassOf schema:AnatomicalStructure ;
+  rdfs:label "Joint" ;
+  a rdfs:Class .
+
+schema:Order
+  rdfs:subClassOf schema:Intangible ;
+  rdfs:comment "An order is a confirmation of a transaction (a receipt), which can contain multiple line items, each represented by an Offer that has been accepted by the customer." ;
+  a rdfs:Class ;
+  rdfs:label "Order" .
+
+schema:MedicalEntity
+  rdfs:label "MedicalEntity" ;
+  rdfs:comment "The most generic type of entity related to health and the practice of medicine." ;
+  dc:source <http://www.w3.org/wiki/WebSchemas/SchemaDotOrgSources#source_WikiDoc> ;
+  rdfs:subClassOf schema:Thing ;
+  a rdfs:Class .
+
+schema:broadcaster
+  rdfs:label "broadcaster" ;
+  a rdf:Property ;
+  schema:domainIncludes schema:BroadcastService ;
+  schema:rangeIncludes schema:Organization ;
+  rdfs:comment "The organization owning or operating the broadcast service." .
+
+schema:affectedBy
+  rdfs:comment "Drugs that affect the test's results." ;
+  schema:domainIncludes schema:MedicalTest ;
+  a rdf:Property ;
+  schema:rangeIncludes schema:Drug ;
+  rdfs:label "affectedBy" .
+
+schema:HousePainter
+  rdfs:comment "A house painting service." ;
+  rdfs:label "HousePainter" ;
+  rdfs:subClassOf schema:HomeAndConstructionBusiness ;
+  a rdfs:Class .
+
+schema:checkinTime
+  rdfs:comment "The earliest someone may check into a lodging establishment." ;
+  schema:rangeIncludes schema:DateTime ;
+  schema:domainIncludes schema:LodgingReservation ;
+  a rdf:Property ;
+  rdfs:label "checkinTime" .
+
+schema:option
+  schema:domainIncludes schema:ChooseAction ;
+  schema:supersededBy schema:actionOption ;
+  rdfs:label "option" ;
+  rdfs:subPropertyOf schema:object ;
+  a rdf:Property ;
+  schema:rangeIncludes schema:Text, schema:Thing ;
+  rdfs:comment "A sub property of object. The options subject to this action." .
+
+schema:VideoGame
+  rdfs:comment "A video game is an electronic game that involves human interaction with a user interface to generate visual feedback on a video device." ;
+  rdfs:subClassOf schema:SoftwareApplication, schema:Game ;
+  a rdfs:Class ;
+  rdfs:label "VideoGame" .
+
+schema:amount
+  rdfs:label "amount" ;
+  rdfs:comment "The amount of money." ;
+  a rdf:Property ;
+  schema:domainIncludes schema:DatedMoneySpecification ;
+  schema:rangeIncludes schema:Number .
+
+schema:InstallAction
+  a rdfs:Class ;
+  rdfs:subClassOf schema:ConsumeAction ;
+  rdfs:comment "The act of installing an application." ;
+  rdfs:label "InstallAction" .
+
+schema:MedicalRiskCalculator
+  rdfs:label "MedicalRiskCalculator" ;
+  a rdfs:Class ;
+  rdfs:comment "A complex mathematical calculation requiring an online calculator, used to assess prognosis. Note: use the url property of Thing to record any URLs for online calculators." ;
+  rdfs:subClassOf schema:MedicalRiskEstimator ;
+  dc:source <http://www.w3.org/wiki/WebSchemas/SchemaDotOrgSources#source_WikiDoc> .
+
+schema:entertainmentBusiness
+  rdfs:comment "A sub property of location. The entertainment business where the action occurred." ;
+  schema:rangeIncludes schema:EntertainmentBusiness ;
+  rdfs:label "entertainmentBusiness" ;
+  rdfs:subPropertyOf schema:location ;
+  a rdf:Property ;
+  schema:domainIncludes schema:PerformAction .
+
+schema:screenCount
+  rdfs:label "screenCount" ;
+  schema:rangeIncludes schema:Number ;
+  rdfs:comment "The number of screens in the movie theater." ;
+  a rdf:Property ;
+  schema:domainIncludes schema:MovieTheater .
+
+schema:track
+  rdfs:label "track" ;
+  schema:domainIncludes schema:MusicGroup, schema:MusicPlaylist ;
+  schema:rangeIncludes schema:MusicRecording, schema:ItemList ;
+  dc:source <http://www.w3.org/wiki/WebSchemas/SchemaDotOrgSources#MBZ> ;
+  rdfs:comment "A music recording (track)&#x2014;usually a single song. If an ItemList is given, the list should contain items of type MusicRecording." ;
+  a rdf:Property .
+
+schema:valueReference
+  schema:rangeIncludes schema:Enumeration, schema:QuantitativeValue, schema:PropertyValue, schema:QualitativeValue, schema:StructuredValue ;
+  schema:domainIncludes schema:PropertyValue, schema:QualitativeValue, schema:QuantitativeValue ;
+  rdfs:comment "A pointer to a secondary value that provides additional information on the original value, e.g. a reference temperature." ;
+  rdfs:label "valueReference" ;
+  a rdf:Property .
+
+schema:Continent
+  rdfs:label "Continent" ;
+  rdfs:subClassOf schema:Landform ;
+  a rdfs:Class ;
+  rdfs:comment "One of the continents (for example, Europe or Africa)." .
+
+schema:ItemListOrderAscending
+  rdfs:comment "An ItemList ordered with lower values listed first." ;
+  a schema:ItemListOrderType ;
+  rdfs:label "ItemListOrderAscending" .
+
+schema:trailer
+  schema:rangeIncludes schema:VideoObject ;
+  schema:domainIncludes schema:Movie, schema:MovieSeries, schema:CreativeWorkSeason, schema:RadioSeries, schema:VideoGameSeries, schema:VideoGame, schema:Episode, schema:TVSeries ;
+  a rdf:Property ;
+  rdfs:comment "The trailer of a movie or tv/radio series, season, episode, etc." ;
+  rdfs:label "trailer" .
+
+schema:commentCount
+  rdfs:comment "The number of comments this CreativeWork (e.g. Article, Question or Answer) has received. This is most applicable to works published in Web sites with commenting system; additional comments may exist elsewhere." ;
+  rdfs:label "commentCount" ;
+  schema:rangeIncludes schema:Integer ;
+  schema:domainIncludes schema:CreativeWork ;
+  a rdf:Property .
+
+schema:featureList
+  schema:rangeIncludes schema:URL, schema:Text ;
+  a rdf:Property ;
+  rdfs:comment "Features or modules provided by this application (and possibly required by other applications)." ;
+  schema:domainIncludes schema:SoftwareApplication ;
+  rdfs:label "featureList" .
+
+schema:numberOfDoors
+  rdfs:label "numberOfDoors" ;
+  dc:source <http://www.w3.org/wiki/WebSchemas/SchemaDotOrgSources#Automotive_Ontology_Working_Group> ;
+  schema:rangeIncludes schema:QuantitativeValue, schema:Number ;
+  rdfs:comment """The number of doors.<br />
+Typical unit code(s): C62""" ;
+  schema:domainIncludes schema:Vehicle ;
+  a rdf:Property .
+
+schema:preparation
+  rdfs:label "preparation" ;
+  rdfs:comment "Typical preparation that a patient must undergo before having the procedure performed." ;
+  schema:rangeIncludes schema:Text ;
+  a rdf:Property ;
+  schema:domainIncludes schema:MedicalProcedure .
+
+schema:softwareRequirements
+  rdfs:label "softwareRequirements" ;
+  schema:domainIncludes schema:SoftwareApplication ;
+  schema:rangeIncludes schema:Text, schema:URL ;
+  a rdf:Property ;
+  rdfs:comment "Component dependency requirements for application. This includes runtime environments and shared libraries that are not included in the application distribution package, but required to run the application (Examples: DirectX, Java or .NET runtime)." .
+
+schema:screenshot
+  rdfs:comment "A link to a screenshot image of the app." ;
+  schema:rangeIncludes schema:ImageObject, schema:URL ;
+  a rdf:Property ;
+  schema:domainIncludes schema:SoftwareApplication ;
+  rdfs:label "screenshot" .
+
+schema:isSimilarTo
+  rdfs:comment "A pointer to another, functionally similar product (or multiple products)." ;
+  schema:rangeIncludes schema:Product ;
+  a rdf:Property ;
+  schema:domainIncludes schema:Product ;
+  rdfs:label "isSimilarTo" .
+
+schema:GovernmentPermit
+  rdfs:subClassOf schema:Permit ;
+  a rdfs:Class ;
+  rdfs:comment "A permit issued by a government agency." ;
+  rdfs:label "GovernmentPermit" .
+
+schema:subStageSuffix
+  schema:rangeIncludes schema:Text ;
+  rdfs:label "subStageSuffix" ;
+  a rdf:Property ;
+  schema:domainIncludes schema:MedicalConditionStage ;
+  rdfs:comment "The substage, e.g. 'a' for Stage IIIa." .
+
+schema:DrawAction
+  a rdfs:Class ;
+  rdfs:comment "The act of producing a visual/graphical representation of an object, typically with a pen/pencil and paper as instruments." ;
+  rdfs:subClassOf schema:CreateAction ;
+  rdfs:label "DrawAction" .
+
+schema:FourWheelDriveConfiguration
+  a schema:DriveWheelConfigurationValue ;
+  dc:source <http://www.w3.org/wiki/WebSchemas/SchemaDotOrgSources#Automotive_Ontology_Working_Group> ;
+  rdfs:comment "Four-wheel drive is a transmission layout where the engine primarily drives two wheels with a part-time four-wheel drive capability." ;
+  rdfs:label "FourWheelDriveConfiguration" .
+
+schema:category
+  schema:rangeIncludes schema:Text, schema:Thing, schema:PhysicalActivityCategory ;
+  schema:domainIncludes schema:Invoice, schema:Service, schema:Product, schema:Offer, schema:PhysicalActivity ;
+  rdfs:comment "A category for the item. Greater signs or slashes can be used to informally indicate a category hierarchy." ;
+  a rdf:Property ;
+  rdfs:label "category" .
+
+schema:keywords
+  a rdf:Property ;
+  schema:domainIncludes schema:CreativeWork ;
+  schema:rangeIncludes schema:Text ;
+  rdfs:comment "Keywords or tags used to describe this content. Multiple entries in a keywords list are typically delimited by commas." ;
+  rdfs:label "keywords" .
+
+schema:BusinessEntityType
+  rdfs:label "BusinessEntityType" ;
+  a rdfs:Class ;
+  dc:source <http://www.w3.org/wiki/WebSchemas/SchemaDotOrgSources#source_GoodRelationsClass> ;
+  rdfs:comment """A business entity type is a conceptual entity representing the legal form, the size, the main line of business, the position in the value chain, or any combination thereof, of an organization or business person.
+<br />
+    Commonly used values:<br />
+<br />
+    http://purl.org/goodrelations/v1#Business <br />
+    http://purl.org/goodrelations/v1#Enduser <br />
+    http://purl.org/goodrelations/v1#PublicInstitution <br />
+    http://purl.org/goodrelations/v1#Reseller <br />
+
+        """ ;
+  rdfs:subClassOf schema:Enumeration .
+
+schema:BuyAction
+  a rdfs:Class ;
+  rdfs:label "BuyAction" ;
+  rdfs:comment "The act of giving money to a seller in exchange for goods or services rendered. An agent buys an object, product, or service from a seller for a price. Reciprocal of SellAction." ;
+  rdfs:subClassOf schema:TradeAction .
+
+schema:lesser
+  rdfs:label "lesser" ;
+  rdfs:comment "This ordering relation for qualitative values indicates that the subject is lesser than the object." ;
+  schema:rangeIncludes schema:QualitativeValue ;
+  schema:domainIncludes schema:QualitativeValue ;
+  a rdf:Property .
+
+schema:areaServed
+  rdfs:label "areaServed" ;
+  schema:rangeIncludes schema:Place, schema:AdministrativeArea, schema:Text, schema:GeoShape ;
+  schema:domainIncludes schema:Organization, schema:DeliveryChargeSpecification, schema:Demand, schema:ContactPoint, schema:Service, schema:Offer ;
+  a rdf:Property ;
+  rdfs:comment "The geographic area where a service or offered item is provided." .
+
+schema:VideoGameClip
+  rdfs:comment "A short segment/part of a video game." ;
+  rdfs:subClassOf schema:Clip ;
+  a rdfs:Class ;
+  rdfs:label "VideoGameClip" .
+
+schema:Enumeration
+  rdfs:label "Enumeration" ;
+  rdfs:subClassOf schema:Intangible ;
+  a rdfs:Class ;
+  rdfs:comment "Lists or enumerations&#x2014;for example, a list of cuisines or music genres, etc." .
+
+schema:rsvpResponse
+  schema:rangeIncludes schema:RsvpResponseType ;
+  rdfs:label "rsvpResponse" ;
+  rdfs:comment "The response (yes, no, maybe) to the RSVP." ;
+  schema:domainIncludes schema:RsvpAction ;
+  a rdf:Property .
+
+schema:AutoWash
+  rdfs:label "AutoWash" ;
+  rdfs:comment "A car wash business." ;
+  rdfs:subClassOf schema:AutomotiveBusiness ;
+  a rdfs:Class .
+
+schema:UsedCondition
+  rdfs:label "UsedCondition" ;
+  rdfs:comment "Indicates that the item is used." ;
+  a schema:OfferItemCondition .
+
+schema:Balance
+  rdfs:comment "Physical activity that is engaged to help maintain posture and balance." ;
+  rdfs:label "Balance" ;
+  a schema:PhysicalActivityCategory .
+
+schema:isVariantOf
+  a rdf:Property ;
+  rdfs:comment "A pointer to a base product from which this product is a variant. It is safe to infer that the variant inherits all product features from the base model, unless defined locally. This is not transitive." ;
+  schema:domainIncludes schema:ProductModel ;
+  rdfs:label "isVariantOf" ;
+  schema:rangeIncludes schema:ProductModel .
+
+schema:uploadDate
+  rdfs:comment "Date when this media object was uploaded to this site." ;
+  rdfs:label "uploadDate" ;
+  a rdf:Property ;
+  schema:rangeIncludes schema:Date ;
+  schema:domainIncludes schema:MediaObject .
+
+schema:Permit
+  rdfs:subClassOf schema:Intangible ;
+  a rdfs:Class ;
+  rdfs:comment "A permit issued by an organization, e.g. a parking pass." ;
+  rdfs:label "Permit" .
+
+schema:WebApplication
+  a rdfs:Class ;
+  rdfs:label "WebApplication" ;
+  rdfs:comment "Web applications." ;
+  rdfs:subClassOf schema:SoftwareApplication .
+
+schema:itemShipped
+  schema:rangeIncludes schema:Product ;
+  rdfs:label "itemShipped" ;
+  rdfs:comment "Item(s) being shipped." ;
+  a rdf:Property ;
+  schema:domainIncludes schema:ParcelDelivery .
+
+schema:significantLink
+  a rdf:Property ;
+  schema:domainIncludes schema:WebPage ;
+  schema:rangeIncludes schema:URL ;
+  rdfs:comment "One of the more significant URLs on the page. Typically, these are the non-navigation links that are clicked on the most." ;
+  rdfs:label "significantLink" .
+
+schema:postOfficeBoxNumber
+  schema:rangeIncludes schema:Text ;
+  schema:domainIncludes schema:PostalAddress ;
+  a rdf:Property ;
+  rdfs:comment "The post office box number for PO box addresses." ;
+  rdfs:label "postOfficeBoxNumber" .
+
+schema:WebPage
+  rdfs:label "WebPage" ;
+  rdfs:comment "A web page. Every web page is implicitly assumed to be declared to be of type WebPage, so the various properties about that webpage, such as <code>breadcrumb</code> may be used. We recommend explicit declaration if these properties are specified, but if they are found outside of an itemscope, they will be assumed to be about the page." ;
+  rdfs:subClassOf schema:CreativeWork ;
+  a rdfs:Class .
+
+schema:closes
+  schema:domainIncludes schema:OpeningHoursSpecification ;
+  rdfs:label "closes" ;
+  a rdf:Property ;
+  rdfs:comment "The closing hour of the place or service on the given day(s) of the week." ;
+  schema:rangeIncludes schema:Time .
+
+schema:mainEntity
+  schema:inverseOf schema:mainEntityOfPage ;
+  a rdf:Property ;
+  rdfs:label "mainEntity" ;
+  schema:domainIncludes schema:CreativeWork ;
+  rdfs:comment "Indicates the primary entity described in some page or other CreativeWork." ;
+  schema:rangeIncludes schema:Thing .
+
+schema:highPrice
+  rdfs:comment "The highest price of all offers available." ;
+  a rdf:Property ;
+  rdfs:label "highPrice" ;
+  schema:rangeIncludes schema:Number, schema:Text ;
+  schema:domainIncludes schema:AggregateOffer .
+
+schema:specialCommitments
+  schema:domainIncludes schema:JobPosting ;
+  rdfs:comment "Any special commitments associated with this job posting. Valid entries include VeteranCommit, MilitarySpouseCommit, etc." ;
+  schema:rangeIncludes schema:Text ;
+  rdfs:label "specialCommitments" ;
+  a rdf:Property .
+
+schema:SocialMediaPosting
+  rdfs:label "SocialMediaPosting" ;
+  rdfs:subClassOf schema:Article ;
+  a rdfs:Class ;
+  rdfs:comment "A post to a social media platform, including blog posts, tweets, Facebook posts, etc." .
+
+schema:PhysicalExam
+  rdfs:subClassOf schema:MedicalEnumeration, schema:Enumeration ;
+  a rdfs:Class ;
+  dc:source <http://www.w3.org/wiki/WebSchemas/SchemaDotOrgSources#source_WikiDoc> ;
+  rdfs:comment "A type of physical examination of a patient performed by a physician. Enumerated type." ;
+  rdfs:label "PhysicalExam" .
+
+schema:reportNumber
+  a rdf:Property ;
+  schema:rangeIncludes schema:Text ;
+  schema:domainIncludes schema:Report ;
+  rdfs:label "reportNumber" ;
+  rdfs:comment "The number or other unique designator assigned to a Report by the publishing organization." .
+
+schema:sportsEvent
+  rdfs:comment "A sub property of location. The sports event where this action occurred." ;
+  rdfs:subPropertyOf schema:location ;
+  rdfs:label "sportsEvent" ;
+  a rdf:Property ;
+  schema:domainIncludes schema:ExerciseAction ;
+  schema:rangeIncludes schema:SportsEvent .
+
+schema:TransferAction
+  rdfs:label "TransferAction" ;
+  rdfs:subClassOf schema:Action ;
+  rdfs:comment "The act of transferring/moving (abstract or concrete) animate or inanimate objects from one place to another." ;
+  a rdfs:Class .
+
+schema:Event
+  rdfs:subClassOf schema:Thing ;
+  rdfs:label "Event" ;
+  owl:equivalentClass <http://purl.org/dc/dcmitype/Event> ;
+  a rdfs:Class ;
+  rdfs:comment "An event happening at a certain time and location, such as a concert, lecture, or festival. Ticketing information may be added via the 'offers' property. Repeated events may be structured as separate Event objects." .
+
+schema:arrivalStation
+  schema:rangeIncludes schema:TrainStation ;
+  schema:domainIncludes schema:TrainTrip ;
+  a rdf:Property ;
+  rdfs:comment "The station where the train trip ends." ;
+  rdfs:label "arrivalStation" .
+
+schema:PublicHealth
+  rdfs:comment "Environment and public health." ;
+  a schema:MedicalSpecialty ;
+  rdfs:label "PublicHealth" .
+
+schema:MusicGroup
+  rdfs:comment "A musical group, such as a band, an orchestra, or a choir. Can also be a solo musician." ;
+  rdfs:label "MusicGroup" ;
+  a rdfs:Class ;
+  rdfs:subClassOf schema:PerformingGroup .
+
+schema:potentialAction
+  rdfs:label "potentialAction" ;
+  a rdf:Property ;
+  rdfs:comment "Indicates a potential Action, which describes an idealized action in which this thing would play an 'object' role." ;
+  schema:rangeIncludes schema:Action ;
+  schema:domainIncludes schema:Thing .
+
+schema:MapCategoryType
+  a rdfs:Class ;
+  rdfs:comment "An enumeration of several kinds of Map." ;
+  rdfs:label "MapCategoryType" ;
+  rdfs:subClassOf schema:Enumeration .
+
+schema:ItemPage
+  rdfs:label "ItemPage" ;
+  rdfs:comment "A page devoted to a single item, such as a particular product or hotel." ;
+  a rdfs:Class ;
+  rdfs:subClassOf schema:WebPage .
+
+schema:PharmacySpecialty
+  a schema:MedicalSpecialty ;
+  rdfs:label "PharmacySpecialty" ;
+  rdfs:comment "Pharmacy." .
+
+schema:dateVehicleFirstRegistered
+  schema:domainIncludes schema:Vehicle ;
+  rdfs:label "dateVehicleFirstRegistered" ;
+  rdfs:comment "The date of the first registration of the vehicle with the respective public authorities." ;
+  dc:source <http://www.w3.org/wiki/WebSchemas/SchemaDotOrgSources#Automotive_Ontology_Working_Group> ;
+  a rdf:Property ;
+  schema:rangeIncludes schema:Date .
+
+schema:validThrough
+  schema:domainIncludes schema:PriceSpecification, schema:OpeningHoursSpecification, schema:Demand, schema:Offer ;
+  a rdf:Property ;
+  rdfs:label "validThrough" ;
+  schema:rangeIncludes schema:DateTime ;
+  rdfs:comment "The end of the validity of offer, price specification, or opening hours data." .
+
+schema:originAddress
+  rdfs:label "originAddress" ;
+  rdfs:comment "Shipper's address." ;
+  schema:domainIncludes schema:ParcelDelivery ;
+  a rdf:Property ;
+  schema:rangeIncludes schema:PostalAddress .
+
+schema:releasedEvent
+  rdfs:label "releasedEvent" ;
+  schema:domainIncludes schema:CreativeWork ;
+  rdfs:comment "The place and time the release was issued, expressed as a PublicationEvent." ;
+  a rdf:Property ;
+  schema:rangeIncludes schema:PublicationEvent .
+
+schema:servicePostalAddress
+  rdfs:label "servicePostalAddress" ;
+  a rdf:Property ;
+  rdfs:comment "The address for accessing the service by mail." ;
+  schema:domainIncludes schema:ServiceChannel ;
+  schema:rangeIncludes schema:PostalAddress .
+
+schema:Bone
+  rdfs:label "Bone" ;
+  rdfs:comment "Rigid connective tissue that comprises up the skeletal structure of the human body." ;
+  dc:source <http://www.w3.org/wiki/WebSchemas/SchemaDotOrgSources#source_WikiDoc> ;
+  a rdfs:Class ;
+  rdfs:subClassOf schema:AnatomicalStructure .
+
+schema:MovieSeries
+  rdfs:label "MovieSeries" ;
+  rdfs:comment "A series of movies. Included movies can be indicated with the hasPart property." ;
+  rdfs:subClassOf schema:CreativeWorkSeries ;
+  a rdfs:Class .
+
+schema:iswcCode
+  schema:rangeIncludes schema:Text ;
+  dc:source <http://www.w3.org/wiki/WebSchemas/SchemaDotOrgSources#MBZ> ;
+  rdfs:label "iswcCode" ;
+  rdfs:comment "The International Standard Musical Work Code for the composition." ;
+  schema:domainIncludes schema:MusicComposition ;
+  a rdf:Property .
+
+schema:orderQuantity
+  a rdf:Property ;
+  rdfs:label "orderQuantity" ;
+  schema:rangeIncludes schema:Number ;
+  rdfs:comment "The number of the item ordered. If the property is not set, assume the quantity is one." ;
+  schema:domainIncludes schema:OrderItem .
+
+schema:AggregateOffer
+  rdfs:label "AggregateOffer" ;
+  a rdfs:Class ;
+  rdfs:comment "When a single product is associated with multiple offers (for example, the same pair of shoes is offered by different merchants), then AggregateOffer can be used." ;
+  rdfs:subClassOf schema:Offer .
+
+schema:School
+  a rdfs:Class ;
+  rdfs:subClassOf schema:EducationalOrganization ;
+  rdfs:comment "A school." ;
+  rdfs:label "School" .
+
+schema:Suspended
+  a schema:MedicalStudyStatus ;
+  rdfs:label "Suspended" ;
+  rdfs:comment "Suspended." .
+
+schema:issuedBy
+  a rdf:Property ;
+  schema:rangeIncludes schema:Organization ;
+  schema:domainIncludes schema:Permit, schema:Ticket ;
+  rdfs:comment "The organization issuing the ticket or permit." ;
+  rdfs:label "issuedBy" .
+
+schema:orderItemNumber
+  a rdf:Property ;
+  rdfs:comment "The identifier of the order item." ;
+  schema:rangeIncludes schema:Text ;
+  schema:domainIncludes schema:OrderItem ;
+  rdfs:label "orderItemNumber" .
+
+schema:diagnosis
+  rdfs:comment "One or more alternative conditions considered in the differential diagnosis process." ;
+  a rdf:Property ;
+  schema:domainIncludes schema:DDxElement ;
+  rdfs:label "diagnosis" ;
+  schema:rangeIncludes schema:MedicalCondition .
+
+schema:birthDate
+  rdfs:label "birthDate" ;
+  schema:rangeIncludes schema:Date ;
+  rdfs:comment "Date of birth." ;
+  schema:domainIncludes schema:Person ;
+  a rdf:Property .
+
+schema:availableDeliveryMethod
+  schema:domainIncludes schema:Demand, schema:Offer ;
+  rdfs:comment "The delivery method(s) available for this offer." ;
+  schema:rangeIncludes schema:DeliveryMethod ;
+  rdfs:label "availableDeliveryMethod" ;
+  a rdf:Property .
+
+schema:hiringOrganization
+  schema:domainIncludes schema:JobPosting ;
+  schema:rangeIncludes schema:Organization ;
+  rdfs:comment "Organization offering the job position." ;
+  rdfs:label "hiringOrganization" ;
+  a rdf:Property .
+
+schema:purpose
+  schema:rangeIncludes schema:MedicalDevicePurpose, schema:Thing ;
+  schema:domainIncludes schema:PayAction, schema:MedicalDevice, schema:AllocateAction ;
+  a rdf:Property ;
+  rdfs:comment "A goal towards an action is taken. Can be concrete or abstract." ;
+  rdfs:label "purpose" .
+
+schema:nutrition
+  rdfs:label "nutrition" ;
+  schema:rangeIncludes schema:NutritionInformation ;
+  rdfs:comment "Nutrition information about the recipe." ;
+  a rdf:Property ;
+  schema:domainIncludes schema:Recipe .
+
+schema:Mass
+  rdfs:label "Mass" ;
+  rdfs:subClassOf schema:Quantity ;
+  rdfs:comment "Properties that take Mass as values are of the form '&lt;Number&gt; &lt;Mass unit of measure&gt;'. E.g., '7 kg'." ;
+  a rdfs:Class .
+
+schema:Series
+  rdfs:subClassOf schema:CreativeWork ;
+  rdfs:label "Series" ;
+  rdfs:comment """
+          A Series in schema.org is a group of related items, typically but not necessarily of the same kind. """ ;
+  a rdfs:Class ;
+  schema:supersededBy schema:CreativeWorkSeries .
+
+schema:guideline
+  schema:rangeIncludes schema:MedicalGuideline ;
+  schema:domainIncludes schema:MedicalEntity ;
+  rdfs:comment "A medical guideline related to this entity." ;
+  rdfs:label "guideline" ;
+  a rdf:Property .
+
+schema:numChildren
+  schema:rangeIncludes schema:Integer, schema:QuantitativeValue ;
+  rdfs:comment "The number of children staying in the unit." ;
+  schema:domainIncludes schema:LodgingReservation ;
+  rdfs:label "numChildren" ;
+  a rdf:Property .
+
+schema:datasetTimeInterval
+  schema:domainIncludes schema:Dataset ;
+  rdfs:label "datasetTimeInterval" ;
+  rdfs:comment "The range of temporal applicability of a dataset, e.g. for a 2011 census dataset, the year 2011 (in ISO 8601 time interval format)." ;
+  a rdf:Property ;
+  schema:rangeIncludes schema:DateTime .
+
+schema:Brand
+  rdfs:label "Brand" ;
+  a rdfs:Class ;
+  rdfs:subClassOf schema:Intangible ;
+  dc:source <http://www.w3.org/wiki/WebSchemas/SchemaDotOrgSources#source_GoodRelationsClass> ;
+  rdfs:comment "A brand is a name used by an organization or business person for labeling a product, product group, or similar." .
+
+schema:branchCode
+  schema:domainIncludes schema:LocalBusiness, schema:Place, schema:Store ;
+  rdfs:comment """A short textual code (also called "store code") that uniquely identifies a place of business. The code is typically assigned by the parentOrganization and used in structured URLs.
+<br /><br /> For example, in the URL http://www.starbucks.co.uk/store-locator/etc/detail/3047 the code "3047" is a branchCode for a particular branch.
+      """ ;
+  rdfs:label "branchCode" ;
+  a rdf:Property ;
+  schema:rangeIncludes schema:Text .
+
+schema:version
+  rdfs:comment "The version of the CreativeWork embodied by a specified resource." ;
+  rdfs:label "version" ;
+  a rdf:Property ;
+  schema:rangeIncludes schema:Number ;
+  schema:domainIncludes schema:CreativeWork .
+
+schema:MedicalResearcher
+  rdfs:label "MedicalResearcher" ;
+  a schema:MedicalAudience ;
+  rdfs:comment "Medical researchers." .
+
+schema:MusicAlbumProductionType
+  rdfs:subClassOf schema:Enumeration ;
+  rdfs:label "MusicAlbumProductionType" ;
+  rdfs:comment "Classification of the album by it's type of content: soundtrack, live album, studio album, etc." ;
+  dc:source <http://www.w3.org/wiki/WebSchemas/SchemaDotOrgSources#MBZ> ;
+  a rdfs:Class .
+
+schema:browserRequirements
+  schema:domainIncludes schema:WebApplication ;
+  rdfs:comment "Specifies browser requirements in human-readable text. For example,\"requires HTML5 support\"." ;
+  schema:rangeIncludes schema:Text ;
+  rdfs:label "browserRequirements" ;
+  a rdf:Property .
+
+schema:Pathology
+  a schema:MedicalSpecialty ;
+  rdfs:label "Pathology" ;
+  rdfs:comment "A specific branch of medical science that is concerned with the study of the cause, origin and nature of a disease state, including its consequences as a result of manifestation of the disease. In clinical care, the term is used to designate a branch of medicine using laboratory tests to diagnose and determine the prognostic significance of illness." .
+
+schema:employmentType
+  rdfs:comment "Type of employment (e.g. full-time, part-time, contract, temporary, seasonal, internship)." ;
+  rdfs:label "employmentType" ;
+  a rdf:Property ;
+  schema:domainIncludes schema:JobPosting ;
+  schema:rangeIncludes schema:Text .
+
+schema:transcript
+  rdfs:comment "If this MediaObject is an AudioObject or VideoObject, the transcript of that object." ;
+  a rdf:Property ;
+  schema:rangeIncludes schema:Text ;
+  rdfs:label "transcript" ;
+  schema:domainIncludes schema:VideoObject, schema:AudioObject .
+
+schema:RsvpAction
+  rdfs:label "RsvpAction" ;
+  rdfs:subClassOf schema:InformAction ;
+  rdfs:comment "The act of notifying an event organizer as to whether you expect to attend the event." ;
+  a rdfs:Class .
+
+schema:targetUrl
+  rdfs:comment "The URL of a node in an established educational framework." ;
+  schema:domainIncludes schema:AlignmentObject ;
+  schema:rangeIncludes schema:URL ;
+  a rdf:Property ;
+  rdfs:label "targetUrl" .
+
+schema:dropoffLocation
+  rdfs:label "dropoffLocation" ;
+  schema:domainIncludes schema:RentalCarReservation ;
+  a rdf:Property ;
+  rdfs:comment "Where a rental car can be dropped off." ;
+  schema:rangeIncludes schema:Place .
+
+schema:warranty
+  a rdf:Property ;
+  schema:domainIncludes schema:Demand, schema:Offer ;
+  rdfs:comment "The warranty promise(s) included in the offer." ;
+  rdfs:label "warranty" ;
+  schema:rangeIncludes schema:WarrantyPromise .
+
+schema:targetPlatform
+  schema:domainIncludes schema:APIReference ;
+  a rdf:Property ;
+  schema:rangeIncludes schema:Text ;
+  rdfs:comment "Type of app development: phone, Metro style, desktop, XBox, etc." ;
+  rdfs:label "targetPlatform" .
+
+schema:FDAcategoryC
+  a schema:DrugPregnancyCategory ;
+  rdfs:comment "A designation by the US FDA signifying that animal reproduction studies have shown an adverse effect on the fetus and there are no adequate and well-controlled studies in humans, but potential benefits may warrant use of the drug in pregnant women despite potential risks." ;
+  rdfs:label "FDAcategoryC" .
+
+schema:FDAcategoryA
+  rdfs:comment "A designation by the US FDA signifying that adequate and well-controlled studies have failed to demonstrate a risk to the fetus in the first trimester of pregnancy (and there is no evidence of risk in later trimesters)." ;
+  a schema:DrugPregnancyCategory ;
+  rdfs:label "FDAcategoryA" .
+
+schema:WholesaleStore
+  rdfs:subClassOf schema:Store ;
+  rdfs:label "WholesaleStore" ;
+  rdfs:comment "A wholesale store." ;
+  a rdfs:Class .
+
+schema:ReplaceAction
+  rdfs:comment "The act of editing a recipient by replacing an old object with a new object." ;
+  rdfs:label "ReplaceAction" ;
+  rdfs:subClassOf schema:UpdateAction ;
+  a rdfs:Class .
+
+schema:sharedContent
+  schema:rangeIncludes schema:CreativeWork ;
+  rdfs:label "sharedContent" ;
+  a rdf:Property ;
+  schema:domainIncludes schema:SocialMediaPosting ;
+  rdfs:comment "A CreativeWork such as an image, video, or audio clip shared as part of this posting." .
+
+schema:HomeAndConstructionBusiness
+  rdfs:comment """A construction business.
+        <br><br>
+        A HomeAndConstructionBusiness is a LocalBusiness that provides services around homes and buildings.
+          <br><br>
+          As a <a href="/LocalBusiness">LocalBusiness</a> it can be
+          described as a <a href="/provider">provider</a> of one or more
+          <a href="/Service">Service(s)</a>.
+      """ ;
+  rdfs:label "HomeAndConstructionBusiness" ;
+  a rdfs:Class ;
+  rdfs:subClassOf schema:LocalBusiness .
+
+schema:InfectiousDisease
+  rdfs:comment "An infectious disease is a clinically evident human disease resulting from the presence of pathogenic microbial agents, like pathogenic viruses, pathogenic bacteria, fungi, protozoa, multicellular parasites, and prions. To be considered an infectious disease, such pathogens are known to be able to cause this disease." ;
+  dc:source <http://www.w3.org/wiki/WebSchemas/SchemaDotOrgSources#source_WikiDoc> ;
+  rdfs:label "InfectiousDisease" ;
+  rdfs:subClassOf schema:MedicalCondition ;
+  a rdfs:Class .
+
+schema:trackingNumber
+  schema:domainIncludes schema:ParcelDelivery ;
+  a rdf:Property ;
+  rdfs:comment "Shipper tracking number." ;
+  rdfs:label "trackingNumber" ;
+  schema:rangeIncludes schema:Text .
+
+schema:NutritionInformation
+  rdfs:comment "Nutritional information about the recipe." ;
+  a rdfs:Class ;
+  rdfs:subClassOf schema:StructuredValue ;
+  rdfs:label "NutritionInformation" .
+
+schema:SingleCenterTrial
+  rdfs:label "SingleCenterTrial" ;
+  rdfs:comment "A trial that takes place at a single center." ;
+  a schema:MedicalTrialDesign .
+
+schema:countriesSupported
+  schema:domainIncludes schema:SoftwareApplication ;
+  rdfs:comment "Countries for which the application is supported. You can also provide the two-letter ISO 3166-1 alpha-2 country code." ;
+  schema:rangeIncludes schema:Text ;
+  rdfs:label "countriesSupported" ;
+  a rdf:Property .
+
+schema:cholesterolContent
+  schema:rangeIncludes schema:Mass ;
+  rdfs:comment "The number of milligrams of cholesterol." ;
+  a rdf:Property ;
+  rdfs:label "cholesterolContent" ;
+  schema:domainIncludes schema:NutritionInformation .
+
+schema:printPage
+  schema:domainIncludes schema:NewsArticle ;
+  a rdf:Property ;
+  rdfs:label "printPage" ;
+  schema:rangeIncludes schema:Text ;
+  rdfs:comment "If this NewsArticle appears in print, this field indicates the name of the page on which the article is found. Please note that this field is intended for the exact page name (e.g. A5, B18)." .
+
+schema:WantAction
+  rdfs:label "WantAction" ;
+  rdfs:comment "The act of expressing a desire about the object. An agent wants an object." ;
+  rdfs:subClassOf schema:ReactAction ;
+  a rdfs:Class .
+
+schema:hasMap
+  a rdf:Property ;
+  rdfs:comment "A URL to a map of the place." ;
+  rdfs:label "hasMap" ;
+  schema:rangeIncludes schema:Map, schema:URL ;
+  schema:domainIncludes schema:Place .
+
+schema:warrantyScope
+  a rdf:Property ;
+  schema:rangeIncludes schema:WarrantyScope ;
+  rdfs:label "warrantyScope" ;
+  rdfs:comment "The scope of the warranty promise." ;
+  schema:domainIncludes schema:WarrantyPromise .
+
+schema:valueMinLength
+  rdfs:label "valueMinLength" ;
+  schema:rangeIncludes schema:Number ;
+  a rdf:Property ;
+  rdfs:comment "Specifies the minimum allowed range for number of characters in a literal value." ;
+  schema:domainIncludes schema:PropertyValueSpecification .
+
+schema:departureBusStop
+  schema:domainIncludes schema:BusTrip ;
+  rdfs:label "departureBusStop" ;
+  a rdf:Property ;
+  rdfs:comment "The stop or station from which the bus departs." ;
+  schema:rangeIncludes schema:BusStation, schema:BusStop .
+
+schema:Neuro
+  a schema:PhysicalExam ;
+  rdfs:label "Neuro" ;
+  rdfs:comment "Neuro." .
+
+schema:postOp
+  rdfs:comment "A description of the postoperative procedures, care, and/or followups for this device." ;
+  a rdf:Property ;
+  schema:rangeIncludes schema:Text ;
+  schema:domainIncludes schema:MedicalDevice ;
+  rdfs:label "postOp" .
+
+schema:serviceArea
+  schema:rangeIncludes schema:GeoShape, schema:Place, schema:AdministrativeArea ;
+  schema:domainIncludes schema:Service, schema:Organization, schema:ContactPoint ;
+  schema:supersededBy schema:areaServed ;
+  rdfs:comment "The geographic area where the service is provided." ;
+  rdfs:label "serviceArea" ;
+  a rdf:Property .
+
+schema:Fungus
+  rdfs:label "Fungus" ;
+  rdfs:comment "Pathogenic fungus." ;
+  a schema:InfectiousAgentClass .
+
+schema:containedIn
+  schema:rangeIncludes schema:Place ;
+  schema:supersededBy schema:containedInPlace ;
+  rdfs:comment "The basic containment relation between a place and one that contains it." ;
+  rdfs:label "containedIn" ;
+  schema:domainIncludes schema:Place ;
+  a rdf:Property .
+
+schema:affiliation
+  rdfs:subPropertyOf schema:memberOf ;
+  schema:domainIncludes schema:Person ;
+  rdfs:comment "An organization that this person is affiliated with. For example, a school/university, a club, or a team." ;
+  a rdf:Property ;
+  rdfs:label "affiliation" ;
+  schema:rangeIncludes schema:Organization .
+
+schema:Courthouse
+  rdfs:comment "A courthouse." ;
+  rdfs:subClassOf schema:GovernmentBuilding ;
+  rdfs:label "Courthouse" ;
+  a rdfs:Class .
+
+schema:WebPageElement
+  rdfs:comment "A web page element, like a table or an image." ;
+  rdfs:subClassOf schema:CreativeWork ;
+  a rdfs:Class ;
+  rdfs:label "WebPageElement" .
+
+schema:EventReservation
+  rdfs:comment "A reservation for an event like a concert, sporting event, or lecture.Note: This type is for information about actual reservations, e.g. in confirmation emails or HTML pages with individual confirmations of reservations. For offers of tickets, use http://schema.org/Offer." ;
+  a rdfs:Class ;
+  rdfs:label "EventReservation" ;
+  rdfs:subClassOf schema:Reservation .
+
+schema:OnlineFull
+  a schema:GameServerStatus ;
+  rdfs:label "OnlineFull " ;
+  rdfs:comment "Game server status: OnlineFull. Server is online but unavailable. The maximum number of players has reached." .
+
+schema:Season
+  schema:supersededBy schema:CreativeWorkSeason ;
+  rdfs:label "Season" ;
+  rdfs:subClassOf schema:CreativeWork ;
+  rdfs:comment "A media season e.g. tv, radio, video game etc." ;
+  a rdfs:Class .
+
+schema:ProductModel
+  rdfs:label "ProductModel" ;
+  rdfs:subClassOf schema:Product ;
+  a rdfs:Class ;
+  dc:source <http://www.w3.org/wiki/WebSchemas/SchemaDotOrgSources#source_GoodRelationsClass> ;
+  rdfs:comment "A datasheet or vendor specification of a product (in the sense of a prototypical description)." .
+
+schema:WarrantyPromise
+  rdfs:label "WarrantyPromise" ;
+  dc:source <http://www.w3.org/wiki/WebSchemas/SchemaDotOrgSources#source_GoodRelationsClass> ;
+  rdfs:comment "A structured value representing the duration and scope of services that will be provided to a customer free of charge in case of a defect or malfunction of a product." ;
+  rdfs:subClassOf schema:StructuredValue ;
+  a rdfs:Class .
+
+schema:isFamilyFriendly
+  rdfs:label "isFamilyFriendly" ;
+  schema:domainIncludes schema:CreativeWork ;
+  rdfs:comment "Indicates whether this content is family friendly." ;
+  a rdf:Property ;
+  schema:rangeIncludes schema:Boolean .
+
+schema:RadioChannel
+  a rdfs:Class ;
+  rdfs:comment "A unique instance of a radio BroadcastService on a CableOrSatelliteService lineup." ;
+  rdfs:subClassOf schema:BroadcastChannel ;
+  rdfs:label "RadioChannel" .
+
+schema:contributor
+  a rdf:Property ;
+  rdfs:comment "A secondary contributor to the CreativeWork." ;
+  rdfs:label "contributor" ;
+  schema:rangeIncludes schema:Organization, schema:Person ;
+  schema:domainIncludes schema:CreativeWork .
+
+schema:aspect
+  a rdf:Property ;
+  rdfs:label "aspect" ;
+  schema:domainIncludes schema:MedicalWebPage ;
+  schema:rangeIncludes schema:Text ;
+  rdfs:comment "An aspect of medical practice that is considered on the page, such as 'diagnosis', 'treatment', 'causes', 'prognosis', 'etiology', 'epidemiology', etc." .
+
+schema:subOrganization
+  schema:rangeIncludes schema:Organization ;
+  rdfs:comment "A relationship between two organizations where the first includes the second, e.g., as a subsidiary. See also: the more specific 'department' property." ;
+  schema:inverseOf schema:parentOrganization ;
+  schema:domainIncludes schema:Organization ;
+  rdfs:label "subOrganization" ;
+  a rdf:Property .
+
+schema:hostingOrganization
+  rdfs:comment "The organization (airline, travelers' club, etc.) the membership is made with." ;
+  schema:domainIncludes schema:ProgramMembership ;
+  a rdf:Property ;
+  rdfs:label "hostingOrganization" ;
+  schema:rangeIncludes schema:Organization .
+
+schema:insertion
+  schema:domainIncludes schema:Muscle ;
+  a rdf:Property ;
+  rdfs:label "insertion" ;
+  schema:rangeIncludes schema:AnatomicalStructure ;
+  rdfs:comment "The place of attachment of a muscle, or what the muscle moves." .
+
+schema:TVSeries
+  rdfs:subClassOf schema:CreativeWorkSeries, schema:CreativeWork ;
+  rdfs:comment "CreativeWorkSeries dedicated to TV broadcast and associated online delivery." ;
+  rdfs:label "TVSeries" ;
+  a rdfs:Class .
+
+schema:liveBlogUpdate
+  a rdf:Property ;
+  rdfs:label "liveBlogUpdate" ;
+  rdfs:comment "An update to the LiveBlog." ;
+  schema:rangeIncludes schema:BlogPosting ;
+  schema:domainIncludes schema:LiveBlogPosting .
+
+schema:targetPopulation
+  schema:domainIncludes schema:DietarySupplement, schema:DoseSchedule ;
+  rdfs:label "targetPopulation" ;
+  a rdf:Property ;
+  schema:rangeIncludes schema:Text ;
+  rdfs:comment "Characteristics of the population for which this is intended, or which typically uses it, e.g. 'adults'." .
+
+schema:collection
+  schema:domainIncludes schema:UpdateAction ;
+  schema:supersededBy schema:targetCollection ;
+  schema:rangeIncludes schema:Thing ;
+  rdfs:subPropertyOf schema:object ;
+  rdfs:label "collection" ;
+  a rdf:Property ;
+  rdfs:comment "A sub property of object. The collection target of the action." .
+
+schema:parent
+  schema:rangeIncludes schema:Person ;
+  rdfs:comment "A parent of this person." ;
+  a rdf:Property ;
+  rdfs:label "parent" ;
+  schema:domainIncludes schema:Person .
+
+schema:paymentStatus
+  schema:rangeIncludes schema:PaymentStatusType, schema:Text ;
+  a rdf:Property ;
+  schema:domainIncludes schema:Invoice ;
+  rdfs:label "paymentStatus" ;
+  rdfs:comment "The status of payment; whether the invoice has been paid or not." .
+
+schema:recommendationStrength
+  rdfs:comment "Strength of the guideline's recommendation (e.g. 'class I')." ;
+  schema:domainIncludes schema:MedicalGuidelineRecommendation ;
+  schema:rangeIncludes schema:Text ;
+  a rdf:Property ;
+  rdfs:label "recommendationStrength" .
+
+schema:DriveWheelConfigurationValue
+  rdfs:subClassOf schema:QualitativeValue ;
+  rdfs:comment "A value indicating which roadwheels will receive torque." ;
+  dc:source <http://www.w3.org/wiki/WebSchemas/SchemaDotOrgSources#Automotive_Ontology_Working_Group> ;
+  a rdfs:Class ;
+  rdfs:label "DriveWheelConfigurationValue" .
+
+schema:subEvents
+  schema:rangeIncludes schema:Event ;
+  schema:supersededBy schema:subEvent ;
+  rdfs:comment "Events that are a part of this event. For example, a conference event includes many presentations, each subEvents of the conference." ;
+  a rdf:Property ;
+  rdfs:label "subEvents" ;
+  schema:domainIncludes schema:Event .
+
+schema:clipNumber
+  rdfs:subPropertyOf schema:position ;
+  rdfs:comment "Position of the clip within an ordered group of clips." ;
+  rdfs:label "clipNumber" ;
+  a rdf:Property ;
+  schema:rangeIncludes schema:Integer, schema:Text ;
+  schema:domainIncludes schema:Clip .
+
+schema:broker
+  rdfs:label "broker" ;
+  schema:rangeIncludes schema:Person, schema:Organization ;
+  schema:domainIncludes schema:Reservation, schema:Order, schema:Invoice ;
+  a rdf:Property ;
+  rdfs:comment "An entity that arranges for an exchange between a buyer and a seller.  In most cases a broker never acquires or releases ownership of a product or service involved in an exchange.  If it is not clear whether an entity is a broker, seller, or buyer, the latter two terms are preferred." .
+
+schema:branch
+  schema:rangeIncludes schema:AnatomicalStructure ;
+  a rdf:Property ;
+  rdfs:comment "The branches that delineate from the nerve bundle." ;
+  rdfs:label "branch" ;
+  schema:domainIncludes schema:Nerve .
+
+schema:position
+  rdfs:label "position" ;
+  schema:rangeIncludes schema:Integer, schema:Text ;
+  a rdf:Property ;
+  schema:domainIncludes schema:ListItem, schema:CreativeWork ;
+  rdfs:comment "The position of an item in a series or sequence of items." .
+
+schema:Paperback
+  a schema:BookFormatType ;
+  rdfs:comment "Book format: Paperback." ;
+  rdfs:label "Paperback" .
+
+schema:drugClass
+  rdfs:comment "The class of drug this belongs to (e.g., statins)." ;
+  schema:rangeIncludes schema:DrugClass ;
+  rdfs:label "drugClass" ;
+  a rdf:Property ;
+  schema:domainIncludes schema:Drug .
+
+schema:orderStatus
+  schema:domainIncludes schema:Order ;
+  rdfs:label "orderStatus" ;
+  a rdf:Property ;
+  schema:rangeIncludes schema:OrderStatus ;
+  rdfs:comment "The current status of the order." .
+
+schema:EPRelease
+  rdfs:label "EPRelease" ;
+  dc:source <http://www.w3.org/wiki/WebSchemas/SchemaDotOrgSources#MBZ> ;
+  a schema:MusicAlbumReleaseType ;
+  rdfs:comment "EPRelease." .
+
+schema:geoRadius
+  schema:domainIncludes schema:GeoCircle ;
+  rdfs:label "geoRadius" ;
+  a rdf:Property ;
+  schema:rangeIncludes schema:Text, schema:Number, schema:Distance ;
+  rdfs:comment "Indicates the approximate radius of a GeoCircle (metres unless indicated otherwise via Distance notation)." .
+
+schema:musicBy
+  schema:domainIncludes schema:Movie, schema:VideoGameSeries, schema:TVSeries, schema:MovieSeries, schema:VideoObject, schema:RadioSeries, schema:Clip, schema:Episode, schema:VideoGame ;
+  a rdf:Property ;
+  rdfs:comment "The composer of the soundtrack." ;
+  rdfs:label "musicBy" ;
+  schema:rangeIncludes schema:MusicGroup, schema:Person .
+
+schema:ProgramMembership
+  rdfs:label "ProgramMembership" ;
+  a rdfs:Class ;
+  rdfs:comment "Used to describe membership in a loyalty programs (e.g. \"StarAliance\"), traveler clubs (e.g. \"AAA\"), purchase clubs (\"Safeway Club\"), etc." ;
+  rdfs:subClassOf schema:Intangible .
+
+schema:VideoGallery
+  rdfs:label "VideoGallery" ;
+  rdfs:comment "Web page type: Video gallery page." ;
+  a rdfs:Class ;
+  rdfs:subClassOf schema:CollectionPage .
+
+schema:AudioObject
+  rdfs:subClassOf schema:MediaObject ;
+  rdfs:comment "An audio file." ;
+  a rdfs:Class ;
+  dc:source <http://www.w3.org/wiki/WebSchemas/SchemaDotOrgSources#source_rNews> ;
+  rdfs:label "AudioObject" .
+
+schema:PaymentStatusType
+  rdfs:subClassOf schema:Enumeration ;
+  rdfs:comment "A specific payment status. For example, PaymentDue, PaymentComplete, etc." ;
+  rdfs:label "PaymentStatusType" ;
+  a rdfs:Class .
+
+schema:pathophysiology
+  schema:domainIncludes schema:PhysicalActivity, schema:MedicalCondition ;
+  schema:rangeIncludes schema:Text ;
+  rdfs:label "pathophysiology" ;
+  rdfs:comment "Changes in the normal mechanical, physical, and biochemical functions that are associated with this activity or condition." ;
+  a rdf:Property .
+
+schema:Ticket
+  rdfs:subClassOf schema:Intangible ;
+  rdfs:label "Ticket" ;
+  rdfs:comment "Used to describe a ticket to an event, a flight, a bus ride, etc." ;
+  a rdfs:Class .
+
+schema:TieAction
+  a rdfs:Class ;
+  rdfs:comment "The act of reaching a draw in a competitive activity." ;
+  rdfs:subClassOf schema:AchieveAction ;
+  rdfs:label "TieAction" .
+
+schema:serviceType
+  schema:rangeIncludes schema:Text ;
+  rdfs:comment "The type of service being offered, e.g. veterans' benefits, emergency relief, etc." ;
+  schema:domainIncludes schema:Service ;
+  a rdf:Property ;
+  rdfs:label "serviceType" .
+
+schema:countryOfOrigin
+  schema:domainIncludes schema:Movie, schema:TVSeason, schema:TVEpisode, schema:TVSeries ;
+  rdfs:comment "The country of the principal offices of the production company or individual responsible for the movie or program." ;
+  schema:rangeIncludes schema:Country ;
+  a rdf:Property ;
+  rdfs:label "countryOfOrigin" .
+
+schema:equal
+  schema:domainIncludes schema:QualitativeValue ;
+  schema:rangeIncludes schema:QualitativeValue ;
+  a rdf:Property ;
+  rdfs:comment "This ordering relation for qualitative values indicates that the subject is equal to the object." ;
+  rdfs:label "equal" .
+
+schema:accountablePerson
+  schema:rangeIncludes schema:Person ;
+  a rdf:Property ;
+  rdfs:comment "Specifies the Person that is legally accountable for the CreativeWork." ;
+  schema:domainIncludes schema:CreativeWork ;
+  rdfs:label "accountablePerson" .
+
+schema:Book
+  a rdfs:Class ;
+  rdfs:label "Book" ;
+  rdfs:subClassOf schema:CreativeWork ;
+  rdfs:comment "A book." .
+
+schema:translator
+  schema:rangeIncludes schema:Organization, schema:Person ;
+  rdfs:comment "Organization or person who adapts a creative work to different languages, regional differences and technical requirements of a target market." ;
+  schema:domainIncludes schema:CreativeWork ;
+  a rdf:Property ;
+  rdfs:label "translator" .
+
+schema:Photograph
+  rdfs:comment "A photograph." ;
+  rdfs:subClassOf schema:CreativeWork ;
+  a rdfs:Class ;
+  rdfs:label "Photograph" .
+
+schema:productID
+  a rdf:Property ;
+  schema:domainIncludes schema:Product ;
+  rdfs:label "productID" ;
+  rdfs:comment "The product identifier, such as ISBN. For example: <code>&lt;meta itemprop='productID' content='isbn:123-456-789'/&gt;</code>." ;
+  schema:rangeIncludes schema:Text .
+
+schema:runsTo
+  schema:domainIncludes schema:LymphaticVessel ;
+  rdfs:label "runsTo" ;
+  a rdf:Property ;
+  schema:rangeIncludes schema:Vessel ;
+  rdfs:comment "The vasculature the lymphatic structure runs, or efferents, to." .
+
+schema:GiveAction
+  rdfs:label "GiveAction" ;
+  rdfs:subClassOf schema:TransferAction ;
+  a rdfs:Class ;
+  rdfs:comment "The act of transferring ownership of an object to a destination. Reciprocal of TakeAction.<p>Related actions:</p><ul><li><a href=\"http://schema.org/TakeAction\">TakeAction</a>: Reciprocal of GiveAction.</li><li><a href=\"http://schema.org/SendAction\">SendAction</a>: Unlike SendAction, GiveAction implies that ownership is being transferred (e.g. I may send my laptop to you, but that doesn't mean I'm giving it to you)</li></ul>." .
+
+schema:distribution
+  schema:rangeIncludes schema:DataDownload ;
+  rdfs:label "distribution" ;
+  a rdf:Property ;
+  schema:domainIncludes schema:Dataset ;
+  rdfs:comment "A downloadable form of this dataset, at a specific location, in a specific format." .
+
+schema:followee
+  schema:rangeIncludes schema:Person, schema:Organization ;
+  schema:domainIncludes schema:FollowAction ;
+  rdfs:label "followee" ;
+  rdfs:comment "A sub property of object. The person or organization being followed." ;
+  rdfs:subPropertyOf schema:object ;
+  a rdf:Property .
+
+schema:AllWheelDriveConfiguration
+  dc:source <http://www.w3.org/wiki/WebSchemas/SchemaDotOrgSources#Automotive_Ontology_Working_Group> ;
+  rdfs:comment "All-wheel Drive is a transmission layout where the engine drives all four wheels." ;
+  a schema:DriveWheelConfigurationValue ;
+  rdfs:label "AllWheelDriveConfiguration" .
+
+schema:studyDesign
+  rdfs:label "studyDesign" ;
+  schema:rangeIncludes schema:MedicalObservationalStudyDesign ;
+  rdfs:comment "Specifics about the observational study design (enumerated)." ;
+  a rdf:Property ;
+  schema:domainIncludes schema:MedicalObservationalStudy .
+
+schema:antagonist
+  rdfs:comment "The muscle whose action counteracts the specified muscle." ;
+  a rdf:Property ;
+  rdfs:label "antagonist" ;
+  schema:rangeIncludes schema:Muscle ;
+  schema:domainIncludes schema:Muscle .
+
+schema:Rating
+  rdfs:comment "A rating is an evaluation on a numeric scale, such as 1 to 5 stars." ;
+  rdfs:label "Rating" ;
+  rdfs:subClassOf schema:Intangible ;
+  a rdfs:Class .
+
+schema:CollectionPage
+  rdfs:label "CollectionPage" ;
+  rdfs:comment "Web page type: Collection page." ;
+  rdfs:subClassOf schema:WebPage ;
+  a rdfs:Class .
+
+schema:pickupLocation
+  schema:rangeIncludes schema:Place ;
+  rdfs:comment "Where a taxi will pick up a passenger or a rental car can be picked up." ;
+  rdfs:label "pickupLocation" ;
+  schema:domainIncludes schema:TaxiReservation, schema:RentalCarReservation ;
+  a rdf:Property .
+
+schema:workload
+  schema:rangeIncludes schema:Energy ;
+  a rdf:Property ;
+  schema:domainIncludes schema:ExercisePlan ;
+  rdfs:comment "Quantitative measure of the physiologic output of the exercise; also referred to as energy expenditure." ;
+  rdfs:label "workload" .
+
+schema:typicalAgeRange
+  rdfs:comment "The typical expected age range, e.g. '7-9', '11-'." ;
+  a rdf:Property ;
+  schema:domainIncludes schema:CreativeWork, schema:Event ;
+  rdfs:label "typicalAgeRange" ;
+  schema:rangeIncludes schema:Text .
+
+schema:serialNumber
+  schema:domainIncludes schema:Offer, schema:Demand, schema:IndividualProduct ;
+  a rdf:Property ;
+  rdfs:comment "The serial number or any alphanumeric identifier of a particular product. When attached to an offer, it is a shortcut for the serial number of the product included in the offer." ;
+  rdfs:label "serialNumber" ;
+  schema:rangeIncludes schema:Text .
+
+schema:applicableLocation
+  rdfs:label "applicableLocation" ;
+  rdfs:comment "The location in which the status applies." ;
+  schema:domainIncludes schema:DrugCost, schema:DrugLegalStatus ;
+  a rdf:Property ;
+  schema:rangeIncludes schema:AdministrativeArea .
+
+schema:Pulmonary
+  rdfs:comment "A specific branch of medical science that pertains to the study of the respiratory system and its respective disease states." ;
+  rdfs:label "Pulmonary" ;
+  a schema:MedicalSpecialty .
+
+schema:roleName
+  schema:rangeIncludes schema:URL, schema:Text ;
+  schema:domainIncludes schema:Role ;
+  a rdf:Property ;
+  rdfs:comment "A role played, performed or filled by a person or organization. For example, the team of creators for a comic book might fill the roles named 'inker', 'penciller', and 'letterer'; or an athlete in a SportsTeam might play in the position named 'Quarterback'." ;
+  rdfs:label "roleName" .
+
+schema:PeopleAudience
+  rdfs:comment "A set of characteristics belonging to people, e.g. who compose an item's target audience." ;
+  rdfs:label "PeopleAudience" ;
+  rdfs:subClassOf schema:Audience ;
+  a rdfs:Class .
+
+schema:LiveAlbum
+  rdfs:label "LiveAlbum" ;
+  dc:source <http://www.w3.org/wiki/WebSchemas/SchemaDotOrgSources#MBZ> ;
+  a schema:MusicAlbumProductionType ;
+  rdfs:comment "LiveAlbum." .
+
+schema:deathPlace
+  a rdf:Property ;
+  schema:rangeIncludes schema:Place ;
+  rdfs:label "deathPlace" ;
+  rdfs:comment "The place where the person died." ;
+  schema:domainIncludes schema:Person .
+
+schema:processingTime
+  a rdf:Property ;
+  schema:rangeIncludes schema:Duration ;
+  rdfs:comment "Estimated processing time for the service using this channel." ;
+  schema:domainIncludes schema:ServiceChannel ;
+  rdfs:label "processingTime" .
+
+schema:jobBenefits
+  rdfs:comment "Description of benefits associated with the job." ;
+  a rdf:Property ;
+  schema:rangeIncludes schema:Text ;
+  schema:domainIncludes schema:JobPosting ;
+  rdfs:label "jobBenefits" .
+
+schema:SocialEvent
+  rdfs:label "SocialEvent" ;
+  a rdfs:Class ;
+  rdfs:comment "Event type: Social event." ;
+  rdfs:subClassOf schema:Event .
+
+schema:GovernmentService
+  rdfs:label "GovernmentService" ;
+  rdfs:comment "A service provided by a government organization, e.g. food stamps, veterans benefits, etc." ;
+  a rdfs:Class ;
+  rdfs:subClassOf schema:Service .
+
+schema:maxValue
+  schema:rangeIncludes schema:Number ;
+  schema:domainIncludes schema:PropertyValue, schema:QuantitativeValue, schema:PropertyValueSpecification ;
+  rdfs:comment "The upper value of some characteristic or property." ;
+  a rdf:Property ;
+  rdfs:label "maxValue" .
+
+schema:Library
+  rdfs:label "Library" ;
+  rdfs:comment "A library." ;
+  rdfs:subClassOf schema:LocalBusiness ;
+  a rdfs:Class .
+
+schema:PriceSpecification
+  rdfs:subClassOf schema:StructuredValue ;
+  rdfs:label "PriceSpecification" ;
+  dc:source <http://www.w3.org/wiki/WebSchemas/SchemaDotOrgSources#source_GoodRelationsClass> ;
+  a rdfs:Class ;
+  rdfs:comment "A structured value representing a monetary amount. Typically, only the subclasses of this type are used for markup." .
+
+schema:providesService
+  a rdf:Property ;
+  schema:domainIncludes schema:ServiceChannel ;
+  schema:rangeIncludes schema:Service ;
+  rdfs:comment "The service provided by this channel." ;
+  rdfs:label "providesService" .
+
+schema:MotorcycleRepair
+  a rdfs:Class ;
+  rdfs:label "MotorcycleRepair" ;
+  rdfs:subClassOf schema:AutomotiveBusiness ;
+  rdfs:comment "A motorcycle repair shop." .
+
+schema:pregnancyWarning
+  a rdf:Property ;
+  schema:rangeIncludes schema:Text ;
+  rdfs:label "pregnancyWarning" ;
+  rdfs:comment "Any precaution, guidance, contraindication, etc. related to this drug's use during pregnancy." ;
+  schema:domainIncludes schema:Drug .
+
+schema:GroceryStore
+  rdfs:comment "A grocery store." ;
+  a rdfs:Class ;
+  rdfs:subClassOf schema:Store ;
+  rdfs:label "GroceryStore" .
+
+schema:volumeNumber
+  rdfs:label "volumeNumber" ;
+  rdfs:subPropertyOf schema:position ;
+  schema:domainIncludes schema:PublicationVolume ;
+  a rdf:Property ;
+  dc:source <http://www.w3.org/wiki/WebSchemas/SchemaDotOrgSources#source_bibex> ;
+  schema:rangeIncludes schema:Text, schema:Integer ;
+  rdfs:comment "Identifies the volume of publication or multi-part work; for example, \"iii\" or \"2\"." ;
+  owl:equivalentProperty bibo:volume .
+
+schema:healthCondition
+  rdfs:label "healthCondition" ;
+  schema:domainIncludes schema:PeopleAudience ;
+  schema:rangeIncludes schema:MedicalCondition ;
+  a rdf:Property ;
+  rdfs:comment "Expectations for health conditions of target audience." .
+
+schema:TrainStation
+  rdfs:label "TrainStation" ;
+  rdfs:comment "A train station." ;
+  rdfs:subClassOf schema:CivicStructure ;
+  a rdfs:Class .
+
+schema:DefenceEstablishment
+  rdfs:comment "A defence establishment, such as an army or navy base." ;
+  a rdfs:Class ;
+  rdfs:subClassOf schema:GovernmentBuilding ;
+  rdfs:label "DefenceEstablishment" .
+
+schema:sender
+  rdfs:subPropertyOf schema:participant ;
+  schema:rangeIncludes schema:Organization, schema:Person, schema:Audience ;
+  rdfs:label "sender" ;
+  a rdf:Property ;
+  rdfs:comment "A sub property of participant. The participant who is at the sending end of the action." ;
+  schema:domainIncludes schema:ReceiveAction .
+
+schema:rangeIncludes
+  rdfs:comment "Relates a property to a class that constitutes (one of) the expected type(s) for values of the property." ;
+  schema:rangeIncludes schema:Class ;
+  a rdf:Property ;
+  rdfs:label "rangeIncludes" ;
+  schema:domainIncludes schema:Property .
+
+schema:netWorth
+  schema:rangeIncludes schema:PriceSpecification ;
+  schema:domainIncludes schema:Person ;
+  rdfs:label "netWorth" ;
+  a rdf:Property ;
+  rdfs:comment "The total financial value of the person as calculated by subtracting assets from liabilities." .
+
+schema:taxID
+  schema:rangeIncludes schema:Text ;
+  schema:domainIncludes schema:Person, schema:Organization ;
+  rdfs:label "taxID" ;
+  a rdf:Property ;
+  rdfs:comment "The Tax / Fiscal ID of the organization or person, e.g. the TIN in the US or the CIF/NIF in Spain." .
+
+schema:associatedPathophysiology
+  rdfs:label "associatedPathophysiology" ;
+  schema:domainIncludes schema:AnatomicalStructure, schema:AnatomicalSystem, schema:SuperficialAnatomy ;
+  rdfs:comment "If applicable, a description of the pathophysiology associated with the anatomical system, including potential abnormal changes in the mechanical, physical, and biochemical functions of the system." ;
+  a rdf:Property ;
+  schema:rangeIncludes schema:Text .
+
+schema:department
+  schema:domainIncludes schema:Organization ;
+  schema:rangeIncludes schema:Organization ;
+  a rdf:Property ;
+  rdfs:comment "A relationship between an organization and a department of that organization, also described as an organization (allowing different urls, logos, opening hours). For example: a store with a pharmacy, or a bakery with a cafe." ;
+  rdfs:label "department" .
+
+schema:Abdomen
+  rdfs:comment "Abdomen." ;
+  a schema:PhysicalExam ;
+  rdfs:label "Abdomen" .
+
+schema:Genitourinary
+  a schema:PhysicalExam ;
+  rdfs:comment "Genitourinary." ;
+  rdfs:label "Genitourinary" .
+
+schema:CheckInAction
+  rdfs:comment "The act of an agent communicating (service provider, social media, etc) their arrival by registering/confirming for a previously reserved service (e.g. flight check in) or at a place (e.g. hotel), possibly resulting in a result (boarding pass, etc).<p>Related actions:</p><ul><li><a href=\"http://schema.org/CheckOutAction\">CheckOutAction</a>: The antonym of CheckInAction.</li><li><a href=\"http://schema.org/ArriveAction\">ArriveAction</a>: Unlike ArriveAction, CheckInAction implies that the agent is informing/confirming the start of a previously reserved service.</li><li><a href=\"http://schema.org/ConfirmAction\">ConfirmAction</a>: Unlike ConfirmAction, CheckInAction implies that the agent is informing/confirming the *start* of a previously reserved service rather than its validity/existence</li></ul>." ;
+  a rdfs:Class ;
+  rdfs:subClassOf schema:CommunicateAction ;
+  rdfs:label "CheckInAction" .
+
+schema:mechanismOfAction
+  schema:rangeIncludes schema:Text ;
+  schema:domainIncludes schema:DietarySupplement, schema:Drug ;
+  rdfs:label "mechanismOfAction" ;
+  a rdf:Property ;
+  rdfs:comment "The specific biochemical interaction through which this drug or supplement produces its pharmacological effect." .
+
+schema:carrier
+  rdfs:comment "'carrier' is an out-dated term indicating the 'provider' for parcel delivery and flights." ;
+  schema:domainIncludes schema:Flight, schema:ParcelDelivery ;
+  a rdf:Property ;
+  schema:supersededBy schema:provider ;
+  rdfs:label "carrier" ;
+  schema:rangeIncludes schema:Organization .
+
+schema:EventRescheduled
+  rdfs:label "EventRescheduled" ;
+  a schema:EventStatusType ;
+  rdfs:comment "The event has been rescheduled. The event's previousStartDate should be set to the old date and the startDate should be set to the event's new date. (If the event has been rescheduled multiple times, the previousStartDate property may be repeated)." .
+
+schema:MedicalDevice
+  a rdfs:Class ;
+  rdfs:subClassOf schema:MedicalEntity ;
+  rdfs:comment "Any object used in a medical capacity, such as to diagnose or treat a patient." ;
+  dc:source <http://www.w3.org/wiki/WebSchemas/SchemaDotOrgSources#source_WikiDoc> ;
+  rdfs:label "MedicalDevice" .
+
+schema:Therapeutic
+  a schema:MedicalDevicePurpose ;
+  rdfs:label "Therapeutic" ;
+  rdfs:comment "A medical device used for therapeutic purposes." .
+
+schema:distance
+  schema:rangeIncludes schema:Distance ;
+  rdfs:label "distance" ;
+  a rdf:Property ;
+  schema:domainIncludes schema:ExerciseAction, schema:TravelAction ;
+  rdfs:comment "The distance travelled, e.g. exercising or travelling." .
+
+<http://www.w3.org/wiki/WebSchemas/SchemaDotOrgSources#source_bibex>
+  rdfs:comment "The W3C <a href=\"http://www.w3.org/community/schemabibex/\">Schema Bib Extend</a> (BibEx) group led the work to improve schema.org for bibliographic information, including terms for periodicals, articles and multi-volume works. The design was inspired in places (e.g. pageStart, pageEnd, pagination) by the <a href=\"http://bibliontology.com/\">Bibliographic Ontology</a>, 'bibo'." ;
+  rdfs:label "BibExTerm" ;
+  a schema:Organization .
+
+schema:SportsTeam
+  rdfs:label "SportsTeam" ;
+  a rdfs:Class ;
+  rdfs:comment "Organization: Sports team." ;
+  rdfs:subClassOf schema:SportsOrganization .
+
+schema:DVDFormat
+  a schema:MusicReleaseFormatType ;
+  rdfs:label "DVDFormat" ;
+  dc:source <http://www.w3.org/wiki/WebSchemas/SchemaDotOrgSources#MBZ> ;
+  rdfs:comment "DVDFormat." .
+
+schema:broadcastChannelId
+  a rdf:Property ;
+  schema:domainIncludes schema:BroadcastChannel ;
+  rdfs:comment "The unique address by which the BroadcastService can be identified in a provider lineup. In US, this is typically a number." ;
+  schema:rangeIncludes schema:Text ;
+  rdfs:label "broadcastChannelId" .
+
+schema:MedicalDevicePurpose
+  a rdfs:Class ;
+  dc:source <http://www.w3.org/wiki/WebSchemas/SchemaDotOrgSources#source_WikiDoc> ;
+  rdfs:label "MedicalDevicePurpose" ;
+  rdfs:subClassOf schema:Enumeration, schema:MedicalEnumeration ;
+  rdfs:comment "Categories of medical devices, organized by the purpose or intended use of the device." .
+
+schema:acceptedPaymentMethod
+  rdfs:label "acceptedPaymentMethod" ;
+  schema:domainIncludes schema:Demand, schema:Offer ;
+  a rdf:Property ;
+  rdfs:comment "The payment method(s) accepted by seller for this offer." ;
+  schema:rangeIncludes schema:PaymentMethod .
+
+schema:playerType
+  schema:domainIncludes schema:MediaObject ;
+  rdfs:comment "Player type required&#x2014;for example, Flash or Silverlight." ;
+  a rdf:Property ;
+  rdfs:label "playerType" ;
+  schema:rangeIncludes schema:Text .
+
+schema:servingSize
+  schema:domainIncludes schema:NutritionInformation ;
+  a rdf:Property ;
+  rdfs:label "servingSize" ;
+  rdfs:comment "The serving size, in terms of the number of volume or mass." ;
+  schema:rangeIncludes schema:Text .
+
+schema:gamePlatform
+  schema:rangeIncludes schema:Text, schema:URL, schema:Thing ;
+  a rdf:Property ;
+  rdfs:comment "The electronic systems used to play <a href=\"http://en.wikipedia.org/wiki/Category:Video_game_platforms\">video games</a>." ;
+  rdfs:label "gamePlatform" ;
+  schema:domainIncludes schema:VideoGame, schema:VideoGameSeries .
+
+schema:DietarySupplement
+  rdfs:comment "A product taken by mouth that contains a dietary ingredient intended to supplement the diet. Dietary ingredients may include vitamins, minerals, herbs or other botanicals, amino acids, and substances such as enzymes, organ tissues, glandulars and metabolites." ;
+  a rdfs:Class ;
+  rdfs:subClassOf schema:MedicalTherapy ;
+  rdfs:label "DietarySupplement" ;
+  dc:source <http://www.w3.org/wiki/WebSchemas/SchemaDotOrgSources#source_WikiDoc> .
+
+schema:MedicalProcedureType
+  a rdfs:Class ;
+  rdfs:comment "An enumeration that describes different types of medical procedures." ;
+  rdfs:subClassOf schema:MedicalEnumeration, schema:Enumeration ;
+  rdfs:label "MedicalProcedureType" ;
+  dc:source <http://www.w3.org/wiki/WebSchemas/SchemaDotOrgSources#source_WikiDoc> .
+
+schema:educationalAlignment
+  rdfs:comment "An alignment to an established educational framework." ;
+  schema:domainIncludes schema:CreativeWork ;
+  schema:rangeIncludes schema:AlignmentObject ;
+  a rdf:Property ;
+  rdfs:label "educationalAlignment" .
+
+schema:function
+  a rdf:Property ;
+  rdfs:label "function" ;
+  rdfs:comment "Function of the anatomical structure." ;
+  schema:rangeIncludes schema:Text ;
+  schema:domainIncludes schema:AnatomicalStructure .
+
+schema:significance
+  a rdf:Property ;
+  schema:rangeIncludes schema:Text ;
+  rdfs:label "significance" ;
+  rdfs:comment "The significance associated with the superficial anatomy; as an example, how characteristics of the superficial anatomy can suggest underlying medical conditions or courses of treatment." ;
+  schema:domainIncludes schema:SuperficialAnatomy .
+
+schema:manufacturer
+  rdfs:label "manufacturer" ;
+  schema:rangeIncludes schema:Organization ;
+  rdfs:comment "The manufacturer of the product." ;
+  schema:domainIncludes schema:DietarySupplement, schema:Product, schema:Drug ;
+  a rdf:Property .
+
+schema:partOfSeason
+  schema:rangeIncludes schema:CreativeWorkSeason ;
+  a rdf:Property ;
+  rdfs:label "partOfSeason" ;
+  schema:domainIncludes schema:Episode, schema:Clip ;
+  rdfs:comment "The season to which this episode belongs." ;
+  rdfs:subPropertyOf schema:isPartOf .
+
+schema:MedicalCause
+  dc:source <http://www.w3.org/wiki/WebSchemas/SchemaDotOrgSources#source_WikiDoc> ;
+  a rdfs:Class ;
+  rdfs:comment "The causative agent(s) that are responsible for the pathophysiologic process that eventually results in a medical condition, symptom or sign. In this schema, unless otherwise specified this is meant to be the proximate cause of the medical condition, symptom or sign. The proximate cause is defined as the causative agent that most directly results in the medical condition, symptom or sign. For example, the HIV virus could be considered a cause of AIDS. Or in a diagnostic context, if a patient fell and sustained a hip fracture and two days later sustained a pulmonary embolism which eventuated in a cardiac arrest, the cause of the cardiac arrest (the proximate cause) would be the pulmonary embolism and not the fall. <p>Medical causes can include cardiovascular, chemical, dermatologic, endocrine, environmental, gastroenterologic, genetic, hematologic, gynecologic, iatrogenic, infectious, musculoskeletal, neurologic, nutritional, obstetric, oncologic, otolaryngologic, pharmacologic, psychiatric, pulmonary, renal, rheumatologic, toxic, traumatic, or urologic causes; medical conditions can be causes as well." ;
+  rdfs:subClassOf schema:MedicalEntity ;
+  rdfs:label "MedicalCause" .
+
+schema:ReportedDoseSchedule
+  rdfs:label "ReportedDoseSchedule" ;
+  rdfs:comment "A patient-reported or observed dosing schedule for a drug or supplement." ;
+  a rdfs:Class ;
+  rdfs:subClassOf schema:DoseSchedule .
+
+schema:gameTip
+  schema:rangeIncludes schema:CreativeWork ;
+  rdfs:label "gameTip" ;
+  a rdf:Property ;
+  schema:domainIncludes schema:VideoGame ;
+  rdfs:comment "Links to tips, tactics, etc." .
+
+schema:MusicVideoObject
+  rdfs:comment "A music video file." ;
+  rdfs:label "MusicVideoObject" ;
+  a rdfs:Class ;
+  rdfs:subClassOf schema:MediaObject .
+
+schema:CreateAction
+  rdfs:comment "The act of deliberately creating/producing/generating/building a result out of the agent." ;
+  rdfs:label "CreateAction" ;
+  a rdfs:Class ;
+  rdfs:subClassOf schema:Action .
+
+schema:PreventionIndication
+  rdfs:label "PreventionIndication" ;
+  a rdfs:Class ;
+  rdfs:comment "An indication for preventing an underlying condition, symptom, etc." ;
+  rdfs:subClassOf schema:MedicalIndication ;
+  dc:source <http://www.w3.org/wiki/WebSchemas/SchemaDotOrgSources#source_WikiDoc> .
+
+schema:dependencies
+  schema:rangeIncludes schema:Text ;
+  schema:domainIncludes schema:TechArticle ;
+  a rdf:Property ;
+  rdfs:comment "Prerequisites needed to fulfill steps in article." ;
+  rdfs:label "dependencies" .
+
+schema:processorRequirements
+  rdfs:label "processorRequirements" ;
+  rdfs:comment "Processor architecture required to run the application (e.g. IA64)." ;
+  schema:rangeIncludes schema:Text ;
+  schema:domainIncludes schema:SoftwareApplication ;
+  a rdf:Property .
+
+schema:childMaxAge
+  rdfs:label "childMaxAge" ;
+  schema:domainIncludes schema:ParentAudience ;
+  rdfs:comment "Maximal age of the child." ;
+  a rdf:Property ;
+  schema:rangeIncludes schema:Number .
+
+schema:RadioStation
+  a rdfs:Class ;
+  rdfs:label "RadioStation" ;
+  rdfs:comment "A radio station." ;
+  rdfs:subClassOf schema:LocalBusiness .
+
+schema:CafeOrCoffeeShop
+  rdfs:subClassOf schema:FoodEstablishment ;
+  a rdfs:Class ;
+  rdfs:comment "A cafe or coffee shop." ;
+  rdfs:label "CafeOrCoffeeShop" .
+
+schema:cookingMethod
+  schema:domainIncludes schema:Recipe ;
+  rdfs:comment "The method of cooking, such as Frying, Steaming, ..." ;
+  rdfs:label "cookingMethod" ;
+  a rdf:Property ;
+  schema:rangeIncludes schema:Text .
+
+schema:action
+  schema:domainIncludes schema:Muscle ;
+  schema:supersededBy schema:muscleAction ;
+  rdfs:label "action" ;
+  schema:rangeIncludes schema:Text ;
+  a rdf:Property ;
+  rdfs:comment "The movement the muscle generates." .
+
+schema:Toxicologic
+  rdfs:label "Toxicologic" ;
+  a schema:MedicalSpecialty ;
+  rdfs:comment "A specific branch of medical science that is concerned with poisons, their nature, effects and detection and involved in the treatment of poisoning." .
+
+schema:ComputerStore
+  rdfs:subClassOf schema:Store ;
+  rdfs:label "ComputerStore" ;
+  rdfs:comment "A computer store." ;
+  a rdfs:Class .
+
+schema:skills
+  schema:domainIncludes schema:JobPosting ;
+  rdfs:comment "Skills required to fulfill this role." ;
+  a rdf:Property ;
+  schema:rangeIncludes schema:Text ;
+  rdfs:label "skills" .
+
+schema:vehicleInteriorType
+  rdfs:comment "The type or material of the interior of the vehicle (e.g. synthetic fabric, leather, wood, etc.). While most interior types are characterized by the material used, an interior type can also be based on vehicle usage or target audience." ;
+  dc:source <http://www.w3.org/wiki/WebSchemas/SchemaDotOrgSources#Automotive_Ontology_Working_Group> ;
+  rdfs:label "vehicleInteriorType" ;
+  a rdf:Property ;
+  schema:rangeIncludes schema:Text ;
+  schema:domainIncludes schema:Vehicle .
+
+schema:predecessorOf
+  rdfs:label "predecessorOf" ;
+  schema:rangeIncludes schema:ProductModel ;
+  schema:domainIncludes schema:ProductModel ;
+  rdfs:comment "A pointer from a previous, often discontinued variant of the product to its newer variant." ;
+  a rdf:Property .
+
+schema:PhysicalTherapy
+  a rdfs:Class ;
+  rdfs:comment "A process of progressive physical care and rehabilitation aimed at improving a health condition." ;
+  rdfs:subClassOf schema:MedicalTherapy ;
+  rdfs:label "PhysicalTherapy" ;
+  dc:source <http://www.w3.org/wiki/WebSchemas/SchemaDotOrgSources#source_WikiDoc> .
+
+schema:responsibilities
+  schema:rangeIncludes schema:Text ;
+  schema:domainIncludes schema:JobPosting ;
+  rdfs:comment "Responsibilities associated with this role." ;
+  rdfs:label "responsibilities" ;
+  a rdf:Property .
+
+schema:DaySpa
+  a rdfs:Class ;
+  rdfs:label "DaySpa" ;
+  rdfs:subClassOf schema:HealthAndBeautyBusiness ;
+  rdfs:comment "A day spa." .
+
+schema:typicalTest
+  rdfs:comment "A medical test typically performed given this condition." ;
+  a rdf:Property ;
+  schema:domainIncludes schema:MedicalCondition ;
+  schema:rangeIncludes schema:MedicalTest ;
+  rdfs:label "typicalTest" .
+
+schema:issueNumber
+  schema:domainIncludes schema:PublicationIssue ;
+  dc:source <http://www.w3.org/wiki/WebSchemas/SchemaDotOrgSources#source_bibex> ;
+  schema:rangeIncludes schema:Integer, schema:Text ;
+  owl:equivalentProperty bibo:issue ;
+  rdfs:comment "Identifies the issue of publication; for example, \"iii\" or \"2\"." ;
+  rdfs:subPropertyOf schema:position ;
+  a rdf:Property ;
+  rdfs:label "issueNumber" .
+
+schema:height
+  schema:domainIncludes schema:Product, schema:MediaObject, schema:VisualArtwork, schema:Person ;
+  schema:rangeIncludes schema:QuantitativeValue, schema:Distance ;
+  a rdf:Property ;
+  rdfs:label "height" ;
+  rdfs:comment "The height of the item." .
+
+schema:numberOfEmployees
+  schema:rangeIncludes schema:QuantitativeValue ;
+  schema:domainIncludes schema:BusinessAudience, schema:Organization ;
+  rdfs:label "numberOfEmployees" ;
+  a rdf:Property ;
+  rdfs:comment "The number of employees in an organization e.g. business." .
+
+schema:artworkSurface
+  schema:domainIncludes schema:VisualArtwork ;
+  rdfs:comment "The supporting materials for the artwork, e.g. Canvas, Paper, Wood, Board, etc." ;
+  rdfs:label "artworkSurface" ;
+  schema:rangeIncludes schema:Text, schema:URL ;
+  a rdf:Property .
+
+schema:Preschool
+  rdfs:subClassOf schema:EducationalOrganization ;
+  rdfs:label "Preschool" ;
+  rdfs:comment "A preschool." ;
+  a rdfs:Class .
+
+schema:experienceRequirements
+  a rdf:Property ;
+  schema:domainIncludes schema:JobPosting ;
+  schema:rangeIncludes schema:Text ;
+  rdfs:comment "Description of skills and experience needed for the position." ;
+  rdfs:label "experienceRequirements" .
+
+schema:candidate
+  rdfs:label "candidate" ;
+  schema:rangeIncludes schema:Person ;
+  rdfs:comment "A sub property of object. The candidate subject of this action." ;
+  rdfs:subPropertyOf schema:object ;
+  schema:domainIncludes schema:VoteAction ;
+  a rdf:Property .
+
+schema:TVSeason
+  rdfs:label "TVSeason" ;
+  a rdfs:Class ;
+  rdfs:subClassOf schema:CreativeWorkSeason, schema:CreativeWork ;
+  rdfs:comment "Season dedicated to TV broadcast and associated online delivery." .
+
+schema:BookStore
+  a rdfs:Class ;
+  rdfs:label "BookStore" ;
+  rdfs:comment "A bookstore." ;
+  rdfs:subClassOf schema:Store .
+
+schema:nerveMotor
+  schema:domainIncludes schema:Nerve ;
+  rdfs:comment "The neurological pathway extension that involves muscle control." ;
+  rdfs:label "nerveMotor" ;
+  a rdf:Property ;
+  schema:rangeIncludes schema:Muscle .
+
+schema:CheckOutAction
+  rdfs:comment "The act of an agent communicating (service provider, social media, etc) their departure of a previously reserved service (e.g. flight check in) or place (e.g. hotel).<p>Related actions:</p><ul><li><a href=\"http://schema.org/CheckInAction\">CheckInAction</a>: The antonym of CheckOutAction.</li><li><a href=\"http://schema.org/DepartAction\">DepartAction</a>: Unlike DepartAction, CheckOutAction implies that the agent is informing/confirming the end of a previously reserved service.</li><li><a href=\"http://schema.org/CancelAction\">CancelAction</a>: Unlike CancelAction, CheckOutAction implies that the agent is informing/confirming the end of a previously reserved service</li></ul>." ;
+  a rdfs:Class ;
+  rdfs:label "CheckOutAction" ;
+  rdfs:subClassOf schema:CommunicateAction .
+
+schema:MedicalGuidelineRecommendation
+  a rdfs:Class ;
+  rdfs:comment "A guideline recommendation that is regarded as efficacious and where quality of the data supporting the recommendation is sound." ;
+  rdfs:subClassOf schema:MedicalGuideline ;
+  dc:source <http://www.w3.org/wiki/WebSchemas/SchemaDotOrgSources#source_WikiDoc> ;
+  rdfs:label "MedicalGuidelineRecommendation" .
+
+schema:WarrantyScope
+  rdfs:label "WarrantyScope" ;
+  rdfs:comment """A range of of services that will be provided to a customer free of charge in case of a defect or malfunction of a product.
+<br />
+    Commonly used values:<br />
+<br />
+    http://purl.org/goodrelations/v1#Labor-BringIn <br />
+    http://purl.org/goodrelations/v1#PartsAndLabor-BringIn <br />
+    http://purl.org/goodrelations/v1#PartsAndLabor-PickUp <br />
+      """ ;
+  a rdfs:Class ;
+  dc:source <http://www.w3.org/wiki/WebSchemas/SchemaDotOrgSources#source_GoodRelationsClass> ;
+  rdfs:subClassOf schema:Enumeration .
+
+schema:serviceLocation
+  schema:domainIncludes schema:ServiceChannel ;
+  rdfs:label "serviceLocation" ;
+  a rdf:Property ;
+  rdfs:comment "The location (e.g. civic structure, local business, etc.) where a person can go to access the service." ;
+  schema:rangeIncludes schema:Place .
+
+schema:sportsActivityLocation
+  rdfs:subPropertyOf schema:location ;
+  rdfs:label "sportsActivityLocation" ;
+  a rdf:Property ;
+  schema:rangeIncludes schema:SportsActivityLocation ;
+  rdfs:comment "A sub property of location. The sports activity location where this action occurred." ;
+  schema:domainIncludes schema:ExerciseAction .
+
+schema:nerve
+  schema:domainIncludes schema:Muscle ;
+  a rdf:Property ;
+  schema:rangeIncludes schema:Nerve ;
+  rdfs:comment "The underlying innervation associated with the muscle." ;
+  rdfs:label "nerve" .
+
+schema:birthPlace
+  schema:rangeIncludes schema:Place ;
+  schema:domainIncludes schema:Person ;
+  rdfs:label "birthPlace" ;
+  rdfs:comment "The place where the person was born." ;
+  a rdf:Property .
+
+schema:OfferItemCondition
+  rdfs:label "OfferItemCondition" ;
+  a rdfs:Class ;
+  rdfs:comment "A list of possible conditions for the item." ;
+  rdfs:subClassOf schema:Enumeration .
+
+schema:dosageForm
+  a rdf:Property ;
+  rdfs:label "dosageForm" ;
+  schema:rangeIncludes schema:Text ;
+  rdfs:comment "A dosage form in which this drug/supplement is available, e.g. 'tablet', 'suspension', 'injection'." ;
+  schema:domainIncludes schema:Drug, schema:DietarySupplement .
+
+schema:deathDate
+  a rdf:Property ;
+  schema:rangeIncludes schema:Date ;
+  rdfs:label "deathDate" ;
+  schema:domainIncludes schema:Person ;
+  rdfs:comment "Date of death." .
+
+schema:provider
+  schema:domainIncludes schema:Service, schema:Reservation, schema:BusTrip, schema:Flight, schema:TrainTrip, schema:Invoice, schema:CreativeWork, schema:ParcelDelivery ;
+  schema:rangeIncludes schema:Organization, schema:Person ;
+  rdfs:comment "The service provider, service operator, or service performer; the goods producer. Another party (a seller) may offer those services or goods on behalf of the provider. A provider may also serve as the seller." ;
+  a rdf:Property ;
+  rdfs:label "provider" .
+
+schema:Cemetery
+  a rdfs:Class ;
+  rdfs:comment "A graveyard." ;
+  rdfs:label "Cemetery" ;
+  rdfs:subClassOf schema:CivicStructure .
+
+schema:seller
+  schema:domainIncludes schema:Flight, schema:Offer, schema:Order, schema:Demand, schema:BuyAction ;
+  schema:rangeIncludes schema:Person, schema:Organization ;
+  rdfs:label "seller" ;
+  rdfs:comment "An entity which offers (sells / leases / lends / loans) the services / goods.  A seller may also be a provider." ;
+  rdfs:subPropertyOf schema:participant ;
+  a rdf:Property .
+
+schema:interactionCount
+  schema:supersededBy schema:interactionStatistic ;
+  rdfs:comment "This property is deprecated, alongside the UserInteraction types on which it depended." ;
+  a rdf:Property ;
+  rdfs:label "interactionCount" .
+
+schema:advanceBookingRequirement
+  rdfs:comment "The amount of time that is required between accepting the offer and the actual usage of the resource or service." ;
+  schema:rangeIncludes schema:QuantitativeValue ;
+  schema:domainIncludes schema:Offer, schema:Demand ;
+  a rdf:Property ;
+  rdfs:label "advanceBookingRequirement" .
+
+schema:exerciseCourse
+  rdfs:subPropertyOf schema:location ;
+  a rdf:Property ;
+  rdfs:comment "A sub property of location. The course where this action was taken." ;
+  schema:rangeIncludes schema:Place ;
+  rdfs:label "exerciseCourse" ;
+  schema:domainIncludes schema:ExerciseAction .
+
+schema:reviews
+  schema:domainIncludes schema:Product, schema:Offer, schema:Place, schema:CreativeWork, schema:Organization ;
+  schema:supersededBy schema:review ;
+  schema:rangeIncludes schema:Review ;
+  rdfs:label "reviews" ;
+  rdfs:comment "Review of the item." ;
+  a rdf:Property .
+
+schema:OccupationalActivity
+  rdfs:comment "Any physical activity engaged in for job-related purposes. Examples may include waiting tables, maid service, carrying a mailbag, picking fruits or vegetables, construction work, etc." ;
+  a schema:PhysicalActivityCategory ;
+  rdfs:label "OccupationalActivity" .
+
+schema:PhysicalActivityCategory
+  dc:source <http://www.w3.org/wiki/WebSchemas/SchemaDotOrgSources#source_WikiDoc> ;
+  rdfs:subClassOf schema:MedicalEnumeration, schema:Enumeration ;
+  a rdfs:Class ;
+  rdfs:label "PhysicalActivityCategory" ;
+  rdfs:comment "Categories of physical activity, organized by physiologic classification." .
+
+schema:endDate
+  rdfs:label "endDate" ;
+  schema:rangeIncludes schema:Date ;
+  a rdf:Property ;
+  schema:domainIncludes schema:Role, schema:CreativeWorkSeries, schema:Event, schema:DatedMoneySpecification, schema:CreativeWorkSeason ;
+  rdfs:comment "The end date and time of the item (in <a href='http://en.wikipedia.org/wiki/ISO_8601'>ISO 8601 date format</a>)." .
+
+schema:associatedAnatomy
+  schema:rangeIncludes schema:AnatomicalSystem, schema:AnatomicalStructure, schema:SuperficialAnatomy ;
+  rdfs:label "associatedAnatomy" ;
+  rdfs:comment "The anatomy of the underlying organ system or structures associated with this entity." ;
+  a rdf:Property ;
+  schema:domainIncludes schema:PhysicalActivity, schema:MedicalCondition .
+
+schema:incentives
+  a rdf:Property ;
+  rdfs:comment "Description of bonus and commission compensation aspects of the job." ;
+  schema:rangeIncludes schema:Text ;
+  schema:supersededBy schema:incentiveCompensation ;
+  schema:domainIncludes schema:JobPosting ;
+  rdfs:label "incentives" .
+
+schema:LaserDiscFormat
+  rdfs:label "LaserDiscFormat" ;
+  rdfs:comment "LaserDiscFormat." ;
+  dc:source <http://www.w3.org/wiki/WebSchemas/SchemaDotOrgSources#MBZ> ;
+  a schema:MusicReleaseFormatType .
+
+schema:videoQuality
+  schema:rangeIncludes schema:Text ;
+  schema:domainIncludes schema:VideoObject ;
+  rdfs:comment "The quality of the video." ;
+  a rdf:Property ;
+  rdfs:label "videoQuality" .
+
+schema:MedicineSystem
+  rdfs:comment "Systems of medical practice." ;
+  rdfs:subClassOf schema:Enumeration, schema:MedicalEnumeration ;
+  a rdfs:Class ;
+  rdfs:label "MedicineSystem" .
+
+schema:MedicalStudy
+  a rdfs:Class ;
+  rdfs:subClassOf schema:MedicalEntity ;
+  dc:source <http://www.w3.org/wiki/WebSchemas/SchemaDotOrgSources#source_WikiDoc> ;
+  rdfs:comment "A medical study is an umbrella type covering all kinds of research studies relating to human medicine or health, including observational studies and interventional trials and registries, randomized, controlled or not. When the specific type of study is known, use one of the extensions of this type, such as MedicalTrial or MedicalObservationalStudy. Also, note that this type should be used to mark up data that describes the study itself; to tag an article that publishes the results of a study, use MedicalScholarlyArticle. Note: use the code property of MedicalEntity to store study IDs, e.g. clinicaltrials.gov ID." ;
+  rdfs:label "MedicalStudy" .
+
+schema:interactingDrug
+  a rdf:Property ;
+  rdfs:label "interactingDrug" ;
+  schema:rangeIncludes schema:Drug ;
+  rdfs:comment "Another drug that is known to interact with this drug in a way that impacts the effect of this drug or causes a risk to the patient. Note: disease interactions are typically captured as contraindications." ;
+  schema:domainIncludes schema:Drug .
+
+schema:headline
+  schema:rangeIncludes schema:Text ;
+  a rdf:Property ;
+  schema:domainIncludes schema:CreativeWork ;
+  rdfs:comment "Headline of the article." ;
+  rdfs:label "headline" .
+
+schema:releaseOf
+  dc:source <http://www.w3.org/wiki/WebSchemas/SchemaDotOrgSources#MBZ> ;
+  a rdf:Property ;
+  schema:rangeIncludes schema:MusicAlbum ;
+  rdfs:label "releaseOf" ;
+  rdfs:comment "The album this is a release of." ;
+  schema:inverseOf schema:albumRelease ;
+  schema:domainIncludes schema:MusicRelease .
+
+schema:sourceOrganization
+  rdfs:comment "The Organization on whose behalf the creator was working." ;
+  schema:domainIncludes schema:CreativeWork ;
+  schema:rangeIncludes schema:Organization ;
+  a rdf:Property ;
+  rdfs:label "sourceOrganization" .
+
+schema:ActivateAction
+  a rdfs:Class ;
+  rdfs:comment "The act of starting or activating a device or application (e.g. starting a timer or turning on a flashlight)." ;
+  rdfs:subClassOf schema:ControlAction ;
+  rdfs:label "ActivateAction" .
+
+schema:recordLabel
+  rdfs:label "recordLabel" ;
+  schema:domainIncludes schema:MusicRelease ;
+  rdfs:comment "The label that issued the release." ;
+  schema:rangeIncludes schema:Organization ;
+  a rdf:Property ;
+  dc:source <http://www.w3.org/wiki/WebSchemas/SchemaDotOrgSources#MBZ> ;
+  owl:equivalentProperty <http://purl.org/ontology/mo/label> .
+
+schema:UserPageVisits
+  a rdfs:Class ;
+  schema:supersededBy schema:InteractionCounter ;
+  rdfs:label "UserPageVisits" ;
+  rdfs:comment """UserInteraction and its subtypes is an old way of talking about users interacting with pages. It is generally better to use
+          <a href="/Action">Action</a>-based vocabulary, alongside types such as <a href="/Comment">Comment</a>.
+      """ ;
+  rdfs:subClassOf schema:UserInteraction .
+
+<http://www.w3.org/wiki/WebSchemas/SchemaDotOrgSources#source_ActionCollabClass>
+  rdfs:comment "The schema.org Actions mechanism benefited from extensive discussions across the Web standards community around W3C, in particular from the <a href=\"http://purl.org/hydra/\"> Hydra project</a>'s community group." ;
+  rdfs:label "ActionCollabClass" ;
+  a schema:Organization .
+
+schema:seasons
+  schema:supersededBy schema:season ;
+  rdfs:comment "A season in a media series." ;
+  schema:domainIncludes schema:RadioSeries, schema:VideoGameSeries, schema:TVSeries ;
+  a rdf:Property ;
+  rdfs:label "seasons" ;
+  schema:rangeIncludes schema:CreativeWorkSeason .
+
+schema:videoFormat
+  schema:domainIncludes schema:BroadcastService, schema:ScreeningEvent, schema:BroadcastEvent ;
+  rdfs:comment "The type of screening or video broadcast used (e.g. IMAX, 3D, SD, HD, etc.)." ;
+  schema:rangeIncludes schema:Text ;
+  rdfs:label "videoFormat" ;
+  a rdf:Property .
+
+schema:device
+  a rdf:Property ;
+  schema:domainIncludes schema:SoftwareApplication ;
+  rdfs:comment "Device required to run the application. Used in cases where a specific make/model is required to run the application." ;
+  schema:supersededBy schema:availableOnDevice ;
+  rdfs:label "device" ;
+  schema:rangeIncludes schema:Text .
+
+schema:FrontWheelDriveConfiguration
+  rdfs:comment "Front-wheel drive is a transmission layout where the engine drives the front wheels." ;
+  dc:source <http://www.w3.org/wiki/WebSchemas/SchemaDotOrgSources#Automotive_Ontology_Working_Group> ;
+  a schema:DriveWheelConfigurationValue ;
+  rdfs:label "FrontWheelDriveConfiguration" .
+
+schema:PerformingGroup
+  rdfs:comment "A performance group, such as a band, an orchestra, or a circus." ;
+  rdfs:label "PerformingGroup" ;
+  rdfs:subClassOf schema:Organization ;
+  a rdfs:Class .
+
+schema:MedicalEnumeration
+  rdfs:subClassOf schema:Enumeration, schema:MedicalIntangible ;
+  a rdfs:Class ;
+  rdfs:label "MedicalEnumeration" ;
+  rdfs:comment "Enumerations related to health and the practice of medicine." .
+
+schema:artform
+  schema:rangeIncludes schema:Text, schema:URL ;
+  rdfs:label "artform" ;
+  a rdf:Property ;
+  rdfs:comment "e.g. Painting, Drawing, Sculpture, Print, Photograph, Assemblage, Collage, etc." ;
+  schema:domainIncludes schema:VisualArtwork .
+
+schema:AmusementPark
+  a rdfs:Class ;
+  rdfs:subClassOf schema:EntertainmentBusiness ;
+  rdfs:comment "An amusement park." ;
+  rdfs:label "AmusementPark" .
+
+schema:additionalType
+  schema:rangeIncludes schema:URL ;
+  a rdf:Property ;
+  rdfs:subPropertyOf rdf:type ;
+  rdfs:comment "An additional type for the item, typically used for adding more specific types from external vocabularies in microdata syntax. This is a relationship between something and a class that the thing is in. In RDFa syntax, it is better to use the native RDFa syntax - the 'typeof' attribute - for multiple types. Schema.org tools may have only weaker understanding of extra types, in particular those defined externally." ;
+  schema:domainIncludes schema:Thing ;
+  rdfs:label "additionalType" .
+
+schema:LegalService
+  a rdfs:Class ;
+  rdfs:subClassOf schema:LocalBusiness ;
+  rdfs:label "LegalService" ;
+  rdfs:comment """A LegalService is a business that provides legally-oriented services, advice and representation, e.g. law firms.
+        <br><br>
+        As a <a href="/LocalBusiness">LocalBusiness</a> it can be
+        described as a <a href="/provider">provider</a> of one or more
+        <a href="/Service">Service(s)</a>.
+      """ .
+
+schema:maxPrice
+  a rdf:Property ;
+  rdfs:comment "The highest price if the price is a range." ;
+  schema:rangeIncludes schema:Number ;
+  schema:domainIncludes schema:PriceSpecification ;
+  rdfs:label "maxPrice" .
+
+schema:album
+  a rdf:Property ;
+  rdfs:label "album" ;
+  schema:domainIncludes schema:MusicGroup ;
+  schema:rangeIncludes schema:MusicAlbum ;
+  rdfs:comment "A music album." .
+
+schema:ChooseAction
+  a rdfs:Class ;
+  rdfs:subClassOf schema:AssessAction ;
+  rdfs:comment "The act of expressing a preference from a set of options or a large or unbounded set of choices/options." ;
+  rdfs:label "ChooseAction" .
+
+schema:MedicalAudience
+  rdfs:subClassOf schema:Enumeration, schema:MedicalEnumeration, schema:PeopleAudience, schema:Audience ;
+  a rdfs:Class ;
+  rdfs:comment "Target audiences for medical web pages. Enumerated type." ;
+  rdfs:label "MedicalAudience" ;
+  dc:source <http://www.w3.org/wiki/WebSchemas/SchemaDotOrgSources#source_WikiDoc> .
+
+schema:TrainReservation
+  rdfs:comment "A reservation for train travel.Note: This type is for information about actual reservations, e.g. in confirmation emails or HTML pages with individual confirmations of reservations. For offers of tickets, use http://schema.org/Offer." ;
+  rdfs:subClassOf schema:Reservation ;
+  a rdfs:Class ;
+  rdfs:label " TrainReservation" .
+
+schema:ActionStatusType
+  rdfs:label "ActionStatusType" ;
+  rdfs:comment "The status of an Action." ;
+  a rdfs:Class ;
+  rdfs:subClassOf schema:Enumeration .
+
+schema:AnaerobicActivity
+  rdfs:label "AnaerobicActivity" ;
+  rdfs:comment "Physical activity that is of high-intensity which utilizes the anaerobic metabolism of the body." ;
+  a schema:PhysicalActivityCategory .
+
+schema:pageStart
+  schema:domainIncludes schema:Article, schema:PublicationIssue, schema:PublicationVolume ;
+  schema:rangeIncludes schema:Text, schema:Integer ;
+  dc:source <http://www.w3.org/wiki/WebSchemas/SchemaDotOrgSources#source_bibex> ;
+  rdfs:comment "The page on which the work starts; for example \"135\" or \"xiii\"." ;
+  rdfs:label "pageStart" ;
+  owl:equivalentProperty bibo:pageStart ;
+  a rdf:Property .
+
+schema:childMinAge
+  schema:rangeIncludes schema:Number ;
+  schema:domainIncludes schema:ParentAudience ;
+  rdfs:comment "Minimal age of the child." ;
+  rdfs:label "childMinAge" ;
+  a rdf:Property .
+
+schema:encoding
+  schema:domainIncludes schema:CreativeWork ;
+  rdfs:label "encoding" ;
+  rdfs:comment "A media object that encodes this CreativeWork. This property is a synonym for associatedMedia." ;
+  a rdf:Property ;
+  schema:rangeIncludes schema:MediaObject .
+
+schema:fatContent
+  rdfs:label "fatContent" ;
+  rdfs:comment "The number of grams of fat." ;
+  schema:domainIncludes schema:NutritionInformation ;
+  a rdf:Property ;
+  schema:rangeIncludes schema:Mass .
+
+schema:Gynecologic
+  rdfs:label "Gynecologic" ;
+  rdfs:comment "A specific branch of medical science that pertains to the health care of women, particularly in the diagnosis and treatment of disorders affecting the female reproductive system." ;
+  a schema:MedicalSpecialty .
+
+schema:buyer
+  rdfs:comment "A sub property of participant. The participant/person/organization that bought the object." ;
+  schema:domainIncludes schema:SellAction ;
+  schema:rangeIncludes schema:Person ;
+  rdfs:label "buyer" ;
+  a rdf:Property ;
+  rdfs:subPropertyOf schema:participant .
+
+schema:BroadcastEvent
+  rdfs:subClassOf schema:PublicationEvent ;
+  a rdfs:Class ;
+  rdfs:comment "An over the air or online broadcast event." ;
+  rdfs:label "BroadcastEvent" .
+
+schema:Reservation
+  a rdfs:Class ;
+  rdfs:subClassOf schema:Intangible ;
+  rdfs:comment "Describes a reservation for travel, dining or an event. Some reservations require tickets.Note: This type is for information about actual reservations, e.g. in confirmation emails or HTML pages with individual confirmations of reservations. For offers of tickets, restaurant reservations, flights, or rental cars, use http://schema.org/Offer." ;
+  rdfs:label "Reservation" .
+
+schema:blogPosts
+  schema:domainIncludes schema:Blog ;
+  rdfs:label "blogPosts" ;
+  schema:rangeIncludes schema:BlogPosting ;
+  a rdf:Property ;
+  schema:supersededBy schema:blogPost ;
+  rdfs:comment "The postings that are part of this blog." .
+
+schema:usedToDiagnose
+  a rdf:Property ;
+  rdfs:comment "A condition the test is used to diagnose." ;
+  schema:rangeIncludes schema:MedicalCondition ;
+  schema:domainIncludes schema:MedicalTest ;
+  rdfs:label "usedToDiagnose" .
+
+schema:numberOfPlayers
+  schema:domainIncludes schema:VideoGameSeries, schema:Game ;
+  rdfs:label "numberOfPlayers" ;
+  schema:rangeIncludes schema:QuantitativeValue ;
+  rdfs:comment "Indicate how many people can play this game (minimum, maximum, or range)." ;
+  a rdf:Property .
+
+schema:bestRating
+  schema:rangeIncludes schema:Text, schema:Number ;
+  rdfs:label "bestRating" ;
+  schema:domainIncludes schema:Rating ;
+  a rdf:Property ;
+  rdfs:comment "The highest value allowed in this rating system. If bestRating is omitted, 5 is assumed." .
+
+schema:Time
+  rdfs:comment "A point in time recurring on multiple days in the form hh:mm:ss[Z|(+|-)hh:mm] (see <a href=\"http://www.w3.org/TR/xmlschema-2/#time\">XML schema for details</a>)." ;
+  a schema:DataType, rdfs:Class ;
+  rdfs:label "Time" .
+
+schema:UseAction
+  rdfs:label "UseAction" ;
+  rdfs:comment "The act of applying an object to its intended purpose." ;
+  a rdfs:Class ;
+  rdfs:subClassOf schema:ConsumeAction .
+
+schema:CT
+  rdfs:label "CT" ;
+  rdfs:comment "X-ray computed tomography imaging." ;
+  a schema:MedicalImagingTechnique .
+
+schema:parentService
+  schema:rangeIncludes schema:BroadcastService ;
+  rdfs:label "parentService" ;
+  schema:domainIncludes schema:BroadcastService ;
+  rdfs:comment "A broadcast service to which the broadcast service may belong to such as regional variations of a national channel." ;
+  a rdf:Property .
+
+schema:SoldOut
+  rdfs:label "SoldOut" ;
+  rdfs:comment "Indicates that the item has sold out." ;
+  a schema:ItemAvailability .
+
+schema:encodings
+  rdfs:comment "A media object that encodes this CreativeWork." ;
+  schema:rangeIncludes schema:MediaObject ;
+  rdfs:label "encodings" ;
+  schema:supersededBy schema:encoding ;
+  a rdf:Property ;
+  schema:domainIncludes schema:CreativeWork .
+
+schema:DJMixAlbum
+  rdfs:label "DJMixAlbum" ;
+  rdfs:comment "DJMixAlbum." ;
+  dc:source <http://www.w3.org/wiki/WebSchemas/SchemaDotOrgSources#MBZ> ;
+  a schema:MusicAlbumProductionType .
+
+schema:programmingLanguage
+  rdfs:label "programmingLanguage" ;
+  a rdf:Property ;
+  schema:rangeIncludes schema:Language ;
+  schema:domainIncludes schema:SoftwareSourceCode ;
+  rdfs:comment "The computer programming language." .
+
+schema:fuelEfficiency
+  schema:domainIncludes schema:Vehicle ;
+  schema:rangeIncludes schema:QuantitativeValue ;
+  rdfs:comment """The distance traveled per unit of fuel used; most commonly miles per gallon (mpg) or kilometers per liter (km/L).<br />
+Note 1: There are unfortunately no standard unit codes for miles per gallon or kilometers per liter.<br />
+Use <a href="unitText">unitText</a> to indicate the unit of measurement, e.g. mpg or km/L.
+Note 2: There are two ways of indicating the fuel consumption, <a href="fuelConsumption">fuelConsumption</a> (e.g. 8 liters per 100 km) and <a href="fuelEfficiency">fuelEfficiency</a> (e.g. 30 miles per gallon). They are reciprocal.<br />
+Note 3: Often, the absolute value is useful only when related to driving speed ("at 80 km/h") or usage pattern ("city traffic"). You can use <a href="valueReference">valueReference</a> to link the value for the fuel economy to another value.""" ;
+  rdfs:label "fuelEfficiency" ;
+  dc:source <http://www.w3.org/wiki/WebSchemas/SchemaDotOrgSources#Automotive_Ontology_Working_Group> ;
+  a rdf:Property .
+
+schema:prepTime
+  rdfs:comment "The length of time it takes to prepare the recipe, in <a href='http://en.wikipedia.org/wiki/ISO_8601'>ISO 8601 duration format</a>." ;
+  schema:domainIncludes schema:Recipe ;
+  a rdf:Property ;
+  rdfs:label "prepTime" ;
+  schema:rangeIncludes schema:Duration .
+
+schema:artEdition
+  rdfs:comment "The number of copies when multiple copies of a piece of artwork are produced - e.g. for a limited edition of 20 prints, 'artEdition' refers to the total number of copies (in this example \"20\")." ;
+  schema:domainIncludes schema:VisualArtwork ;
+  a rdf:Property ;
+  schema:rangeIncludes schema:Text, schema:Integer ;
+  rdfs:label "artEdition" .
+
+schema:AllocateAction
+  a rdfs:Class ;
+  rdfs:label "AllocateAction" ;
+  rdfs:comment "The act of organizing tasks/objects/events by associating resources to it." ;
+  rdfs:subClassOf schema:OrganizeAction .
+
+schema:CheckoutPage
+  rdfs:subClassOf schema:WebPage ;
+  a rdfs:Class ;
+  rdfs:label "CheckoutPage" ;
+  rdfs:comment "Web page type: Checkout page." .
+
+schema:SportsOrganization
+  rdfs:label "SportsOrganization" ;
+  a rdfs:Class ;
+  rdfs:subClassOf schema:Organization ;
+  rdfs:comment "Represents the collection of all sports organizations, including sports teams, governing bodies, and sports associations." .
+
+schema:GeoCoordinates
+  rdfs:label "GeoCoordinates" ;
+  a rdfs:Class ;
+  rdfs:subClassOf schema:StructuredValue ;
+  rdfs:comment "The geographic coordinates of a place or event." .
+
+schema:firstPerformance
+  rdfs:comment "The date and place the work was first performed." ;
+  schema:rangeIncludes schema:Event ;
+  rdfs:label "firstPerformance" ;
+  a rdf:Property ;
+  dc:source <http://www.w3.org/wiki/WebSchemas/SchemaDotOrgSources#MBZ> ;
+  schema:domainIncludes schema:MusicComposition .
+
+schema:Pharmacy
+  rdfs:label "Pharmacy" ;
+  a rdfs:Class ;
+  rdfs:comment "A pharmacy or drugstore." ;
+  rdfs:subClassOf schema:MedicalOrganization .
+
+schema:application
+  rdfs:label "application" ;
+  schema:domainIncludes schema:EntryPoint ;
+  a rdf:Property ;
+  schema:supersededBy schema:actionApplication ;
+  schema:rangeIncludes schema:SoftwareApplication ;
+  rdfs:comment "An application that can complete the request." .
+
+schema:deliveryAddress
+  schema:rangeIncludes schema:PostalAddress ;
+  rdfs:label "deliveryAddress" ;
+  schema:domainIncludes schema:ParcelDelivery ;
+  a rdf:Property ;
+  rdfs:comment "Destination address." .
+
+schema:runtime
+  a rdf:Property ;
+  rdfs:label "runtime" ;
+  schema:supersededBy schema:runtimePlatform ;
+  schema:domainIncludes schema:SoftwareSourceCode ;
+  schema:rangeIncludes schema:Text ;
+  rdfs:comment "Runtime platform or script interpreter dependencies (Example - Java v1, Python2.3, .Net Framework 3.0)." .
+
+schema:box
+  schema:rangeIncludes schema:Text ;
+  schema:domainIncludes schema:GeoShape ;
+  rdfs:label "box" ;
+  rdfs:comment "A box is the area enclosed by the rectangle formed by two points. The first point is the lower corner, the second point is the upper corner. A box is expressed as two points separated by a space character." ;
+  a rdf:Property .
+
+schema:BedAndBreakfast
+  rdfs:subClassOf schema:LodgingBusiness ;
+  a rdfs:Class ;
+  rdfs:comment "Bed and breakfast." ;
+  rdfs:label "BedAndBreakfast" .
+
+schema:DayOfWeek
+  a rdfs:Class ;
+  rdfs:comment """The day of the week, e.g. used to specify to which day the opening hours of an OpeningHoursSpecification refer.
+<br />
+    Commonly used values:<br />
+<br />
+    http://purl.org/goodrelations/v1#Monday <br />
+    http://purl.org/goodrelations/v1#Tuesday <br />
+    http://purl.org/goodrelations/v1#Wednesday <br />
+    http://purl.org/goodrelations/v1#Thursday <br />
+    http://purl.org/goodrelations/v1#Friday <br />
+    http://purl.org/goodrelations/v1#Saturday <br />
+    http://purl.org/goodrelations/v1#Sunday <br />
+    http://purl.org/goodrelations/v1#PublicHolidays <br />
+        """ ;
+  dc:source <http://www.w3.org/wiki/WebSchemas/SchemaDotOrgSources#source_GoodRelationsClass> ;
+  rdfs:subClassOf schema:Enumeration ;
+  rdfs:label "DayOfWeek" .
+
+schema:SingleFamilyResidence
+  rdfs:label "SingleFamilyResidence" ;
+  rdfs:subClassOf schema:Residence ;
+  rdfs:comment "Residence type: Single-family home." ;
+  a rdfs:Class .
+
+schema:owns
+  schema:rangeIncludes schema:OwnershipInfo, schema:Product ;
+  schema:domainIncludes schema:Person, schema:Organization ;
+  rdfs:label "owns" ;
+  a rdf:Property ;
+  rdfs:comment "Products owned by the organization or person." .
+
+schema:Hotel
+  rdfs:comment "A hotel." ;
+  rdfs:subClassOf schema:LodgingBusiness ;
+  rdfs:label "Hotel" ;
+  a rdfs:Class .
+
+schema:email
+  schema:domainIncludes schema:Organization, schema:Person, schema:ContactPoint ;
+  rdfs:comment "Email address." ;
+  schema:rangeIncludes schema:Text ;
+  rdfs:label "email" ;
+  a rdf:Property .
+
+schema:ReservationPending
+  rdfs:comment "The status of a reservation when a request has been sent, but not confirmed." ;
+  a schema:ReservationStatusType ;
+  rdfs:label "ReservationPending" .
+
+schema:MedicalEvidenceLevel
+  rdfs:subClassOf schema:Enumeration, schema:MedicalEnumeration ;
+  rdfs:label "MedicalEvidenceLevel" ;
+  a rdfs:Class ;
+  rdfs:comment "Level of evidence for a medical guideline. Enumerated type." ;
+  dc:source <http://www.w3.org/wiki/WebSchemas/SchemaDotOrgSources#source_WikiDoc> .
+
+schema:ReservationCancelled
+  rdfs:comment "The status for a previously confirmed reservation that is now cancelled." ;
+  rdfs:label "ReservationCancelled" ;
+  a schema:ReservationStatusType .
+
+schema:dateline
+  schema:rangeIncludes schema:Text ;
+  rdfs:comment "The location where the NewsArticle was produced." ;
+  schema:domainIncludes schema:NewsArticle ;
+  rdfs:label "dateline" ;
+  a rdf:Property .
+
+schema:vehicleEngine
+  a rdf:Property ;
+  dc:source <http://www.w3.org/wiki/WebSchemas/SchemaDotOrgSources#Automotive_Ontology_Working_Group> ;
+  rdfs:comment "Information about the engine or engines of the vehicle." ;
+  schema:rangeIncludes schema:EngineSpecification ;
+  schema:domainIncludes schema:Vehicle ;
+  rdfs:label "vehicleEngine" .
+
+schema:Action
+  dc:source <http://www.w3.org/wiki/WebSchemas/SchemaDotOrgSources#source_ActionCollabClass> ;
+  a rdfs:Class ;
+  rdfs:subClassOf schema:Thing ;
+  rdfs:label "Action" ;
+  rdfs:comment """An action performed by a direct agent and indirect participants upon a direct object. Optionally happens at a location with the help of an inanimate instrument. The execution of the action may produce a result. Specific action sub-type documentation specifies the exact expectation of each argument/role.
+      <br/><br/>See also <a href="http://blog.schema.org/2014/04/announcing-schemaorg-actions.html">blog post</a>
+      and <a href="http://schema.org/docs/actions.html">Actions overview document</a>.""" .
+
+schema:partOfTVSeries
+  a rdf:Property ;
+  rdfs:comment "The TV series to which this episode or season belongs." ;
+  schema:rangeIncludes schema:TVSeries ;
+  schema:domainIncludes schema:TVEpisode, schema:TVClip, schema:TVSeason ;
+  rdfs:subPropertyOf schema:isPartOf ;
+  schema:supersededBy schema:partOfSeries ;
+  rdfs:label "partOfTVSeries" .
+
+schema:Patient
+  a schema:MedicalAudience ;
+  rdfs:label "Patient" ;
+  rdfs:comment "Patients." .
+
+schema:unitCode
+  rdfs:comment "The unit of measurement given using the UN/CEFACT Common Code (3 characters) or a URL. Other codes than the UN/CEFACT Common Code may be used with a prefix followed by a colon." ;
+  a rdf:Property ;
+  rdfs:label "unitCode" ;
+  schema:rangeIncludes schema:URL, schema:Text ;
+  schema:domainIncludes schema:TypeAndQuantityNode, schema:QuantitativeValue, schema:PropertyValue, schema:UnitPriceSpecification .
+
+schema:MusicAlbumReleaseType
+  rdfs:comment "The kind of release which this album is: single, EP or album." ;
+  rdfs:label "MusicAlbumReleaseType" ;
+  rdfs:subClassOf schema:Enumeration ;
+  dc:source <http://www.w3.org/wiki/WebSchemas/SchemaDotOrgSources#MBZ> ;
+  a rdfs:Class .
+
+schema:DemoAlbum
+  rdfs:comment "DemoAlbum." ;
+  dc:source <http://www.w3.org/wiki/WebSchemas/SchemaDotOrgSources#MBZ> ;
+  rdfs:label "DemoAlbum" ;
+  a schema:MusicAlbumProductionType .
+
+schema:TakeAction
+  a rdfs:Class ;
+  rdfs:subClassOf schema:TransferAction ;
+  rdfs:comment "The act of gaining ownership of an object from an origin. Reciprocal of GiveAction.<p>Related actions:</p><ul><li><a href=\"http://schema.org/GiveAction\">GiveAction</a>: The reciprocal of TakeAction.</li><li><a href=\"http://schema.org/ReceiveAction\">ReceiveAction</a>: Unlike ReceiveAction, TakeAction implies that ownership has been transfered</li></ul>." ;
+  rdfs:label "TakeAction" .
+
+schema:TransitMap
+  rdfs:comment "A transit map." ;
+  rdfs:label "TransitMap" ;
+  a schema:MapCategoryType .
+
+schema:PlanAction
+  a rdfs:Class ;
+  rdfs:subClassOf schema:OrganizeAction ;
+  rdfs:comment "The act of planning the execution of an event/task/action/reservation/plan to a future date." ;
+  rdfs:label "PlanAction" .
+
+schema:Crematorium
+  a rdfs:Class ;
+  rdfs:subClassOf schema:CivicStructure ;
+  rdfs:label "Crematorium" ;
+  rdfs:comment "A crematorium." .
+
+schema:checkoutTime
+  rdfs:comment "The latest someone may check out of a lodging establishment." ;
+  schema:rangeIncludes schema:DateTime ;
+  schema:domainIncludes schema:LodgingReservation ;
+  a rdf:Property ;
+  rdfs:label "checkoutTime" .
+
+schema:AnimalShelter
+  rdfs:subClassOf schema:LocalBusiness ;
+  rdfs:label "AnimalShelter" ;
+  a rdfs:Class ;
+  rdfs:comment "Animal shelter." .
+
+schema:EducationalAudience
+  rdfs:subClassOf schema:Audience ;
+  a rdfs:Class ;
+  dc:source <http://www.w3.org/wiki/WebSchemas/SchemaDotOrgSources#source_LRMIClass> ;
+  rdfs:label "EducationalAudience" ;
+  rdfs:comment "An EducationalAudience." .
+
+schema:LendAction
+  rdfs:subClassOf schema:TransferAction ;
+  rdfs:comment "The act of providing an object under an agreement that it will be returned at a later date. Reciprocal of BorrowAction.<p>Related actions:</p><ul><li><a href=\"http://schema.org/BorrowAction\">BorrowAction</a>: Reciprocal of LendAction</li></ul>." ;
+  rdfs:label "LendAction" ;
+  a rdfs:Class .
+
+schema:MedicalObservationalStudy
+  rdfs:label "MedicalObservationalStudy" ;
+  dc:source <http://www.w3.org/wiki/WebSchemas/SchemaDotOrgSources#source_WikiDoc> ;
+  rdfs:subClassOf schema:MedicalStudy ;
+  rdfs:comment "An observational study is a type of medical study that attempts to infer the possible effect of a treatment through observation of a cohort of subjects over a period of time. In an observational study, the assignment of subjects into treatment groups versus control groups is outside the control of the investigator. This is in contrast with controlled studies, such as the randomized controlled trials represented by MedicalTrial, where each subject is randomly assigned to a treatment group or a control group before the start of the treatment." ;
+  a rdfs:Class .
+
+schema:AutoPartsStore
+  rdfs:subClassOf schema:Store, schema:AutomotiveBusiness ;
+  rdfs:label "AutoPartsStore" ;
+  rdfs:comment "An auto parts store." ;
+  a rdfs:Class .
+
+schema:AutomatedTeller
+  rdfs:label "AutomatedTeller" ;
+  rdfs:comment "ATM/cash machine." ;
+  a rdfs:Class ;
+  rdfs:subClassOf schema:FinancialService .
+
+schema:associatedMedia
+  schema:rangeIncludes schema:MediaObject ;
+  rdfs:label "associatedMedia" ;
+  a rdf:Property ;
+  rdfs:comment "A media object that encodes this CreativeWork. This property is a synonym for encoding." ;
+  schema:domainIncludes schema:CreativeWork .
+
+schema:timeRequired
+  rdfs:label "timeRequired" ;
+  schema:rangeIncludes schema:Duration ;
+  a rdf:Property ;
+  rdfs:comment "Approximate or typical time it takes to work with or through this learning resource for the typical intended target audience, e.g. 'P30M', 'P1H25M'." ;
+  schema:domainIncludes schema:CreativeWork .
+
+schema:Report
+  a rdfs:Class ;
+  rdfs:label "Report" ;
+  rdfs:comment "A Report generated by governmental or non-governmental organization." ;
+  rdfs:subClassOf schema:Article .
+
+schema:GardenStore
+  a rdfs:Class ;
+  rdfs:subClassOf schema:Store ;
+  rdfs:comment "A garden store." ;
+  rdfs:label "GardenStore" .
+
+schema:lodgingUnitDescription
+  rdfs:comment "A full description of the lodging unit." ;
+  schema:domainIncludes schema:LodgingReservation ;
+  a rdf:Property ;
+  rdfs:label "lodgingUnitDescription" ;
+  schema:rangeIncludes schema:Text .
+
+schema:broadcastServiceTier
+  rdfs:label "broadcastServiceTier" ;
+  rdfs:comment "The type of service required to have access to the channel (e.g. Standard or Premium)." ;
+  schema:rangeIncludes schema:Text ;
+  schema:domainIncludes schema:BroadcastChannel ;
+  a rdf:Property .
+
+schema:Person
+  rdfs:label "Person" ;
+  a rdfs:Class ;
+  rdfs:subClassOf schema:Thing ;
+  rdfs:comment "A person (alive, dead, undead, or fictional)." ;
+  owl:equivalentClass foaf:Person ;
+  dc:source <http://www.w3.org/wiki/WebSchemas/SchemaDotOrgSources#source_rNews> .
+
+schema:proprietaryName
+  rdfs:comment "Proprietary name given to the diet plan, typically by its originator or creator." ;
+  a rdf:Property ;
+  rdfs:label "proprietaryName" ;
+  schema:rangeIncludes schema:Text ;
+  schema:domainIncludes schema:Diet .
+
+schema:DataCatalog
+  rdfs:subClassOf schema:CreativeWork ;
+  rdfs:label "DataCatalog" ;
+  rdfs:comment "A collection of datasets." ;
+  dc:source <http://www.w3.org/wiki/WebSchemas/SchemaDotOrgSources#source_DatasetClass> ;
+  a rdfs:Class ;
+  owl:equivalentClass dcat:Catalog .
+
+schema:True
+  rdfs:comment "The boolean value true." ;
+  a schema:Boolean ;
+  rdfs:label "True" .
+
+schema:EventScheduled
+  rdfs:label "EventScheduled" ;
+  rdfs:comment "The event is taking place or has taken place on the startDate as scheduled. Use of this value is optional, as it is assumed by default." ;
+  a schema:EventStatusType .
+
+schema:Locksmith
+  rdfs:label "Locksmith" ;
+  rdfs:comment "A locksmith." ;
+  rdfs:subClassOf schema:HomeAndConstructionBusiness ;
+  a rdfs:Class .
+
+schema:Vein
+  rdfs:label "Vein" ;
+  dc:source <http://www.w3.org/wiki/WebSchemas/SchemaDotOrgSources#source_WikiDoc> ;
+  rdfs:subClassOf schema:Vessel ;
+  a rdfs:Class ;
+  rdfs:comment "A type of blood vessel that specifically carries blood to the heart." .
+
+schema:Online
+  a schema:GameServerStatus ;
+  rdfs:comment "Game server status: Online. Server is available." ;
+  rdfs:label "Online" .
+
+schema:SendAction
+  rdfs:comment "The act of physically/electronically dispatching an object for transfer from an origin to a destination.<p>Related actions:</p><ul><li><a href=\"http://schema.org/ReceiveAction\">ReceiveAction</a>: The reciprocal of SendAction.</li><li><a href=\"http://schema.org/GiveAction\">GiveAction</a>: Unlike GiveAction, SendAction does not imply the transfer of ownership (e.g. I can send you my laptop, but I'm not necessarily giving it to you)</li></ul>." ;
+  a rdfs:Class ;
+  rdfs:label "SendAction" ;
+  rdfs:subClassOf schema:TransferAction .
+
+schema:paymentDueDate
+  rdfs:label "paymentDueDate" ;
+  schema:domainIncludes schema:Order, schema:Invoice ;
+  schema:rangeIncludes schema:DateTime ;
+  rdfs:comment "The date that payment is due." ;
+  a rdf:Property .
+
+schema:HearingImpairedSupported
+  a schema:ContactPointOption ;
+  rdfs:comment "Uses devices to support users with hearing impairments." ;
+  rdfs:label "HearingImpairedSupported" .
+
+schema:color
+  rdfs:label "color" ;
+  rdfs:comment "The color of the product." ;
+  schema:rangeIncludes schema:Text ;
+  schema:domainIncludes schema:Product ;
+  a rdf:Property .
+
+schema:actor
+  schema:domainIncludes schema:TVSeries, schema:Clip, schema:VideoGame, schema:Episode, schema:CreativeWorkSeason, schema:MovieSeries, schema:RadioSeries, schema:Movie, schema:VideoObject, schema:VideoGameSeries ;
+  rdfs:comment "An actor, e.g. in tv, radio, movie, video games etc. Actors can be associated with individual items or with a series, episode, clip." ;
+  rdfs:label "actor" ;
+  schema:rangeIncludes schema:Person ;
+  a rdf:Property .
+
+schema:Podiatric
+  rdfs:comment "Podiatry." ;
+  a schema:MedicalSpecialty ;
+  rdfs:label "Podiatric" .
+
+schema:overview
+  rdfs:comment "Descriptive information establishing the overarching theory/philosophy of the plan. May include the rationale for the name, the population where the plan first came to prominence, etc." ;
+  rdfs:label "overview" ;
+  schema:rangeIncludes schema:Text ;
+  a rdf:Property ;
+  schema:domainIncludes schema:Diet .
+
+schema:MixtapeAlbum
+  rdfs:comment "MixtapeAlbum." ;
+  dc:source <http://www.w3.org/wiki/WebSchemas/SchemaDotOrgSources#MBZ> ;
+  a schema:MusicAlbumProductionType ;
+  rdfs:label "MixtapeAlbum" .
+
+schema:learningResourceType
+  rdfs:label "learningResourceType" ;
+  schema:rangeIncludes schema:Text ;
+  a rdf:Property ;
+  schema:domainIncludes schema:CreativeWork ;
+  rdfs:comment "The predominant type or kind characterizing the learning resource. For example, 'presentation', 'handout'." .
+
+schema:albums
+  schema:domainIncludes schema:MusicGroup ;
+  rdfs:label "albums" ;
+  a rdf:Property ;
+  schema:supersededBy schema:album ;
+  rdfs:comment "A collection of music albums." ;
+  schema:rangeIncludes schema:MusicAlbum .
+
+schema:UserLikes
+  rdfs:comment """UserInteraction and its subtypes is an old way of talking about users interacting with pages. It is generally better to use
+          <a href="/Action">Action</a>-based vocabulary, alongside types such as <a href="/Comment">Comment</a>.
+      """ ;
+  rdfs:label "UserLikes" ;
+  a rdfs:Class ;
+  schema:supersededBy schema:InteractionCounter ;
+  rdfs:subClassOf schema:UserInteraction .
+
+schema:UpdateAction
+  rdfs:subClassOf schema:Action ;
+  rdfs:comment "The act of managing by changing/editing the state of the object." ;
+  a rdfs:Class ;
+  rdfs:label "UpdateAction" .
+
+schema:guidelineDate
+  rdfs:comment "Date on which this guideline's recommendation was made." ;
+  a rdf:Property ;
+  rdfs:label "guidelineDate" ;
+  schema:domainIncludes schema:MedicalGuideline ;
+  schema:rangeIncludes schema:Date .
+
+schema:ResultsAvailable
+  a schema:MedicalStudyStatus ;
+  rdfs:comment "Results are available." ;
+  rdfs:label "ResultsAvailable" .
+
+schema:map
+  rdfs:label "map" ;
+  schema:domainIncludes schema:Place ;
+  schema:rangeIncludes schema:URL ;
+  schema:supersededBy schema:hasMap ;
+  rdfs:comment "A URL to a map of the place." ;
+  a rdf:Property .
+
+schema:DiscussionForumPosting
+  rdfs:label "DiscussionForumPosting" ;
+  rdfs:subClassOf schema:SocialMediaPosting ;
+  rdfs:comment "A posting to a discussion forum." ;
+  a rdfs:Class .
+
+schema:ratingValue
+  rdfs:comment "The rating for the content." ;
+  schema:rangeIncludes schema:Text ;
+  schema:domainIncludes schema:Rating ;
+  a rdf:Property ;
+  rdfs:label "ratingValue" .
+
+schema:OfflineTemporarily
+  rdfs:label "OfflineTemporarily " ;
+  a schema:GameServerStatus ;
+  rdfs:comment "Game server status: OfflineTemporarily. Server is offline now but it can be online soon." .
+
+schema:BusinessEvent
+  rdfs:label "BusinessEvent" ;
+  a rdfs:Class ;
+  rdfs:comment "Event type: Business event." ;
+  rdfs:subClassOf schema:Event .
+
+schema:underName
+  rdfs:comment "The person or organization the reservation or ticket is for." ;
+  schema:domainIncludes schema:Reservation, schema:Ticket ;
+  schema:rangeIncludes schema:Person, schema:Organization ;
+  rdfs:label "underName" ;
+  a rdf:Property .
+
+schema:RoofingContractor
+  rdfs:comment "A roofing contractor." ;
+  a rdfs:Class ;
+  rdfs:label "RoofingContractor" ;
+  rdfs:subClassOf schema:HomeAndConstructionBusiness .
+
+schema:performers
+  rdfs:comment "The main performer or performers of the event&#x2014;for example, a presenter, musician, or actor." ;
+  schema:supersededBy schema:performer ;
+  a rdf:Property ;
+  schema:domainIncludes schema:Event ;
+  schema:rangeIncludes schema:Organization, schema:Person ;
+  rdfs:label "performers" .
+
+schema:recordingOf
+  schema:rangeIncludes schema:MusicComposition ;
+  schema:inverseOf schema:recordedAs ;
+  a rdf:Property ;
+  rdfs:comment "The composition this track is a recording of." ;
+  rdfs:label "recordingOf" ;
+  dc:source <http://www.w3.org/wiki/WebSchemas/SchemaDotOrgSources#MBZ> ;
+  schema:domainIncludes schema:MusicRecording .
+
+schema:availableOnDevice
+  schema:rangeIncludes schema:Text ;
+  rdfs:comment "Device required to run the application. Used in cases where a specific make/model is required to run the application." ;
+  schema:domainIncludes schema:SoftwareApplication ;
+  a rdf:Property ;
+  rdfs:label "availableOnDevice" .
+
+schema:iataCode
+  schema:rangeIncludes schema:Text ;
+  rdfs:label "iataCode" ;
+  schema:domainIncludes schema:Airline, schema:Airport ;
+  rdfs:comment "IATA identifier for an airline or airport." ;
+  a rdf:Property .
+
+schema:DataFeedItem
+  rdfs:comment "A single item within a larger data feed." ;
+  rdfs:subClassOf schema:Intangible ;
+  rdfs:label "DataFeedItem" ;
+  a rdfs:Class .
+
+schema:availability
+  schema:domainIncludes schema:Offer, schema:Demand ;
+  rdfs:comment "The availability of this item&#x2014;for example In stock, Out of stock, Pre-order, etc." ;
+  a rdf:Property ;
+  rdfs:label "availability" ;
+  schema:rangeIncludes schema:ItemAvailability .
+
+schema:mpn
+  schema:rangeIncludes schema:Text ;
+  rdfs:label "mpn" ;
+  rdfs:comment "The Manufacturer Part Number (MPN) of the product, or the product to which the offer refers." ;
+  a rdf:Property ;
+  schema:domainIncludes schema:Product, schema:Offer, schema:Demand .
+
+schema:Waterfall
+  rdfs:label "Waterfall" ;
+  rdfs:subClassOf schema:BodyOfWater ;
+  rdfs:comment "A waterfall, like Niagara." ;
+  a rdfs:Class .
+
+schema:RefurbishedCondition
+  a schema:OfferItemCondition ;
+  rdfs:comment "Indicates that the item is refurbished." ;
+  rdfs:label "RefurbishedCondition" .
+
+schema:GatedResidenceCommunity
+  rdfs:subClassOf schema:Residence ;
+  rdfs:comment "Residence type: Gated community." ;
+  rdfs:label "GatedResidenceCommunity" ;
+  a rdfs:Class .
+
+schema:SoftwareSourceCode
+  rdfs:label "SoftwareSourceCode" ;
+  a rdfs:Class ;
+  rdfs:comment "Computer programming source code. Example: Full (compile ready) solutions, code snippet samples, scripts, templates." ;
+  rdfs:subClassOf schema:CreativeWork .
+
+schema:LoseAction
+  rdfs:label "LoseAction" ;
+  rdfs:subClassOf schema:AchieveAction ;
+  a rdfs:Class ;
+  rdfs:comment "The act of being defeated in a competitive activity." .
+
+schema:award
+  a rdf:Property ;
+  schema:domainIncludes schema:CreativeWork, schema:Person, schema:Organization, schema:Product, schema:Service ;
+  schema:rangeIncludes schema:Text ;
+  rdfs:comment "An award won by or for this item." ;
+  rdfs:label "award" .
+
+schema:orderItemStatus
+  schema:domainIncludes schema:OrderItem ;
+  schema:rangeIncludes schema:OrderStatus ;
+  a rdf:Property ;
+  rdfs:label "orderItemStatus" ;
+  rdfs:comment "The current status of the order item." .
+
+schema:arrivalBusStop
+  schema:rangeIncludes schema:BusStation, schema:BusStop ;
+  rdfs:label "arrivalBusStop" ;
+  rdfs:comment "The stop or station from which the bus arrives." ;
+  a rdf:Property ;
+  schema:domainIncludes schema:BusTrip .
+
+schema:vehicleModelDate
+  schema:domainIncludes schema:Vehicle ;
+  rdfs:label "vehicleModelDate" ;
+  dc:source <http://www.w3.org/wiki/WebSchemas/SchemaDotOrgSources#Automotive_Ontology_Working_Group> ;
+  schema:rangeIncludes schema:Date ;
+  rdfs:comment "The release date of a vehicle model (often used to differentiate versions of the same make and model)." ;
+  a rdf:Property .
+
+schema:actionStatus
+  rdfs:comment "Indicates the current disposition of the Action." ;
+  a rdf:Property ;
+  schema:domainIncludes schema:Action ;
+  schema:rangeIncludes schema:ActionStatusType ;
+  rdfs:label "actionStatus" .
+
+schema:FoodEstablishment
+  rdfs:subClassOf schema:LocalBusiness ;
+  a rdfs:Class ;
+  rdfs:label "FoodEstablishment" ;
+  rdfs:comment "A food-related business." .
+
+schema:VoteAction
+  a rdfs:Class ;
+  rdfs:subClassOf schema:ChooseAction ;
+  rdfs:label "VoteAction" ;
+  rdfs:comment "The act of expressing a preference from a fixed/finite/structured set of choices/options." .
+
+schema:relatedStructure
+  a rdf:Property ;
+  rdfs:label "relatedStructure" ;
+  schema:rangeIncludes schema:AnatomicalStructure ;
+  rdfs:comment "Related anatomical structure(s) that are not part of the system but relate or connect to it, such as vascular bundles associated with an organ system." ;
+  schema:domainIncludes schema:AnatomicalSystem .
+
+schema:carrierRequirements
+  schema:domainIncludes schema:MobileApplication ;
+  rdfs:label "carrierRequirements" ;
+  rdfs:comment "Specifies specific carrier(s) requirements for the application (e.g. an application may only work on a specific carrier network)." ;
+  a rdf:Property ;
+  schema:rangeIncludes schema:Text .
+
+schema:busName
+  schema:domainIncludes schema:BusTrip ;
+  a rdf:Property ;
+  rdfs:label "busName" ;
+  rdfs:comment "The name of the bus (e.g. Bolt Express)." ;
+  schema:rangeIncludes schema:Text .
+
+schema:OrderAction
+  rdfs:label "OrderAction" ;
+  a rdfs:Class ;
+  rdfs:subClassOf schema:TradeAction ;
+  rdfs:comment "An agent orders an object/product/service to be delivered/sent." .
+
+schema:locationCreated
+  rdfs:comment "The location where the CreativeWork was created, which may not be the same as the location depicted in the CreativeWork." ;
+  a rdf:Property ;
+  schema:domainIncludes schema:CreativeWork ;
+  schema:rangeIncludes schema:Place ;
+  rdfs:label "locationCreated" .
+
+schema:RsvpResponseYes
+  rdfs:label "RsvpResponseYes" ;
+  rdfs:comment "The invitee will attend." ;
+  a schema:RsvpResponseType .
+
+schema:boardingGroup
+  rdfs:comment "The airline-specific indicator of boarding order / preference." ;
+  a rdf:Property ;
+  schema:domainIncludes schema:FlightReservation ;
+  rdfs:label "boardingGroup" ;
+  schema:rangeIncludes schema:Text .
+
+schema:RespiratoryTherapy
+  rdfs:label "RespiratoryTherapy" ;
+  a schema:MedicalSpecialty ;
+  rdfs:comment "Respiratory therapy." .
+
+schema:Optician
+  rdfs:subClassOf schema:MedicalOrganization ;
+  rdfs:comment "A store that sells reading glasses and similar devices for improving vision." ;
+  a rdfs:Class ;
+  rdfs:label "Optician" .
+
+schema:MusicPlaylist
+  rdfs:label "MusicPlaylist" ;
+  rdfs:comment "A collection of music tracks in playlist form." ;
+  a rdfs:Class ;
+  rdfs:subClassOf schema:CreativeWork .
+
+<http://www.w3.org/wiki/WebSchemas/SchemaDotOrgSources#source_DatasetClass>
+  rdfs:label "DatasetClass" ;
+  a schema:Organization ;
+  rdfs:comment "This class is based upon W3C DCAT work, and benefits from collaboration around the DCAT, ADMS and VoID vocabularies. See http://www.w3.org/wiki/WebSchemas/Datasets for full details and mappings." .
+
+schema:Recipe
+  rdfs:subClassOf schema:CreativeWork ;
+  a rdfs:Class ;
+  rdfs:label "Recipe" ;
+  rdfs:comment "A recipe." .
+
+schema:Hematologic
+  a schema:MedicalSpecialty ;
+  rdfs:label "Hematologic" ;
+  rdfs:comment "A specific branch of medical science that pertains to diagnosis and treatment of disorders of blood and blood producing organs." .
+
+schema:clincalPharmacology
+  rdfs:label "clinicalPharmacology" ;
+  rdfs:comment "Description of the absorption and elimination of drugs, including their concentration (pharmacokinetics, pK) and biological effects (pharmacodynamics, pD)." ;
+  a rdf:Property ;
+  schema:rangeIncludes schema:Text ;
+  schema:domainIncludes schema:Drug ;
+  schema:supersededBy schema:clinicalPharmacology .
+
+schema:evidenceOrigin
+  schema:rangeIncludes schema:Text ;
+  schema:domainIncludes schema:MedicalGuideline ;
+  rdfs:label "evidenceOrigin" ;
+  rdfs:comment "Source of the data used to formulate the guidance, e.g. RCT, consensus opinion, etc." ;
+  a rdf:Property .
+
+schema:DoubleBlindedTrial
+  a schema:MedicalTrialDesign ;
+  rdfs:label "DoubleBlindedTrial" ;
+  rdfs:comment "A trial design in which neither the researcher nor the patient knows the details of the treatment the patient was randomly assigned to." .
+
+schema:breadcrumb
+  rdfs:comment "A set of links that can help a user understand and navigate a website hierarchy." ;
+  schema:domainIncludes schema:WebPage ;
+  rdfs:label "breadcrumb" ;
+  schema:rangeIncludes schema:Text, schema:BreadcrumbList ;
+  a rdf:Property .
+
+schema:Pond
+  rdfs:subClassOf schema:BodyOfWater ;
+  rdfs:label "Pond" ;
+  rdfs:comment "A pond." ;
+  a rdfs:Class .
+
+schema:Wholesale
+  rdfs:comment "The drug's cost represents the wholesale acquisition cost of the drug." ;
+  rdfs:label "Wholesale" ;
+  a schema:DrugCostCategory .
+
+schema:calories
+  rdfs:comment "The number of calories." ;
+  rdfs:label "calories" ;
+  schema:rangeIncludes schema:Energy ;
+  a rdf:Property ;
+  schema:domainIncludes schema:NutritionInformation .
+
+schema:resultComment
+  rdfs:label "resultComment" ;
+  rdfs:comment "A sub property of result. The Comment created or sent as a result of this action." ;
+  schema:domainIncludes schema:ReplyAction, schema:CommentAction ;
+  schema:rangeIncludes schema:Comment ;
+  a rdf:Property ;
+  rdfs:subPropertyOf schema:result .
+
+schema:minPrice
+  rdfs:comment "The lowest price if the price is a range." ;
+  rdfs:label "minPrice" ;
+  schema:domainIncludes schema:PriceSpecification ;
+  schema:rangeIncludes schema:Number ;
+  a rdf:Property .
+
+schema:breastfeedingWarning
+  rdfs:label "breastfeedingWarning" ;
+  schema:domainIncludes schema:Drug ;
+  schema:rangeIncludes schema:Text ;
+  a rdf:Property ;
+  rdfs:comment "Any precaution, guidance, contraindication, etc. related to this drug's use by breastfeeding mothers." .
+
+schema:issn
+  owl:equivalentProperty bibo:issn ;
+  schema:rangeIncludes schema:Text ;
+  rdfs:label "issn" ;
+  schema:domainIncludes schema:Periodical ;
+  rdfs:comment "The International Standard Serial Number (ISSN) that identifies this periodical. You can repeat this property to (for example) identify different formats of this periodical." ;
+  a rdf:Property ;
+  dc:source <http://www.w3.org/wiki/WebSchemas/SchemaDotOrgSources#source_bibex> .
+
+schema:elevation
+  rdfs:label "elevation" ;
+  schema:domainIncludes schema:GeoShape, schema:GeoCoordinates ;
+  schema:rangeIncludes schema:Text, schema:Number ;
+  rdfs:comment "The elevation of a location (<a href=\"https://en.wikipedia.org/wiki/World_Geodetic_System\">WGS 84</a>)." ;
+  a rdf:Property .
+
+schema:worstRating
+  schema:domainIncludes schema:Rating ;
+  a rdf:Property ;
+  rdfs:label "worstRating" ;
+  schema:rangeIncludes schema:Number, schema:Text ;
+  rdfs:comment "The lowest value allowed in this rating system. If worstRating is omitted, 1 is assumed." .
+
+schema:requiredMinAge
+  rdfs:label "requiredMinAge" ;
+  a rdf:Property ;
+  schema:domainIncludes schema:PeopleAudience ;
+  rdfs:comment "Audiences defined by a person's minimum age." ;
+  schema:rangeIncludes schema:Integer .
+
+schema:significantLinks
+  a rdf:Property ;
+  schema:rangeIncludes schema:URL ;
+  rdfs:label "significantLinks" ;
+  rdfs:comment "The most significant URLs on the page. Typically, these are the non-navigation links that are clicked on the most." ;
+  schema:supersededBy schema:significantLink ;
+  schema:domainIncludes schema:WebPage .
+
+schema:softwareHelp
+  schema:domainIncludes schema:SoftwareApplication ;
+  rdfs:comment "Software application help." ;
+  schema:rangeIncludes schema:CreativeWork ;
+  a rdf:Property ;
+  rdfs:label "softwareHelp" .
+
+schema:SoundtrackAlbum
+  a schema:MusicAlbumProductionType ;
+  rdfs:label "SoundtrackAlbum" ;
+  dc:source <http://www.w3.org/wiki/WebSchemas/SchemaDotOrgSources#MBZ> ;
+  rdfs:comment "SoundtrackAlbum." .
+
+schema:departurePlatform
+  rdfs:comment "The platform from which the train departs." ;
+  schema:rangeIncludes schema:Text ;
+  rdfs:label "departurePlatform" ;
+  schema:domainIncludes schema:TrainTrip ;
+  a rdf:Property .
+
+schema:Property
+  rdfs:subClassOf schema:Intangible ;
+  rdfs:label "Property" ;
+  rdfs:comment "A property, used to indicate attributes and relationships of some Thing; equivalent to rdf:Property." ;
+  a rdfs:Class .
+
+schema:PlasticSurgery
+  rdfs:label "PlasticSurgery" ;
+  rdfs:comment "A specific branch of medical science that pertains to therapeutic or cosmetic repair or re-formation of missing, injured or malformed tissues or body parts by manual and instrumental means." ;
+  a schema:MedicalSpecialty .
+
+schema:StructuredValue
+  rdfs:label "StructuredValue" ;
+  a rdfs:Class ;
+  rdfs:subClassOf schema:Intangible ;
+  rdfs:comment "Structured values are used when the value of a property has a more complex structure than simply being a textual value or a reference to another thing." .
+
+schema:EngineSpecification
+  rdfs:subClassOf schema:StructuredValue ;
+  rdfs:label "EngineSpecification" ;
+  a rdfs:Class ;
+  dc:source <http://www.w3.org/wiki/WebSchemas/SchemaDotOrgSources#Automotive_Ontology_Working_Group> ;
+  rdfs:comment "Information about the engine of the vehicle. A vehicle can have multiple engines represented by multiple engine specification entities." .
+
+schema:recipe
+  schema:rangeIncludes schema:Recipe ;
+  schema:domainIncludes schema:CookAction ;
+  rdfs:label "recipe" ;
+  rdfs:subPropertyOf schema:instrument ;
+  a rdf:Property ;
+  rdfs:comment "A sub property of instrument. The recipe/instructions used to perform the action." .
+
+schema:containsSeason
+  rdfs:subPropertyOf schema:hasPart ;
+  schema:domainIncludes schema:RadioSeries, schema:TVSeries, schema:VideoGameSeries ;
+  rdfs:comment "A season that is part of the media series." ;
+  rdfs:label "containsSeason" ;
+  a rdf:Property ;
+  schema:rangeIncludes schema:CreativeWorkSeason .
+
+schema:PetStore
+  rdfs:subClassOf schema:Store ;
+  rdfs:label "PetStore" ;
+  a rdfs:Class ;
+  rdfs:comment "A pet store." .
+
+schema:name
+  schema:domainIncludes schema:Thing ;
+  a rdf:Property ;
+  rdfs:label "name" ;
+  rdfs:comment "The name of the item." ;
+  schema:rangeIncludes schema:Text .
+
+schema:Muscle
+  dc:source <http://www.w3.org/wiki/WebSchemas/SchemaDotOrgSources#source_WikiDoc> ;
+  rdfs:subClassOf schema:AnatomicalStructure ;
+  rdfs:label "Muscle" ;
+  a rdfs:Class ;
+  rdfs:comment "A muscle is an anatomical structure consisting of a contractile form of tissue that animals use to effect movement." .
+
+schema:EducationEvent
+  rdfs:subClassOf schema:Event ;
+  a rdfs:Class ;
+  rdfs:label "EducationEvent" ;
+  rdfs:comment "Event type: Education event." .
+
+schema:DeleteAction
+  a rdfs:Class ;
+  rdfs:subClassOf schema:UpdateAction ;
+  rdfs:comment "The act of editing a recipient by removing one of its objects." ;
+  rdfs:label "DeleteAction" .
+
+schema:PublicSwimmingPool
+  a rdfs:Class ;
+  rdfs:label "PublicSwimmingPool" ;
+  rdfs:subClassOf schema:SportsActivityLocation ;
+  rdfs:comment "A public swimming pool." .
+
+schema:value
+  a rdf:Property ;
+  schema:rangeIncludes schema:Boolean, schema:Text, schema:StructuredValue, schema:Number ;
+  schema:domainIncludes schema:PropertyValue, schema:QuantitativeValue ;
+  rdfs:comment "The value of the quantitative value or property value node. For QuantitativeValue, the recommended type for values is 'Number'. For PropertyValue, it can be 'Text;', 'Number', 'Boolean', or 'StructuredValue'." ;
+  rdfs:label "value" .
+
+schema:minValue
+  rdfs:label "minValue" ;
+  schema:domainIncludes schema:PropertyValueSpecification, schema:QuantitativeValue, schema:PropertyValue ;
+  a rdf:Property ;
+  rdfs:comment "The lower value of some characteristic or property." ;
+  schema:rangeIncludes schema:Number .
+
+schema:Renal
+  rdfs:label "Renal" ;
+  rdfs:comment "A specific branch of medical science that pertains to the study of the kidneys and its respective disease states." ;
+  a schema:MedicalSpecialty .
+
+schema:relatedTherapy
+  rdfs:label "relatedTherapy" ;
+  a rdf:Property ;
+  rdfs:comment "A medical therapy related to this anatomy." ;
+  schema:rangeIncludes schema:MedicalTherapy ;
+  schema:domainIncludes schema:SuperficialAnatomy, schema:AnatomicalStructure, schema:AnatomicalSystem .

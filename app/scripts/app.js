@@ -13,42 +13,52 @@ angular.module('myApp', [
   $routeProvider.otherwise({redirectTo: '/welcome'});
 }])
 
+.run(function($rootScope) {
+  $rootScope.version = '##VERSION##';
+})
+
 .factory('Notification', function() {
   // set defaults
-  $.growl(false, {
-    placement: {
-      from: "top",
-      align: "center"
+  $.notifyDefaults({
+    "allow_dismiss": true,
+    "placement": {
+      "from": 'top',
+      "align": 'center'
     },
-    "z_index": 1050,
-    template: '<div data-growl="container" class="alert" role="alert"> \
-      <button type="button" class="close" data-growl="dismiss"> \
-        <span aria-hidden="true">×</span> \
-        <span class="sr-only">Close</span> \
-      </button> \
-      <span data-growl="icon"></span> \
-      <span data-growl="title"></span> \
-      &nbsp;<span data-growl="message"></span>&nbsp; \
-    </div>'
+    "template": ' \
+      <div data-notify="container" class="col-xs-11 col-sm-6 alert alert-{0}" role="alert">\
+      	<button type="button" aria-hidden="true" class="close" data-notify="dismiss">×</button>\
+      	<span data-notify="icon"></span>\
+      	<span data-notify="title">{1}</span>\
+      	<span data-notify="message">{2}</span>\
+      	<div class="progress" data-notify="progressbar">\
+      		<div class="progress-bar progress-bar-{0}" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" style="width: 0%;"></div>\
+      	</div>\
+      	<a href="{3}" target="{4}" data-notify="url"></a>\
+      </div>',
+    "z_index": 1050
   });
 
   function notify(type, msg, icon) {
-    var o = {
-      message: msg
-    };
-    if(type === 'error') {
+    if (type === 'error') {
       type = 'danger';
     }
-    if(!icon && type === 'danger') {
-      icon = 'fire';
+    var o = {
+      "type": type
+    };
+    if (type === 'danger') {
+      if (o.delay === undefined) {
+        o.delay = 0;
+      }
+      if (!icon) {
+        icon = 'fire';
+      }
     }
-    if(icon) {
+    if (icon) {
       o.icon = "glyphicon glyphicon-" + icon;
     }
 
-    $.growl(o, {
-      type: type
-    });
+    $.notify(msg, o);
   }
 
   return {
@@ -288,6 +298,7 @@ angular.module('myApp', [
   function updateProfileData(profile) {
     $scope.userProfile = profile;
     $scope.profile = profile.profileData;
+    $rootScope.valInstalled = (profile)? profile.config.valInstalled: false;
   }
 
   function saveDocument() {

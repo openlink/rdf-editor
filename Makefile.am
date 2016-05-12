@@ -31,7 +31,6 @@ PKG_NAME	= rdf_editor_pkg
 #
 VERSION		= `./gen_version.sh`
 
-
 #
 #  What packages to build
 #
@@ -48,6 +47,7 @@ RDF_EDITOR_FILES = dist/index.html
 GRUNT_FILES 	= \
 	app/styles/*.css \
 	css/*.css \
+	app/views/*.html \
 	app/scripts/*.js \
 	app/scripts/controllers/*.js \
 	src/deps-orig/*.js \
@@ -58,7 +58,8 @@ GRUNT_FILES 	= \
 	app/data/*.ttl \
 	app/config.json
 
-dist/index.html: $(GRUNT_FILES) $(BOWER_DIR)
+dist/index.html: Gruntfile.js $(GRUNT_FILES) $(BOWER_DIR)
+	./gen_version.sh > gen_version
 	grunt build
 
 $(BOWER_DIR): $(MODULE_DIR) bower.json
@@ -150,13 +151,13 @@ RDF_EDITOR_DIST = \
 	app/*.json \
 	app/data/*.ttl \
 	app/*.html \
+	app/views/*.html \
 	app/images/*.gif \
 	app/images/*.png \
 	app/scripts/controllers/*.js \
 	app/scripts/*.js \
 	app/styles/*.css \
 	app/tmpl/*.html \
-	app/views/*.html \
 	css/bootstrap.css.map \
 	css/bootstrap-theme.css.map \
 	css/*.css \

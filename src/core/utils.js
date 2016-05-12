@@ -84,6 +84,10 @@ RDFE.Utils.uriParams = function() {
   if (s.length > 1) {
     s = s.substring(1);
   }
+  if (!s) {
+    s = location.hash;
+    s = s.substring(s.indexOf('?')+1);
+  }
   if (s) {
     var parts = s.split("&");
     for (var i=0; i < parts.length; i++) {
@@ -221,6 +225,11 @@ RDFE.Utils.getLabel = function(labels, key) {
 
   return labels[key];
 }
+
+RDFE.Utils.getUrl = function(url) {
+  var parser = RDFE.Utils.splitUrl(url);
+  return parser.protocol + '//' + parser.host + parser.path;
+};
 
 RDFE.Utils.getUrlBase = function(url) {
   var parser = RDFE.Utils.splitUrl(url);

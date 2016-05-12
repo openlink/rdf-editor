@@ -21,3 +21,10 @@ textarea {
 .rdfe-font-bold {
   font-weight: bold;
 }
+
+.rdfe-reference-link {
+  display: inline-block;
+  vertical-align: top;
+  margin-left: 7px;
+  zoom: 1;
+}
