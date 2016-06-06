@@ -231,6 +231,28 @@ RDFE.Editor.prototype.updateView = function() {
 };
 
 /**
+ * Editor settings.
+ */
+RDFE.Editor.prototype.settingsForm = function() {
+  var self = this;
+  var $form = $("#settingsModal");
+  var $settings = $.jStorage.get('rdfe:settings', {});
+  $form.find('#userID').val($settings["userID"]);
+
+  $form.modal();
+  $form.find('.ok').off();
+  $form.find('.ok').on("click", function (e) {
+    e.preventDefault();
+    var userID = $form.find('#userID').val();
+    var $settings = {"userID":  userID};
+
+    $.jStorage.set('rdfe:settings', $settings)
+
+    $form.modal('hide');
+  });
+};
+
+/**
  * Import RDF Turtle content into document.
  */
 RDFE.Editor.prototype.importForm = function() {

@@ -667,6 +667,10 @@ angular.module('myApp.editor', ['ngRoute'])
     });
   };
 
+  $scope.settings = function() {
+    $scope.editor.settingsForm();
+  };
+
   $scope.signDocument = function() {
     $scope.editor.signDocumentForm();
   };
