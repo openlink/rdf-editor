@@ -125,6 +125,11 @@ String.prototype.format = function() {
         ajaxParams = $.extend({"timeout": self.options["ioTimeout"]}, ajaxParams);
       }
 
+      var settings = $.jStorage.get('rdfe:settings', {});
+      if (settings["userID"]) {
+        ajaxParams.headers["On-Behalf-Of"] = settings["userID"];
+      }
+
       if ((RDFE.Utils.getProtocol(ajaxParams.url) !== document.location.protocol) && (document.location.protocol === 'https:')) {
         if (params && params.error) {
           params.error({"httpCode": '', "message": 'Mixed Content Error: This request has been blocked; the content must be served over HTTPS'});

@@ -70,7 +70,7 @@ angular.module('myApp.editor', ['ngRoute'])
       var namingSchema = scope.editor.namingSchema();
 
       switch(input) {
-        case 'spo':
+        case 'SPO':
           return (namingSchema === 'SPO')? 'RDF Statement Graph Representation [Data]': 'Entity Relationship Representation  [Data]';
         case 's':
           return (namingSchema === 'SPO')? 'Items described by sentence Predicate & Object pairs in this document': 'Items described by Attribute & Value pairs in this document';
@@ -202,6 +202,230 @@ angular.module('myApp.editor', ['ngRoute'])
     else if ((s || p || o || e || a || v || newStatement) && (!view || view === 'statements' || view === 'triples')) {
       $scope.editor.editTriple(s || e, p || a, o || v, newStatement);
     }
+  }
+
+  function verifyParams() {
+    var errors = {
+      "params": [],
+      "paramValues": [],
+      "paramMixed": []
+    };
+    var colectParamError = function(hasError, key) {
+      if (hasError)
+        errors.params.push(key);
+
+      return hasError;
+    };
+    var colectParamValueError = function(hasError, key) {
+      if (hasError)
+        errors.paramValues.push(key);
+
+      return hasError;
+    };
+    var colectParamMixedError = function(hasError, key) {
+      if (hasError)
+        errors.paramValues.push(key);
+
+      return hasError;
+    };
+    var paramDescriptions = {
+      "uiMode": {
+        "defaultValue": function () {
+          var v;
+          for (var key in $routeParams) {
+            if (!$routeParams.hasOwnProperty(key))
+              continue;
+
+            var paramDescription = paramDescriptions[key];
+            if (!paramDescription)
+              continue;
+
+            var paramReference = paramDescription["paramReference"];
+            if (paramReference && (paramReference === 'uiMode')) {
+              if (typeof paramDescription["value"] === 'string') {
+                if (colectParamMixedError(v && (v !== paramDescription["value"]), key))
+                  return;
+
+                v = paramDescription["value"];
+              }
+              if (typeof paramDescription["value"] === 'object') {
+                for (var keyValue in paramDescription["value"]) {
+                  var values = paramDescription["value"][keyValue];
+                  for (var i = 0; i < values.length; i++) {
+                    if ($routeParams[key] === values[i]) {
+                      if (colectParamMixedError(v && (v !== keyValue), key))
+                        return;
+
+                      v = keyValue;
+                    }
+                  }
+                }
+              }
+            }
+          }
+
+          if (!v)
+            v = 'EAV';
+
+          return v;
+        },
+        "value": ['EAV', 'SPO']
+      },
+      "view": {
+        "paramReference": 'uiMode',
+        "value": {
+          "eav": ['statements', 'entities', 'attributes', 'values'],
+          "spo": ['triples', 'subjects', 'predicates', 'objects']
+        }
+      },
+
+      "triple:subject": {
+        "paramReference": 'uiMode',
+        "value": 'SPO'
+      },
+      "spo:subject": {
+        "paramReference": 'uiMode',
+        "value": 'SPO'
+      },
+      "triple:predicate": {
+        "paramReference": 'uiMode',
+        "value": 'SPO'
+      },
+      "spo:predicate": {
+        "paramReference": 'uiMode',
+        "value": 'SPO'
+      },
+      "triple:object": {
+        "paramReference": 'uiMode',
+        "value": 'SPO'
+      },
+      "spo:object": {
+        "paramReference": 'uiMode',
+        "value": 'SPO'
+      },
+
+      "statement:entity": {
+        "paramReference": 'uiMode',
+        "value": 'EAV'
+      },
+      "eav:entity": {
+        "paramReference": 'uiMode',
+        "value": 'EAV'
+      },
+      "statement:attribute": {
+        "paramReference": 'uiMode',
+        "value": 'EAV'
+      },
+      "eav:attribute": {
+        "paramReference": 'uiMode',
+        "value": 'EAV'
+      },
+      "statement:value": {
+        "paramReference": 'uiMode',
+        "value": 'EAV'
+      },
+      "eav:value": {
+        "paramReference": 'uiMode',
+        "value": 'EAV'
+      },
+
+      "uri": {},
+      "accept": ['text/turtle', 'application/ld+json'],
+      "ioType": ['http', 'ldp', 'webdav', 'sparql'],
+      "ioTimeout": {},
+      "sparqlEndpoint": {},
+
+      "newDocument": ['true', 'false'],
+      "saveDocument": ['true', 'false'],
+
+      "newStatement": ['true', 'false']
+    };
+    for (var key in $routeParams) {
+      if (!$routeParams.hasOwnProperty(key))
+        continue;
+
+      var keyValue = $routeParams[key];
+      var paramDescription = paramDescriptions[key];
+
+      // Is parameter exists
+      if (colectParamError(paramDescription === undefined, key))
+        continue;
+
+      if (paramDescription instanceof Array) {
+        for (var i = 0; i < paramDescription.length; i++) {
+          if (keyValue === paramDescription[i])
+            break;
+        }
+        if (colectParamValueError(i === paramDescription.length, key))
+          continue;
+      }
+      else if (typeof paramDescription === 'object') {
+        // No special validations
+        if ($.isEmptyObject(paramDescription))
+          continue;
+
+        var paramReference = paramDescription["paramReference"];
+        if (paramReference) {
+          var paramReferenceValue = $routeParams[paramReference];
+          if (!paramReferenceValue) {
+            paramReferenceValue = paramDescriptions[paramReference]["defaultValue"]();
+            if (!paramReferenceValue)
+              break;
+          }
+
+          // Param is enabled only when param reference value is ...
+          if (typeof paramDescription["value"] === 'string') {
+            colectParamError(paramDescription["value"] !== paramReferenceValue, key);
+            continue;
+          }
+
+          // Param is enabled only when param reference value is ...
+          if (typeof paramDescription["value"] === 'object') {
+            var values = paramDescription["value"][paramReferenceValue];
+            if (!values)
+              contimue;
+
+            for (var i = 0; i < values.length; i++) {
+              if (keyValue === values[i])
+                break;
+            }
+            if (colectParamValueError(i === values.length, key))
+              continue;
+          }
+        }
+      }
+    }
+
+    if (errors.params.length || errors.paramValues.length || errors.paramMixed.length) {
+      var delimiter;
+      var msg = 'Params validation errors:'
+      if (errors.params.length) {
+        msg += ' <br/>&nbsp;&nbsp;Unsupported or mixed parameters: ';
+        delimiter = '';
+        for (var i = 0; i < errors.params.length; i++) {
+          msg += delimiter + errors.params[i];
+          delimiter = ', ';
+        }
+      }
+      if (errors.paramValues.length) {
+        msg += ' <br/>&nbsp;&nbsp;Bad values for parameters: ';
+        delimiter = '';
+        for (var i = 0; i < errors.paramValues.length; i++) {
+          msg += delimiter + '[' + errors.paramValues[i] + '=' + $routeParams[errors.paramValues[i]] + ']';
+          delimiter = ', ';
+        }
+      }
+      if (errors.paramMixed.length) {
+        msg += ' <br/>&nbsp;&nbsp;Mixed parameters: ';
+        delimiter = '';
+        for (var i = 0; i < errors.paramMixed.length; i++) {
+          msg += delimiter + errors.paramMixed[i];
+          delimiter = ', ';
+        }
+      }
+      Notification.notify('error', msg);
+    }
+
   }
 
   function processParams() {
@@ -443,6 +667,10 @@ angular.module('myApp.editor', ['ngRoute'])
     });
   };
 
+  $scope.settings = function() {
+    $scope.editor.settingsForm();
+  };
+
   $scope.signDocument = function() {
     $scope.editor.signDocumentForm();
   };
@@ -489,6 +717,7 @@ angular.module('myApp.editor', ['ngRoute'])
       $rootScope.editor = editor;
       $scope.editor = editor;
 
+      verifyParams();
       processParams();
     });
   }
