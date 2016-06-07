@@ -288,6 +288,22 @@ RDFE.Editor.prototype.importForm = function() {
 };
 
 /**
+ * Export document as Turtle or JSON-LD
+ */
+RDFE.Editor.prototype.exportForm = function() {
+  var self = this;
+  var $form = $("#exportModal");
+
+  $form.find('#content').val('');
+  self.doc.store.graph(self.doc.graph, function(success, graph){
+    var serialized = graph.toNT();
+    $form.find('#content').val(serialized);
+  });
+
+  $form.modal();
+};
+
+/**
  * Sign document.
  */
 RDFE.Editor.prototype.signDocumentForm = function() {

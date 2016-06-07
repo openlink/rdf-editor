@@ -13,7 +13,8 @@
       <li role="separator" class="divider"></li>
       <li><a ng-click="downloadDocumentAs(); $event.preventDefault();" href="#" title="Download the current document"><span class="glyphicon glyphicon-save" aria-hidden="true"></span> Download</a></li>
       <li role="separator" class="divider"></li>
-      <li><a ng-click="importInto(); $event.preventDefault();" href="#" title="Input Content directly into current document"><span class="glyphicon glyphicon-import" aria-hidden="true"></span> Direct Input</a></li>
+      <li><a ng-click="importInto(); $event.preventDefault();" href="#" title="Input content directly into current document"><span class="glyphicon glyphicon-import" aria-hidden="true"></span> Direct Input</a></li>
+      <li><a ng-click="exportInto(); $event.preventDefault();" href="#" title="Output content directly"><span class="glyphicon glyphicon-export" aria-hidden="true"></span> Direct Output</a></li>
       <!--
       <li role="separator" class="divider"></li>
       <li ng-show="valInstalled"><a ng-click="signDocument(); $event.preventDefault();" href="#" title="Sign/Resign the current document">Sign</a></li>
@@ -21,10 +22,9 @@
       -->
       <li role="separator" class="divider"></li>
       <li><a ng-click="closeDocument(); $event.preventDefault();" href="#" title="Close the document and return to the start page"><span class="glyphicon glyphicon-log-out"></span> Close</a></li>
+      <li role="separator" class="divider"></li>
+      <li><a ng-click="settings(); $event.preventDefault();" href="#" title="Editor settings (local)"> Settings</a></li>
     </ul>
-    <button class="btn btn-default" type="button" ng-click="settings(); $event.preventDefault();">
-      Settings
-    </button>
   </div>
   <div class="form-horizontal" style="display: inline;">
     <label class="control-label" style="margin: 0 5px 0 15px;">Document:</label>
@@ -117,6 +117,28 @@
       <div class="modal-footer">
         <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
         <button type="button" class="btn btn-primary ok">Import</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal fade" id="exportModal" tabindex="-1" role="dialog" aria-labelledby="exportModalLabel" data-backdrop="static" data-keyboard="false">
+  <div class="modal-dialog modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        <h4 class="modal-title" id="exportModal">Output Directly</h4>
+      </div>
+      <div class="modal-body">
+        <div class="form-group">
+          <div>
+            <label for="content" style="padding-top: 0.5em;">Content</label>
+          </div>
+          <textarea class="form-control" rows="12" id="content" name="content"></textarea>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
       </div>
     </div>
   </div>

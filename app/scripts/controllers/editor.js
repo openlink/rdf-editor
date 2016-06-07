@@ -679,6 +679,10 @@ angular.module('myApp.editor', ['ngRoute'])
     $scope.editor.importForm();
   };
 
+  $scope.exportInto = function() {
+    $scope.editor.exportForm();
+  };
+
   $scope.unsignDocument = function() {
     $scope.editor.unsignDocumentForm();
   };
