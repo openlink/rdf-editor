@@ -76,19 +76,23 @@
   <nav class="navbar navbar-default navbar-fixed-top" role="navigation" ng-controller="AuthHeaderCtrl">
     <div class="container-fluid">
       <div class="navbar-header">
-        <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#rdfe-navbar-collapse">
+        <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#rdfe-navbar-collapse" style="margin-right: 90px;">
           <span class="sr-only">Toggle navigation</span>
           <span class="icon-bar"></span>
           <span class="icon-bar"></span>
           <span class="icon-bar"></span>
         </button>
-        <a class="navbar-brand" style="padding: 5px 15px" href="http://www.openlinksw.com/" title="OpenLink Software Home Page"><img src="images/oplogo_std_100x40.png" alt="OpenLink Software Home Page" /></a></li>
+        <a class="navbar-brand" style="padding: 5px 15px" href="http://www.openlinksw.com/" title="OpenLink Software Home Page">
+          <img src="images/oplogo_std_100x40.png" alt="OpenLink Software Home Page" />
+        </a>
+        <a class="navbar-brand" style="padding: 5px 15px" href="http://osde.openlinksw.com/" title="OpenLink Structured Data Editor (OSDE)">
+          <img src="images/osdelogo_std_32.png" alt="OpenLink Software Home Page" />
+        </a>
       </div>
 
-      <div class="collapse navbar-collapse" id="rdfe-navbar-collapse" style="margin-right: 80px;">
+      <div class="collapse navbar-collapse" id="rdfe-navbar-collapse" style="margin-right: 60px;">
         <ul class="nav navbar-nav navbar-right">
           <li><a class="navbar-link" href="#about" title="About OSD Editor, version {{version}}">About</a></li>
-          <li><a class="navbar-link" href="http://osde.openlinksw.com/" title="OSDE Home" style="padding-left: 0px;">Home</a></li>
         </ul>
 
         <p ng-show="valInstalled" class="navbar-text navbar-right" style="margin-left: 0;">
@@ -102,7 +106,7 @@
         </ul>
       </div>
       <a href="https://github.com/openlink/rdf-editor">
-        <img style="position: absolute; top: 0; right: 0; border: 0; width: 120px; height: 120px;" src="https://camo.githubusercontent.com/652c5b9acfaddf3a9c326fa6bde407b87f7be0f4/68747470733a2f2f73332e616d617a6f6e6177732e636f6d2f6769746875622f726962626f6e732f666f726b6d655f72696768745f6f72616e67655f6666373630302e706e67" alt="Fork me on GitHub" data-canonical-src="https://s3.amazonaws.com/github/ribbons/forkme_right_orange_ff7600.png">
+        <img style="position: absolute; top: 0; right: 0; border: 0; width: 100px; height: 100px;" src="https://camo.githubusercontent.com/652c5b9acfaddf3a9c326fa6bde407b87f7be0f4/68747470733a2f2f73332e616d617a6f6e6177732e636f6d2f6769746875622f726962626f6e732f666f726b6d655f72696768745f6f72616e67655f6666373630302e706e67" alt="Fork me on GitHub" data-canonical-src="https://s3.amazonaws.com/github/ribbons/forkme_right_orange_ff7600.png">
       </a>
     </div>
   </nav>
