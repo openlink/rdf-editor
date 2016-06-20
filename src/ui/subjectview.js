@@ -70,11 +70,32 @@
         var $list = $(document.createElement('table')).addClass('table');
         container.append($list);
 
+        var pageNumber = 1;
+        var pageSize = 10;
+        var sortName = 'uri';
+        var sortOrder = 'asc';
+        var pageSettings = self.editor.config.options["pageSettings"]
+        if (pageSettings["pageNo"]) {
+          pageNumber = pageSettings["pageNo"];
+        }
+        if (pageSettings["pageSize"]) {
+          pageSize = pageSettings["pageSize"];
+        }
+        if (pageSettings["sortName"]) {
+          sortName = pageSettings["sortName"];
+        }
+        if (pageSettings["sortOrder"]) {
+          sortOrder = pageSettings["sortOrder"];
+        }
+
         $list.bootstrapTable({
           "striped": true,
-          "sortName": 'uri',
           "pagination": true,
+          "pageNumber": pageNumber,
+          "pageSize": pageSize,
           "search": true,
+          "sortName": sortName,
+          "sortOrder": sortOrder,
           "searchAlign": 'left',
           "trimOnSearch": false,
           "showHeader": true,
@@ -131,9 +152,19 @@
             }
           }]
         });
+
+        $list.on('page-change.bs.table', function(e, page, size) {
+          $(self.editor).trigger('rdf-editor-page', {"pageNo": page, "pageSize": size});
+        });
+
+        $list.on('sort.bs.table', function(e, name, order) {
+          $(self.editor).trigger('rdf-editor-page', {"sortName": name, "sortOrder": order});
+        });
+
         $($list).find('.add').on('click', function(e) {
           self.editor.editSubject();
         });
+
         self.subjectTable = $list;
 
         if (callback) {

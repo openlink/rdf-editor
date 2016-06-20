@@ -3,55 +3,118 @@
 angular.module('myApp.editor', ['ngRoute'])
 
 .config(['$routeProvider', function($routeProvider) {
-  $routeProvider.when('/editor', {
-    templateUrl: 'views/editor.html',
-    controller: 'EditorCtrl'
+  $routeProvider
+  .when('/editor', {
+    "templateUrl": 'views/editor.html',
+    "controller": 'EditorCtrl',
+    "reloadOnSearch": false
   });
 }])
 
-.factory('RDFEditor', ['$q', "usSpinnerService", 'RDFEConfig', 'Notification', 'DocumentTree', function($q, usSpinnerService, RDFEConfig, Notification, DocumentTree) {
+.run(function($rootScope) {
+  $rootScope.eav2spo = {
+    "statements": 'triples',
+    "entities": 'subjects',
+    "attributes": 'predicates',
+    "values": 'objects'
+  };
+  $rootScope.spo2eav = {
+    "triples": 'statements',
+    "subjects": 'entities',
+    "predicates": 'attributes',
+    "objects": 'values'
+  };
+})
+
+.factory('RDFEditor', ['$q', "$location", "$timeout", "usSpinnerService", 'RDFEConfig', 'Notification', 'DocumentTree', function($q, $location, $timeout, usSpinnerService, RDFEConfig, Notification, DocumentTree) {
   var editor = null;
 
   function getEditor() {
     if (editor) {
       return $q.when(editor);
     }
-    else {
-      return $q(function(resolve, reject) {
-        RDFEConfig.getConfig().then(function(config) {
-          var params = {
-            "config": config,
-            "documentTree": DocumentTree
-          };
-          new RDFE.Editor(params, function(editor) {
-            // subscribe to editor events FIXME: a service does not seem like the best place to do this
-            $(editor).on('rdf-editor-success', function(e, d) {
-              Notification.notify('success', d.message);
-            }).on('rdf-editor-error', function(e, d) {
-              Notification.notify('error', d.message);
-            }).on('rdf-editor-start', function(e, d) {
+
+    return $q(function(resolve, reject) {
+      RDFEConfig.getConfig().then(function(config) {
+        var params = {
+          "config": config,
+          "documentTree": DocumentTree
+        };
+        new RDFE.Editor(params, function(editor) {
+          // subscribe to editor events FIXME: a service does not seem like the best place to do this
+          $(editor).on('rdf-editor-success', function(e, d) {
+            Notification.notify('success', d.message);
+          }).on('rdf-editor-error', function(e, d) {
+            Notification.notify('error', d.message);
+          }).on('rdf-editor-spinner-start', function(e, spinner) {
+            if (spinner === 'editor-spinner') {
               editor.spinner++;
               if (editor.spinner === 1) {
-                usSpinnerService.spin('editor-spinner');
+                usSpinnerService.spin(spinner);
               }
-            }).on('rdf-editor-done', function(e, d) {
+            }
+            if (spinner === 'export-spinner') {
+              usSpinnerService.spin(spinner);
+            }
+          }).on('rdf-editor-spinner-done', function(e, spinner) {
+            if (spinner === 'editor-spinner') {
               if (editor.spinner > 0) {
                 editor.spinner--;
               }
               if (editor.spinner === 0) {
                 usSpinnerService.stop('editor-spinner');
               }
+            }
+            if (spinner === 'export-spinner') {
+              usSpinnerService.stop(spinner);
+            }
+          }).on('rdf-editor-page', function(e, pageParams) {
+            var pageSettings = editor.config.options.pageSettings;
+            var pageSearches = $location.search();
+            if (pageParams["view"] && (pageSearches["view"] !== pageParams["view"])) {
+              $location.search('view', pageParams["view"]);
+              $location.search('pageNo', null);
+              $location.search('sortName', null);
+              $location.search('sortOrder', null);
+              pageSettings["pageNo"] = null;
+              pageSettings["sortName"] = null;
+              pageSettings["sortOrder"] = null;
+            }
+            if (pageParams["pageNo"] && (pageSettings["pageNo"] !== pageParams["pageNo"])) {
+              $location.search('pageNo', pageParams["pageNo"]);
+              pageSettings["pageNo"] = pageParams["pageNo"];
+            }
+            if (pageParams["pageSize"] && (pageSettings["pageSize"] !== pageParams["pageSize"])) {
+              $location.search('pageSize', pageParams["pageSize"]);
+              pageSettings["pageSize"] = pageParams["pageSize"];
+            }
+            if (pageParams["sortName"] && (pageSettings["sortName"] !== pageParams["sortName"])) {
+              $location.search('sortName', pageParams["sortName"]);
+              pageSettings["sortName"] = pageParams["sortName"];
+            }
+            if (pageParams["sortOrder"] && (pageSettings["sortOrder"] !== pageParams["sortOrder"])) {
+              $location.search('sortOrder', pageParams["sortOrder"]);
+              pageSettings["sortOrder"] = pageParams["sortOrder"];
+            }
+            var pageSearch = '';
+            pageSearches = $location.search();
+            for (var key in pageSearches) {
+              pageSearch += '&' + key + '=' + pageSearches[key];
+            }
+            var newUrl = $location.path() + '?' + pageSearch;
+            $timeout(function(){
+              $location.url(newUrl)
             });
+           });
 
-            resolve(editor);
-          });
+          resolve(editor);
         });
       });
-    }
+    });
   }
 
   return {
-    getEditor: getEditor
+    "getEditor": getEditor
   };
 }])
 
@@ -86,8 +149,8 @@ angular.module('myApp.editor', ['ngRoute'])
 })
 
 .controller(
-  'EditorCtrl', [
-  '$rootScope', '$scope', '$routeParams', '$location', '$timeout', "usSpinnerService", 'RDFEditor', 'DocumentTree', 'Notification',
+  'EditorCtrl',
+  ['$rootScope', '$scope', '$routeParams', '$location', '$timeout', "usSpinnerService", 'RDFEditor', 'DocumentTree', 'Notification',
   function($rootScope, $scope, $routeParams, $location, $timeout, usSpinnerService, RDFEditor, DocumentTree, Notification) {
 
   function getIO(accept, ioType, sparqlEndpoint, ioTimeout) {
@@ -147,14 +210,21 @@ angular.module('myApp.editor', ['ngRoute'])
     else if (view) {
       $scope.viewMode = view;
     }
+
     if (!uiMode) {
       if      (['triples', 'subjects', 'predicates', 'objects'].indexOf($scope.viewMode) > -1) {
         $scope.editor.config.options.namingSchema = 'SPO';
+        uiMode = 'SPO';
       }
       else if (['statements', 'entities', 'entities', 'values'].indexOf($scope.viewMode) > -1) {
         $scope.editor.config.options.namingSchema = 'EAV';
+        uiMode = 'EAV';
+      }
+      if (!uiMode) {
+        uiMode = $scope.editor.config.options.namingSchema;
       }
     }
+    $scope.uiMode = uiMode;
 
     if (!$scope.viewMode) {
       $scope.viewMode = $scope.editor.config.defaultView;
@@ -163,19 +233,38 @@ angular.module('myApp.editor', ['ngRoute'])
       }
     }
 
-    $scope.editor.toggleView($scope.viewMode)
-    if      ($scope.viewMode === 'statements') {
-      $scope.viewMode = 'triples';
+    if ($scope.uiMode === 'SPO') {
+      $scope.radioViewMode = $scope.viewMode;
     }
-    else if ($scope.viewMode === 'entities') {
-      $scope.viewMode = 'subjects';
+    else {
+      $scope.radioViewMode = $scope.eav2spo[$scope.viewMode];
     }
-    else if ($scope.viewMode === 'attributes') {
-      $scope.viewMode = 'predicates';
+
+    // page settings params
+    var pageSettings = $scope.editor.config.options.pageSettings;
+    if ($routeParams["pageNo"]) {
+      var tmp = parseInt($routeParams["pageNo"]);
+      if (tmp !== NaN) {
+        pageSettings.pageNo = tmp;
+      }
     }
-    else if ($scope.viewMode === 'values') {
-      $scope.viewMode = 'objects';
+
+    if ($routeParams["pageSize"]) {
+      var tmp = parseInt($routeParams["pageSize"]);
+      if (tmp !== NaN) {
+        pageSettings.pageSize = tmp;
+      }
     }
+
+    if ($routeParams["sortName"]) {
+      pageSettings.sortName = $routeParams["sortName"];
+    }
+
+    if ($routeParams["sortOrder"]) {
+      pageSettings.sortOrder = $routeParams["sortOrder"];
+    }
+
+    $scope.editor.toggleView($scope.viewMode, $scope.uiMode)
   }
 
   function showViewEditor() {
@@ -329,6 +418,11 @@ angular.module('myApp.editor', ['ngRoute'])
         "value": 'EAV'
       },
 
+      "pageNo": {},
+      "pageSize": {},
+      "sortName": {},
+      "sortOrder": {},
+
       "uri": {},
       "accept": ['text/turtle', 'application/ld+json'],
       "ioType": ['http', 'ldp', 'webdav', 'sparql'],
@@ -383,7 +477,7 @@ angular.module('myApp.editor', ['ngRoute'])
           if (typeof paramDescription["value"] === 'object') {
             var values = paramDescription["value"][paramReferenceValue];
             if (!values)
-              contimue;
+              continue;
 
             for (var i = 0; i < values.length; i++) {
               if (keyValue === values[i])
@@ -551,23 +645,30 @@ angular.module('myApp.editor', ['ngRoute'])
     }
     $.jStorage.deleteKey('rdfe:savedDocument');
 
-    // Editor view mode controls
-    // ----------------------------
-    // default view mode
-    $scope.viewMode = $scope.editor.currentView();
+    if (!$scope.ontologyView) {
+      $scope.ontologyView = new RDFE.OntologyView($scope.editor);
+      $scope.ontologyView.render($('#container-ontologies'));
+      $('#ontology-add').click(function (e) {
+        e.stopPropagation();
+        $scope.ontologyView.editor();
+      });
+    }
 
     // watch changes in the view mode to update the editor
     $scope.$watch(function(scope) {
-      return scope.viewMode;
+      return scope.radioViewMode;
     }, function(mode) {
-      $scope.editor.toggleView(mode);
-    });
+      if (!mode) {
+        return;
+      }
 
-    $scope.ontologyView = new RDFE.OntologyView($scope.editor);
-    $scope.ontologyView.render($('#container-ontologies'));
-    $('#ontology-add').click(function (e) {
-      e.stopPropagation();
-      $scope.ontologyView.editor();
+      if ($scope.uiMode === 'SPO') {
+        $scope.viewMode = mode;
+      }
+      else {
+        $scope.viewMode = $scope.spo2eav[mode];
+      }
+      $scope.editor.toggleView($scope.viewMode, $scope.uiMode);
     });
   }
 
@@ -713,17 +814,16 @@ angular.module('myApp.editor', ['ngRoute'])
   };
 
   // Create editor instance
-  if ($scope.editor) {
-    processParams();
-  }
-  else {
+  if (!$scope.editor) {
     RDFEditor.getEditor().then(function(editor) {
       $rootScope.editor = editor;
-      $scope.editor = editor;
 
       verifyParams();
       processParams();
     });
+  }
+  else {
+    processParams();
   }
 
 }]);

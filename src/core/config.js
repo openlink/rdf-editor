@@ -135,5 +135,10 @@ RDFE.Config.defaults = {
   // If true, then the entity editor with template and OWL restriction support is used to edit entities
   "useEntityEditor": false,
 
-  "maxLabelLength": 0
+  "maxLabelLength": 0,
+
+  "pageSettings": {
+    "pageNo": 1,
+    "pageSize": 10
+  }
 };
