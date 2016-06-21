@@ -31,7 +31,16 @@
     };
 
     var labelFormatter = function(value, row, index) {
+      if (row.type === 'IRI') {
+        return '<a href="{1}" target="_blank">{0}</a>'.format(RDFE.Utils.uri2name(row.label), row.label);
+      }
       return row.label;
+    };
+
+    var labelSorter = function(a, b) {
+      if (a > b) return 1;
+      if (a < b) return -1;
+      return 0;
     };
 
     var typeFormatter = function(value, row, index) {
@@ -96,6 +105,7 @@
             "title": RDFE.Utils.namingSchemaLabel('o', self.editor.namingSchema()),
             "titleTooltip": RDFE.Utils.namingSchemaLabel('o', self.editor.namingSchema()),
             "sortable": true,
+            "sorter": labelSorter,
             "formatter": labelFormatter
           }, {
             "field": 'type',

@@ -31,12 +31,12 @@
     };
 
     var labelFormatter = function(value, row, index) {
-      return '{0} (<small>{1}</small>)'.format(RDFE.Utils.uri2name(row.uri), row.uri);
+      return '<a href="{1}" target="_blank">{0}</a>'.format(RDFE.Utils.uri2name(row.uri), row.uri);
     };
 
     var labelSorter = function(a, b) {
       function format(v) {
-        return '{0} (<small>{1}</small>)'.format(RDFE.Utils.uri2name(v), v);
+        return '<a href="{1}">{0}</a>'.format(RDFE.Utils.uri2name(v), v);
       }
       a = format(a);
       b = format(b);
