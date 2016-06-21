@@ -51,3 +51,15 @@ hr.editor {
   margin-top: 10px;
   margin-bottom: 10px;
 }
+
+.navbar-center{
+ position: absolute;
+ width: 80%;
+ left: 10%;
+ text-align: center;
+ margin: auto;
+}
+
+.navbar-brand {
+ float: none;
+}
