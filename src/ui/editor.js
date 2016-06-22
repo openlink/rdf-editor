@@ -148,27 +148,16 @@ RDFE.Editor.prototype.docChanged = function() {
 };
 
 /**
- * Get the name of the current view mode.
- *
- * @return The current view mode which is either @p entites,
- * @p triples or @p undefined in case render() has not been
- * called yet.
- */
-RDFE.Editor.prototype.currentView = function() {
-  return this._currentView || this.config.options.defaultView;
-};
-
-/**
  * Toggle editor spinner.
  */
 RDFE.Editor.prototype.toggleSpinner = function(on) {
   var self = this;
 
   if (on) {
-    $(self).trigger('rdf-editor-start');
+    $(self).trigger('rdf-editor-spinner-start', 'editor-spinner');
   }
   else {
-    $(self).trigger('rdf-editor-done');
+    $(self).trigger('rdf-editor-spinner-done', 'editor-spinner');
   }
 };
 
@@ -177,32 +166,40 @@ RDFE.Editor.prototype.toggleSpinner = function(on) {
  * Nothing is done if the given @p view is already
  * the current one.
  */
-RDFE.Editor.prototype.toggleView = function(view) {
+RDFE.Editor.prototype.toggleView = function(view, viewMode) {
   var self = this;
 
-  if (view !== self._currentView) {
-    if ((view === 'subjects') || (view === 'entities')) {
-      if (self.config.options['useEntityEditor'] === true) {
-        self.createEntityList();
-      }
-      else {
-        self.createSubjectList();
-      }
-      self._currentView = view;
-    }
-    else if ((view === 'predicates') || ((view === 'attributes'))) {
-      self.createPredicateList();
-      self._currentView = view;
-    }
-    else if ((view === 'objects') || (view === 'values')) {
-      self.createObjectList();
-      self._currentView = view;
+  if (view === self.currentView) {
+    return;
+  }
+
+  if ((view === 'subjects') || (view === 'entities')) {
+    if (self.config.options['useEntityEditor'] === true) {
+      self.createEntityList();
     }
     else {
-      self.createTripleList();
-      self._currentView = "triples";
+      self.createSubjectList();
+    }
+    self.currentView = view;
+  }
+  else if ((view === 'predicates') || ((view === 'attributes'))) {
+    self.createPredicateList();
+    self.currentView = view;
+  }
+  else if ((view === 'objects') || (view === 'values')) {
+    self.createObjectList();
+    self.currentView = view;
+  }
+  else {
+    self.createTripleList();
+    if ((view === 'statements') || (view === 'triples')) {
+      self.currentView = view;
+    }
+    else {
+      self.currentView = (viewMode === 'EAV')? 'statements': "triples";
     }
   }
+  $(self).trigger('rdf-editor-page', {"view": self.currentView});
 };
 
 /**
@@ -211,7 +208,7 @@ RDFE.Editor.prototype.toggleView = function(view) {
 RDFE.Editor.prototype.updateView = function() {
   var self = this;
 
-  if ((self._currentView === 'subjects') || (self._currentView === 'entities')) {
+  if ((self.currentView === 'subjects') || (self.currentView === 'entities')) {
     if (self.config.options['useEntityEditor'] === true) {
       self.createEntityList();
     }
@@ -219,10 +216,10 @@ RDFE.Editor.prototype.updateView = function() {
       self.createSubjectList();
     }
   }
-  else if ((self._currentView === 'predicates') || (self._currentView === 'attributes')) {
+  else if ((self.currentView === 'predicates') || (self.currentView === 'attributes')) {
     self.createPredicateList();
   }
-  else if ((self._currentView === 'objects') || (self._currentView === 'values')) {
+  else if ((self.currentView === 'objects') || (self.currentView === 'values')) {
     self.createObjectList();
   }
   else {
@@ -298,9 +295,11 @@ RDFE.Editor.prototype.exportForm = function() {
   self.doc.store.graph(self.doc.graph, function(success, graph){
     var serialized = graph.toNT();
     $form.find('#content').val(serialized);
+    $(self).trigger('rdf-editor-spinner-done', 'export-spinner');
   });
 
   $form.modal();
+  $(self).trigger('rdf-editor-spinner-start', 'export-spinner');
 };
 
 /**

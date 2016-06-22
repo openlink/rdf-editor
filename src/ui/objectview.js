@@ -31,7 +31,16 @@
     };
 
     var labelFormatter = function(value, row, index) {
+      if (row.type === 'IRI') {
+        return '<a href="{1}" target="_blank">{0}</a>'.format(RDFE.Utils.uri2name(row.label), row.label);
+      }
       return row.label;
+    };
+
+    var labelSorter = function(a, b) {
+      if (a > b) return 1;
+      if (a < b) return -1;
+      return 0;
     };
 
     var typeFormatter = function(value, row, index) {
@@ -60,11 +69,32 @@
         var $list = $(document.createElement('table')).addClass('table');
         container.append($list);
 
+        var pageNumber = 1;
+        var pageSize = 10;
+        var sortName = 'label';
+        var sortOrder = 'asc';
+        var pageSettings = self.editor.config.options["pageSettings"]
+        if (pageSettings["pageNo"]) {
+          pageNumber = pageSettings["pageNo"];
+        }
+        if (pageSettings["pageSize"]) {
+          pageSize = pageSettings["pageSize"];
+        }
+        if (pageSettings["sortName"]) {
+          sortName = pageSettings["sortName"];
+        }
+        if (pageSettings["sortOrder"]) {
+          sortOrder = pageSettings["sortOrder"];
+        }
+
         $list.bootstrapTable({
           "striped": true,
-          "sortName": 'label',
           "pagination": true,
+          "pageNumber": pageNumber,
+          "pageSize": pageSize,
           "search": true,
+          "sortName": sortName,
+          "sortOrder": sortOrder,
           "searchAlign": 'left',
           "trimOnSearch": false,
           "showHeader": true,
@@ -75,6 +105,7 @@
             "title": RDFE.Utils.namingSchemaLabel('o', self.editor.namingSchema()),
             "titleTooltip": RDFE.Utils.namingSchemaLabel('o', self.editor.namingSchema()),
             "sortable": true,
+            "sorter": labelSorter,
             "formatter": labelFormatter
           }, {
             "field": 'type',
@@ -122,6 +153,15 @@
             }
           }]
         });
+
+        $list.on('page-change.bs.table', function(e, page, size) {
+          $(self.editor).trigger('rdf-editor-page', {"pageNo": page, "pageSize": size});
+        });
+
+        $list.on('sort.bs.table', function(e, name, order) {
+          $(self.editor).trigger('rdf-editor-page', {"sortName": name, "sortOrder": order});
+        });
+
         $($list).find('.add').on('click', function(e) {
           self.editor.editObject();
         });

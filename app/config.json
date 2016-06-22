@@ -58,5 +58,9 @@
         "url": "http://linkeddata.uriburner.com/sparql?query=construct+%7B+%3Fs+rdf%3Atype+<{0}>+%7D+from+<http%3A%2F%2Fmitko.dnsalias.net%3A8005%2Fdataspace>+where+%7B+%3Fs+rdf%3Atype+<{0}>%7D&should-sponge=&format=text%2Fturtle"
       }
     ]
+  },
+  "pageSettings": {
+    "pageNo": 1,
+    "pageSize": 10
   }
 }

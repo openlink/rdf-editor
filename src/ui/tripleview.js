@@ -48,11 +48,32 @@
             // remember last index for triple adding
             $list.data('maxindex', i);
 
+            var pageNumber = 1;
+            var pageSize = 10;
+            var sortName = 'subject';
+            var sortOrder = 'asc';
+            var pageSettings = self.editor.config.options["pageSettings"]
+            if (pageSettings["pageNo"]) {
+              pageNumber = pageSettings["pageNo"];
+            }
+            if (pageSettings["pageSize"]) {
+              pageSize = pageSettings["pageSize"];
+            }
+            if (pageSettings["sortName"]) {
+              sortName = pageSettings["sortName"];
+            }
+            if (pageSettings["sortOrder"]) {
+              sortOrder = pageSettings["sortOrder"];
+            }
+
             $list.bootstrapTable({
               "striped": true,
-              "sortName": 'subject',
               "pagination": true,
+              "pageNumber": pageNumber,
+              "pageSize": pageSize,
               "search": true,
+              "sortName": sortName,
+              "sortOrder": sortOrder,
               "searchAlign": 'left',
               "showHeader": true,
               "data": triples,
@@ -125,15 +146,25 @@
               self.editor.dataSetter(field, oldTriple, triple);
             });
 
+            $list.on('page-change.bs.table', function(e, page, size) {
+              $(self.editor).trigger('rdf-editor-page', {"pageNo": page, "pageSize": size});
+            });
+
+            $list.on('sort.bs.table', function(e, name, order) {
+              $(self.editor).trigger('rdf-editor-page', {"sortName": name, "sortOrder": order});
+            });
+
             $($list).find('.add').on('click', function(e) {
               self.editor.editTriple();
             });
+
             self.tripleTable = $list;
 
             if (callback) {
               callback();
             }
-          } else {
+          }
+          else {
             $(self.editor).trigger('rdf-editor-error', {
               "type": 'triple-list-error',
               "message": error
@@ -144,9 +175,11 @@
     };
 
     c.prototype.addTriple = function(t) {
-      var i = this.tripleTable.data('maxindex');
-      this.tripleTable.bootstrapTable('append', $.extend(t, { id: i}));
-      this.tripleTable.data('maxindex', i+1);
+      var self = this;
+
+      var i = self.tripleTable.data('maxindex');
+      self.tripleTable.bootstrapTable('append', $.extend(t, { id: i}));
+      self.tripleTable.data('maxindex', i+1);
     };
 
     return c;
