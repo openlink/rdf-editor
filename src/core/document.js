@@ -67,7 +67,7 @@ RDFE.Document.prototype.load = function(url, io, success, fail) {
     }
 
     // check for signed document
-    self.checkForSignature();
+    // self.checkForSignature();
 
     if (success) {
       success();
