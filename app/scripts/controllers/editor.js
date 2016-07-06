@@ -99,7 +99,7 @@ angular.module('myApp.editor', ['ngRoute'])
             var pageSearch = '';
             pageSearches = $location.search();
             for (var key in pageSearches) {
-              pageSearch += '&' + key + '=' + pageSearches[key];
+              pageSearch += '&' + key + '=' + encodeURIComponent(pageSearches[key]);
             }
             var newUrl = $location.path() + '?' + pageSearch;
             $timeout(function(){
