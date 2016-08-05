@@ -158,7 +158,6 @@ RDF_EDITOR_DIST = \
 	app/scripts/*.js \
 	app/styles/*.css \
 	app/tmpl/*.html \
-	css/bootstrap.css.map \
 	css/bootstrap-theme.css.map \
 	css/*.css \
 	e2e-tests/*.js \

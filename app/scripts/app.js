@@ -97,24 +97,24 @@ angular.module('myApp', [
   return val;
 }])
 
-.controller('AuthInfoDialogCtrl', ["$scope", "$modalInstance", "url", function($scope, $modalInstance, url) {
+.controller('AuthInfoDialogCtrl', ["$scope", "$uibModalInstance", "url", function($scope, $uibModalInstance, url) {
   $scope.username = "";
   $scope.password = "";
   $scope.url = url;
 
   $scope.ok = function() {
-    $modalInstance.close({
+    $uibModalInstance.close({
       username: $scope.username,
       password: $scope.password
     });
   };
 
   $scope.cancel = function() {
-    $modalInstance.dismiss();
+    $uibModalInstance.dismiss();
   };
 }])
 
-.factory('DocumentTree', ['$q', "$modal", 'usSpinnerService', 'Profile', 'RDFEConfig', function($q, $modal, usSpinnerService, Profile, RDFEConfig) {
+.factory('DocumentTree', ['$q', "$uibModal", 'usSpinnerService', 'Profile', 'RDFEConfig', function($q, $uibModal, usSpinnerService, Profile, RDFEConfig) {
   var locations = [],
       authCache = {};
 
@@ -133,7 +133,7 @@ angular.module('myApp', [
     if(forceUpdate !== false && (forceUpdate === true || !cached)) {
       return $q(function(resolve, reject) {
         usSpinnerService.stop('editor-spinner');
-        $modal.open({
+        $uibModal.open({
           templateUrl: 'tmpl/authinfodlg.html',
           controller: 'AuthInfoDialogCtrl',
           resolve: {
