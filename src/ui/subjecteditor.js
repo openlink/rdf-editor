@@ -192,6 +192,7 @@
           "striped": true,
           "sortName": 'subject',
           "pagination": true,
+          "paginationVAlign": 'top',
           "search": true,
           "searchAlign": 'left',
           "showHeader": true,
