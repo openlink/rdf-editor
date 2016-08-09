@@ -353,18 +353,15 @@ angular.module('myApp.editor', ['ngRoute'])
             }
           }
 
-          if (!v)
-            v = 'EAV';
-
-          return v;
+          return (v)? v: 'EAV';
         },
         "value": ['EAV', 'SPO']
       },
       "view": {
         "paramReference": 'uiMode',
         "value": {
-          "eav": ['statements', 'entities', 'attributes', 'values'],
-          "spo": ['triples', 'subjects', 'predicates', 'objects']
+          "EAV": ['statements', 'entities', 'attributes', 'values'],
+          "SPO": ['triples', 'subjects', 'predicates', 'objects']
         }
       },
 
