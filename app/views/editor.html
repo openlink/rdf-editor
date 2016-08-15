@@ -1,4 +1,4 @@
-</div>
+<div>
   <div class="btn-group" role="group">
     <button class="btn btn-default" type="button" id="dropdownMenu1" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">
       Actions
@@ -84,9 +84,20 @@
       </div>
       <div class="modal-body">
         <div class="form-group">
-          <label for="userID"class="col-sm-3 control-label">Preferred User ID</label>
+          <label for="userID" class="col-sm-3 control-label">Preferred User ID</label>
           <div class="col-sm-9">
             <input type="text" class="form-control" name="userID" id="userID" value="">
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="col-sm-3 control-label">Preferred Naming Schema</label>
+          <div class="col-sm-9">
+            <div class="radio">
+              <label><input type="radio" name="namingSchema" value="EAV"><strong>EAV</strong> (<strong>E</strong>ntity, <strong>A</strong>ttribute, <strong>V</strong>alue)</label>
+            </div>
+            <div class="radio">
+              <label><input type="radio" name="namingSchema" value="SPO"><strong>SPO</strong> (<strong>S</strong>ubject, <strong>P</strong>redicate, <strong>O</strong>bject)</label>
+            </div>
           </div>
         </div>
       </div>

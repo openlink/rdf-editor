@@ -16,17 +16,25 @@ angular.module('myApp.editor', ['ngRoute'])
     "statements": 'triples',
     "entities": 'subjects',
     "attributes": 'predicates',
-    "values": 'objects'
+    "values": 'objects',
+    "triples": 'triples',
+    "subjects": 'subjects',
+    "predicates": 'predicates',
+    "objects": 'objects'
   };
   $rootScope.spo2eav = {
     "triples": 'statements',
     "subjects": 'entities',
     "predicates": 'attributes',
-    "objects": 'values'
+    "objects": 'values',
+    "statements": 'statements',
+    "entities": 'entities',
+    "attributes": 'attributes',
+    "values": 'values'
   };
 })
 
-.factory('RDFEditor', ['$q', "$location", "$timeout", "usSpinnerService", 'RDFEConfig', 'Notification', 'DocumentTree', function($q, $location, $timeout, usSpinnerService, RDFEConfig, Notification, DocumentTree) {
+.factory('RDFEditor', ['$q', '$rootScope', '$location', "$timeout", "usSpinnerService", 'RDFEConfig', 'Notification', 'DocumentTree', function($q, $rootScope, $location, $timeout, usSpinnerService, RDFEConfig, Notification, DocumentTree) {
   var editor = null;
 
   function getEditor() {
@@ -102,10 +110,50 @@ angular.module('myApp.editor', ['ngRoute'])
               pageSearch += '&' + key + '=' + encodeURIComponent(pageSearches[key]);
             }
             var newUrl = $location.path() + '?' + pageSearch;
-            $timeout(function(){
+            $timeout(function() {
               $location.url(newUrl)
             });
-           });
+          }).on('rdf-editor-namingSchema', function(e, params) {
+            var newKey;
+            var newValue;
+            var transformArray = {
+              "triple:subject":      'statement:entity',
+              "triple:predicate":    'statement:attribute',
+              "triple:object":       'statement:value',
+              "spo:subject":         'eav:attribute',
+              "spo:predicate":       'eav:entity',
+              "spo:object":          'eav:value',
+              "statement:entity":    'triple:subject',
+              "statement:attribute": 'triple:predicate',
+              "statement:value":     'triple:object',
+              "eav:attribute":       'spo:subject',
+              "eav:entity":          'spo:predicate',
+              "eav:value":           'spo:object'
+            };
+            var uiMode = params["uiMode"];
+            var viewMode = params["viewMode"];
+            var pageSearch = '';
+            var pageSearches = $location.search();
+            for (var key in pageSearches) {
+              newKey = key;
+              newValue = pageSearches[key];
+              if (key === 'view') {
+                newValue = (uiMode === 'EAV')? $rootScope.spo2eav[newValue]: $rootScope.eav2spo[newValue];
+              }
+              else if (transformArray[key]) {
+                newKey = transformArray[key];
+              }
+              pageSearch += '&' + newKey + '=' + newValue;
+            }
+            var newUrl = $location.path() + '?' + pageSearch;
+            $rootScope.uiMode = uiMode;
+            $rootScope.viewMode = (uiMode === 'EAV')? $rootScope.spo2eav[viewMode]: $rootScope.eav2spo[viewMode];
+            $rootScope.radioViewMode = $rootScope.viewMode;
+
+            $timeout(function() {
+              $location.url(newUrl)
+            });
+          });
 
           resolve(editor);
         });
@@ -182,62 +230,57 @@ angular.module('myApp.editor', ['ngRoute'])
     var v = $routeParams["statement:value"]     || $routeParams["eav:value"];
     var view = $routeParams["view"];
     var uiMode = $routeParams["uiMode"];
+    var viewMode;
 
     if (s) {
-      $scope.viewMode = ((view === 'triples') || (view === 'statements'))? view :'subjects';
+      viewMode = ((view === 'triples') || (view === 'statements'))? view :'subjects';
     }
     else if (p) {
-      $scope.viewMode = ((view === 'triples') || (view === 'statements'))? view :'predicates';
+      viewMode = ((view === 'triples') || (view === 'statements'))? view :'predicates';
     }
     else if (o) {
-      $scope.viewMode = ((view === 'triples') || (view === 'statements'))? view :'objects';
+      viewMode = ((view === 'triples') || (view === 'statements'))? view :'objects';
     }
     else if (s || p || o) {
-      $scope.viewMode = 'triples';
+      viewMode = 'triples';
     }
     if (e) {
-      $scope.viewMode = ((view === 'triples') || (view === 'statements'))? view :'entities';
+      viewMode = ((view === 'triples') || (view === 'statements'))? view :'entities';
     }
     else if (a) {
-      $scope.viewMode = ((view === 'triples') || (view === 'statements'))? view :'entities';
+      viewMode = ((view === 'triples') || (view === 'statements'))? view :'entities';
     }
     else if (v) {
-      $scope.viewMode = ((view === 'triples') || (view === 'statements'))? view :'values';
+      viewMode = ((view === 'triples') || (view === 'statements'))? view :'values';
     }
     else if (e || a || v) {
-      $scope.viewMode = 'statements';
+      viewMode = 'statements';
     }
     else if (view) {
-      $scope.viewMode = view;
+      viewMode = view;
     }
 
     if (!uiMode) {
-      if      (['triples', 'subjects', 'predicates', 'objects'].indexOf($scope.viewMode) > -1) {
-        $scope.editor.config.options.namingSchema = 'SPO';
+      if      (['triples', 'subjects', 'predicates', 'objects'].indexOf(viewMode) > -1) {
         uiMode = 'SPO';
       }
-      else if (['statements', 'entities', 'entities', 'values'].indexOf($scope.viewMode) > -1) {
-        $scope.editor.config.options.namingSchema = 'EAV';
+      else if (['statements', 'entities', 'entities', 'values'].indexOf(viewMode) > -1) {
         uiMode = 'EAV';
+      }
+      if (!uiMode) {
+        var settings = $.jStorage.get('rdfe:settings', {});
+        uiMode = settings["namingSchema"];
       }
       if (!uiMode) {
         uiMode = $scope.editor.config.options.namingSchema;
       }
     }
-    $scope.uiMode = uiMode;
 
-    if (!$scope.viewMode) {
-      $scope.viewMode = $scope.editor.config.defaultView;
-      if (!$scope.viewMode) {
-        $scope.viewMode = 'statements';
+    if (!viewMode) {
+      viewMode = $scope.editor.config.defaultView;
+      if (!viewMode) {
+        viewMode = 'statements';
       }
-    }
-
-    if ($scope.uiMode === 'SPO') {
-      $scope.radioViewMode = $scope.viewMode;
-    }
-    else {
-      $scope.radioViewMode = $scope.eav2spo[$scope.viewMode];
     }
 
     // page settings params
@@ -264,6 +307,11 @@ angular.module('myApp.editor', ['ngRoute'])
       pageSettings.sortOrder = $routeParams["sortOrder"];
     }
 
+    $scope.editor.config.options.namingSchema = uiMode;
+
+    $rootScope.uiMode = uiMode;
+    $rootScope.viewMode = (uiMode === 'EAV')? $scope.spo2eav[viewMode]: $scope.eav2spo[viewMode];
+    $rootScope.radioViewMode = $scope.viewMode;
     $scope.editor.toggleView($scope.viewMode, $scope.uiMode)
   }
 
@@ -655,17 +703,14 @@ angular.module('myApp.editor', ['ngRoute'])
     $scope.$watch(function(scope) {
       return scope.radioViewMode;
     }, function(mode) {
-      if (!mode) {
+      if (!mode)
         return;
-      }
 
-      if ($scope.uiMode === 'SPO') {
-        $scope.viewMode = mode;
-      }
-      else {
-        $scope.viewMode = $scope.spo2eav[mode];
-      }
-      $scope.editor.toggleView($scope.viewMode, $scope.uiMode);
+      var viewMode = $scope.viewMode;
+      $scope.viewMode = ($scope.uiMode === 'EAV')? $scope.spo2eav[mode]: $scope.eav2spo[mode];
+      $scope.radioViewMode = $scope.eav2spo[$scope.radioViewMode];
+      if (viewMode !== $scope.viewMode)
+        $scope.editor.toggleView($scope.viewMode, $scope.uiMode);
     });
   }
 

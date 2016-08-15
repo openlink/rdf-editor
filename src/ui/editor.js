@@ -169,7 +169,7 @@ RDFE.Editor.prototype.toggleSpinner = function(on) {
 RDFE.Editor.prototype.toggleView = function(view, viewMode) {
   var self = this;
 
-  if (view === self.currentView) {
+  if (view === self.view) {
     return;
   }
 
@@ -180,26 +180,26 @@ RDFE.Editor.prototype.toggleView = function(view, viewMode) {
     else {
       self.createSubjectList();
     }
-    self.currentView = view;
+    self.view = view;
   }
   else if ((view === 'predicates') || ((view === 'attributes'))) {
     self.createPredicateList();
-    self.currentView = view;
+    self.view = view;
   }
   else if ((view === 'objects') || (view === 'values')) {
     self.createObjectList();
-    self.currentView = view;
+    self.view = view;
   }
   else {
     self.createTripleList();
-    if ((view === 'statements') || (view === 'triples')) {
-      self.currentView = view;
+    if ((view === 'triples') || (view === 'statements')) {
+      self.view = view;
     }
     else {
-      self.currentView = (viewMode === 'EAV')? 'statements': "triples";
+      self.view = (viewMode === 'EAV')? 'statements': "triples";
     }
   }
-  $(self).trigger('rdf-editor-page', {"view": self.currentView});
+  $(self).trigger('rdf-editor-page', {"view": self.view});
 };
 
 /**
@@ -208,7 +208,7 @@ RDFE.Editor.prototype.toggleView = function(view, viewMode) {
 RDFE.Editor.prototype.updateView = function() {
   var self = this;
 
-  if ((self.currentView === 'subjects') || (self.currentView === 'entities')) {
+  if ((self.view === 'subjects') || (self.view === 'entities')) {
     if (self.config.options['useEntityEditor'] === true) {
       self.createEntityList();
     }
@@ -216,10 +216,10 @@ RDFE.Editor.prototype.updateView = function() {
       self.createSubjectList();
     }
   }
-  else if ((self.currentView === 'predicates') || (self.currentView === 'attributes')) {
+  else if ((self.view === 'predicates') || (self.view === 'attributes')) {
     self.createPredicateList();
   }
-  else if ((self.currentView === 'objects') || (self.currentView === 'values')) {
+  else if ((self.view === 'objects') || (self.view === 'values')) {
     self.createObjectList();
   }
   else {
@@ -235,17 +235,38 @@ RDFE.Editor.prototype.settingsForm = function() {
   var $form = $("#settingsModal");
   var $settings = $.jStorage.get('rdfe:settings', {});
   $form.find('#userID').val($settings["userID"]);
+  $form.find('input[name="namingSchema"][value="'+$settings["namingSchema"]+'"]').attr('checked', 'checked');
 
   $form.modal();
   $form.find('.ok').off();
   $form.find('.ok').on("click", function (e) {
     e.preventDefault();
+    var $settings = $.jStorage.get('rdfe:settings', {});
     var userID = $form.find('#userID').val();
-    var $settings = {"userID":  userID};
-
+    var namingSchemaOld = $settings["namingSchema"];
+    var namingSchema = "";
+    var namingSchemaSelected = $form.find('input[name="namingSchema"]:checked');
+    if (namingSchemaSelected.length > 0) {
+      namingSchema = namingSchemaSelected.val();
+    }
+    var $settings = {
+      "userID":  userID,
+      "namingSchema": namingSchema
+    };
     $.jStorage.set('rdfe:settings', $settings)
 
     $form.modal('hide');
+
+    var uiMode = (['entities', 'attributes', 'values', 'statements'].indexOf(self.view) !== -1)? 'EAV': 'SPO';
+    if ((namingSchemaOld !== namingSchema) || (uiMode !== namingSchema)) {
+      self.tripleView = null;
+      self.subjectView = null;
+      self.predicateView = null;
+      self.objectView = null;
+
+      self.config.options.namingSchema = namingSchema;
+      $(self).trigger('rdf-editor-namingSchema', {"uiMode": namingSchema, "viewMode": self.view});
+    }
   });
 };
 
