@@ -313,14 +313,14 @@ RDFE.Editor.prototype.exportForm = function() {
   var $form = $("#exportModal");
 
   $form.find('#content').val('');
+  $form.modal();
+  $(self).trigger('rdf-editor-spinner-start', 'export-spinner');
+
   self.doc.store.graph(self.doc.graph, function(success, graph){
     var serialized = graph.toNT();
     $form.find('#content').val(serialized);
     $(self).trigger('rdf-editor-spinner-done', 'export-spinner');
   });
-
-  $form.modal();
-  $(self).trigger('rdf-editor-spinner-start', 'export-spinner');
 };
 
 /**
