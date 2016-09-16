@@ -69,6 +69,7 @@
             $list.bootstrapTable({
               "striped": true,
               "pagination": true,
+              "paginationVAlign": 'top',
               "pageNumber": pageNumber,
               "pageSize": pageSize,
               "search": true,
