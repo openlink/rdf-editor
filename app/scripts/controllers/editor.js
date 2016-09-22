@@ -470,7 +470,7 @@ angular.module('myApp.editor', ['ngRoute'])
 
       "uri": {},
       "accept": ['text/turtle', 'application/ld+json'],
-      "ioType": ['http', 'ldp', 'webdav', 'sparql'],
+      "ioType": ['http', 'ldp', 'dav', 'webdav', 'sparql'],
       "ioTimeout": {},
       "sparqlEndpoint": {},
 
@@ -669,8 +669,8 @@ angular.module('myApp.editor', ['ngRoute'])
           if (DocumentTree.getAuthInfo) {
             DocumentTree.getAuthInfo(uri, false).then(function(authInfo) {
               if (authInfo) {
-                io_rdfe.options.username = authInfo.username;
-                io_rdfe.options.password = authInfo.password;
+                io.options.username = authInfo.username;
+                io.options.password = authInfo.password;
               }
               loadUrl(uri, io);
             });
