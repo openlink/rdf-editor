@@ -469,6 +469,7 @@ angular.module('myApp.editor', ['ngRoute'])
       "sortOrder": {},
 
       "uri": {},
+      "data": {},
       "accept": ['text/turtle', 'application/ld+json'],
       "ioType": ['http', 'ldp', 'dav', 'webdav', 'sparql'],
       "ioTimeout": {},
@@ -569,6 +570,7 @@ angular.module('myApp.editor', ['ngRoute'])
 
   function processParams() {
     var uri = $routeParams.uri;
+    var data = $routeParams.data;
     var accept = $routeParams.accept;
     if (accept === 'turtle') {
       accept = 'text/turtle';
@@ -593,7 +595,7 @@ angular.module('myApp.editor', ['ngRoute'])
     }
 
     // and if we are told, then we create a new document by clearing the old one
-    else if ((newDocument === "true") || ((newDocument === "false") && !uri)) {
+    else if ((newDocument === "true") || ((newDocument === "false") && !uri && !data )) {
       $scope.doc.new(function() {
         toggleView();
         $scope.editor.saveSubject = null;
@@ -612,7 +614,7 @@ angular.module('myApp.editor', ['ngRoute'])
     }
 
     // otherwise we try to load the requested document
-    else if (uri) {
+    else if (uri || data) {
       var content = $.jStorage.get('rdfe:savedDocument', null);
       if (content) {
         $scope.doc.store.clear(function() {
@@ -638,49 +640,71 @@ angular.module('myApp.editor', ['ngRoute'])
         });
       }
       else {
-        try {
-          var io = getIO(accept, ioType, sparqlEndpoint, ioTimeout);
-          var loadUrl= function(url, io) {
-            $scope.editor.toggleSpinner(true);
-            $scope.doc.load(url, io, function() {
-              toggleView();
-              $scope.editor.updateView();
-              $scope.$apply(function() {
-                // this is essentially a no-op to force the ui to update the url view
-                if (newDocument === "false") {
-                  $scope.doc.url = null;
-                }
-                else {
-                  $scope.doc.url = uri;
-                  $scope.doc.io = io;
-                }
-              });
-              showViewEditor();
-              $scope.editor.docChanged();
-              $scope.editor.toggleSpinner(false);
-            }, function(state, data, status, xhr) {
-              var msg = (state && state.message)? state.message: 'Failed to load document';
-              Notification.notify('error', msg);
-              $scope.editor.toggleSpinner(false);
-            });
-          };
+        var loadUri = function() {
+          if (!uri)
+            return;
 
-          // see if we have auth information cached
-          if (DocumentTree.getAuthInfo) {
-            DocumentTree.getAuthInfo(uri, false).then(function(authInfo) {
-              if (authInfo) {
-                io.options.username = authInfo.username;
-                io.options.password = authInfo.password;
-              }
+          try {
+            var io = getIO(accept, ioType, sparqlEndpoint, ioTimeout);
+            var loadUrl= function(url, io) {
+              $scope.editor.toggleSpinner(true);
+              $scope.doc.load(url, io, function() {
+                toggleView();
+                $scope.editor.updateView();
+                $scope.$apply(function() {
+                  // this is essentially a no-op to force the ui to update the url view
+                  if (newDocument === "false") {
+                    $scope.doc.url = null;
+                  }
+                  else {
+                    $scope.doc.url = uri;
+                    $scope.doc.io = io;
+                  }
+                });
+                showViewEditor();
+                $scope.editor.docChanged();
+                $scope.editor.toggleSpinner(false);
+              }, function(state, data, status, xhr) {
+                var msg = (state && state.message)? state.message: 'Failed to load document';
+                Notification.notify('error', msg);
+                $scope.editor.toggleSpinner(false);
+              });
+            };
+
+            // see if we have auth information cached
+            if (DocumentTree.getAuthInfo) {
+              DocumentTree.getAuthInfo(uri, false).then(function(authInfo) {
+                if (authInfo) {
+                  io.options.username = authInfo.username;
+                  io.options.password = authInfo.password;
+                }
+                loadUrl(uri, io);
+              });
+            }
+            else {
               loadUrl(uri, io);
-            });
+            }
           }
-          else {
-            loadUrl(uri, io);
+          catch(e) {
+            Notification.notify('error', e);
           }
         }
-        catch(e) {
-          Notification.notify('error', e);
+
+        if (data) {
+          var success = function (result) {
+            $scope.editor.updateView();
+            $scope.editor.docChanged();
+            Notification.notify('success', 'Successfully imported RDF data.');
+            loadUri();
+          };
+          var fail = function (error) {
+            Notification.notify('error', 'Failed to import RDF data. <br /> ' + error.message);
+            loadUri();
+          };
+          $scope.doc.import(data, success, fail);
+        }
+        else {
+          loadUri();
         }
       }
     }
