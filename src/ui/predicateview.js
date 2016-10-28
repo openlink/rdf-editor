@@ -36,7 +36,7 @@
 
     var labelSorter = function(a, b) {
       function format(v) {
-        return '<a href="{0}" target="_blank">{0}</a>'.format(v);
+        return '<a href="{0}">{0}</a>'.format(v);
       }
       a = format(a);
       b = format(b);

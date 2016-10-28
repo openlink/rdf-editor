@@ -30,27 +30,32 @@
       this.editFct = params.editFct;
     };
 
-    var labelFormatter = function(value, row, index) {
-      if (row.type === 'IRI') {
-        return '<a href="{1}" target="_blank">{0}</a>'.format(RDFE.Utils.uri2name(row.label), row.label);
-      }
-      return row.label;
-    };
-
-    var labelSorter = function(a, b) {
-      if (a > b) return 1;
-      if (a < b) return -1;
-      return 0;
-    };
-
-    var typeFormatter = function(value, row, index) {
-      return row.type;
-    };
-
     c.prototype.render = function(container, callback) {
       var self = this;
 
       self.editor.doc.listObjects(function(objects) {
+        var labelFormatter = function(value, row, index) {
+          if (row.type === 'IRI') {
+            var ontologyManager = self.editor.ontologyManager;
+            var _class = 'class="rdfe-green-link"';
+            if (ontologyManager.ontologyClassByURI(row.label))
+              _class = '';
+
+            return '<a href="{1}" target="_blank" {2}>{0}</a>'.format(RDFE.Utils.uri2name(row.label), row.label, _class);
+          }
+          return row.label;
+        };
+
+        var labelSorter = function(a, b) {
+          if (a > b) return 1;
+          if (a < b) return -1;
+          return 0;
+        };
+
+        var typeFormatter = function(value, row, index) {
+          return row.type;
+        };
+
         var objectListActionsFormatter = function(value, row, index) {
           return [
             '<a class="edit ml10" href="javascript:void(0)" title="Edit or add a new '+RDFE.Utils.namingSchemaLabel('s', self.editor.namingSchema(), false, true)+' and '+RDFE.Utils.namingSchemaLabel('p', self.editor.namingSchema(), false, true)+' pairs associated with this '+RDFE.Utils.namingSchemaLabel('o', self.editor.namingSchema(), false, true)+'">',
