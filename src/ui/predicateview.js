@@ -36,7 +36,7 @@
 
     var labelSorter = function(a, b) {
       function format(v) {
-        return '<a href="{0}" target="_blank">{0}</a>'.format(v);
+        return '<a href="{0}">{0}</a>'.format(v);
       }
       a = format(a);
       b = format(b);
@@ -110,11 +110,12 @@
             "sorter": labelSorter,
             "formatter": labelFormatter
           }, {
-            "field": 'count',
+            "field": 'items',
             "title": 'Count',
             "titleTooltip": 'Count',
             "sortable": true,
             "align": 'right',
+            "sorter": self.editor.countSorter,
             "class": 'rdfe-small-column',
             "formatter": self.editor.countFormatter
           }, {

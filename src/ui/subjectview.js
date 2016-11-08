@@ -30,25 +30,30 @@
       this.editFct = params.editFct;
     };
 
-    var labelFormatter = function(value, row, index) {
-      return '<a href="{1}" target="_blank">{0}</a>'.format(RDFE.Utils.uri2name(row.uri), row.uri);
-    };
-
-    var labelSorter = function(a, b) {
-      function format(v) {
-        return '<a href="{1}">{0}</a>'.format(RDFE.Utils.uri2name(v), v);
-      }
-      a = format(a);
-      b = format(b);
-      if (a > b) return 1;
-      if (a < b) return -1;
-      return 0;
-    };
-
     c.prototype.render = function(container, callback) {
       var self = this;
 
       self.editor.doc.listSubjects(function(subjects) {
+        var labelFormatter = function(value, row, index) {
+          var ontologyManager = self.editor.ontologyManager;
+          var _class = 'class="rdfe-green-link"';
+          if (ontologyManager.ontologyClassByURI(row.label))
+            _class = '';
+
+          return '<a href="{1}" target="_blank" {2}>{0}</a>'.format(RDFE.Utils.uri2name(row.uri), row.uri, _class);
+        };
+
+        var labelSorter = function(a, b) {
+          function format(v) {
+            return '<a href="{1}">{0}</a>'.format(RDFE.Utils.uri2name(v), v);
+          }
+          a = format(a);
+          b = format(b);
+          if (a > b) return 1;
+          if (a < b) return -1;
+          return 0;
+        };
+
         var subjectListActionsFormatter = function(value, row, index) {
           return [
             '<a class="edit ml10" href="javascript:void(0)" title="Edit or add a new '+RDFE.Utils.namingSchemaLabel('p', self.editor.namingSchema(), false, true)+' name and '+RDFE.Utils.namingSchemaLabel('o', self.editor.namingSchema(), false, true)+' pairs associated with this '+RDFE.Utils.namingSchemaLabel('s', self.editor.namingSchema(), false, true)+'">',
@@ -110,10 +115,11 @@
             "sorter": labelSorter,
             "formatter": labelFormatter
           }, {
-            "field": 'count',
+            "field": 'items',
             "title": 'Count',
             "titleTooltip": 'Count',
             "sortable": true,
+            "sorter": self.editor.countSorter,
             "align": 'right',
             "class": 'rdfe-small-column',
             "formatter": self.editor.countFormatter

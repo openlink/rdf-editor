@@ -32,33 +32,38 @@ RDFE.Editor = function(params, callback) {
   var self = this;
   var options = $.extend({"initOntologyManager": true}, params["options"]);
 
-  // initialize our ontology manager
-  self.ontologyManager = new RDFE.OntologyManager(params["config"].options);
-  if (options.initOntologyManager === true) {
-    self.ontologyManager.init();
-  }
   self.config = params["config"];
   self.maxLength = self.config.options["maxLabelLength"];
   self.spinner = 0;
 
-  // create our main document
-  var docParams = {
-    "config": params["config"],
-    "documentTree": params["documentTree"],
-    "ontologyManager": self.ontologyManager
-  };
-  new RDFE.Document(docParams, function(doc) {
-    self.doc = doc;
+  // initialize our ontology manager
+  self.ontologyManager = new RDFE.OntologyManager(params["config"].options);
+  var success = function () {
+    // create our main document
+    var docParams = {
+      "config": params["config"],
+      "documentTree": params["documentTree"],
+      "ontologyManager": self.ontologyManager
+    };
+    new RDFE.Document(docParams, function(doc) {
+      self.doc = doc;
 
-    // store the config for future access
-    $(self.doc).on('docChanged', function(e, doc) {
-      self.docChanged();
+      // store the config for future access
+      $(self.doc).on('docChanged', function(e, doc) {
+        self.docChanged();
+      });
+
+      if (callback) {
+        callback(self);
+      }
     });
-
-    if (callback) {
-      callback(self);
-    }
-  });
+  }
+  if (options.initOntologyManager === true) {
+    self.ontologyManager.init({"success": success});
+  }
+  else {
+    success();
+  }
 };
 
 RDFE.Editor.prototype.namingSchema = function() {
@@ -79,6 +84,14 @@ RDFE.Editor.prototype.nodeFormatter = function(value) {
 
 RDFE.Editor.prototype.countFormatter = function(value, row, index) {
   return row.items.length;
+};
+
+RDFE.Editor.prototype.countSorter = function(a, b) {
+  a = a.length;
+  b = b.length;
+  if (a > b) return 1;
+  if (a < b) return -1;
+  return 0;
 };
 
 RDFE.Editor.prototype.editableSubject = function(editor) {
