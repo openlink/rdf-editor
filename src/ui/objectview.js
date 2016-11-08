@@ -120,10 +120,11 @@
             "sortable": true,
             "formatter": typeFormatter
           }, {
-            "field": 'count',
+            "field": 'items',
             "title": 'Count',
             "titleTooltip": 'Count',
             "sortable": true,
+            "sorter": self.editor.countSorter,
             "align": 'right',
             "class": 'rdfe-small-column',
             "formatter": self.editor.countFormatter

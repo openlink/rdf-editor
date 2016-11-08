@@ -110,11 +110,12 @@
             "sorter": labelSorter,
             "formatter": labelFormatter
           }, {
-            "field": 'count',
+            "field": 'items',
             "title": 'Count',
             "titleTooltip": 'Count',
             "sortable": true,
             "align": 'right',
+            "sorter": self.editor.countSorter,
             "class": 'rdfe-small-column',
             "formatter": self.editor.countFormatter
           }, {

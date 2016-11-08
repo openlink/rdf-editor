@@ -86,6 +86,14 @@ RDFE.Editor.prototype.countFormatter = function(value, row, index) {
   return row.items.length;
 };
 
+RDFE.Editor.prototype.countSorter = function(a, b) {
+  a = a.length;
+  b = b.length;
+  if (a > b) return 1;
+  if (a < b) return -1;
+  return 0;
+};
+
 RDFE.Editor.prototype.editableSubject = function(editor) {
   return function(triple) {
     return {
