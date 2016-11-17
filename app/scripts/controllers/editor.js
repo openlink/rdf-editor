@@ -647,13 +647,13 @@ angular.module('myApp.editor', ['ngRoute'])
           try {
             var io = getIO(accept, ioType, sparqlEndpoint, ioTimeout);
             var loadUrl= function(url, io) {
-              $scope.editor.toggleSpinner(true);
-              $scope.doc.load(url, io, function() {
+              var loadFinished = function(loadSuccess) {
                 toggleView();
                 $scope.editor.updateView();
+                $scope.editor.toggleSpinner(false);
                 $scope.$apply(function() {
                   // this is essentially a no-op to force the ui to update the url view
-                  if (newDocument === "false") {
+                  if (!loadSuccess || (newDocument === "false")) {
                     $scope.doc.url = null;
                   }
                   else {
@@ -663,11 +663,14 @@ angular.module('myApp.editor', ['ngRoute'])
                 });
                 showViewEditor();
                 $scope.editor.docChanged();
-                $scope.editor.toggleSpinner(false);
+              }
+              $scope.editor.toggleSpinner(true);
+              $scope.doc.load(url, io, function() {
+                loadFinished(true);
               }, function(state, data, status, xhr) {
                 var msg = (state && state.message)? state.message: 'Failed to load document';
                 Notification.notify('error', msg);
-                $scope.editor.toggleSpinner(false);
+                loadFinished(false);
               });
             };
 
