@@ -478,7 +478,9 @@ angular.module('myApp.editor', ['ngRoute'])
       "newDocument": ['true', 'false'],
       "saveDocument": ['true', 'false'],
 
-      "newStatement": ['true', 'false']
+      "newStatement": ['true', 'false'],
+
+      "error.msg": {}
     };
     for (var key in $routeParams) {
       if (!$routeParams.hasOwnProperty(key))
@@ -715,6 +717,11 @@ angular.module('myApp.editor', ['ngRoute'])
       toggleView();
       showViewEditor();
     }
+
+    if ($routeParams["error.msg"]) {
+      Notification.notify('error', $routeParams["error.msg"]);
+    }
+
     $.jStorage.deleteKey('rdfe:savedDocument');
 
     if (!$scope.ontologyView) {
