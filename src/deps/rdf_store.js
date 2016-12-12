@@ -2591,7 +2591,7 @@ http.request = function (params, cb) {
     if (!params.host && params.hostname) {
         params.host = params.hostname;
     }
-    
+
     if (!params.scheme) params.scheme = window.location.protocol.split(':')[0];
     if (!params.host) {
         params.host = window.location.hostname || window.location.host;
@@ -2603,7 +2603,7 @@ http.request = function (params, cb) {
         params.host = params.host.split(':')[0];
     }
     if (!params.port) params.port = params.scheme == 'https' ? 443 : 80;
-    
+
     var req = new Request(new xhrHttp, params);
     if (cb) req.on('response', cb);
     return req;
@@ -2724,20 +2724,20 @@ var Request = module.exports = function (xhr, params) {
     self.writable = true;
     self.xhr = xhr;
     self.body = [];
-    
+
     self.uri = (params.scheme || 'http') + '://'
         + params.host
         + (params.port ? ':' + params.port : '')
         + (params.path || '/')
     ;
-    
+
     if (typeof params.withCredentials === 'undefined') {
         params.withCredentials = true;
     }
 
     try { xhr.withCredentials = params.withCredentials }
     catch (e) {}
-    
+
     xhr.open(
         params.method || 'GET',
         self.uri,
@@ -2745,7 +2745,7 @@ var Request = module.exports = function (xhr, params) {
     );
 
     self._headers = {};
-    
+
     if (params.headers) {
         var keys = objectKeys(params.headers);
         for (var i = 0; i < keys.length; i++) {
@@ -2755,7 +2755,7 @@ var Request = module.exports = function (xhr, params) {
             self.setHeader(key, value);
         }
     }
-    
+
     if (params.auth) {
         //basic auth
         this.setHeader('Authorization', 'Basic ' + Base64.btoa(params.auth));
@@ -2765,11 +2765,11 @@ var Request = module.exports = function (xhr, params) {
     res.on('close', function () {
         self.emit('close');
     });
-    
+
     res.on('ready', function () {
         self.emit('response', res);
     });
-    
+
     xhr.onreadystatechange = function () {
         // Fix for IE9 bug
         // SCRIPT575: Could not complete the operation due to error c00c023f
@@ -2838,7 +2838,7 @@ Request.prototype.end = function (s) {
         }
         var body = new(this.body[0].constructor)(len);
         var k = 0;
-        
+
         for (var i = 0; i < this.body.length; i++) {
             var b = this.body[i];
             for (var j = 0; j < b.length; j++) {
@@ -2926,13 +2926,13 @@ function parseHeaders (res) {
     for (var i = 0; i < lines.length; i++) {
         var line = lines[i];
         if (line === '') continue;
-        
+
         var m = line.match(/^([^:]+):\s*(.*)/);
         if (m) {
             var key = m[1].toLowerCase(), value = m[2];
-            
+
             if (headers[key] !== undefined) {
-            
+
                 if (isArray(headers[key])) {
                     headers[key].push(value);
                 }
@@ -2971,7 +2971,7 @@ Response.prototype.handle = function (res) {
         catch (err) {
             capable.status2 = false;
         }
-        
+
         if (capable.status2) {
             this.emit('ready');
         }
@@ -2985,7 +2985,7 @@ Response.prototype.handle = function (res) {
             }
         }
         catch (err) {}
-        
+
         try {
             this._emitData(res);
         }
@@ -2999,12 +2999,12 @@ Response.prototype.handle = function (res) {
             this.emit('ready');
         }
         this._emitData(res);
-        
+
         if (res.error) {
             this.emit('error', this.getResponse(res));
         }
         else this.emit('end');
-        
+
         this.emit('close');
     }
 };
@@ -4901,7 +4901,7 @@ Writable.prototype.write = function(chunk, encoding, cb) {
     chunk = new Buffer(chunk);
   if (isArrayBuffer(chunk) && typeof Uint8Array !== 'undefined')
     chunk = new Buffer(new Uint8Array(chunk));
-  
+
   if (Buffer.isBuffer(chunk))
     encoding = 'buffer';
   else if (!encoding)
@@ -19611,7 +19611,7 @@ Store.prototype._nodeToQuery = function(term) {
 	    return "<" + term.valueOf() + ">";
 	}
     } else {
-	return term.toString();
+	return term.toString(true);
     }
 };
 
@@ -23552,14 +23552,20 @@ module.exports = /*
         peg$c592 = "^^",
         peg$c593 = peg$literalExpectation("^^", false),
         peg$c594 = function(s, e) {
+            var unescaped = s.value
+              .replace(/\\"/g, '"')
+              .replace(/\\t/g, '\t')
+              .replace(/\\n/g, '\n')
+              .replace(/\\r/g, '\r')
+              .replace(/\\\\/g, '\\');
             if(typeof(e) === "string" && e.length > 0) {
-            return {token:'literal', value:s.value, lang:e.slice(1), type:null}
+            return {token:'literal', value:unescaped, lang:e.slice(1), type:null}
         } else {
             if(e != null && typeof(e) === "object") {
         	e.shift(); // remove the '^^' char
-        	return {token:'literal', value:s.value, lang:null, type:e[0] }
+        	return {token:'literal', value:unescaped, lang:null, type:e[0] }
             } else {
-        	return { token:'literal', value:s.value, lang:null, type:null }
+        	return { token:'literal', value:unescaped, lang:null, type:null }
             }
         }
         },
@@ -46933,7 +46939,13 @@ RDFModel.BlankNode.prototype.valueOf = function() {
 
 RDFModel.Literal = function(value, language, datatype) {
     RDFModel.RDFNode.call(this, "Literal");
-    this.nominalValue = value;
+    var unescaped = value
+      .replace(/\\"/g, '"')
+      .replace(/\\t/g, '\t')
+      .replace(/\\n/g, '\n')
+      .replace(/\\r/g, '\r')
+      .replace(/\\\\/g, '\\');
+    this.nominalValue = unescaped;
     if(language != null) {
 	this.language = language;
     } else if(datatype != null) {
@@ -46943,8 +46955,17 @@ RDFModel.Literal = function(value, language, datatype) {
 
 RDFModel.Literal.prototype = _.create(RDFModel.RDFNode.prototype,{'constructor':RDFModel.Literal});
 
-RDFModel.Literal.prototype.toString = function(){
-    var tmp = '"'+this.nominalValue+'"';
+RDFModel.Literal.prototype.toString = function(escapeIt){
+    var tmp = this.nominalValue;
+    if (escapeIt) {
+      tmp = tmp
+        .replace(/\\/g, '\\\\')
+        .replace(/\t/g, '\\t')
+        .replace(/\n/g, '\\n')
+        .replace(/\r/g, '\\r')
+        .replace(/\"/g, '\\"');
+    }
+    var tmp = '"'+tmp+'"';
     if(this.language != null) {
 	tmp = tmp + "@" + this.language;
     } else if(this.datatype != null || this.type) {
@@ -46955,7 +46976,7 @@ RDFModel.Literal.prototype.toString = function(){
 };
 
 RDFModel.Literal.prototype.toNT = function() {
-    return this.toString();
+    return this.toString(true);
 };
 
 RDFModel.Literal.prototype.valueOf = function() {
