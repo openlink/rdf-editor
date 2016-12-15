@@ -167,7 +167,7 @@ RDFE.isBlankNode = function(v) {
  *
  */
 RDFE.ontologyByPrefix = function(prefix, callback) {
-  var host = 'http://prefix.cc/{0}.file.json'.format(prefix);
+  var host = location.protocol+'//prefix.cc/{0}.file.json'.format(prefix);
   $.ajax({
     "url": host,
     "type": 'GET',
@@ -187,7 +187,7 @@ RDFE.ontologyByPrefix = function(prefix, callback) {
  *
  */
 RDFE.prefixByOntology = function(uri, callback) {
-  var host = 'http://lov.okfn.org/dataset/lov/api/v2/vocabulary/autocomplete?q='+encodeURIComponent(RDFE.Utils.trim(uri, '#'));
+  var host = location.protocol+'//lov.okfn.org/dataset/lov/api/v2/vocabulary/autocomplete?q='+encodeURIComponent(RDFE.Utils.trim(uri, '#'));
   $.ajax({
     "url": host,
     "type": 'GET',
