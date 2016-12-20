@@ -76,7 +76,7 @@ angular.module('myApp.fileBrowser', ['ngRoute', 'ui.bootstrap'])
 
   $scope.setCurrentLocation = function(location) {
     $scope.resetUI();
-    if (location != $scope.currentLocation) {
+    if (location !== $scope.currentLocation) {
       if (location.httpStatus) {
         var authFunction;
         if (DocumentTree.getAuthInfo) {
@@ -110,6 +110,7 @@ angular.module('myApp.fileBrowser', ['ngRoute', 'ui.bootstrap'])
         $scope.updateCurrentLocation(location);
         $scope.updateCurrentFolder(location);
       }
+      DocumentTree.selectRecentLocation(location.url, location.ioType);
     }
   };
 
@@ -226,6 +227,7 @@ angular.module('myApp.fileBrowser', ['ngRoute', 'ui.bootstrap'])
       }
     }
     $scope.locations.push(location);
+    DocumentTree.addRecentLocation(location.url, location.ioType);
   };
 
   $scope.removeLocation = function(location) {
@@ -235,6 +237,7 @@ angular.module('myApp.fileBrowser', ['ngRoute', 'ui.bootstrap'])
         if (location === $scope.currentLocation) {
           $scope.setCurrentLocation($scope.locations[0]);
         }
+        DocumentTree.deleteRecentLocation(location.url, location.ioType);
         return;
       }
     }

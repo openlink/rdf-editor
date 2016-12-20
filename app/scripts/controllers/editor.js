@@ -37,6 +37,39 @@ angular.module('myApp.editor', ['ngRoute'])
 .factory('RDFEditor', ['$q', '$rootScope', '$location', "$timeout", "usSpinnerService", 'RDFEConfig', 'Notification', 'DocumentTree', function($q, $rootScope, $location, $timeout, usSpinnerService, RDFEConfig, Notification, DocumentTree) {
   var editor = null;
 
+  function prepareUrl(uiMode) {
+    var newKey;
+    var newValue;
+    var transformArray = {
+      "triple:subject":      'statement:entity',
+      "triple:predicate":    'statement:attribute',
+      "triple:object":       'statement:value',
+      "spo:subject":         'eav:attribute',
+      "spo:predicate":       'eav:entity',
+      "spo:object":          'eav:value',
+      "statement:entity":    'triple:subject',
+      "statement:attribute": 'triple:predicate',
+      "statement:value":     'triple:object',
+      "eav:attribute":       'spo:subject',
+      "eav:entity":          'spo:predicate',
+      "eav:value":           'spo:object'
+    };
+    var pageSearch = '';
+    var pageSearches = $location.search();
+    for (var key in pageSearches) {
+      newKey = key;
+      newValue = pageSearches[key];
+      if (key === 'view') {
+        newValue = (uiMode === 'EAV')? $rootScope.spo2eav[newValue]: $rootScope.eav2spo[newValue];
+      }
+      else if (transformArray[key]) {
+        newKey = transformArray[key];
+      }
+      pageSearch += '&' + newKey + '=' + newValue;
+    }
+    return $location.path() + '?' + pageSearch;
+  }
+
   function getEditor() {
     if (editor) {
       return $q.when(editor);
@@ -114,38 +147,9 @@ angular.module('myApp.editor', ['ngRoute'])
               $location.url(newUrl)
             });
           }).on('rdf-editor-namingSchema', function(e, params) {
-            var newKey;
-            var newValue;
-            var transformArray = {
-              "triple:subject":      'statement:entity',
-              "triple:predicate":    'statement:attribute',
-              "triple:object":       'statement:value',
-              "spo:subject":         'eav:attribute',
-              "spo:predicate":       'eav:entity',
-              "spo:object":          'eav:value',
-              "statement:entity":    'triple:subject',
-              "statement:attribute": 'triple:predicate',
-              "statement:value":     'triple:object',
-              "eav:attribute":       'spo:subject',
-              "eav:entity":          'spo:predicate',
-              "eav:value":           'spo:object'
-            };
             var uiMode = params["uiMode"];
             var viewMode = params["viewMode"];
-            var pageSearch = '';
-            var pageSearches = $location.search();
-            for (var key in pageSearches) {
-              newKey = key;
-              newValue = pageSearches[key];
-              if (key === 'view') {
-                newValue = (uiMode === 'EAV')? $rootScope.spo2eav[newValue]: $rootScope.eav2spo[newValue];
-              }
-              else if (transformArray[key]) {
-                newKey = transformArray[key];
-              }
-              pageSearch += '&' + newKey + '=' + newValue;
-            }
-            var newUrl = $location.path() + '?' + pageSearch;
+            var newUrl = prepareUrl(uiMode);
             $rootScope.uiMode = uiMode;
             $rootScope.viewMode = (uiMode === 'EAV')? $rootScope.spo2eav[viewMode]: $rootScope.eav2spo[viewMode];
             $rootScope.radioViewMode = $rootScope.viewMode;
@@ -162,7 +166,8 @@ angular.module('myApp.editor', ['ngRoute'])
   }
 
   return {
-    "getEditor": getEditor
+    "getEditor": getEditor,
+    "prepareUrl": prepareUrl
   };
 }])
 
@@ -594,6 +599,14 @@ angular.module('myApp.editor', ['ngRoute'])
       $scope.doc.io = getIO(accept, ioType, sparqlEndpoint, ioTimeout);
       $scope.saveDocument();
       $scope.editor.updateView();
+
+      // clean IO related params
+      $location.search('saveDocument', null)
+
+      var newUrl = RDFEditor.prepareUrl($scope.uiMode);
+      $timeout(function() {
+        $location.url(newUrl)
+      });
     }
 
     // and if we are told, then we create a new document by clearing the old one
