@@ -748,6 +748,30 @@ angular.module('myApp.editor', ['ngRoute'])
     });
   }
 
+  $scope.newDocument = function() {
+    $scope.doc.new(function() {
+      toggleView();
+      $scope.editor.saveSubject = null;
+      $scope.editor.updateView();
+      showViewEditor();
+
+      // clean IO related params
+      $location.search('uri', null)
+      $location.search('data', null)
+      $location.search('accept', null)
+      $location.search('ioType', null)
+      $location.search('ioTimeout', null)
+      $location.search('sparqlEndpoint', null)
+
+      var newUrl = RDFEditor.prepareUrl($scope.uiMode);
+      $timeout(function() {
+        $location.url(newUrl)
+      });
+    }, function() {
+      Notification.notity('error', "Failed to clear Document for unknown reasons.");
+    });
+  };
+
   function saveCheck(cbSave, myUrl, myIo) {
     if (!myUrl) {
       myUrl = $scope.doc.url;

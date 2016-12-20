@@ -5,7 +5,7 @@
       <span class="caret"></span>
     </button>
     <ul class="dropdown-menu" aria-labelledby="dropdownMenu1">
-      <li><a href="#/editor?newDocument=true" title="New Document"><span class="glyphicon glyphicon-open" aria-hidden="true"></span> New</a></li>
+      <li><a ng-click="newDocument(); $event.preventDefault();" href="#" title="New Document"><span class="glyphicon glyphicon-open" aria-hidden="true"></span> New</a></li>
       <li><a ng-click="openDocument(); $event.preventDefault();" href="#" title="Open a Document"><span class="glyphicon glyphicon-open" aria-hidden="true"></span> Open</a></li>
       <li role="separator" class="divider"></li>
       <li><a ng-click="saveDocument(); $event.preventDefault();" href="#" title="Save the current document"><span class="glyphicon glyphicon-save" aria-hidden="true"></span> Save</a></li>
