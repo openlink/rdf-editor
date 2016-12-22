@@ -236,16 +236,22 @@ RDFE.Document.prototype.import = function(content, contentType, success, fail) {
   if (contentType === 'application/ld+json') {
     self.importJSON(content, success, fail);
   }
+  else if (contentType === 'application/rdf+xml') {
+    self.importRDF(content, success, fail);
+  }
   else if (contentType === 'text/turtle') {
     self.importTurtle(content, success, fail);
   }
   else {
     var _fail = function (_error) {
       var __fail = function (__error) {
-        var error = new Error();
-        error.name = 'SyntaxError';
-        error.message = _error.message + ' or ' + __error.message;
-        fail(error);
+        var _fail = function (_error) {
+          var error = new Error();
+          error.name = 'SyntaxError';
+          error.message = _error.message + ' or ' + __error.message;
+          fail(error);
+        };
+        self.importRDF(content, success, __fail);
       };
       self.importJSON(content, success, __fail);
     };
@@ -285,6 +291,19 @@ RDFE.Document.prototype.importJSON = function(content, success, fail) {
   var self = this;
 
   self.store.load('application/ld+json', content, self.graph, function(error, result) {
+    if (!error && success) {
+      success(result);
+    }
+    else if (error && fail) {
+      fail(error);
+    }
+  });
+};
+
+RDFE.Document.prototype.importRDF = function(content, success, fail) {
+  var self = this;
+
+  self.store.load('application/rdf+xml', content, self.graph, function(error, result) {
     if (!error && success) {
       success(result);
     }
