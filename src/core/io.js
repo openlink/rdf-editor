@@ -612,7 +612,7 @@ String.prototype.format = function() {
       var host = (params.proxy) ? self.options.httpProxyTemplate.format(encodeURIComponent(URI)) : self.options.httpTemplate.format(URI);
       var accept = self.acceptParameter();
       if (!accept) {
-        accept = 'text/turtle; q=1, text/n3; q=0.9, application/ld+json; q=0.7 application/rdf+xml; q=0.6';
+        accept = 'text/turtle; q=1, text/n3; q=0.9, application/ld+json; q=0.7, application/rdf+xml; q=0.6';
       }
       var ajaxParams = {
         "url": host,
@@ -650,7 +650,7 @@ String.prototype.format = function() {
       var host = (params.proxy) ? self.options.httpProxyTemplate.format(encodeURIComponent(URI)) : self.options.httpTemplate.format(URI);
       var accept = self.acceptParameter();
       if (!accept) {
-        accept = 'text/turtle; q=1, text/n3; q=0.9, application/ld+json; q=0.7 application/rdf+xml; q=0.6';
+        accept = 'text/turtle; q=1, text/n3; q=0.9, application/ld+json; q=0.7, application/rdf+xml; q=0.6';
       }
       var ajaxParams = {
         "url": host,
