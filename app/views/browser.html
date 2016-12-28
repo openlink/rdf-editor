@@ -112,7 +112,7 @@
       <span ng-hide="currentFolder.httpStatus === undefined && currentFolder.ioType !== 'sparql'">empty folder</span>
     </li>
 
-    <li ng-show="currentFolder.httpStatus !== undefined" class="list-group-item">
+    <li ng-show="currentFolder.httpStatus" class="list-group-item">
       <span class="text-danger">{{currentFolder.errorMessage}}</span>
     </li>
 

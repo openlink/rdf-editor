@@ -66,7 +66,7 @@ angular.module('myApp', [
   };
 })
 
-.factory('Profile', ['$q', function($q) {
+.factory('Profile', ['$q', 'Notification', function($q, Notification) {
   var val = new VAL();
 
   /**
@@ -127,10 +127,10 @@ angular.module('myApp', [
     var cached = authCache[url];
     // try the parent folder in case we have that
     // FIXME: how about mapping into locations and then attaching the cached auth info directly to the RDFE.IO.Resource objects
-    if(!cached && url[url.length-1] !== '/') {
+    if (!cached && url[url.length-1] !== '/') {
       cached = authCache[url.substring(0, url.lastIndexOf('/')+1)];
     }
-    if(forceUpdate !== false && (forceUpdate === true || !cached)) {
+    if (forceUpdate !== false && (forceUpdate === true || !cached)) {
       return $q(function(resolve, reject) {
         usSpinnerService.stop('editor-spinner');
         $uibModal.open({
@@ -163,26 +163,49 @@ angular.module('myApp', [
     return r;
   }
 
-
   function getRecentDocs() {
-    var items = []
-    var recentDocs = $.jStorage.get('rdfe:recentDocuments');
+    var files = []
+    var items = $.jStorage.get('rdfe:recentDocuments');
 
-    if (recentDocs) {
-      for (var i = 0; i < recentDocs.length && i < 10; i++) {
-        var recentDoc = recentDocs[i];
-        if (recentDoc) {
-          var item = new RDFE.IO.File(recentDoc.url);
-          item.ioType = recentDoc.ioType;
-          item.name = recentDoc.title || item.name;
-          item.sparqlEndpoint = recentDoc.sparqlEndpoint;
-          items.push(item);
-    }
+    if (items) {
+      for (var i = 0; i < items.length && i < 10; i++) {
+        var item = items[i];
+        if (item) {
+          var file = new RDFE.IO.File(item.url);
+          file.ioType = item.ioType;
+          file.name = item.title || item.name;
+          file.sparqlEndpoint = item.sparqlEndpoint;
+          files.push(file);
+        }
       }
     }
-    return items;
+    return files;
   }
 
+  function getRecentLocations() {
+    var folders = []
+    var items = $.jStorage.get('rdfe:recentLocations');
+
+    if (items) {
+      for (var i = 0; i < items.length && i < 10; i++) {
+        var item = items[i];
+        if (item) {
+          var folder;
+          if (item.ioType === 'webdav') {
+            folder = new RDFE.IO.WebDavFolder(item.url);
+          }
+          else if (item.ioType === 'ldp') {
+            folder = new RDFE.IO.LDPFolder(item.url);
+          }
+          else {
+            folder = new RDFE.IO.Folder(item.url);
+          }
+          folders.push(folder);
+        }
+      }
+    }
+    return folders;
+  }
 
   function getLocations() {
     // if we already extracted the profile locations just return them
@@ -193,9 +216,8 @@ angular.module('myApp', [
     // extract the locations from the profile
     else {
       var storage;
-      locations = [
-        loadRecentDocs()
-      ];
+      locations = getRecentLocations();
+      locations.unshift(loadRecentDocs());
 
       return $q(function(resolve, reject) {
         RDFEConfig.getConfig().then(function(config) {
@@ -228,43 +250,106 @@ angular.module('myApp', [
 
   function addRecentDoc(url, ioType) {
     var notFound = true;
-    var recentDoc;
+    var items = $.jStorage.get('rdfe:recentDocuments') || [];
+    var item;
 
-    // $.jStorage.deleteKey('rdfe:recentDocuments');
-    var recentDocs = $.jStorage.get('rdfe:recentDocuments');
-    if (!recentDocs) {
-      recentDocs = [];
-    }
-
-    for (var i = 0; i < recentDocs.length; i++) {
-      recentDoc = recentDocs[i];
-      if ((recentDoc.url === url) && (recentDoc.ioType === ioType)) {
+    for (var i = 0; i < items.length; i++) {
+      item = items[i];
+      if ((item.url === url) && (item.ioType === ioType)) {
         notFound = false;
-        recentDocs.splice(i, 1);
-        recentDocs.unshift(recentDoc);
+        items.splice(i, 1);
+        items.unshift(item);
         break;
       }
     }
 
     if (notFound) {
-      recentDoc = new RDFE.IO.File(url);
-      recentDoc.ioType = ioType;
-      recentDocs.unshift(recentDoc);
-      if (recentDocs.length > 10) {
-        recentDocs.splice(recentDocs.length-1, 1);
+      item = new RDFE.IO.File(url);
+      item.ioType = ioType;
+      items.unshift(item);
+      if (items.length > 10) {
+        items.splice(items.length-1, 1);
       }
     }
 
-    $.jStorage.set('rdfe:recentDocuments', recentDocs);
+    $.jStorage.set('rdfe:recentDocuments', items);
   }
 
+  function addRecentLocation(url, ioType) {
+    if (ioType === 'recent')
+      return;
+
+    var notFound = true;
+    var items = $.jStorage.get('rdfe:recentLocations') || [];
+    var item;
+
+    for (var i = 0; i < items.length; i++) {
+      item = items[i];
+      if ((item.url === url) && (item.ioType === ioType)) {
+        notFound = false;
+        items.splice(i, 1);
+        items.unshift(item);
+        break;
+      }
+    }
+
+    if (notFound) {
+      item = new RDFE.IO.Folder(url);
+      item.ioType = ioType;
+      items.unshift(item);
+      if (items.length > 10) {
+        items.splice(items.length-1, 1);
+      }
+    }
+
+    $.jStorage.set('rdfe:recentLocations', items);
+  }
+
+  function deleteRecentLocation(url, ioType) {
+    if (ioType === 'recent')
+      return;
+
+    var items = $.jStorage.get('rdfe:recentLocations') || [];
+
+    for (var i = 0; i < items.length; i++) {
+      if ((items[i].url === url) && (items[i].ioType === ioType)) {
+        items.splice(i, 1);
+        $.jStorage.set('rdfe:recentLocations', items);
+
+        return;
+      }
+    }
+  }
+
+  function selectRecentLocation(url, ioType) {
+    if (ioType === 'recent')
+      return;
+
+    var items = $.jStorage.get('rdfe:recentLocations') || [];
+    var item;
+
+    for (var i = 0; i < items.length; i++) {
+      item = items[i];
+      if ((item.url === url) && (item.ioType === ioType)) {
+        items.splice(i, 1);
+        items.unshift(item);
+        $.jStorage.set('rdfe:recentLocations', items);
+
+        return;
+      }
+    }
+  }
 
   // Service API
   return {
     "getLocations": getLocations,
     "getAuthInfo": getAuthInfo,
     "getRecentDocs": getRecentDocs,
-    "addRecentDoc": addRecentDoc
+    "addRecentDoc": addRecentDoc,
+    "getRecentLocations": getRecentLocations,
+    "addRecentLocation": addRecentLocation,
+    "deleteRecentLocation": deleteRecentLocation,
+    "selectRecentLocation": selectRecentLocation
   };
 }])
 

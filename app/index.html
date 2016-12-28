@@ -138,18 +138,11 @@
           <span class="icon-bar"></span>
         </button>
 
-        <div class="navbar-brand" style="position: top; z-index: 1000;">
+        <div class="navbar-brand hidden-xs" style="margin-bottom: 8px; z-index: 1000;">
           <a href="http://osde.openlinksw.com/" title="OpenLink Structured Data Editor (OSDE)">
             <img src="images/osdelogo_std_32.png" alt="OpenLink Software Home Page" />
           </a>
         </div>
-
-        <div class="navbar-center hidden-xs" style="margin-top: -38px;" >
-          <a href="http://www.openlinksw.com/" title="OpenLink Software Home Page">
-            <img src="images/oplogo_std_100x40.png" alt="OpenLink Software Home Page" />
-          </a>
-        </div>
-
       </div>
 
       <div class="collapse navbar-collapse" id="rdfe-navbar-collapse" style="margin-right: 50px;">
@@ -167,7 +160,7 @@
           <li ng-show="profile"><a class="navbar-link" ng-click="logout();" href="" title="Logout">Logout</a></li>
         </ul>
       </div>
-      <span id="forkongithub"><a href="https://github.com/openlink/rdf-editor">Fork me<br />on GitHub</a></span>
+      <span id="forkongithub" class="hidden-xs"><a href="https://github.com/openlink/rdf-editor">fork me<br />on GitHub</a></span>
     </div>
   </nav>
 
@@ -212,6 +205,7 @@
   <script src="../src/deps-orig/backbone-min.js"></script>
   <script src="../src/deps-orig/n3-browser.min.js"></script>
   <script src="../src/deps/rdf_store.js"></script>
+  <script src="../src/deps/rdfxml_parser.js"></script>
 
   <script src="../src/core/utils.js"></script>
   <script src="../src/core/validate.js"></script>

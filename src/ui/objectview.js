@@ -53,7 +53,10 @@
         };
 
         var typeFormatter = function(value, row, index) {
-          return row.type;
+          if (row.type === 'IRI')
+            return row.type;
+
+          return '<a href="{1}" target="_blank">{0}</a>'.format(self.editor.ontologyManager.uriNormalize(row.type), row.type);
         };
 
         var objectListActionsFormatter = function(value, row, index) {
@@ -118,6 +121,7 @@
             "title": 'Type',
             "titleTooltip": 'Type',
             "sortable": true,
+            "class": 'rdfe-small-column',
             "formatter": typeFormatter
           }, {
             "field": 'items',
