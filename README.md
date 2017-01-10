@@ -15,7 +15,7 @@ served from a system that supports at least one of the following open standards:
 
 
 ## License
-Copyright 2014-2016 [OpenLink Software](mailto:opensource@openlinksw.com)
+Copyright 2014-2017 [OpenLink Software](mailto:opensource@openlinksw.com)
 
 This software is licensed under the GNU General Public License (see
 [COPYING](http://github.com/openlink/rdf-editor/blob/develop/COPYING)).
