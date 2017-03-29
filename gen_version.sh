@@ -84,9 +84,9 @@ fi
 
 
 #
-#  Get number of commits between stable branch and current HEAD excluding merge records
+#  Get number of commits between stable branch and current HEAD including merge records
 #
-GIT_V=`git rev-list --no-merges ${STABLE_REMOTE}/${STABLE}..HEAD | wc -l | sed -e 's/[ \t]*//g'`
+GIT_V=`git rev-list ${STABLE_REMOTE}/${STABLE}..HEAD | wc -l | sed -e 's/[ \t]*//g'`
 if test "$GIT_V" != "0"
 then
     VAD_VERSION="${VAD_VERSION}_git${GIT_V}"
