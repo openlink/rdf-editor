@@ -412,5 +412,5 @@ angular.module('myApp', [
     }
   }
 
-  Profile.getProfile().then(updateProfileData, updateProfileData);
+  // Profile.getProfile().then(updateProfileData, updateProfileData);
 }]);

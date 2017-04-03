@@ -3,7 +3,7 @@
 #
 #  This file is part of the OpenLink RDF Editor
 #
-#  Copyright (C) 2014-2017 OpenLink Software
+#  Copyright (C) 2014-2016 OpenLink Software
 #
 #  This project is free software; you can redistribute it and/or modify it
 #  under the terms of the GNU General Public License as published by the
@@ -150,15 +150,6 @@
           <li><a class="navbar-link" href="#about" title="About OSD Editor, version {{version}}">About</a></li>
         </ul>
 
-        <p ng-show="valInstalled" class="nav navbar-text navbar-right" style="margin-left: 0;">
-          <span ng-show="profile" ng-cloak class="ng-cloak">Logged in as <a class="navbar-link" ng-href="{{profile.uri}}">{{profile.name || profile.nick || profile.uri}}</a></span>
-          <span ng-hide="profile">Not logged in</span>
-        </p>
-
-        <ul ng-show="valInstalled" class="nav navbar-nav navbar-right">
-          <li ng-hide="profile"><a class="navbar-link" ng-click="login();" href="" title="Login">Login</a></li>
-          <li ng-show="profile"><a class="navbar-link" ng-click="logout();" href="" title="Logout">Logout</a></li>
-        </ul>
       </div>
       <span id="forkongithub" class="hidden-xs"><a href="https://github.com/openlink/rdf-editor">fork me<br />on GitHub</a></span>
     </div>
