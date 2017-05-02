@@ -667,6 +667,9 @@ angular.module('myApp.editor', ['ngRoute'])
                 $scope.editor.updateView();
                 $scope.editor.toggleSpinner(false);
                 $scope.$apply(function() {
+                  if (!loadSuccess) {
+                    $scope.newDocument()
+                  }
                   // this is essentially a no-op to force the ui to update the url view
                   if (!loadSuccess || (newDocument === "false")) {
                     $scope.doc.url = null;
@@ -742,7 +745,7 @@ angular.module('myApp.editor', ['ngRoute'])
       $scope.ontologyView.render($('#container-ontologies'));
       $('#ontology-add').click(function (e) {
         e.stopPropagation();
-        $scope.ontologyView.editor();
+        $scope.ontologyView.add();
       });
     }
 

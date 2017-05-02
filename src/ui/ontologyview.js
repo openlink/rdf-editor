@@ -1,7 +1,7 @@
 /*
  *  This file is part of the OpenLink RDF Editor
  *
- *  Copyright (C) 2014-2017 OpenLink Software
+ *  Copyright (C) 2014-2016 OpenLink Software
  *
  *  This project is free software; you can redistribute it and/or modify it
  *  under the terms of the GNU General Public License as published by the
@@ -291,7 +291,7 @@
     };
 
     // Entities
-    c.prototype.editor = function(forcedType) {
+    c.prototype.add = function(forcedType) {
       var self = this;
 
       self.formContainer.find('#prefix').val('');
