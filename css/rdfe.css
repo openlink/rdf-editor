@@ -32,3 +32,8 @@ textarea {
 .rdfe-green-link {
   color: green;
 }
+
+.fixed-table-toolbar .search {
+  margin-top: 0px !important;
+  margin-bottom: 0px !important;
+}
