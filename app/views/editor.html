@@ -29,17 +29,14 @@
   <div class="form-horizontal" style="display: inline;">
     <label class="control-label" style="margin: 0 5px 0 15px;">Document:</label>
     <a ng-show="doc.url" ng-href="{{doc.url}}">{{doc.url}}</a>
-    <span ng-hide="doc.url">new document</span>
+    <span ng-hide="doc.url">New document </span>
+    <div class="btn-group" role="group" style="display: inline; width: 50px; margin-left: 25px;">
+      <span us-spinner="{ length: 10, radius: 7, lines:10, width:2, shadow: true }" spinner-key="editor-spinner"></span>
+    </div>
   </div>
 </div>
 
-<div class="btn-group" role="group" style="width: 50px">
-  <span us-spinner="{ length: 10, radius: 7, lines:10, width:2, shadow: true }" spinner-key="editor-spinner"></span>
-</div>
-
-<div class="clearfix"></div>
-
-<hr class="editor" />
+<hr class="editor clearfix" />
 
 <div class="row">
   <div class="col-xs-6">
