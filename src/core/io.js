@@ -539,7 +539,8 @@ String.prototype.format = function() {
           return;
         }
 
-        var content = result.toNT();
+        var content = result.toNTBeatify(store.rdf.prefixes);
+        var content1 = result.toNT();
         self.insert(path, content, params);
       });
     }

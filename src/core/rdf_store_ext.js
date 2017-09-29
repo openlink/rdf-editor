@@ -181,3 +181,49 @@ rdfstore.Store.prototype.loadTurtle = function(data, graph, baseUri, knownPrefix
     }
   });
 };
+
+RDFModel.Graph.prototype.toNTBeatify = function(prefixes) {
+    var n3 = "";
+    var n3Prefixes = {};
+
+    this.forEach(function(triple) {
+	    n3 = n3 + triple.toNTBeatify(prefixes, n3Prefixes);
+    });
+
+    var p3 = "";
+    for (var key in n3Prefixes) {
+	    p3 = p3 + '@prefix ' + key + ': <' + n3Prefixes[key] + '>. \r\n';
+    }
+
+    return p3 + '\r\n' + n3;
+};
+
+RDFModel.NamedNode.prototype.toNTBeatify = function(prefixes, n3Prefixes) {
+    var x = this.toString();
+    for (prefix in prefixes) {
+        var ns = prefixes[prefix];
+        if (ns.length > 0 && x.startsWith(ns)) {
+            n3Prefixes[prefix] = ns;
+            return x.replace(ns, prefix + ':');
+        }
+    }
+    return "<"+x+">";
+};
+
+RDFModel.BlankNode.prototype.toNTBeatify = function() {
+    return this.toNT();
+};
+
+RDFModel.Literal.prototype.toNTBeatify = function() {
+    return this.toNT();
+};
+
+RDFModel.Triple.prototype.toNTBeatify = function(prefixes, n3Prefixes) {
+    var s = this.subject.toNTBeatify(prefixes, n3Prefixes);
+    var p = this.predicate.toNTBeatify(prefixes, n3Prefixes);
+    var o = this.object.toNTBeatify(prefixes, n3Prefixes);
+    if (p === 'rdf:type')
+        p = 'a';
+
+    return s + " " + p + " " + o + " . \r\n";
+};

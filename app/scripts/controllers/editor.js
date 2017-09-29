@@ -879,7 +879,7 @@ angular.module('myApp.editor', ['ngRoute'])
       }
     }
     $scope.doc.store.graph($scope.doc.graph, function(success, graph){
-      var serialized = graph.toNT();
+      var serialized = graph.toNTBeatify($scope.doc.store.rdf.prefixes);
       download('document.ttl', serialized);
     });
   };
