@@ -97,7 +97,12 @@
           }
         }
         if (!node) {
-          node = new RDFE.RdfNode('literal', getValue());
+          if (this.options && this.options.rdfnode && this.options.rdfnode.type === 'http://www.w3.org/1999/02/22-rdf-syntax-ns#Resource') {
+            node = new RDFE.RdfNode('uri', getValue(), 'http://www.w3.org/1999/02/22-rdf-syntax-ns#Resource');
+          }
+          else {
+            node = new RDFE.RdfNode('literal', getValue(), this.options.rdfnode.type);
+          }
         }
       }
       editor.setValue(node, nodeItems);

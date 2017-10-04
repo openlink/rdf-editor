@@ -100,6 +100,7 @@ RDFE.Editor.prototype.editableSubject = function(editor) {
       "mode": "inline",
       "type": "rdfnode",
       "rdfnode": {
+        "mode": 'subject',
         "config": $.extend({}, editor.config.options, {"dereferenceLink": editor.dereference()}),
         "type": 'http://www.w3.org/1999/02/22-rdf-syntax-ns#Resource',
         "dereferenceLink": editor.dereference()
@@ -129,6 +130,8 @@ RDFE.Editor.prototype.editableObject = function(editor, predicate) {
       "mode": "inline",
       "type": "rdfnode",
       "rdfnode": {
+        "mode": 'object',
+        "type": triple["object"].datatype,
         "config": $.extend({}, editor.config.options, {"dereferenceLink": editor.dereference()}),
         "predicate": (predicate)? predicate(triple): null,
         "document": editor.doc,

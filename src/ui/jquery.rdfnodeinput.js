@@ -325,6 +325,7 @@
       self.resourceSelect = $(document.createElement('select'));
       self.resourceContainer = $(document.createElement('div')).addClass('rdfResourceContainer');
       self.resourceContainer.append(self.resourceSelect);
+      self.resourceContainer.css('min-width', '200px');
       self.inputContainer.append(self.resourceContainer);
     }
     if (!self.resourceSelectize) {
@@ -485,7 +486,7 @@
       }
     }
     self.lang = node.language;
-    if (node.value && node.value.indexOf('\n') !== -1) {
+    if (node.value && node.value.indexOf && node.value.indexOf('\n') !== -1) {
       self.transformToTextarea();
     }
     self.mainElement.val(node.value);
