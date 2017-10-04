@@ -39,7 +39,7 @@
               <select name="predicate" class="form-control" style="width: 85%;"></select> \
             </div> \
             <div class="btn-group pull-right" role="group"> \
-              <button type="button" class="btn btn-default btn-sm rdfe-font-bold" id="backButton">Back</button> \
+              <button type="button" class="btn btn-default btn-sm rdfe-font-bold" id="backButton" title="Back">Back</button> \
             </div> \
           </form> \
         </div> \

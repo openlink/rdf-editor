@@ -457,11 +457,10 @@
 
   RdfNodeEditor.prototype.setValue = function(node, nodeItems) {
     //console.log('RdfNodeEditor.prototype.setValue ', node);
-    var self = this;
-
     if (!node)
       return;
 
+    var self = this;
     var node = RDFE.RdfNode.fromStoreNode(node);
 
     self.lastType = self.currentType;

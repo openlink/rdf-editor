@@ -41,7 +41,7 @@
               <input name="object" class="form-control" /> \
             </div> \
             <div class="col-sm-1"> \
-              <button type="button" class="btn btn-default btn-sm pull-right rdfe-font-bold" id="backButton">Back</button> \
+              <button type="button" class="btn btn-default btn-sm pull-right rdfe-font-bold" id="backButton" title="Back">Back</button> \
             </div> \
           </div> \
         </div> \
