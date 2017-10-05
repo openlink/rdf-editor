@@ -55,7 +55,7 @@ RDFE.IO.Resource = (function() {
     var construct = function () {};
 
     construct.prototype = this.prototype;
-    cls.prototype = new construct;
+    cls.prototype = new construct();
     cls.prototype.constructor = cls;
     cls.super = this;
     cls.inherit = this.inherit;
@@ -260,7 +260,7 @@ RDFE.IO.Folder = (function() {
     }
 
     return $.merge(folders, files);
-  }
+  };
 
   return c;
 })();
@@ -273,8 +273,7 @@ RDFE.IO.WebDavFolder = (function() {
     // call super-constructor
     self.constructor.super.call(this, url);
 
-    var defaults = {
-    }
+    var defaults = {};
 
     self.ioType = 'webdav';
     self.options = $.extend({}, defaults, options);
@@ -303,7 +302,7 @@ RDFE.IO.WebDavFolder = (function() {
       }
 
       return null;
-    }
+    };
 
     var responses = getElementsByLocalName(data, 'response');
     for (var i = 0; i < responses.length; i++) {
@@ -329,7 +328,7 @@ RDFE.IO.WebDavFolder = (function() {
         }
         else {
           item = new RDFE.IO.File(url);
-          var size = getTextByLocalName(prop[0], 'getcontentlength')
+          var size = getTextByLocalName(prop[0], 'getcontentlength');
           if (size)
             item.size = parseInt($(size[0]).text());
 
@@ -406,7 +405,7 @@ RDFE.IO.WebDavFolder = (function() {
       else {
         success();
       }
-    }
+    };
 
     $.ajax({
       url: this.url,
@@ -418,7 +417,7 @@ RDFE.IO.WebDavFolder = (function() {
     }).done(ref).fail(function(xhr) {
       fail(RDFE.IO.ajaxFailMessage(xhr, 'Failed to list WebDAV folder for "{0}"', self.url), xhr.status);
     });
-  }
+  };
 
   return c;
 }());
@@ -516,7 +515,7 @@ RDFE.IO.LDPFolder = (function() {
         );
       }
     );
-  };
+  }
 
   c.prototype.listDir = function(success, fail) {
     var self = this;

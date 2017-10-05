@@ -19,7 +19,6 @@
  */
 
 (function ($) {
-    "use strict";
 
     var PropertyBoxEdit = function (options) {
         this.init('rdfnode', options, PropertyBoxEdit.defaults);
@@ -54,9 +53,11 @@
           this.$input.propertyBox().setPropertyURI(value);
         }
     });
+
     PropertyBoxEdit.defaults = $.extend({}, $.fn.editabletypes.abstractinput.defaults, {
         propertyBox: {},
         tpl: '<select></select>'
     });
+
     $.fn.editabletypes.propertyBox = PropertyBoxEdit;
 }(window.jQuery));

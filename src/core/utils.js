@@ -43,7 +43,7 @@ RDFE.Utils.createTitle = function (str) {
     return(out);
   }
   return str;
-}
+};
 
 RDFE.Utils.escapeXml = function (str) {
   return str.replace(/[<>&'"]/g, function (c) {
@@ -55,7 +55,7 @@ RDFE.Utils.escapeXml = function (str) {
       case '"': return '&quot;';
     }
   });
-}
+};
 
 RDFE.Utils.trim = function(str, ch) {
   if (str) {
@@ -70,13 +70,13 @@ RDFE.Utils.trim = function(str, ch) {
     }
   }
   return str;
-}
+};
 
 RDFE.Utils.namingSchemaLabel = function (input, namingSchema, plural, lowercase) {
   var ndx = (plural === true) ? 1 : 0;
-  var value = namingSchema[input][ndx]
+  var value = namingSchema[input][ndx];
   return (lowercase === true) ? value.toLowerCase() : value;
-}
+};
 
 RDFE.Utils.uriParams = function() {
   var result = {};
@@ -119,7 +119,7 @@ RDFE.Utils.uriParams = function() {
     }
   }
   return result;
-}
+};
 
 /**
  * Extract a name from a URI. The name is the last part of the URI which is
@@ -138,13 +138,13 @@ RDFE.Utils.uri2name = function(u) {
     if (m >= 0) {
       return u.substring(m+1, u.length);
     }
-    var m = u.lastIndexOf(':');
+    m = u.lastIndexOf(':');
     if (m >= 0) {
       return u.substring(m+1, u.length);
     }
   }
   return u;
-}
+};
 
 /**
  * Abbreviate URI.
@@ -196,7 +196,7 @@ RDFE.Utils.uriAbbreviate = function(u, l) {
     return prefix+middle+suffix;
   }
   return u;
-}
+};
 
 /**
  * Abbreviate string.
@@ -216,7 +216,7 @@ RDFE.Utils.strAbbreviate = function(s, l) {
     return prefix+middle+suffix;
   }
   return s;
-}
+};
 
 RDFE.Utils.getLabel = function(labels, key) {
   if (!labels || !labels[key]) {
@@ -224,7 +224,7 @@ RDFE.Utils.getLabel = function(labels, key) {
   }
 
   return labels[key];
-}
+};
 
 RDFE.Utils.getUrl = function(url) {
   var parser = RDFE.Utils.splitUrl(url);
@@ -309,7 +309,7 @@ RDFE.Utils.resolveStorageLocations = function(uris, success) {
       files.push(f);
       findFiles(i+1);
     });
-  };
+  }
   findFiles(0);
 };
 
@@ -328,4 +328,4 @@ RDFE.Utils.extractDomain = function(url) {
   domain = domain.split(':')[0];
 
   return domain;
-}
+};

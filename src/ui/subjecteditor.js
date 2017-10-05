@@ -104,7 +104,6 @@
 
         // FIXME: this is all pretty much the same as in the PropertyBox, in any case it should be moved into a separate class/file
         $classesSelect = $('#class').selectize({
-          "create": true,
           "valueField": 'URI',
           "labelField": 'URI',
           "searchField": [ "title", "label", "prefix", "URI" ],
@@ -184,7 +183,7 @@
           if (e.which === 13) {
             saveFct();
           }
-        })
+        });
       };
 
       var subjectEditorData = function(container, backCallback) {
@@ -198,7 +197,6 @@
           "showHeader": true,
           "editable": true,
           "data": [],
-          "editable": true,
           "dereference": true,
           "columns": [{
             "field": 'predicate',
@@ -307,7 +305,7 @@
         subjects[i].id = i;
       }
       self.subjectTable.data('maxindex', i);
-      self.subjectTable.bootstrapTable('load', subjects);;
+      self.subjectTable.bootstrapTable('load', subjects);
       if (self.subject) {
         self.addButton.show();
       }
@@ -318,9 +316,7 @@
 
     c.prototype.addTriple = function(triple) {
       var i = this.subjectTable.data('maxindex');
-      this.subjectTable.bootstrapTable('append', $.extend(triple, {
-        id: i
-      }));
+      this.subjectTable.bootstrapTable('append', $.extend(triple, {id: i}));
       this.subjectTable.data('maxindex', ++i);
     };
 

@@ -57,7 +57,7 @@ RDFE.Editor = function(params, callback) {
         callback(self);
       }
     });
-  }
+  };
   if (options.initOntologyManager === true) {
     self.ontologyManager.init({"success": success});
   }
@@ -106,7 +106,7 @@ RDFE.Editor.prototype.editableSubject = function(editor) {
         "dereferenceLink": editor.dereference()
       },
       "value": triple["subject"]
-    }
+    };
   };
 };
 
@@ -139,7 +139,7 @@ RDFE.Editor.prototype.editableObject = function(editor, predicate) {
         "dereferenceLink": editor.dereference()
       },
       "value": triple["object"]
-    }
+    };
   };
 };
 
@@ -265,11 +265,11 @@ RDFE.Editor.prototype.settingsForm = function() {
     if (namingSchemaSelected.length > 0) {
       namingSchema = namingSchemaSelected.val();
     }
-    var $settings = {
+    $settings = {
       "userID":  userID,
       "namingSchema": namingSchema
     };
-    $.jStorage.set('rdfe:settings', $settings)
+    $.jStorage.set('rdfe:settings', $settings);
 
     $form.modal('hide');
 
@@ -363,7 +363,7 @@ RDFE.Editor.prototype.signDocumentForm = function() {
         </div> \
       </div>\
     ');
-    $form.find('.ok').hide();;
+    $form.find('.ok').hide();
   }
   else {
     // Sign is possible
@@ -409,7 +409,7 @@ RDFE.Editor.prototype.signDocumentForm = function() {
                     });
                   },
                   "error": failTriple
-                }
+                };
                 var io = RDFE.IO.createIO('webdav');
                 io.type = 'webdav';
                 io.insert(signatureDocURI, data, params);
@@ -473,7 +473,7 @@ RDFE.Editor.prototype.unsignDocumentForm = function() {
         </div> \
       </div>\
     '.format(self.doc.signature));
-    $form.find('.ok').show();;
+    $form.find('.ok').show();
     $form.find('.ok').off();
     $form.find('.ok').on("click", (function ($form) {
       return function (e) {
@@ -524,7 +524,7 @@ RDFE.Editor.prototype.unsignDocumentForm = function() {
         </div> \
       </div>\
     ');
-    $form.find('.ok').hide();;
+    $form.find('.ok').hide();
   }
   $form.modal();
 };
@@ -639,12 +639,12 @@ RDFE.Editor.prototype.editTriple = function(s, p, o) {
     e.preventDefault();
 
     var s = subjectEditor.val();
-    s = RDFE.Utils.trim(RDFE.Utils.trim(s, '<'), '>')
+    s = RDFE.Utils.trim(RDFE.Utils.trim(s, '<'), '>');
     if (!RDFE.Validate.check(subjectEditor, s))
       return;
 
     var p = predicateEditor.selectedURI();
-    p = RDFE.Utils.trim(RDFE.Utils.trim(p, '<'), '>')
+    p = RDFE.Utils.trim(RDFE.Utils.trim(p, '<'), '>');
     if (!RDFE.Validate.check(predicateEditor.sel, p))
       return;
 
@@ -732,7 +732,6 @@ RDFE.Editor.prototype.createNewEntityEditor = function(forcedType) {
 
     // FIXME: this is all pretty much the same as in the PropertyBox, in any case it should be moved into a separate class/file
     $classesSelect = $('#class').selectize({
-      create: true,
       valueField: 'URI',
       labelField: 'URI',
       searchField: [ "title", "label", "prefix", "URI" ],
@@ -812,7 +811,7 @@ RDFE.Editor.prototype.createNewEntityEditor = function(forcedType) {
         name = null,
         type = forcedType || self.formContainer.find('#class')[0].selectize.getValue();
 
-    uri = RDFE.Utils.trim(RDFE.Utils.trim(uri, '<'), '>')
+    uri = RDFE.Utils.trim(RDFE.Utils.trim(uri, '<'), '>');
     if(self.config.options.entityUriTmpl) {
       name = uri;
       uri = null;
@@ -845,10 +844,10 @@ RDFE.Editor.prototype.createNewEntityEditor = function(forcedType) {
   });
 
   self.formContainer.find('input#subject').keypress(function(e) {
-    if(e.which === 13) {
+    if (e.which === 13) {
       saveFct();
     }
-  })
+  });
 };
 
 RDFE.Editor.prototype.createEntityList = function() {
@@ -862,7 +861,7 @@ RDFE.Editor.prototype.createEntityList = function() {
         self.editEntity.call(self, uri);
       }
     });
-    $(self.entityView).on('rdf-editor-error', function(e) {
+    $(self.entityView).on('rdf-editor-error', function(e, d) {
       $(self).trigger('rdf-editor-error', d);
     }).on('rdf-editor-success', function(e, d) {
       $(self).trigger('rdf-editor-success', d);
@@ -883,7 +882,7 @@ RDFE.Editor.prototype.editEntity = function(uri) {
 
   if (!self.entityEditor) {
     self.entityEditor = new RDFE.EntityEditor(self.doc, self.ontologyManager);
-    $(self.entityEditor).on('rdf-editor-error', function(e) {
+    $(self.entityEditor).on('rdf-editor-error', function(e, d) {
       $(self).trigger('rdf-editor-error', d);
     }).on('rdf-editor-success', function(e, d) {
       $(self).trigger('rdf-editor-success', d);
@@ -1057,7 +1056,7 @@ RDFE.Editor.prototype.changeObjectType = function (predicate, objectEditor) {
   var range;
   var currentNode = objectEditor.getValue();
   if (predicate) {
-    ranges = predicate.getRange();
+    var ranges = predicate.getRange();
     if (ranges && ranges.length) {
       for (var i = 0; i < ranges.length; i++) {
         if (objectEditor.isLiteralType(ranges[i])) {

@@ -101,4 +101,4 @@
     }
     return le;
   };
-})(jQuery);
+})(window.jQuery);

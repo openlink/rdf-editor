@@ -79,7 +79,7 @@
         var pageSize = 10;
         var sortName = 'uri';
         var sortOrder = 'asc';
-        var pageSettings = self.editor.config.options["pageSettings"]
+        var pageSettings = self.editor.config.options["pageSettings"];
         if (pageSettings["pageNo"]) {
           pageNumber = pageSettings["pageNo"];
         }

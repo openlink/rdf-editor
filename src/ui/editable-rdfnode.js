@@ -18,8 +18,7 @@
  *
  */
 
-(function ($) {
-  "use strict";
+(function ($, RDFE) {
 
   var RdfNode = function (options) {
     this.init('rdfnode', options, RdfNode.defaults);
@@ -84,7 +83,7 @@
                     node = new RDFE.RdfNode('uri', getValue());
                   }
                   else {
-                    for (var i = 0; i < ranges.length; i++) {
+                    for (i = 0; i < ranges.length; i++) {
                       if (editor.isLiteralType(ranges[i])) {
                         node = new RDFE.RdfNode('literal', getValue(), ranges[i]);
                         break;
@@ -113,4 +112,4 @@
     tpl: '<input type="text">'
   });
   $.fn.editabletypes.rdfnode = RdfNode;
-}(window.jQuery));
+}(window.jQuery, RDFE));

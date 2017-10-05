@@ -64,7 +64,6 @@
           "showHeader": true,
           "editable": true,
           "data": [],
-          "editable": true,
           "dereference": true,
           "columns": [{
             "field": 'subject',
@@ -188,7 +187,7 @@
         predicates[i].id = i;
       }
       self.predicateTable.data('maxindex', i);
-      self.predicateTable.bootstrapTable('load', predicates);;
+      self.predicateTable.bootstrapTable('load', predicates);
       if (self.predicate) {
         self.addButton.show();
       }
@@ -253,7 +252,7 @@
         e.preventDefault();
 
         var s = subjectEditor.val();
-        s = RDFE.Utils.trim(RDFE.Utils.trim(s, '<'), '>')
+        s = RDFE.Utils.trim(RDFE.Utils.trim(s, '<'), '>');
         if (!RDFE.Validate.check(subjectEditor, s))
           return;
 

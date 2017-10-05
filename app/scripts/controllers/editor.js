@@ -1,3 +1,5 @@
+/* jshint maxerr: 10000 */
+/* jshint browser: true */
 'use strict';
 
 angular.module('myApp.editor', ['ngRoute'])
@@ -144,7 +146,7 @@ angular.module('myApp.editor', ['ngRoute'])
             }
             var newUrl = $location.path() + '?' + pageSearch;
             $timeout(function() {
-              $location.url(newUrl)
+              $location.url(newUrl);
             });
           }).on('rdf-editor-namingSchema', function(e, params) {
             var uiMode = params["uiMode"];
@@ -155,7 +157,7 @@ angular.module('myApp.editor', ['ngRoute'])
             $rootScope.radioViewMode = $rootScope.viewMode;
 
             $timeout(function() {
-              $location.url(newUrl)
+              $location.url(newUrl);
             });
           });
 
@@ -230,7 +232,7 @@ angular.module('myApp.editor', ['ngRoute'])
     var s = $routeParams["triple:subject"]      || $routeParams["spo:subject"];
     var p = $routeParams["triple:predicate"]    || $routeParams["spo:predicate"];
     var o = $routeParams["triple:object"]       || $routeParams["spo:object"];
-    var e = $routeParams["statement:entity"]    || $routeParams["eav:entity"];    ;
+    var e = $routeParams["statement:entity"]    || $routeParams["eav:entity"];
     var a = $routeParams["statement:attribute"] || $routeParams["eav:attribute"];
     var v = $routeParams["statement:value"]     || $routeParams["eav:value"];
     var view = $routeParams["view"];
@@ -292,14 +294,14 @@ angular.module('myApp.editor', ['ngRoute'])
     var pageSettings = $scope.editor.config.options.pageSettings;
     if ($routeParams["pageNo"]) {
       var tmp = parseInt($routeParams["pageNo"]);
-      if (tmp !== NaN) {
+      if (!isNaN(tmp)) {
         pageSettings.pageNo = tmp;
       }
     }
 
     if ($routeParams["pageSize"]) {
       var tmp = parseInt($routeParams["pageSize"]);
-      if (tmp !== NaN) {
+      if (!isNaN(tmp)) {
         pageSettings.pageSize = tmp;
       }
     }
@@ -317,7 +319,7 @@ angular.module('myApp.editor', ['ngRoute'])
     $rootScope.uiMode = uiMode;
     $rootScope.viewMode = (uiMode === 'EAV')? $scope.spo2eav[viewMode]: $scope.eav2spo[viewMode];
     $rootScope.radioViewMode = $scope.viewMode;
-    $scope.editor.toggleView($scope.viewMode, $scope.uiMode)
+    $scope.editor.toggleView($scope.viewMode, $scope.uiMode);
   }
 
   function showViewEditor() {
@@ -325,7 +327,7 @@ angular.module('myApp.editor', ['ngRoute'])
     var s = $routeParams["triple:subject"]      || $routeParams["spo:subject"];
     var p = $routeParams["triple:predicate"]    || $routeParams["spo:predicate"];
     var o = $routeParams["triple:object"]       || $routeParams["spo:object"];
-    var e = $routeParams["statement:entity"]    || $routeParams["eav:entity"];    ;
+    var e = $routeParams["statement:entity"]    || $routeParams["eav:entity"];
     var a = $routeParams["statement:attribute"] || $routeParams["eav:attribute"];
     var v = $routeParams["statement:value"]     || $routeParams["eav:value"];
     var view = $scope.viewMode;
@@ -545,7 +547,7 @@ angular.module('myApp.editor', ['ngRoute'])
 
     if (errors.params.length || errors.paramValues.length || errors.paramMixed.length) {
       var delimiter;
-      var msg = 'Params validation errors:'
+      var msg = 'Params validation errors:';
       if (errors.params.length) {
         msg += ' <br/>&nbsp;&nbsp;Unsupported or mixed parameters: ';
         delimiter = '';
@@ -601,11 +603,11 @@ angular.module('myApp.editor', ['ngRoute'])
       $scope.editor.updateView();
 
       // clean IO related params
-      $location.search('saveDocument', null)
+      $location.search('saveDocument', null);
 
       var newUrl = RDFEditor.prepareUrl($scope.uiMode);
       $timeout(function() {
-        $location.url(newUrl)
+        $location.url(newUrl);
       });
     }
 
@@ -668,7 +670,7 @@ angular.module('myApp.editor', ['ngRoute'])
                 $scope.editor.toggleSpinner(false);
                 $scope.$apply(function() {
                   if (!loadSuccess) {
-                    $scope.newDocument()
+                    $scope.newDocument();
                   }
                   // this is essentially a no-op to force the ui to update the url view
                   if (!loadSuccess || (newDocument === "false")) {
@@ -681,7 +683,7 @@ angular.module('myApp.editor', ['ngRoute'])
                 });
                 showViewEditor();
                 $scope.editor.docChanged();
-              }
+              };
               $scope.editor.toggleSpinner(true);
               $scope.doc.load(url, io, function() {
                 loadFinished(true);
@@ -709,7 +711,7 @@ angular.module('myApp.editor', ['ngRoute'])
           catch(e) {
             Notification.notify('error', e);
           }
-        }
+        };
 
         if (data) {
           var success = function (result) {
@@ -772,16 +774,16 @@ angular.module('myApp.editor', ['ngRoute'])
       showViewEditor();
 
       // clean IO related params
-      $location.search('uri', null)
-      $location.search('data', null)
-      $location.search('accept', null)
-      $location.search('ioType', null)
-      $location.search('ioTimeout', null)
-      $location.search('sparqlEndpoint', null)
+      $location.search('uri', null);
+      $location.search('data', null);
+      $location.search('accept', null);
+      $location.search('ioType', null);
+      $location.search('ioTimeout', null);
+      $location.search('sparqlEndpoint', null);
 
       var newUrl = RDFEditor.prepareUrl($scope.uiMode);
       $timeout(function() {
-        $location.url(newUrl)
+        $location.url(newUrl);
       });
     }, function() {
       Notification.notity('error', "Failed to clear Document for unknown reasons.");
@@ -815,7 +817,7 @@ angular.module('myApp.editor', ['ngRoute'])
         }
       }
       cbSave(myUrl, myIo);
-    }
+    };
     myIo.retrieve(myUrl, {
       "success": mySave,
       "error": mySave
@@ -825,7 +827,7 @@ angular.module('myApp.editor', ['ngRoute'])
   $scope.openDocument = function() {
     function doOpen() {
       $location.url('/browser');
-    };
+    }
     if($scope.doc.dirty) {
       bootbox.confirm("Your document has unsaved changes. Do you really want to open another document?", function(r) {
         if(r) {
@@ -908,7 +910,7 @@ angular.module('myApp.editor', ['ngRoute'])
     // return to welcome page
     function doClose() {
       $location.url('/');
-    };
+    }
     if($scope.doc.dirty) {
       bootbox.confirm("Your document has unsaved changes. Do you really want to close the document?", function(r) {
         if(r) {

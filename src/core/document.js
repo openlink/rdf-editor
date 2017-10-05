@@ -64,7 +64,7 @@ RDFE.Document.prototype.load = function(url, io, success, fail) {
     self.srcParams = {
       "length": data.length,
       "md5": $.md5(data)
-    }
+    };
 
     // check for signed document
     // self.checkForSignature();
@@ -150,7 +150,7 @@ RDFE.Document.prototype.save = function(url, io, success, fail) {
 
     // io is optional
     if (typeof(myIo) == 'function' || !myIo) {
-      myFail = mySuccess
+      myFail = mySuccess;
       mySuccess = myIo;
       myIo = self.io;
     }
@@ -181,7 +181,7 @@ RDFE.Document.prototype.save = function(url, io, success, fail) {
                 self.srcParams = {
                   "length": data.length,
                   "md5": $.md5(data)
-                }
+                };
               },
               "error":  function () {
                 self.srcParams = null;
@@ -443,7 +443,7 @@ RDFE.Document.prototype.deleteEntity = function(uri, success, fail) {
         self.deleteByObjectIRI(uri, success, fail);
       },
       fail
-    )
+    );
   }
 };
 
@@ -475,7 +475,7 @@ RDFE.Document.prototype.deletePredicate = function(uri, success, fail) {
       uri,
       success,
       fail
-    )
+    );
   }
 };
 
@@ -493,7 +493,7 @@ RDFE.Document.prototype.deleteObject = function(object, success, fail) {
       object,
       success,
       fail
-    )
+    );
   }
 };
 
@@ -502,10 +502,11 @@ RDFE.Document.prototype.checkTriple = function(triple, success, fail) {
   var self = this;
 
   self.store.node(triple.subject.nominalValue, self.graph, function(error, graph) {
-    if (error && fail) {
-      fail(false);
+    if (error) {
+      if (fail)
+        fail(false);
     }
-    else if (!errors && success) {
+    else if (success) {
       var g = graph.match(null, triple.predicate, triple.object);
       success(g.triples.length > 0);
     }
@@ -640,11 +641,11 @@ RDFE.Document.prototype.inverseTriple = function(triple) {
       var inverseOfProperty = property.inverseOf;
       if (inverseOfProperty) {
         // create inverse triple
-        var inverseTriple = self.store.rdf.createTriple(
+        inverseTriple = self.store.rdf.createTriple(
           self.store.rdf.createNamedNode(o.nominalValue),
           self.store.rdf.createNamedNode(inverseOfProperty.URI),
           self.store.rdf.createNamedNode(s.nominalValue)
-        )
+        );
       }
     }
   }
@@ -834,7 +835,7 @@ RDFE.Document.prototype.itemsByRange = function(ranges) {
     nodeItems = nodeItems || [];
     var items = _.values(ontologyClass.getIndividuals());
     for (var j = 0; j < items.length; j++) {
-      var nodeItem = RDFE.RdfNode.fromStoreNode(items[j].URI)
+      var nodeItem = RDFE.RdfNode.fromStoreNode(items[j].URI);
       nodeItem.label = items[j].curi || items[j].URI;
       nodeItems.push(nodeItem);
     }
@@ -842,7 +843,7 @@ RDFE.Document.prototype.itemsByRange = function(ranges) {
       ranges[i],
       function(items) {
         for (var j = 0; j < items.length; j++) {
-          var nodeItem = RDFE.RdfNode.fromStoreNode(items[j].uri)
+          var nodeItem = RDFE.RdfNode.fromStoreNode(items[j].uri);
           nodeItem.label = items[j].label || items[j].uri;
           nodeItems.push(nodeItem);
         }
@@ -878,7 +879,7 @@ RDFE.Document.prototype.buildEntityUri = function(name) {
       self = this;
   var uq = function(i) {
     self.store.node(nuri, self.graph, function(error, result) {
-      console.log(error, result)
+      console.log(error, result);
       if (!error && result.length) {
         nuri = uri + i;
         uq(i+1);
@@ -1190,7 +1191,7 @@ RDFE.Document.prototype.getUniqueValue = function() {
       uniqueValue = 1;
       var sparql = 'select (MAX(?v) as ?mv) from <{0}> where {?s <{1}> ?v}'.format(self.graph, property.URI);
       self.store.execute(sparql, function(error, result) {
-        if (!errors) {
+        if (!error) {
           if (result.length !== 0) {
             uniqueValue = parseInt(RDFE.coalesce(result[0]["mv"].value, 0));
             if (isNaN(uniqueValue)) {

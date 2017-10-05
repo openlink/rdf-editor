@@ -96,7 +96,7 @@
                   return 'This prefix is used';
                 }
               }
-            }
+            };
           },
           "formatter": function(value, ontology, index) {
             return (ontology.prefix)? ontology.prefix: '';
@@ -202,7 +202,7 @@
       $form.find('.cancel').click(function (e) {
         e.preventDefault();
 
-        var $loading = $('#ontology-loading')
+        var $loading = $('#ontology-loading');
         if ($loading.is(":visible"))
           return;
 
@@ -242,7 +242,7 @@
                   ontology = new RDFE.Ontology(self.ontologyManager, uri);
                   var prefix = self.formContainer.find('#prefix').val();
                   if (prefix) {
-                    ontology.prefix = prefix
+                    ontology.prefix = prefix;
                   }
                   self.addOntologies(self.ontologyManager.allOntologies());
                 }
@@ -283,7 +283,7 @@
       var self = this;
 
       for (var i = 0; i < ontologies.length; i++) {
-        if (!_.find(self.ontologies, function(o){return o.URI === ontologies[i].URI})) {
+        if (!_.find(self.ontologies, function(o){return o.URI === ontologies[i].URI;})) {
           self.table.bootstrapTable('append', ontologies[i]);
         }
       }
