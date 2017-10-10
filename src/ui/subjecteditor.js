@@ -287,7 +287,15 @@
         });
 
         var inputSelect = container.find('input[name="subject"]');
-        inputSelect.val(self.subject.uri);
+        var uri = self.subject.uri;
+        if (uri !== '') {
+          inputSelect.val(self.subject.uri);
+        }
+        else {
+          inputSelect.css('color', 'red');
+          inputSelect.css('font-style', 'italic');
+          inputSelect.val('Empty');
+        }
 
         subjectEditorData(container, backCallback);
       }
