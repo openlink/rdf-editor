@@ -18,7 +18,7 @@
  *
  */
 
-(function ($) {
+(function ($, RDFE) {
 
   var PropertyBox = function(elem, options) {
     var self = this;
@@ -78,7 +78,7 @@
                 if (result) {
                   var ontology = self.options.ontologyManager.ontologyByURI(url);
                   if (!ontology) {
-                    var ontology = self.options.ontologyManager.ontologyByURI(url);
+                    ontology = self.options.ontologyManager.ontologyByURI(url);
                     if (!ontology) {
                       ontology = new RDFE.Ontology(self.options.ontologyManager, url);
                     }
@@ -86,7 +86,7 @@
                   }
                 }
                 else {
-                  that.unlock()
+                  that.unlock();
                 }
               });
             }
@@ -168,7 +168,7 @@
 
     var v = self.selectedURI();
     var pl = self.propertyList();
-    self.sel.clearOptions()
+    self.sel.clearOptions();
     self.sel.addOption(pl); // FIXME: check if we also need to add the current value
     self.setPropertyURI(v);
   };
@@ -209,4 +209,4 @@
     }
     return le;
   };
-})(jQuery);
+})(window.jQuery, RDFE);

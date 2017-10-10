@@ -18,9 +18,6 @@
  *
  */
 
-if(!window.RDFE)
-  window.RDFE = {};
-
 /*
  * RDFE Validate functions
  */
@@ -33,7 +30,7 @@ RDFE.Validate.error = function(fld, msg)
   setTimeout(function(){fld.focus();}, 1);
 
   return false;
-}
+};
 
 RDFE.Validate.integer = function(fld, v)
 {
@@ -42,7 +39,7 @@ RDFE.Validate.integer = function(fld, v)
     return RDFE.Validate.error(fld, 'Invalid integer value: ' + v);
 
   return true;
-}
+};
 
 RDFE.Validate.float = function(fld, v)
 {
@@ -51,7 +48,7 @@ RDFE.Validate.float = function(fld, v)
     return RDFE.Validate.error(fld, 'Invalid float value: ' + v);
 
   return true;
-}
+};
 
 RDFE.Validate.date = function(fld, v)
 {
@@ -60,7 +57,7 @@ RDFE.Validate.date = function(fld, v)
     return RDFE.Validate.error(fld, 'Invalid date value: ' + v);
 
   return true;
-}
+};
 
 RDFE.Validate.time = function(fld, v)
 {
@@ -69,7 +66,7 @@ RDFE.Validate.time = function(fld, v)
     return RDFE.Validate.error(fld, 'Invalid time value: ' + v);
 
   return true;
-}
+};
 
 RDFE.Validate.dateTime = function(fld, v)
 {
@@ -78,7 +75,7 @@ RDFE.Validate.dateTime = function(fld, v)
     return RDFE.Validate.error(fld, 'Invalid date value: ' + v);
 
   return true;
-}
+};
 
 RDFE.Validate.mail = function(fld, v)
 {
@@ -90,7 +87,7 @@ RDFE.Validate.mail = function(fld, v)
     return RDFE.Validate.error(fld, 'Invalid E-mail address: ' + v);
 
   return true;
-}
+};
 
 RDFE.Validate.URL = function(fld, v)
 {
@@ -99,7 +96,7 @@ RDFE.Validate.URL = function(fld, v)
     return RDFE.Validate.error(fld, 'Invalid URL address: ' + v);
 
   return true;
-}
+};
 
 RDFE.Validate.URI = function(fld, v)
 {
@@ -109,7 +106,7 @@ RDFE.Validate.URI = function(fld, v)
     return RDFE.Validate.error(fld, 'Invalid URI address: ' + v);
 
   return true;
-}
+};
 
 RDFE.Validate.WebID = function(fld, v)
 {
@@ -120,16 +117,16 @@ RDFE.Validate.WebID = function(fld, v)
   if (regex.test(v))
     return true;
 
-  var regex  = /^acct:([a-zA-Z0-9_\.\-\+])+\@(([a-zA-Z0-9\-:])+)+\.?([a-zA-Z0-9]{0,4})+$/;
+  regex  = /^acct:([a-zA-Z0-9_\.\-\+])+\@(([a-zA-Z0-9\-:])+)+\.?([a-zA-Z0-9]{0,4})+$/;
   if (regex.test(v))
     return true;
 
-  var regex = /^acct:([a-zA-Z0-9_\.\-])+\@(([a-zA-Z0-9\-])+\.)+([a-zA-Z0-9]{2,4})+$/;
+  regex = /^acct:([a-zA-Z0-9_\.\-])+\@(([a-zA-Z0-9\-])+\.)+([a-zA-Z0-9]{2,4})+$/;
   if (regex.test(v))
     return true;
 
   return RDFE.Validate.error(fld, 'Invalid URI address: ' + v);
-}
+};
 
 RDFE.Validate.check = function(fld, v, params)
 {
@@ -169,4 +166,4 @@ RDFE.Validate.check = function(fld, v, params)
     return RDFE.Validate.error(fld, 'Field cannot be empty');
 
   return true;
-}
+};

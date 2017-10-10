@@ -148,9 +148,8 @@
                         }
                     })
                     .off('save').on('save', function (e, params) {
-                        var index = $(this).parents('tr[data-index]').data('index'),
-                            row = data[index],
-                            oldValue = row[column.field];
+                        var row = data[$(this).parents('tr[data-index]').data('index')];
+                        var oldValue = row[column.field];
 
                         $(this).data('value', params.submitValue);
                         row[column.field] = params.submitValue;
@@ -167,9 +166,7 @@
                         }
                     })
                     .off('shown').on('shown', function (e, editable) {
-                        var index = $(this).parents('tr[data-index]').data('index'),
-                            row = data[index];
-
+                        var row = data[$(this).parents('tr[data-index]').data('index')];
                         that.trigger('editable-shown', column.field, row, $(this), editable);
                     });
                 editables
@@ -183,9 +180,7 @@
                         }
                     })
                     .off('hidden').on('hidden', function (e, reason) {
-                        var index = $(this).parents('tr[data-index]').data('index'),
-                            row = data[index];
-
+                        var row = data[$(this).parents('tr[data-index]').data('index')];
                         that.trigger('editable-hidden', column.field, row, $(this), reason);
                     });
             });

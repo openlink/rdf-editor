@@ -26,6 +26,7 @@
  * Special options:
  *   schema.model:   Embedded model constructor
  */
+
 Backbone.Form.editors.NestedRdf = Backbone.Form.editors.Object.extend({
   initialize: function(options) {
     Backbone.Form.editors.Base.prototype.initialize.call(this, options);

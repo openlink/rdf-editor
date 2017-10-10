@@ -132,7 +132,7 @@ angular.module('myApp.fileBrowser', ['ngRoute', 'ui.bootstrap'])
     var applyFolder = function () {
       usSpinnerService.stop('refresh-spinner');
       $scope.currentFolder = folder;
-    }
+    };
     $scope.resetUI();
     usSpinnerService.spin('refresh-spinner');
     if (folder.dirty) {
@@ -309,7 +309,7 @@ angular.module('myApp.fileBrowser', ['ngRoute', 'ui.bootstrap'])
       $scope.currentFolder.children.push(graph);
 
       // open the file in the editor
-      $scope.openFile(gr);
+      $scope.openFile(graph);
     }
   };
 

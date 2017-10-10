@@ -18,8 +18,7 @@
  *
  */
 
-(function ($) {
-  "use strict";
+(function ($, RDFE) {
 
   var RdfNode = function (options) {
     this.init('rdfnode', options, RdfNode.defaults);
@@ -36,7 +35,7 @@
       this.$input.rdfNodeEditor().setEditFocus();
     },
     value2html: function(value, element) {
-      if (!value) {
+      if (!value && value !== false) {
         $(element).empty();
         return;
       }
@@ -84,7 +83,7 @@
                     node = new RDFE.RdfNode('uri', getValue());
                   }
                   else {
-                    for (var i = 0; i < ranges.length; i++) {
+                    for (i = 0; i < ranges.length; i++) {
                       if (editor.isLiteralType(ranges[i])) {
                         node = new RDFE.RdfNode('literal', getValue(), ranges[i]);
                         break;
@@ -97,7 +96,12 @@
           }
         }
         if (!node) {
-          node = new RDFE.RdfNode('literal', getValue());
+          if (this.options && this.options.rdfnode && this.options.rdfnode.type === 'http://www.w3.org/1999/02/22-rdf-syntax-ns#Resource') {
+            node = new RDFE.RdfNode('uri', getValue(), 'http://www.w3.org/1999/02/22-rdf-syntax-ns#Resource');
+          }
+          else {
+            node = new RDFE.RdfNode('literal', getValue(), this.options.rdfnode.type);
+          }
         }
       }
       editor.setValue(node, nodeItems);
@@ -108,4 +112,4 @@
     tpl: '<input type="text">'
   });
   $.fn.editabletypes.rdfnode = RdfNode;
-}(window.jQuery));
+}(window.jQuery, RDFE));

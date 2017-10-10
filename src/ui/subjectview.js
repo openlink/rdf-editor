@@ -36,11 +36,12 @@
       self.editor.doc.listSubjects(function(subjects) {
         var labelFormatter = function(value, row, index) {
           var ontologyManager = self.editor.ontologyManager;
-          var _class = 'class="rdfe-green-link"';
-          if (ontologyManager.ontologyClassByURI(row.label))
-            _class = '';
+          var _class = (ontologyManager.ontologyClassByURI(row.label))? '': 'class="rdfe-green-link"';
+          var _name = RDFE.Utils.uri2name(row.uri);
+          if (_name !== '')
+            return '<a href="{1}" target="_blank" {2}>{0}</a>'.format(RDFE.Utils.uri2name(row.uri), row.uri, _class);
 
-          return '<a href="{1}" target="_blank" {2}>{0}</a>'.format(RDFE.Utils.uri2name(row.uri), row.uri, _class);
+          return '<em style="color: red;">Empty<em>';
         };
 
         var labelSorter = function(a, b) {
@@ -79,7 +80,7 @@
         var pageSize = 10;
         var sortName = 'uri';
         var sortOrder = 'asc';
-        var pageSettings = self.editor.config.options["pageSettings"]
+        var pageSettings = self.editor.config.options["pageSettings"];
         if (pageSettings["pageNo"]) {
           pageNumber = pageSettings["pageNo"];
         }

@@ -150,7 +150,7 @@ angular.module('myApp', [
     else {
       return $q.when(cached);
     }
-  };
+  }
 
   function loadRecentDocs() {
     var r = new RDFE.IO.Folder();
@@ -164,7 +164,7 @@ angular.module('myApp', [
   }
 
   function getRecentDocs() {
-    var files = []
+    var files = [];
     var items = $.jStorage.get('rdfe:recentDocuments');
 
     if (items) {
@@ -183,7 +183,7 @@ angular.module('myApp', [
   }
 
   function getRecentLocations() {
-    var folders = []
+    var folders = [];
     var items = $.jStorage.get('rdfe:recentLocations');
 
     if (items) {
@@ -403,14 +403,14 @@ angular.module('myApp', [
       saveDocument();
       $window.location = $scope.userProfile.config.host + $scope.userProfile.config.loginLink + '?returnto=' + encodeURIComponent(window.location.href);
     }
-  }
+  };
 
   $scope.logout = function(e) {
     if ($scope.userProfile.config.valInstalled) {
       saveDocument();
       $window.location = $scope.userProfile.config.host + $scope.userProfile.config.logoutLink + '?returnto=' + encodeURIComponent(window.location.href);
     }
-  }
+  };
 
   // Profile.getProfile().then(updateProfileData, updateProfileData);
 }]);

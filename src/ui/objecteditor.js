@@ -41,7 +41,7 @@
               <input name="object" class="form-control" /> \
             </div> \
             <div class="col-sm-1"> \
-              <button type="button" class="btn btn-default btn-sm pull-right rdfe-font-bold" id="backButton">Back</button> \
+              <button type="button" class="btn btn-default btn-sm pull-right rdfe-font-bold" id="backButton" title="Back">Back</button> \
             </div> \
           </div> \
         </div> \
@@ -66,7 +66,6 @@
           "showHeader": true,
           "editable": true,
           "data": [],
-          "editable": true,
           "dereference": true,
           "columns": [{
             "field": 'subject',
@@ -193,7 +192,7 @@
         objects[i].id = i;
       }
       self.objectTable.data('maxindex', i);
-      self.objectTable.bootstrapTable('load', objects);;
+      self.objectTable.bootstrapTable('load', objects);
       if (self.object) {
         self.addButton.show();
       }
@@ -241,7 +240,7 @@
         '</div>'
       ).show();
 
-      predicateEditor = self.objectFormContainer.find('select[name="predicate"]').propertyBox({
+      var predicateEditor = self.objectFormContainer.find('select[name="predicate"]').propertyBox({
         "ontologyManager": self.editor.ontologyManager
       });
 
@@ -258,12 +257,12 @@
         e.preventDefault();
 
         var s = subjectEditor.val();
-        s = RDFE.Utils.trim(RDFE.Utils.trim(s, '<'), '>')
+        s = RDFE.Utils.trim(RDFE.Utils.trim(s, '<'), '>');
         if (!RDFE.Validate.check(subjectEditor, s))
           return;
 
         var p = predicateEditor.selectedURI();
-        p = RDFE.Utils.trim(RDFE.Utils.trim(p, '<'), '>')
+        p = RDFE.Utils.trim(RDFE.Utils.trim(p, '<'), '>');
         if (!RDFE.Validate.check(predicateEditor.sel, p))
           return;
 

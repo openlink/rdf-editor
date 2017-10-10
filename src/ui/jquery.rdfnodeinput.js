@@ -18,7 +18,7 @@
  *
  */
 
-(function ($) {
+(function ($, RDFE) {
   var defaults = {
     type: null,
     showLangSelect: true,
@@ -153,25 +153,28 @@
     "http://www.w3.org/2001/XMLSchema#boolean": {
       label: 'Boolean',
       setup: function(elem, remove) {
-        if(remove) {
-          if(elem.bootstrapToggle)
+        if (remove) {
+          if (elem.bootstrapToggle)
             elem.bootstrapToggle('destroy');
+
           elem.attr('type', 'text');
         }
         else {
-          if(elem.bootstrapToggle)
-            elem.bootstrapToggle({
-              on: 'True',
-              off: 'False'
-            });
           elem.attr('type', 'checkbox');
+          elem.bootstrapToggle({
+            on: 'True',
+            off: 'False'
+          });
         }
       },
       getValue: function(elem) {
         return (elem.is(":checked") ? "true" : "false");
       },
       setValue: function(elem, val) {
-        if(parseInt(val) === 1 || (typeof val === "string" && val.toLowerCase() === 'true'))
+        this.setup(elem);
+        if (val)
+          val = val.toString().toLowerCase();
+        if (val === "1" || val === 'true')
           elem.bootstrapToggle('on');
         else
           elem.bootstrapToggle('off');
@@ -247,7 +250,7 @@
     self.typeContainer = $(document.createElement('div')).addClass('rdfNodeTypeContainer');
     self.typeContainer.css('vertical-align', 'top');
     self.typeElement = $(document.createElement('select')).addClass('form-control');
-    for (t in nodeTypes) {
+    for (var t in nodeTypes) {
       self.typeElement.append($(document.createElement('option')).attr('value', t).text(nodeTypes[t].label));
     }
     self.typeContainer.append(self.typeElement);
@@ -306,7 +309,7 @@
         var uri = self.getValue();
         if (uri) {
           self.options["dereferenceLink"](uri.value);
-        };
+        }
       });
     }
 
@@ -325,6 +328,7 @@
       self.resourceSelect = $(document.createElement('select'));
       self.resourceContainer = $(document.createElement('div')).addClass('rdfResourceContainer');
       self.resourceContainer.append(self.resourceSelect);
+      self.resourceContainer.css('min-width', '200px');
       self.inputContainer.append(self.resourceContainer);
     }
     if (!self.resourceSelectize) {
@@ -456,12 +460,11 @@
 
   RdfNodeEditor.prototype.setValue = function(node, nodeItems) {
     //console.log('RdfNodeEditor.prototype.setValue ', node);
-    var self = this;
-
     if (!node)
       return;
 
-    var node = RDFE.RdfNode.fromStoreNode(node);
+    var self = this;
+    node = RDFE.RdfNode.fromStoreNode(node);
 
     self.lastType = self.currentType;
     if ((node.type === 'uri') || self.startsWithHashSign()) {
@@ -479,13 +482,15 @@
       self.currentType = node.datatype || 'http://www.w3.org/2000/01/rdf-schema#Literal';
 
       // special case for boolean where we support 0 and 1 and true and false
-      if (self.options.type === "http://www.w3.org/2001/XMLSchema#boolean" &&
-         (node.value === "0" || node.value === "1" || node.value.toLowerCase() === "true" || node.value.toLowerCase() === "false")) {
-        self.currentType = "http://www.w3.org/2001/XMLSchema#boolean";
+      if (self.options.type === "http://www.w3.org/2001/XMLSchema#boolean") {
+        var v = node.value.toString();
+        if ((v === "0" || v === "1" || v.toLowerCase() === "true" || v.toLowerCase() === "false")) {
+          self.currentType = "http://www.w3.org/2001/XMLSchema#boolean";
+        }
       }
     }
     self.lang = node.language;
-    if (node.value && node.value.indexOf('\n') !== -1) {
+    if (node.value && node.value.indexOf && node.value.indexOf('\n') !== -1) {
       self.transformToTextarea();
     }
     self.mainElement.val(node.value);
@@ -512,7 +517,12 @@
     var self = this;
 
     if (self.dereferenceLink) {
-      (self.currentType === 'http://www.w3.org/1999/02/22-rdf-syntax-ns#Resource')? self.dereferenceLink.show(): self.dereferenceLink.hide();
+      if (self.currentType === 'http://www.w3.org/1999/02/22-rdf-syntax-ns#Resource') {
+        self.dereferenceLink.show();
+      }
+      else {
+        self.dereferenceLink.hide();
+      }
     }
     self.inputContainer.css('width', 'auto');
     if (mode) {
@@ -625,4 +635,4 @@
     }
     return le;
   };
-})(jQuery);
+})(window.jQuery, RDFE);

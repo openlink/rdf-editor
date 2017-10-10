@@ -65,25 +65,25 @@ String.prototype.format = function() {
 
   var extendParams = function(params, options) {
     return $.extend({}, options, params);
-  }
+  };
 
   var getFn = function(path) {
     return path.split("/").pop();
-  }
+  };
 
   var getFParent = function(path) {
     return path.substring(0, path.lastIndexOf('/'));
-  }
+  };
 
   /*
   * Can be used by required callbacks
   */
-  var dummyFct = function() {}
+  var dummyFct = function() {};
 
   var clearGraph = function(store, graph, callback) {
     callback = callback || dummyFct;
     store.clear(graph, callback);
-  }
+  };
 
   RDFE.IO.Base = (function() {
     // constructor
@@ -97,7 +97,7 @@ String.prototype.format = function() {
       // might have side effects.
       var construct = function () {};
       construct.prototype = this.prototype;
-      cls.prototype = new construct;
+      cls.prototype = new construct();
       cls.prototype.constructor = cls;
       cls.super = this;
       return cls;
@@ -146,9 +146,9 @@ String.prototype.format = function() {
           var state = {
             "httpCode": xhr.status,
             "message": xhr.statusText
-          }
+          };
           if (this.crossDomain && (state.message === 'error') && (RDFE.Utils.extractDomain(this.url) !== window.location.hostname)) {
-            state.message = 'CORS Error: ' + ((self.type !== 'sparql')? ajaxParams.url: 'The document') + ' failed to load - this could be related to missing CORS settings on the server.'
+            state.message = 'CORS Error: ' + ((self.type !== 'sparql')? ajaxParams.url: 'The document') + ' failed to load - this could be related to missing CORS settings on the server.';
           }
           if ((xhr.status === 401 || xhr.status === 403) && params.authFunction) {
             params.authFunction(ajaxParams.url, function(r) {
@@ -162,10 +162,10 @@ String.prototype.format = function() {
             });
           }
           else if (status === 'timeout') {
-            var state = {
+            state = {
               "httpCode": status,
               "message": 'Timeout Error: Failed to load ' + ((self.type !== 'sparql')? ajaxParams.url: 'document')
-            }
+            };
             params.error(state, data, status, xhr);
           }
           else {
@@ -202,7 +202,7 @@ String.prototype.format = function() {
 
       var defaults = {
         sparqlEndpoint: window.location.protocol + '//' + window.location.host + '/sparql'
-      }
+      };
 
       self.options = $.extend({}, defaults, options);
       if (!self.options.sparqlEndpoint || self.options.sparqlEndpoint.length === 0) {
@@ -224,7 +224,7 @@ String.prototype.format = function() {
         params["ajaxSuccess"] = null;
       }
       self.exec(SPARQL_RETRIEVE.format(graph), params);
-    }
+    };
 
     c.prototype.retrieveToStore = function(graph, store, storeGraph, params) {
       var self = this;
@@ -248,13 +248,13 @@ String.prototype.format = function() {
       params["__success"] = params["success"];
       params["success"] = __success;
       self.retrieve(graph, params, true);
-    }
+    };
 
     c.prototype.insert = function(graph, s, p, o, params) {
       var self = this;
       params = extendParams(params, self.options);
       self.exec(SPARQL_INSERT.format(graph, SPARQL_INSERT_SINGLE.format(s, p, o)), params);
-    }
+    };
 
     c.prototype.insertFromStore = function(graph, store, storeGraph, params) {
       var self = this;
@@ -290,18 +290,18 @@ String.prototype.format = function() {
             }
           };
           chunk(0);
-        }
+        };
         params["__success"] = params["success"];
         params["success"] = __success;
         self.clear(graph, params);
       });
-    }
+    };
 
     c.prototype.delete = function(graph, s, p, o, params) {
       var self = this;
       params = extendParams(params, self.options);
       self.exec(SPARQL_DELETE.format(graph, s, p, o), params);
-    }
+    };
 
     c.prototype.clear = function(graph, params, silent) {
       var self = this;
@@ -311,7 +311,7 @@ String.prototype.format = function() {
         params["ajaxSuccess"] = null;
       }
       self.exec(SPARQL_CLEAR.format(graph), params);
-    }
+    };
 
     c.prototype.exec = function(q, params) {
       var self = this;
@@ -325,7 +325,7 @@ String.prototype.format = function() {
         dataType: 'text'
       };
       return self.baseExec(ajaxParams, params);
-    }
+    };
 
     return c;
   }());
@@ -366,7 +366,7 @@ String.prototype.format = function() {
         params["ajaxSuccess"] = null;
       }
       this.exec("GET", graph, null, params);
-    }
+    };
 
     c.prototype.retrieveToStore = function(graph, store, storeGraph, params) {
       var self = this;
@@ -390,12 +390,12 @@ String.prototype.format = function() {
       params["__success"] = params["success"];
       params["success"] = __success;
       this.retrieve(graph, params, true);
-    }
+    };
 
     c.prototype.insert = function(graph, content, params) {
       params = extendParams(params, this.options);
       this.exec('PUT', graph, content, params);
-    }
+    };
 
     c.prototype.insertFromStore = function(graph, store, storeGraph, params) {
       var self = this;
@@ -412,18 +412,18 @@ String.prototype.format = function() {
         var __success = function(data, textStatus) {
           params["success"] = params["__success"];
           self.insert(graph, result.toNT(), params);
-        }
+        };
         params["__success"] = params["success"];
         params["success"] = __success;
         self.clear(graph, params, true);
       });
-    }
+    };
 
     c.prototype.update = function(graph, content, params) {
       var self = this;
       params = extendParams(params, self.options);
       self.exec('POST', graph, content, params);
-    }
+    };
 
     c.prototype.delete = function(graph, params, silent) {
       var self = this;
@@ -433,7 +433,7 @@ String.prototype.format = function() {
         params["ajaxSuccess"] = null;
       }
       self.exec('DELETE', graph, null, params);
-    }
+    };
 
     c.prototype.clear = c.prototype.delete;
 
@@ -449,7 +449,7 @@ String.prototype.format = function() {
         dataType: 'text'
       };
       return self.baseExec(ajaxParams, params);
-    }
+    };
 
     return c;
   })();
@@ -488,7 +488,7 @@ String.prototype.format = function() {
         };
       }
       this.exec('GET', path, headers, null, params);
-    }
+    };
 
     c.prototype.retrieveToStore = function(path, store, graph, params) {
       params = extendParams(params, this.options);
@@ -511,7 +511,7 @@ String.prototype.format = function() {
       params["__success"] = params["success"];
       params["success"] = __success;
       this.retrieve(path, params, true);
-    }
+    };
 
     c.prototype.insert = function(path, content, params) {
       params = extendParams(params, this.options);
@@ -526,7 +526,7 @@ String.prototype.format = function() {
         method = 'PUT';
       }
       this.exec(method, path, headers, content, params);
-    }
+    };
 
     c.prototype.insertFromStore = function(path, store, graph, params) {
       var self = this;
@@ -539,26 +539,27 @@ String.prototype.format = function() {
           return;
         }
 
-        var content = result.toNT();
+        var content = result.toNTBeatify(store.rdf.prefixes);
+        var content1 = result.toNT();
         self.insert(path, content, params);
       });
-    }
+    };
 
-    c.prototype.update = function(path, s, p, o, params) {
+    c.prototype.update = function(path, g, s, p, o, params) {
       var self = this;
       params = extendParams(params, self.options);
-      var content = q.format(LDP_INSERT, s, p, o);
+      var content = LDP_INSERT.format(g, s, p, o);
       var headers = {
         "Content-Type": 'application/sparql-update'
       };
       self.exec('PATCH', path, headers, content, params);
-    }
+    };
 
     c.prototype.delete = function(path, params) {
       var self = this;
       params = extendParams(params, self.options);
       self.exec('DELETE', path, null, null, params);
-    }
+    };
 
     c.prototype.clear = c.prototype.delete;
 
@@ -574,7 +575,7 @@ String.prototype.format = function() {
         dataType: params.dataType
       };
       return self.baseExec(ajaxParams, params);
-    }
+    };
 
     return c;
   })();
@@ -644,7 +645,7 @@ String.prototype.format = function() {
             }
           };
           store.load(contentType, data, URI, callback);
-        }
+        };
       })(graph, params);
 
       var host = (params.proxy) ? self.options.httpProxyTemplate.format(encodeURIComponent(URI)) : self.options.httpTemplate.format(URI);
@@ -661,7 +662,7 @@ String.prototype.format = function() {
         }
       };
       return self.baseExec(ajaxParams, params);
-    }
+    };
 
     return c;
   })();

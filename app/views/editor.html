@@ -1,6 +1,6 @@
 <div>
   <div class="btn-group" role="group">
-    <button class="btn btn-default" type="button" id="dropdownMenu1" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">
+    <button class="btn btn-default" type="button" id="dropdownMenu1" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true" title="Actions">
       Actions
       <span class="caret"></span>
     </button>
@@ -49,9 +49,9 @@
   </div>
 
   <div class="col-xs-6">
-    <div id="panel-ontologies" class="panel panel-default" style="margin-bottom: 0px; cursor: pointer; ">
-      <div class="panel-heading" style="padding: 6px 12px 6px 12px" ng-click="toggleOntologyView()">
-        Linked Vocabularies&nbsp;<span class="dropup up" style="display: none;"><span class="caret"></span></span><span class="caret down"></span>
+    <div id="panel-ontologies" class="panel panel-default" style="margin-bottom: 0px; cursor: pointer;">
+      <div class="panel-heading" style="padding: 6px 12px 6px 12px" ng-click="toggleOntologyView()" title="Linked Vocabularies">
+        Linked Vocabularies&nbsp;<span class="dropup up" style="display: none;" title="Open Linked Vocabularies"><span class="caret"></span></span><span class="caret down" title="Close Linked Vocabularies"></span>
         <span class="pull-right">
           <span id="ontology-loading" aria-hidden="true" style="display: none;"><img src="images/loading.gif" /></span>&nbsp;
           <span id="ontology-add" class="glyphicon glyphicon-plus pull-right" aria-hidden="true" style="display: none;" title="Bound Vocabulary"></span>

@@ -39,7 +39,7 @@
               <input name="subject" class="form-control" style="width: 85%;" disabled="disabled" /> \
             </div> \
             <div class="btn-group pull-right" role="group"> \
-              <button type="button" class="btn btn-default btn-sm rdfe-font-bold" id="backButton">Back</button> \
+              <button type="button" class="btn btn-default btn-sm rdfe-font-bold" id="backButton" title="Back">Back</button> \
             </div> \
           </form> \
         </div> \
@@ -104,7 +104,6 @@
 
         // FIXME: this is all pretty much the same as in the PropertyBox, in any case it should be moved into a separate class/file
         $classesSelect = $('#class').selectize({
-          "create": true,
           "valueField": 'URI',
           "labelField": 'URI',
           "searchField": [ "title", "label", "prefix", "URI" ],
@@ -184,7 +183,7 @@
           if (e.which === 13) {
             saveFct();
           }
-        })
+        });
       };
 
       var subjectEditorData = function(container, backCallback) {
@@ -198,7 +197,6 @@
           "showHeader": true,
           "editable": true,
           "data": [],
-          "editable": true,
           "dereference": true,
           "columns": [{
             "field": 'predicate',
@@ -289,7 +287,15 @@
         });
 
         var inputSelect = container.find('input[name="subject"]');
-        inputSelect.val(self.subject.uri);
+        var uri = self.subject.uri;
+        if (uri !== '') {
+          inputSelect.val(self.subject.uri);
+        }
+        else {
+          inputSelect.css('color', 'red');
+          inputSelect.css('font-style', 'italic');
+          inputSelect.val('Empty');
+        }
 
         subjectEditorData(container, backCallback);
       }
@@ -307,7 +313,7 @@
         subjects[i].id = i;
       }
       self.subjectTable.data('maxindex', i);
-      self.subjectTable.bootstrapTable('load', subjects);;
+      self.subjectTable.bootstrapTable('load', subjects);
       if (self.subject) {
         self.addButton.show();
       }
@@ -318,9 +324,7 @@
 
     c.prototype.addTriple = function(triple) {
       var i = this.subjectTable.data('maxindex');
-      this.subjectTable.bootstrapTable('append', $.extend(triple, {
-        id: i
-      }));
+      this.subjectTable.bootstrapTable('append', $.extend(triple, {id: i}));
       this.subjectTable.data('maxindex', ++i);
     };
 
