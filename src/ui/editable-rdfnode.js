@@ -35,7 +35,7 @@
       this.$input.rdfNodeEditor().setEditFocus();
     },
     value2html: function(value, element) {
-      if (!value) {
+      if (!value && value !== false) {
         $(element).empty();
         return;
       }

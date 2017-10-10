@@ -153,25 +153,28 @@
     "http://www.w3.org/2001/XMLSchema#boolean": {
       label: 'Boolean',
       setup: function(elem, remove) {
-        if(remove) {
-          if(elem.bootstrapToggle)
+        if (remove) {
+          if (elem.bootstrapToggle)
             elem.bootstrapToggle('destroy');
+
           elem.attr('type', 'text');
         }
         else {
-          if(elem.bootstrapToggle)
-            elem.bootstrapToggle({
-              on: 'True',
-              off: 'False'
-            });
           elem.attr('type', 'checkbox');
+          elem.bootstrapToggle({
+            on: 'True',
+            off: 'False'
+          });
         }
       },
       getValue: function(elem) {
         return (elem.is(":checked") ? "true" : "false");
       },
       setValue: function(elem, val) {
-        if(parseInt(val) === 1 || (typeof val === "string" && val.toLowerCase() === 'true'))
+        this.setup(elem);
+        if (val)
+          val = val.toString().toLowerCase();
+        if (val === "1" || val === 'true')
           elem.bootstrapToggle('on');
         else
           elem.bootstrapToggle('off');
@@ -479,9 +482,11 @@
       self.currentType = node.datatype || 'http://www.w3.org/2000/01/rdf-schema#Literal';
 
       // special case for boolean where we support 0 and 1 and true and false
-      if (self.options.type === "http://www.w3.org/2001/XMLSchema#boolean" &&
-         (node.value === "0" || node.value === "1" || node.value.toLowerCase() === "true" || node.value.toLowerCase() === "false")) {
-        self.currentType = "http://www.w3.org/2001/XMLSchema#boolean";
+      if (self.options.type === "http://www.w3.org/2001/XMLSchema#boolean") {
+        var v = node.value.toString();
+        if ((v === "0" || v === "1" || v.toLowerCase() === "true" || v.toLowerCase() === "false")) {
+          self.currentType = "http://www.w3.org/2001/XMLSchema#boolean";
+        }
       }
     }
     self.lang = node.language;

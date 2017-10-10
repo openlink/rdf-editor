@@ -1147,12 +1147,14 @@ RDFE.Editor.prototype.dataSetter = function(field, oldTriple, newTriple) {
     if (node.type === 'uri') {
       node = self.doc.store.rdf.createNamedNode(node.value);
     }
-    else if (node.type === 'http://www.w3.org/2001/XMLSchema#dateTime') {
-      var dt = new Date(node.value);
-      node = self.doc.store.rdf.createLiteral(dt.toISOString(), node.language, node.type);
-    }
     else {
-      node = self.doc.store.rdf.createLiteral(node.value, node.language, node.type);
+      if (node.datatype === 'http://www.w3.org/2001/XMLSchema#dateTime') {
+        var dt = new Date(node.value);
+        node = self.doc.store.rdf.createLiteral(dt.toISOString(), node.language, node.datatype);
+      }
+      else {
+        node = self.doc.store.rdf.createLiteral(node.value, node.language, node.datatype);
+      }
     }
   }
   newTriple[field] = node;
