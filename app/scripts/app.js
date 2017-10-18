@@ -66,37 +66,6 @@ angular.module('myApp', [
   };
 })
 
-.factory('Profile', ['$q', 'Notification', function($q, Notification) {
-  var val = new VAL();
-
-  /**
-   * Fetch the profile of the authenticated user.
-   */
-  val.getProfile = function() {
-    var self = this;
-    if(self.profileData) {
-      return $q.when(self);
-    }
-    else {
-      if (!self.promise) {
-        self.promise = $q(function(resolve, reject) {
-          self.profile(function(success, pd) {
-            if(success) {
-              resolve(self);
-            }
-            else {
-              reject(self);
-            }
-          });
-        });
-      }
-      return self.promise;
-    }
-  };
-
-  return val;
-}])
-
 .controller('AuthInfoDialogCtrl', ["$scope", "$uibModalInstance", "url", function($scope, $uibModalInstance, url) {
   $scope.username = "";
   $scope.password = "";
@@ -114,8 +83,9 @@ angular.module('myApp', [
   };
 }])
 
-.factory('DocumentTree', ['$q', "$uibModal", 'usSpinnerService', 'Profile', 'RDFEConfig', function($q, $uibModal, usSpinnerService, Profile, RDFEConfig) {
+.factory('DocumentTree', ['$q', "$uibModal", 'usSpinnerService', 'WebID', 'RDFEConfig', function($q, $uibModal, usSpinnerService, WebID, RDFEConfig) {
   var locations = [],
+      storages = [],
       authCache = {};
 
   /**
@@ -209,43 +179,59 @@ angular.module('myApp', [
 
   function getLocations() {
     // if we already extracted the profile locations just return them
-    if (locations.length) {
+    if (locations.length)
       return $q.when(locations);
-    }
 
     // extract the locations from the profile
-    else {
-      var storage;
-      locations = getRecentLocations();
-      locations.unshift(loadRecentDocs());
+    locations = getRecentLocations();
+    locations.unshift(loadRecentDocs());
 
-      return $q(function(resolve, reject) {
-        RDFEConfig.getConfig().then(function(config) {
-          storage = config.options.storage || [];
-
-          return Profile.getProfile();
-        }).then(function(profile) {
-          var profileStorage = profile.profileData.storage || [];
-          for (var i = 0; i < profileStorage.length; i++) {
-            if (_.isEmpty(_.where(storage, {"uri": profileStorage[i].uri}))) {
-              storage = storage.concat(profileStorage[i]);
-            }
-          }
-          if (storage.length) {
-            RDFE.Utils.resolveStorageLocations(storage, function(files) {
-              $.merge(locations, files);
-              resolve(locations);
-            });
-          }
-          else {
+    return $q(function(resolve, reject) {
+      RDFEConfig.getConfig().then(function(config) {
+        var storage = config.options.storage || [];
+        if (storage.length) {
+          RDFE.Utils.resolveStorageLocations(storage, function(files) {
+            $.merge(locations, files);
             resolve(locations);
-          }
-        }, function() {
-          // failed to get profile
+          });
+        }
+        else {
           resolve(locations);
-        });
+        }
+      }, function() {
+        resolve(locations);
       });
-    }
+    });
+  }
+
+  function getStorages() {
+    // if we already extracted the profile locations just return them
+    if (storages.length)
+      return $q.when(storages);
+
+    // extract the locations from the profile
+    return $q(function(resolve, reject) {
+      WebID.getWebID().then(function() {
+        return WebID.getProfile();
+      }).then(function(profile) {
+        var storage = [];
+        var profileStorage = profile.storage || [];
+        for (var i = 0; i < profileStorage.length; i++) {
+          if (_.isEmpty(_.where(storage, {"uri": profileStorage[i].uri}))) {
+            storage = storage.concat(profileStorage[i]);
+          }
+        }
+        if (storage.length) {
+          RDFE.Utils.resolveStorageLocations(storage, function(files) {
+            $.merge(storages, files);
+            resolve(storages);
+          });
+        }
+        else {
+          resolve(storages);
+        }
+      })
+    });
   }
 
   function addRecentDoc(url, ioType) {
@@ -343,6 +329,7 @@ angular.module('myApp', [
   // Service API
   return {
     "getLocations": getLocations,
+    "getStorages": getStorages,
     "getAuthInfo": getAuthInfo,
     "getRecentDocs": getRecentDocs,
     "addRecentDoc": addRecentDoc,
@@ -378,13 +365,132 @@ angular.module('myApp', [
   };
 }])
 
-.controller('AuthHeaderCtrl', ['$rootScope', '$scope', '$window', 'Profile', function($rootScope, $scope, $window, Profile) {
+.factory('WebID', ['$q', 'Notification', function($q, Notification) {
+  var webid = null;
+  var profile = null;
 
-  function updateProfileData(profile) {
-    $scope.userProfile = profile;
-    $scope.profile = profile.profileData;
-    $rootScope.valInstalled = (profile)? profile.config.valInstalled: false;
+  function getWebID() {
+    var self = this;
+
+    if (webid)
+      return $q.when(webid);
+
+    return $q(function(resolve, reject) {
+      function recvMessage(event)
+      {
+        var ev_data;
+
+        if (String(event.data).lastIndexOf("youid_rc:", 0) !== 0){
+          return;
+        }
+
+        try {
+          ev_data = JSON.parse(event.data.substr(9));
+        } catch(e) {}
+
+        if (ev_data && ev_data.webid) {
+          // we have received WebID from YouID extension
+          webid = ev_data.webid;
+          resolve(webid);
+        }
+      }
+      window.addEventListener("message", recvMessage, false);
+      window.postMessage('youid:{"getWebId": true}', "*");
+    });
   }
+
+  function getProfile() {
+    var self = this;
+
+    if (!webid)
+      return $q.reject();
+
+    if (profile)
+      return $q.when(profile);
+
+    return $q(function(resolve, reject) {
+      $.get(webid)
+        .done(function(data) {
+          new rdfstore.create(function(error, store) {
+            var baseURI = webid.split("#")[0];
+            store.registerDefaultProfileNamespaces();
+            store.load('text/n3', data, {"documentIRI": baseURI}, function(error, result) {
+              if (error)
+                reject("Failed to load the profile contents.");
+
+              store.execute(
+                'select ?uri ?name ?img ?nick where {?x foaf:topic ?uri . ?uri a foaf:Agent . optional { ?uri foaf:name ?name . } . optional { ?uri foaf:nick ?nick . } . optional { ?uri foaf:img ?img . } . }',
+                function(error, result) {
+                  // console.log(result);
+                  if (error)
+                    reject("Failed to load the profile contents.");
+
+                  var p = {"uri": webid};
+                  if (result.length !== 0) {
+                    if (result[0].name) {
+                      p.name = result[0].name.value;
+                    }
+                    if (result[0].img) {
+                      p.image = result[0].img.value;
+                    }
+                    if (result[0].nick) {
+                      p.nick = result[0].nick.value;
+                    }
+                  }
+
+                  store.execute(
+                    'select ?storage where { <' + webid + '> <http://www.w3.org/ns/pim/space#storage> ?storage . }',
+                    function(error, result) {
+                      if (error)
+                        reject("Failed to load the profile contents.");
+
+                      for (var i = 0; i < result.length; i++) {
+                        if (result[i].storage) {
+                          (p.storage = p.storage || []).push({
+                            "uri": result[i].storage.value
+                          });
+                        }
+                      }
+
+                      store.execute(
+                        'select ?namedGraph ?sparqlEndpoint where { <' + webid + '> <http://www.openlinksw.com/schemas/cert#hasDBStorage> ?namedGraph . ?namedGraph <http://rdfs.org/ns/void#sparqlEndpoint> ?sparqlEndpoint . }',
+                        function(error, result) {
+                          if (error)
+                            reject("Failed to load the profile contents.");
+
+                          for (var i = 0; i < result.length; i++) {
+                            if (result[i].namedGraph && result[i].sparqlEndpoint) {
+                              (p.storage = p.storage || []).push({
+                                "uri": result[i].namedGraph.value,
+                                "sparqlEndpoint": result[i].sparqlEndpoint.value
+                              });
+                            }
+                          }
+
+                          profile = p;
+                          resolve(profile);
+                        }
+                      );
+                    }
+                  );
+                }
+              );
+            });
+          });
+        })
+        .fail(function(data, status, xhr) {
+          reject("Failed to load the profile contents.");
+        });
+    });
+  }
+
+  return {
+    "getWebID": getWebID,
+    "getProfile": getProfile
+  };
+}])
+
+.controller('AuthHeaderCtrl', ['$rootScope', '$scope', function($rootScope, $scope) {
 
   function saveDocument() {
     if ($rootScope.editor && $rootScope.editor.doc && $rootScope.editor.doc.dirty) {
@@ -398,19 +504,4 @@ angular.module('myApp', [
     }
   }
 
-  $scope.login = function(e) {
-    if ($scope.userProfile.config.valInstalled) {
-      saveDocument();
-      $window.location = $scope.userProfile.config.host + $scope.userProfile.config.loginLink + '?returnto=' + encodeURIComponent(window.location.href);
-    }
-  };
-
-  $scope.logout = function(e) {
-    if ($scope.userProfile.config.valInstalled) {
-      saveDocument();
-      $window.location = $scope.userProfile.config.host + $scope.userProfile.config.logoutLink + '?returnto=' + encodeURIComponent(window.location.href);
-    }
-  };
-
-  // Profile.getProfile().then(updateProfileData, updateProfileData);
 }]);

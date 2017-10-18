@@ -74,6 +74,10 @@ angular.module('myApp.fileBrowser', ['ngRoute', 'ui.bootstrap'])
     usSpinnerService.stop('location-spinner');
   });
 
+  DocumentTree.getStorages().then(function(storages) {
+    $scope.locations = $scope.locations.concat(storages);
+  });
+
   $scope.setCurrentLocation = function(location) {
     $scope.resetUI();
     if (location !== $scope.currentLocation) {

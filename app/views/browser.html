@@ -1,6 +1,6 @@
-<h2 ng-bind="title"></h2>
+<h3 ng-bind="title"></h3>
 <div id="locations" class="col-xs-4">
-  <h3>Storage Locations</h3>
+  <h4>Storage Locations</h4>
   <ul class="list-group">
     <li ng-repeat="location in locations"
         class="resourceItem locationItem list-group-item"
@@ -58,7 +58,7 @@
 </div>
 
 <div id="folder" class="col-xs-8">
-  <h3>
+  <h4>
     <span>{{currentFolder.path}}</span> <span ng-show="currentFolder.host">on {{currentFolder.host}}</span>
     <div class="pull-right" ng-show="currentFolder.ioType && currentFolder.ioType !== 'sparql' && currentFolder.type !== 'file'">
       <button class="btn btn-link" ng-click="refresh()" title="Refresh the contents of the folder">
@@ -68,7 +68,7 @@
         <span us-spinner="{ lines: 8, radius: 5, width: 3, length: 5, position: 'relative' }" spinner-key="refresh-spinner"></span>
       </div>
     </div>
-  </h3>
+  </h4>
 
   <ul class="list-group">
     <li ng-show="currentFolder.parent" class="list-group-item" ng-click="folderUp()">
