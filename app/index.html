@@ -146,6 +146,10 @@
       </div>
 
       <div class="collapse navbar-collapse" id="rdfe-navbar-collapse" style="margin-right: 50px;">
+        <p class="navbar-text navbar-right">
+          <span ng-show="profile" ng-cloak class="ng-cloak">Used WebID: <strong><a target="_blank" class="navbar-link" ng-href="{{profile.uri}}">{{profile.name || profile.nick || profile.uri}}</a></strong></span>
+          <!--span ng-hide="profile">Not logged in</span-->
+        </p>
         <ul class="nav navbar-nav navbar-right">
           <li><a class="navbar-link" href="#about" title="About OSD Editor, version {{version}}">About</a></li>
         </ul>
