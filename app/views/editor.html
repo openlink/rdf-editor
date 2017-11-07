@@ -13,6 +13,7 @@
       <li role="separator" class="divider"></li>
       <li><a ng-click="downloadDocumentAs(); $event.preventDefault();" href="#" title="Download the current document"><span class="glyphicon glyphicon-save" aria-hidden="true"></span> Download</a></li>
       <li role="separator" class="divider"></li>
+      <li><a ng-click="localInto(); $event.preventDefault();" href="#" title="Input local file content directly into current document"><span class="glyphicon glyphicon-import" aria-hidden="true"></span> Local File Input</a></li>
       <li><a ng-click="importInto(); $event.preventDefault();" href="#" title="Input content directly into current document"><span class="glyphicon glyphicon-import" aria-hidden="true"></span> Direct Input</a></li>
       <li><a ng-click="exportInto(); $event.preventDefault();" href="#" title="Output content directly"><span class="glyphicon glyphicon-export" aria-hidden="true"></span> Direct Output</a></li>
       <!--
@@ -103,6 +104,30 @@
         <button type="button" class="btn btn-primary ok">Save</button>
       </div>
     </form>
+    </div>
+  </div>
+</div>
+
+<div class="modal fade" id="localModal" tabindex="-1" role="dialog" aria-labelledby="localModalLabel" data-backdrop="static" data-keyboard="false">
+  <div class="modal-dialog modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        <h4 class="modal-title" id="localModal">Direct Input</h4>
+      </div>
+      <div class="modal-body">
+        <div class="form-group">
+          <label for="localFile" class="col-sm-3">Select Local File</label>
+          <div class="col-sm-9">
+            <input type="file" class="form-control" id="localFile" name="localFile"></input>
+          </div>
+        </div>
+        <br />
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+        <button type="button" class="btn btn-primary ok">Import</button>
+      </div>
     </div>
   </div>
 </div>

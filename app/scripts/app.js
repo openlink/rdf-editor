@@ -369,8 +369,11 @@ angular.module('myApp', [
   var webid = null;
   var profile = null;
 
-  function getWebID() {
+  function getWebID(v) {
     var self = this;
+
+    if (v)
+      webid = v;
 
     if (webid)
       return $q.when(webid);
@@ -532,6 +535,33 @@ angular.module('myApp', [
         }
       });
     }
+  }
+
+  $scope.signIn = function(e) {
+    var self = this;
+    var $form = $("#signinModal");
+
+    $form.modal();
+    $form.find('.ok').off();
+    $form.find('.ok').on("click", function (e) {
+      e.preventDefault();
+
+      $form.modal('hide');
+      var webid = $form.find('#signinValue').val();
+      if (!webid) {
+        $(self).trigger('rdf-editor-error', {
+          "type": "rdf-editor-error",
+          "message": 'Please set a WebID value!'
+        });
+      } else {
+        WebID.getWebID(webid).then(function() {
+          return WebID.getProfile();
+        }).then(function(profile) {
+          $scope.profile = profile;
+          $rootScope.$broadcast('signIn')
+        });
+      }
+    });
   }
 
   WebID.getWebID().then(function() {

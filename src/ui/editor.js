@@ -287,6 +287,72 @@ RDFE.Editor.prototype.settingsForm = function() {
 };
 
 /**
+ * Import RDF Turtle local file content into document.
+ */
+RDFE.Editor.prototype.localForm = function() {
+  var self = this;
+  var $form = $("#localModal");
+  $form.find('#content').val('');
+  $form.find('#contentType').val('text/turtle');
+
+  $form.modal();
+  $form.find('.ok').off();
+  $form.find('.ok').on("click", function (e) {
+    e.preventDefault();
+
+    if (!(window.File && window.FileReader && window.FileList && window.Blob)) {
+      $(self).trigger('rdf-editor-error', {
+        "type": "rdf-editor-error",
+        "message": "The File APIs are not fully supported by your browser."
+      });
+    }
+    else {
+      var localFile = $form.find('#localFile');
+      var files = localFile.prop('files');
+      if (!files) {
+        $(self).trigger('rdf-editor-error', {
+          "type": "rdf-editor-error",
+          "message": 'This browser doesn\'t seem to support the "files" property of file inputs.'
+        });
+      }
+      else if (!files.length || !files[0]) {
+        $(self).trigger('rdf-editor-error', {
+          "type": "rdf-editor-error",
+          "message": 'Please select a file!'
+        });
+      } else {
+        var file;
+        var fr;
+        var fileReadText = function() {
+          var content = fr.result;
+          var success = function (result) {
+            $form.modal('hide');
+            self.updateView();
+            self.docChanged();
+            $(self).trigger('rdf-editor-success', {
+              "type": "rdf-editor-success",
+              "message": "Successfully imported RDF data."
+            });
+          };
+          var fail = function (error) {
+            $(self).trigger('rdf-editor-error', {
+              "type": "rdf-editor-error",
+              "message": "Failed to import RDF data. <br /> " + error.message
+            });
+          };
+          self.doc.import(content, success, fail);
+        }
+
+        file = files[0];
+        fr = new FileReader();
+        fr.onload = fileReadText;
+        fr.readAsText(file);
+      }
+    }
+  });
+};
+
+/**
  * Import RDF Turtle content into document.
  */
 RDFE.Editor.prototype.importForm = function() {
