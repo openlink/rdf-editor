@@ -167,6 +167,11 @@ angular.module('myApp', [
           else if (item.ioType === 'ldp') {
             folder = new RDFE.IO.LDPFolder(item.url);
           }
+          else if (item.ioType === 'sparql') {
+            folder = new RDFE.IO.Folder(item.url);
+            folder.ioType = item.ioType;
+            folder.sparqlEndpoint = item.sparqlEndpoint;
+          }
           else {
             folder = new RDFE.IO.Folder(item.url);
           }
@@ -261,8 +266,8 @@ angular.module('myApp', [
     $.jStorage.set('rdfe:recentDocuments', items);
   }
 
-  function addRecentLocation(url, ioType) {
-    if (ioType === 'recent')
+  function addRecentLocation(location) {
+    if (location.ioType === 'recent')
       return;
 
     var notFound = true;
@@ -271,7 +276,7 @@ angular.module('myApp', [
 
     for (var i = 0; i < items.length; i++) {
       item = items[i];
-      if ((item.url === url) && (item.ioType === ioType)) {
+      if ((item.url === location.url) && (item.ioType === location.ioType)) {
         notFound = false;
         items.splice(i, 1);
         items.unshift(item);
@@ -280,8 +285,9 @@ angular.module('myApp', [
     }
 
     if (notFound) {
-      item = new RDFE.IO.Folder(url);
-      item.ioType = ioType;
+      item = new RDFE.IO.Folder(location.url);
+      item.ioType = location.ioType;
+      item.sparqlEndpoint = location.sparqlEndpoint;
       items.unshift(item);
       if (items.length > 10) {
         items.splice(items.length-1, 1);

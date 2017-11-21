@@ -244,7 +244,7 @@ angular.module('myApp.fileBrowser', ['ngRoute', 'ui.bootstrap'])
       }
     }
     $scope.locations.push(location);
-    DocumentTree.addRecentLocation(location.url, location.ioType);
+    DocumentTree.addRecentLocation(location);
   };
 
   $scope.removeLocation = function(location) {
