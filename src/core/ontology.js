@@ -66,6 +66,7 @@ RDFE.prefixes['vcard'] = 'http://www.w3.org/2006/vcard/ns#';
 RDFE.prefixes['void'] = 'http://rdfs.org/ns/void#';
 RDFE.prefixes['vs'] = 'http://www.w3.org/2003/06/sw-vocab-status/ns#';
 RDFE.prefixes['wot'] = 'http://xmlns.com/wot/0.1/';
+RDFE.prefixes['wdrs'] = 'http://www.w3.org/2007/05/powder-s#';
 RDFE.prefixes['ws'] = 'http://www.w3.org/ns/pim/space#';
 RDFE.prefixes['xhtml'] = 'http://www.w3.org/1999/xhtml';
 RDFE.prefixes['xsd'] = 'http://www.w3.org/2001/XMLSchema#';
