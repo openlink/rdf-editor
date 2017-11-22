@@ -167,6 +167,11 @@ angular.module('myApp', [
           else if (item.ioType === 'ldp') {
             folder = new RDFE.IO.LDPFolder(item.url);
           }
+          else if (item.ioType === 'sparql') {
+            folder = new RDFE.IO.Folder(item.url);
+            folder.ioType = item.ioType;
+            folder.sparqlEndpoint = item.sparqlEndpoint;
+          }
           else {
             folder = new RDFE.IO.Folder(item.url);
           }
@@ -261,8 +266,8 @@ angular.module('myApp', [
     $.jStorage.set('rdfe:recentDocuments', items);
   }
 
-  function addRecentLocation(url, ioType) {
-    if (ioType === 'recent')
+  function addRecentLocation(location) {
+    if (location.ioType === 'recent')
       return;
 
     var notFound = true;
@@ -271,7 +276,7 @@ angular.module('myApp', [
 
     for (var i = 0; i < items.length; i++) {
       item = items[i];
-      if ((item.url === url) && (item.ioType === ioType)) {
+      if ((item.url === location.url) && (item.ioType === location.ioType)) {
         notFound = false;
         items.splice(i, 1);
         items.unshift(item);
@@ -280,8 +285,9 @@ angular.module('myApp', [
     }
 
     if (notFound) {
-      item = new RDFE.IO.Folder(url);
-      item.ioType = ioType;
+      item = new RDFE.IO.Folder(location.url);
+      item.ioType = location.ioType;
+      item.sparqlEndpoint = location.sparqlEndpoint;
       items.unshift(item);
       if (items.length > 10) {
         items.splice(items.length-1, 1);
@@ -369,33 +375,63 @@ angular.module('myApp', [
   var webid = null;
   var profile = null;
 
-  function getWebID() {
+  function getWebID(v) {
     var self = this;
+
+    if (v)
+      webid = v;
 
     if (webid)
       return $q.when(webid);
 
     return $q(function(resolve, reject) {
-      function recvMessage(event)
-      {
-        var ev_data;
+      if (location.protocol == 'chrome-extension:') {
+        var opl_youid_id = null;
 
-        if (String(event.data).lastIndexOf("youid_rc:", 0) !== 0){
-          return;
-        }
+        chrome.management.getAll(function(ext_info) {
+          // try get ID for YoudID extension
+          for (var i = 0; i < ext_info.length; i++) {
+            if (ext_info[i].shortName === "opl_youid") {
+              opl_youid_id = ext_info[i].id;
+              break;
+            }
+          }
 
-        try {
-          ev_data = JSON.parse(event.data.substr(9));
-        } catch(e) {}
+          if (opl_youid_id) {
+            chrome.runtime.sendMessage(opl_youid_id, {"getWebId": true},
+              function(response) {
+                if (response)
+                  webid = JSON.parse(response.webid).id;
 
-        if (ev_data && ev_data.webid) {
-          // we have received WebID from YouID extension
-          webid = ev_data.webid;
-          resolve(webid);
-        }
+                if (webid) {
+                  resolve(webid);
+                }
+
+            });
+          }
+        });
       }
-      window.addEventListener("message", recvMessage, false);
-      window.postMessage('youid:{"getWebId": true}', "*");
+      else {
+        function recvMessage(event) {
+          var ev_data;
+
+          if (String(event.data).lastIndexOf("youid_rc:", 0) !== 0){
+            return;
+          }
+
+          try {
+            ev_data = JSON.parse(event.data.substr(9));
+          } catch(e) {}
+
+          if (ev_data && ev_data.webid) {
+            // we have received WebID from YouID extension
+            webid = ev_data.webid;
+            resolve(webid);
+          }
+        }
+        window.addEventListener("message", recvMessage, false);
+        window.postMessage('youid:{"getWebId": true}', "*");
+      }
     });
   }
 
@@ -411,6 +447,9 @@ angular.module('myApp', [
     return $q(function(resolve, reject) {
       $.get(webid)
         .done(function(data) {
+          if (profile)
+            return resolve(profile);
+
           new rdfstore.create(function(error, store) {
             var baseURI = webid.split("#")[0];
             store.registerDefaultProfileNamespaces();
@@ -419,7 +458,7 @@ angular.module('myApp', [
                 reject("Failed to load the profile contents.");
 
               store.execute(
-                'select ?uri ?name ?img ?nick where {?x foaf:topic ?uri . ?uri a foaf:Agent . optional { ?uri foaf:name ?name . } . optional { ?uri foaf:nick ?nick . } . optional { ?uri foaf:img ?img . } . }',
+                'select ?uri ?name ?img ?nick where {?x foaf:primaryTopic ?uri . optional { ?uri foaf:name ?name . } . optional { ?uri foaf:nick ?nick . } . optional { ?uri foaf:img ?img . } . }',
                 function(error, result) {
                   // console.log(result);
                   if (error)
@@ -490,7 +529,7 @@ angular.module('myApp', [
   };
 }])
 
-.controller('AuthHeaderCtrl', ['$rootScope', '$scope', function($rootScope, $scope) {
+.controller('AuthHeaderCtrl', ['$rootScope', '$scope', 'WebID', function($rootScope, $scope, WebID) {
 
   function saveDocument() {
     if ($rootScope.editor && $rootScope.editor.doc && $rootScope.editor.doc.dirty) {
@@ -503,5 +542,38 @@ angular.module('myApp', [
       });
     }
   }
+
+  $scope.signIn = function(e) {
+    var self = this;
+    var $form = $("#signinModal");
+
+    $form.modal();
+    $form.find('.ok').off();
+    $form.find('.ok').on("click", function (e) {
+      e.preventDefault();
+
+      $form.modal('hide');
+      var webid = $form.find('#signinValue').val();
+      if (!webid) {
+        $(self).trigger('rdf-editor-error', {
+          "type": "rdf-editor-error",
+          "message": 'Please set a WebID value!'
+        });
+      } else {
+        WebID.getWebID(webid).then(function() {
+          return WebID.getProfile();
+        }).then(function(profile) {
+          $scope.profile = profile;
+          $rootScope.$broadcast('signIn')
+        });
+      }
+    });
+  }
+
+  WebID.getWebID().then(function() {
+    return WebID.getProfile();
+  }).then(function(profile) {
+    $scope.profile = profile;
+  });
 
 }]);

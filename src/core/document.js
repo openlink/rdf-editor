@@ -245,13 +245,13 @@ RDFE.Document.prototype.import = function(content, contentType, success, fail) {
   else {
     var _fail = function (_error) {
       var __fail = function (__error) {
-        var _fail = function (_error) {
+        var ___fail = function (___error) {
           var error = new Error();
           error.name = 'SyntaxError';
-          error.message = _error.message + ' or ' + __error.message;
+          error.message = '<b>TTL</b>: ' + _error.message + ' or ' + '<b>JSON-LP</b>: ' + __error.message + ' or ' + '<b>RDF</b>: ' + ___error.message;
           fail(error);
         };
-        self.importRDF(content, success, __fail);
+        self.importRDF(content, success, ___fail);
       };
       self.importJSON(content, success, __fail);
     };
@@ -303,14 +303,20 @@ RDFE.Document.prototype.importJSON = function(content, success, fail) {
 RDFE.Document.prototype.importRDF = function(content, success, fail) {
   var self = this;
 
-  self.store.load('application/rdf+xml', content, self.graph, function(error, result) {
-    if (!error && success) {
-      success(result);
-    }
-    else if (error && fail) {
-      fail(error);
-    }
-  });
+  try {
+    $.parseXML(content);
+    self.store.load('application/rdf+xml', content, self.graph, function(error, result) {
+      if (!error && success) {
+        success(result);
+      }
+      else if (error && fail) {
+        fail(error);
+      }
+    });
+  }
+  catch (e) {
+    fail({"message": 'RDF syntax error!'});
+  }
 };
 
 // delete all triplets based on subject URI

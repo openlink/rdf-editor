@@ -146,14 +146,41 @@
       </div>
 
       <div class="collapse navbar-collapse" id="rdfe-navbar-collapse" style="margin-right: 50px;">
+        <p class="navbar-text navbar-right">
+          <span ng-show="profile" ng-cloak class="ng-cloak">Current WebID: <strong><a target="_blank" class="navbar-link" ng-href="{{profile.uri}}">{{profile.name || profile.nick || profile.uri}}</a></strong></span>
+        </p>
         <ul class="nav navbar-nav navbar-right">
           <li><a class="navbar-link" href="#about" title="About OSD Editor, version {{version}}">About</a></li>
+          <li ng-hide="profile"><a class="navbar-link" ng-click="signIn();" href="">Sign In</a></li>
         </ul>
 
       </div>
       <span id="forkongithub" class="hidden-xs"><a href="https://github.com/openlink/rdf-editor">fork me<br />on GitHub</a></span>
     </div>
   </nav>
+
+  <div class="modal fade" id="signinModal" tabindex="-1" role="dialog" aria-labelledby="signinModalLabel" data-backdrop="static" data-keyboard="false">
+    <div class="modal-dialog modal-lg" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+          <h4 class="modal-title" id="signinModal">Sign In WebID</h4>
+        </div>
+        <div class="modal-body">
+          <div class="form-group">
+            <div class="col-sm-12">
+              <input type="text" class="form-control" id="signinValue" name="signinValue"></input>
+            </div>
+          </div>
+          <br />
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+          <button type="button" class="btn btn-primary ok">Sign In</button>
+        </div>
+      </div>
+    </div>
+  </div>
 
   <div class="container-fluid">
     <div ng-view></div>

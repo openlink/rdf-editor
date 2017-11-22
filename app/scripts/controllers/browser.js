@@ -52,31 +52,44 @@ angular.module('myApp.fileBrowser', ['ngRoute', 'ui.bootstrap'])
     $scope.title = 'Open a Document';
   }
 
-  // array of default locations
-  $scope.locations = [];
-  DocumentTree.getLocations().then(function(locations) {
-    $scope.locations = locations;
+  $scope.getLocations = function() {
+    DocumentTree.getLocations().then(function(locations) {
+      $scope.locations = locations;
 
-    // browser state
-    // replace the old location with the new one
-    var ndx = 0;
-    if ($rootScope.currentLocation) {
-      for (var i = 0; i < $scope.locations.length; i++) {
-        if ($scope.locations[i].url === $rootScope.currentLocation.url) {
-          ndx = i;
-          break;
+      // browser state
+      // replace the old location with the new one
+      var ndx = 0;
+      if ($rootScope.currentLocation) {
+        for (var i = 0; i < $scope.locations.length; i++) {
+          if ($scope.locations[i].url === $rootScope.currentLocation.url) {
+            ndx = i;
+            break;
+          }
         }
       }
-    }
-    $scope.updateCurrentLocation($scope.locations[ndx]);
-    $scope.updateCurrentFolder($scope.currentLocation);
+      $scope.updateCurrentLocation($scope.locations[ndx]);
+      $scope.updateCurrentFolder($scope.currentLocation);
 
-    usSpinnerService.stop('location-spinner');
-  });
+      usSpinnerService.stop('location-spinner');
+    });
+  }
 
-  DocumentTree.getStorages().then(function(storages) {
-    $scope.locations = $scope.locations.concat(storages);
-  });
+  $scope.getStorages = function() {
+    DocumentTree.getStorages().then(function(storages) {
+      var i, j;
+      var s = [];
+      for (i = 0; i < storages.length; i++) {
+        for (j = 0; j < $scope.locations.length; j++) {
+          if ($scope.locations[j].url === storages[i].url) {
+            break;
+          }
+        }
+        if (j === $scope.locations.length)
+          s.push(storages[i]);
+      }
+      $scope.locations = $scope.locations.concat(s);
+    });
+  };
 
   $scope.setCurrentLocation = function(location) {
     $scope.resetUI();
@@ -231,7 +244,7 @@ angular.module('myApp.fileBrowser', ['ngRoute', 'ui.bootstrap'])
       }
     }
     $scope.locations.push(location);
-    DocumentTree.addRecentLocation(location.url, location.ioType);
+    DocumentTree.addRecentLocation(location);
   };
 
   $scope.removeLocation = function(location) {
@@ -296,6 +309,14 @@ angular.module('myApp.fileBrowser', ['ngRoute', 'ui.bootstrap'])
       }
     }
   };
+
+  // array of default locations
+  $scope.locations = [];
+  $scope.getLocations();
+  $scope.getStorages();
+  $scope.$on('signIn', function($event, message) {
+    $scope.getStorages();
+  });
 
   // controls for the UI element to add new named graphs
   $scope.addingGraph = false;

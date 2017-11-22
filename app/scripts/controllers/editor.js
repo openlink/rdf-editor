@@ -894,6 +894,10 @@ angular.module('myApp.editor', ['ngRoute'])
     $scope.editor.signDocumentForm();
   };
 
+  $scope.localInto = function() {
+    $scope.editor.localForm();
+  };
+
   $scope.importInto = function() {
     $scope.editor.importForm();
   };

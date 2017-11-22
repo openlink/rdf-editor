@@ -47478,11 +47478,7 @@ lexicalFormLiteral = function(term, env) {
             typeValue = resolvedPrefix+typeSuffix;
         }
         // normalization
-        if(typeValue.indexOf('hexBinary') != -1) {
-            indexedValue = '"' + term.value.toLowerCase() + '"^^<' + typeValue + '>';
-        } else {
-            indexedValue = '"' + term.value + '"^^<' + typeValue + '>';
-        }
+        indexedValue = '"' + term.value + '"^^<' + typeValue + '>';
     } else {
         if(lang == null && type == null) {
             indexedValue = '"' + value + '"';
@@ -47490,11 +47486,7 @@ lexicalFormLiteral = function(term, env) {
             indexedValue = '"' + value + '"' + "@" + lang;
         } else {
             // normalization
-            if(type.indexOf('hexBinary') != -1) {
-                indexedValue = '"' + term.value.toLowerCase() + '"^^<'+type+'>';
-            } else {
-                indexedValue = '"' + term.value + '"^^<'+type+'>';
-            }
+            indexedValue = '"' + term.value + '"^^<'+type+'>';
         }
     }
     return indexedValue;

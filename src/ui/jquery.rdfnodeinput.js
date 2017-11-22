@@ -194,7 +194,8 @@
         else
           input.datetimepicker({
             format: "yyyy-mm-ddThh:ii:ssZ",
-            weekStart: 1
+            weekStart: 1,
+            timezone: 'Z'
           });
       }
     },
