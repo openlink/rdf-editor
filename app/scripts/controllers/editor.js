@@ -255,7 +255,7 @@ angular.module('myApp.editor', ['ngRoute'])
       viewMode = ((view === 'triples') || (view === 'statements'))? view :'entities';
     }
     else if (a) {
-      viewMode = ((view === 'triples') || (view === 'statements'))? view :'entities';
+      viewMode = ((view === 'triples') || (view === 'statements'))? view :'attributes';
     }
     else if (v) {
       viewMode = ((view === 'triples') || (view === 'statements'))? view :'values';
@@ -271,7 +271,7 @@ angular.module('myApp.editor', ['ngRoute'])
       if      (['triples', 'subjects', 'predicates', 'objects'].indexOf(viewMode) > -1) {
         uiMode = 'SPO';
       }
-      else if (['statements', 'entities', 'entities', 'values'].indexOf(viewMode) > -1) {
+      else if (['statements', 'entities', 'attributes', 'values'].indexOf(viewMode) > -1) {
         uiMode = 'EAV';
       }
       if (!uiMode) {
