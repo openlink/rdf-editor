@@ -253,7 +253,12 @@ RDFE.Editor.prototype.settingsForm = function() {
   $form.find('#userID').val($settings["userID"]);
   $form.find('input[name="namingSchema"][value="'+$settings["namingSchema"]+'"]').attr('checked', 'checked');
 
-  $form.modal();
+  $form.modal({"keyboard": true});
+  $form.keypress(function(e) {
+    if (e.which == 13) {
+      $form.find('button[type="submit"]').click();
+    }
+  });
   $form.find('.ok').off();
   $form.find('.ok').on("click", function (e) {
     e.preventDefault();
@@ -295,7 +300,7 @@ RDFE.Editor.prototype.localForm = function() {
   $form.find('#content').val('');
   $form.find('#contentType').val('text/turtle');
 
-  $form.modal();
+  $form.modal({"keyboard": true});
   $form.find('.ok').off();
   $form.find('.ok').on("click", function (e) {
     e.preventDefault();
@@ -361,7 +366,7 @@ RDFE.Editor.prototype.importForm = function() {
   $form.find('#content').val('');
   $form.find('#contentType').val('text/turtle');
 
-  $form.modal();
+  $form.modal({"keyboard": true});
   $form.find('.ok').off();
   $form.find('.ok').on("click", function (e) {
     e.preventDefault();
@@ -395,7 +400,12 @@ RDFE.Editor.prototype.exportForm = function() {
   var $form = $("#exportModal");
 
   $form.find('#content').val('');
-  $form.modal();
+  $form.keypress(function(e) {
+    if (e.which == 13) {
+      $form.find('button[type="submit"]').click();
+    }
+  });
+  $form.modal({"keyboard": true});
   $(self).trigger('rdf-editor-spinner-start', 'export-spinner');
 
   self.doc.store.graph(self.doc.graph, function(success, graph){
