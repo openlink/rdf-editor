@@ -715,6 +715,7 @@ angular.module('myApp.editor', ['ngRoute'])
 
         if (data) {
           var success = function (result) {
+            toggleView();
             $scope.editor.updateView();
             $scope.editor.docChanged();
             Notification.notify('success', 'Successfully imported RDF data.');
