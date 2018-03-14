@@ -1,7 +1,7 @@
 /*
  *  This file is part of the OpenLink RDF Editor
  *
- *  Copyright (C) 2014-2018 OpenLink Software
+ *  Copyright (C) 2014-2017 OpenLink Software
  *
  *  This project is free software; you can redistribute it and/or modify it
  *  under the terms of the GNU General Public License as published by the
@@ -441,74 +441,88 @@ RDFE.IO.LDPFolder = (function() {
     store.registerDefaultNamespace('ldp', 'http://www.w3.org/ns/ldp#');
 
     var files = [];
+    var fileExists = function(url) {
+      for (var i = 0; i < files.length; i++) {
+        if (files[i].url == url)
+          return true;
+      }
+      return false;
+    };
 
-    // query files
+    // query folders
     store.execute(
-      ' select distinct ?s ?size ?mtime ' +
+      ' select distinct ?s ?mtime ?contains' +
       '   from <urn:default>  ' +
       '  where {  ' +
-      '          ?s a ?t . ' +
-      '          FILTER(str(?t) = \'http://www.w3.org/ns/posix/stat#File\' || str(?t) = \'http://www.w3.org/2000/01/rdf-schema#Resource\' || str(?t) = \'http://www.w3.org/ns/ldp#Resource\') .  ' +
-      '          optional { ?s posix:size ?size . } .  ' +
-      '          optional { ?s posix:mtime ?mtime . }  ' +
-      '        }',
+      '          ?s a ?t .  ' +
+      '          FILTER(str(?t) = \'http://www.w3.org/ns/posix/stat#Directory\' || str(?t) = \'http://www.w3.org/ns/ldp#Container\' || str(?t) = \'http://www.w3.org/ns/ldp#BasicContainer\') .  ' +
+      '          optional { ?s posix:mtime ?mtime }  ' +
+      '          optional { ?s ldp:contains ?contains }  ' +
+      '        }' +
+      '  order by asc(?s)',
       function(error, result) {
         if (error) {
           fail('Failed to query LDP the container at ' + baseUrl + '.');
           return;
         }
-
-        // files
         for (var i = 0; i < result.length; i++) {
+          if (result[i].contains)
+            continue;
+
           var uri = result[i].s.value;
-          if (!uri.startsWith('http')) {
+          if (!uri.startsWith('http'))
             uri = baseUrl + uri;
-          }
 
-          var file = new RDFE.IO.File(uri);
-          if (result[i].mtime) {
-            file.modificationDate = new Date(result[i].mtime.value*1000);
-          }
-          if (result[i].size) {
-            file.size = result[i].size.value;
-          }
-          file.dirty = false;
-          file.ioType = "ldp";
+          if (fileExists(uri))
+            continue;
 
-          files.push(file);
+          if (uri != baseUrl) {
+            var dir = new RDFE.IO.LDPFolder(uri);
+            if (result[i].mtime)
+              dir.modificationDate = new Date(result[i].mtime.value*1000);
+
+            files.push(dir);
+          }
         }
 
-        // query folders
+        // query files
         store.execute(
-          ' select distinct ?s ?mtime ?contains' +
+          ' select distinct ?s ?size ?mtime ' +
           '   from <urn:default>  ' +
           '  where {  ' +
-          '          ?s a ?t .  ' +
-          '          FILTER(str(?t) = \'http://www.w3.org/ns/posix/stat#Directory\' || str(?t) = \'http://www.w3.org/ns/ldp#Container\' || str(?t) = \'http://www.w3.org/ns/ldp#BasicContainer\') .  ' +
-          '          optional { ?s posix:mtime ?mtime }  ' +
-          '          optional { ?s ldp:contains ?contains }  ' +
-          '        }',
+          '          ?s a ?t . ' +
+          '          FILTER (str(?t) = \'http://www.w3.org/ns/posix/stat#File\' || str(?t) = \'http://www.w3.org/2000/01/rdf-schema#Resource\' || str(?t) = \'http://www.w3.org/ns/ldp#Resource\') .  ' +
+          '          FILTER (str(?t) != \'http://www.w3.org/ns/posix/stat#Directory\' && str(?t) != \'http://www.w3.org/ns/ldp#Container\' && str(?t) != \'http://www.w3.org/ns/ldp#BasicContainer\') .  ' +
+          '          optional { ?s posix:size ?size . } .  ' +
+          '          optional { ?s posix:mtime ?mtime . }  ' +
+          '        }' +
+          '  order by asc(?s)',
           function(error, result) {
             if (error) {
               fail('Failed to query LDP the container at ' + baseUrl + '.');
               return;
             }
-            for (var i = 0; i < result.length; i++) {
-              if (result[i].contains) {
-                continue;
-              }
-              var uri = result[i].s.value;
-              if (!uri.startsWith('http')) {
-                uri = baseUrl + uri;
-              }
 
-              if (uri != baseUrl) {
-                var dir = new RDFE.IO.LDPFolder(uri);
-                if (result[i].mtime) {
-                  dir.modificationDate = new Date(result[i].mtime.value*1000);
-                }
-                files.push(dir);
-              }
+            // files
+            for (var i = 0; i < result.length; i++) {
+              var uri = result[i].s.value;
+              if (!uri.startsWith('http'))
+                uri = baseUrl + uri;
+
+              if (fileExists(uri))
+                continue;
+
+              var file = new RDFE.IO.File(uri);
+              if (result[i].mtime)
+                file.modificationDate = new Date(result[i].mtime.value*1000);
+
+              if (result[i].size)
+                file.size = result[i].size.value;
+
+              file.dirty = false;
+              file.ioType = "ldp";
+
+              files.push(file);
             }
             success(files);
           }
@@ -560,7 +574,7 @@ RDFE.IO.LDPFolder = (function() {
       }
     }).fail(function(jqXHR) {
       if (fail) {
-        fail(RDFE.IO.ajaxFailMessage(jqXHR, 'Failed to fetch Turtle content from "{0}"', self.url), jqXHR.status);
+        fail(RDFE.IO.ajaxFailMessage(jqXHR, 'Failed to fetch turtle content from "{0}"', self.url), jqXHR.status);
       }
     });
   };
@@ -634,10 +648,10 @@ RDFE.IO.openUrl = function(url, options, success, fail) {
 };
 
 RDFE.IO.ajaxFailMessage = function(jqXHR, message, url) {
-  if ((jqXHR.statusText = 'error') && (RDFE.Utils.extractDomain(url) !== window.location.hostname)) {
+  if ((jqXHR.statusText === 'error') && (RDFE.Utils.extractDomain(url) !== window.location.hostname))
     return message.format(url) + ' - this could be related to missing CORS settings on the server.';
-  }
-  return message.format(url) + '.';
+
+  return message.format(url) + '. ' + jqXHR.responseText;
 };
 
 })(jQuery);
