@@ -13,9 +13,10 @@
       <li role="separator" class="divider"></li>
       <li><a ng-click="downloadDocumentAs(); $event.preventDefault();" href="#" title="Download the current document"><span class="glyphicon glyphicon-save" aria-hidden="true"></span> Download</a></li>
       <li role="separator" class="divider"></li>
-      <li><a ng-click="localInto(); $event.preventDefault();" href="#" title="Input local file content directly into current document"><span class="glyphicon glyphicon-import" aria-hidden="true"></span> Local File Input</a></li>
-      <li><a ng-click="importInto(); $event.preventDefault();" href="#" title="Input content directly into current document"><span class="glyphicon glyphicon-import" aria-hidden="true"></span> Direct Input</a></li>
-      <li><a ng-click="exportInto(); $event.preventDefault();" href="#" title="Output content directly"><span class="glyphicon glyphicon-export" aria-hidden="true"></span> Direct Output</a></li>
+      <li><a ng-click="localInto(); $event.preventDefault();" href="#" title="Input local document directly into current document"><span class="glyphicon glyphicon-import" aria-hidden="true"></span> Local Document Import</a></li>
+      <li><a ng-click="remoteInto(); $event.preventDefault();" href="#" title="Input remote document directly into current document"><span class="glyphicon glyphicon-import" aria-hidden="true"></span> Remote Document Import</a></li>
+      <li><a ng-click="importInto(); $event.preventDefault();" href="#" title="Input content directly into current document"><span class="glyphicon glyphicon-import" aria-hidden="true"></span> Direct Import</a></li>
+      <li><a ng-click="exportInto(); $event.preventDefault();" href="#" title="Output content directly"><span class="glyphicon glyphicon-export" aria-hidden="true"></span> Direct Export</a></li>
       <!--
       <li role="separator" class="divider"></li>
       <li ng-show="valInstalled"><a ng-click="signDocument(); $event.preventDefault();" href="#" title="Sign/Resign the current document">Sign</a></li>
@@ -113,13 +114,37 @@
     <div class="modal-content">
       <div class="modal-header">
         <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-        <h4 class="modal-title" id="localModal">Direct Input</h4>
+        <h4 class="modal-title" id="localModal">Local Document Import</h4>
       </div>
       <div class="modal-body">
         <div class="form-group">
-          <label for="localFile" class="col-sm-3">Select Local File</label>
+          <label for="localFile" class="col-sm-3">Select Local Document</label>
           <div class="col-sm-9">
             <input type="file" class="form-control" id="localFile" name="localFile"></input>
+          </div>
+        </div>
+        <br />
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+        <button type="submit" class="btn btn-primary ok">Import</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal fade" id="remoteModal" tabindex="-1" role="dialog" aria-labelledby="remoteModalLabel" data-backdrop="static" data-keyboard="false">
+  <div class="modal-dialog modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        <h4 class="modal-title" id="remoteModal">Remote Document Import</h4>
+      </div>
+      <div class="modal-body">
+        <div class="form-group">
+          <label for="remoteURL" class="col-sm-3">Remote Document URL</label>
+          <div class="col-sm-9">
+            <input type="text" class="form-control" id="remoteURL" name="remoteURL"></input>
           </div>
         </div>
         <br />
@@ -137,7 +162,7 @@
     <div class="modal-content">
       <div class="modal-header">
         <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-        <h4 class="modal-title" id="importModal">Direct Input</h4>
+        <h4 class="modal-title" id="importModal">Direct Import</h4>
       </div>
       <div class="modal-body">
         <div class="form-group">
@@ -160,7 +185,7 @@
     <div class="modal-content">
       <div class="modal-header">
         <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-        <h4 class="modal-title" id="exportModal">Direct Output</h4>
+        <h4 class="modal-title" id="exportModal">Direct Export</h4>
       </div>
       <div class="modal-body">
         <div class="form-group">

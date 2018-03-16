@@ -358,6 +358,53 @@ RDFE.Editor.prototype.localForm = function() {
 };
 
 /**
+ * Import RDF Turtle local file content into document.
+ */
+RDFE.Editor.prototype.remoteForm = function() {
+  var self = this;
+  var $form = $("#remoteModal");
+  $form.find('#remoteURL').val('');
+
+  $form.modal({"keyboard": true});
+  $form.find('.ok').off();
+  $form.find('.ok').on("click", function (e) {
+    e.preventDefault();
+
+    var remoteURL = $form.find('#remoteURL').val();
+    var success = function(data) {
+      var _success = function (result) {
+        $form.modal('hide');
+        self.updateView();
+        self.docChanged();
+        $(self).trigger('rdf-editor-success', {
+          "type": "rdf-editor-success",
+          "message": "Successfully imported RDF data."
+        });
+      };
+      var _fail = function (error) {
+        $form.modal('hide');
+        $(self).trigger('rdf-editor-error', {
+          "type": "rdf-editor-error",
+          "message": "Failed to import RDF data. <br /> " + error.message
+        });
+      };
+      self.doc.import(data, _success, _fail);
+    };
+    var fail = function(xhr) {
+      $form.modal('hide');
+      var message = RDFE.IO.ajaxFailMessage(xhr, 'Failed to load remote document "{0}"', remoteURL);
+      $(self).trigger('rdf-editor-error', {
+        "type": "rdf-editor-error",
+        "message": message
+      });
+    };
+
+    $.ajax(remoteURL).done(success).fail(fail);
+
+});
+};
+
+/**
  * Import RDF Turtle content into document.
  */
 RDFE.Editor.prototype.importForm = function() {

@@ -327,6 +327,7 @@
     if (!self.resourceContainer) {
       // resource selection
       self.resourceSelect = $(document.createElement('select'));
+      self.resourceSelect.attr('placeholder', 'Select/Enter resource');
       self.resourceContainer = $(document.createElement('div')).addClass('rdfResourceContainer');
       self.resourceContainer.append(self.resourceSelect);
       self.resourceContainer.css('min-width', '200px');
@@ -336,16 +337,17 @@
       self.resourceSelect.selectize({
         "delimiter": null,
         "valueField": "value",
-        "searchField": "label",
-        "sortField": "label",
+        "searchField": ["label"],
+        "sortField": ["label"],
         "lockOptgroupOrder": true,
-        "create": (self.options.create ? function(input, cb) {
+        "create": function(input, cb) {
           var node = new RDFE.RdfNode('uri', input);
+
           node.label = input;
           node.optgroup = 'local';
           this.options[input] = node;
           cb(node);
-        } : false),
+        },
         "createOnBlur": true,
         "onChange": function(value) {
           self.mainElement.val(value);
@@ -360,6 +362,15 @@
               return '<div>' + escape(item.label) + ' <small>(' + escape(item.value) + ')</small></div>';
 
             return '<div>' + escape(item.value) + '</div>';
+          },
+          "option_create": function(data, escape) {
+            var url = data.input;
+
+            url = RDFE.Utils.trim(RDFE.Utils.trim(url, '<'), '>');
+            if (url != data.input)
+              return '<div class="create">Add <strong>' + escape(data.input) + '</strong> <small>(' + escape(url) + ')</small>&hellip;</div>';
+
+            return '<div class="create">Add <strong>' + escape(url) + '</strong>&hellip;</div>';
           }
         }
       });
@@ -495,12 +506,14 @@
       self.transformToTextarea();
     }
     self.mainElement.val(node.value);
-    if (self.resourceSelect) {
-      if (!node.optgroup) {
-        node.optgroup = 'local';
+    if (self.resourceSelectize) {
+      if (RDFE.Utils.trim(node.value, '')) {
+        if (!node.optgroup)
+          node.optgroup = 'local';
+
+        self.resourceSelectize.addOption(node);
+        self.resourceSelectize.setValue(node.value);
       }
-      self.resourceSelect[0].selectize.addOption(node);
-      self.resourceSelect[0].selectize.setValue(node.value);
     }
     if (nodeTypes[self.currentType] && nodeTypes[self.currentType].setValue) {
       nodeTypes[self.currentType].setValue(self.mainElement, self.mainElement.val());

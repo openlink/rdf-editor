@@ -96,7 +96,8 @@
       "render": {
         "item": function(item, escape) {
           var x = item.title || item.label || item.curi || item.name;
-          if(item.curi && item.curi != x) {
+
+          if (item.curi && item.curi != x) {
             x = escape(x) + ' <small>(' + escape(item.curi) + ')</small>';
           }
           else {
@@ -105,16 +106,19 @@
           return '<div>' + x + '</div>';
         },
         "option": function(item, escape) {
-          return '<div>' + escape(item.title || item.label || item.curi || item.name) + '<br/><small>(' + escape(item.URI) + ')</small></div>';
+          var x = item.title || item.label || item.curi || item.name;
+
+          return '<div>' + escape(x) + '<br/><small>(' + escape(item.URI) + ')</small></div>';
         },
         "option_create": function(data, escape) {
           var url = data.input;
+
           url = RDFE.Utils.trim(RDFE.Utils.trim(url, '<'), '>');
           url = self.options.ontologyManager.uriDenormalize(url);
           if (url != data.input)
             return '<div class="create">Add <strong>' + escape(data.input) + '</strong> <small>(' + escape(url) + ')</small>&hellip;</div>';
-          else
-            return '<div class="create">Add <strong>' + escape(url) + '</strong>&hellip;</div>';
+
+          return '<div class="create">Add <strong>' + escape(url) + '</strong>&hellip;</div>';
         }
       }
     });

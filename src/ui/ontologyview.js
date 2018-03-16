@@ -252,9 +252,15 @@
           }
         };
         var uri = uriEditor.val();
-        if (!RDFE.Validate.check(uriEditor, uri)) {
+        if (!RDFE.Validate.check(uriEditor, uri))
+          return;
+
+        var tmp = RDFE.Utils.splitUrl(uri);
+        if ((tmp.protocol !== 'http:') && (tmp.protocol !== 'https:')) {
+          bootbox.alert('Only HTTP and HTTPS protocols are supported');
           return;
         }
+
         var ontology = self.ontologyManager.ontologyByURI(uri);
         if (ontology) {
           bootbox.alert('This ontology is loaded. Please, use \'Refresh\' action!');
@@ -270,10 +276,13 @@
       });
 
       $form.find('#prefix').blur(function (e) {
-        var uri = RDFE.ontologyByPrefix(self.formContainer.find('#prefix').val());
-        if (uri) {
+        var prefix = self.formContainer.find('#prefix').val();
+        if (!prefix)
+          return;
+
+        var uri = RDFE.ontologyByPrefix(prefix);
+        if (uri)
           self.formContainer.find('#uri').val(uri);
-        }
       });
 
       $form.hide();
