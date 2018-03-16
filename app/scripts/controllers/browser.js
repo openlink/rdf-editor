@@ -269,44 +269,51 @@ angular.module('myApp.fileBrowser', ['ngRoute', 'ui.bootstrap'])
   };
 
   $scope.addNewLocation = function() {
-    if ($scope.newLocationUrl && $scope.newLocationUrl.length) {
-      if ($scope.newLocationIsSparql) {
-        var sf = new RDFE.IO.Folder($scope.newLocationUrl);
-        sf.ioType = "sparql";
-        sf.sparqlEndpoint = $scope.newLocationUrl;
-        $scope.addLocation(sf);
-        $scope.updateCurrentLocation(sf);
-        $scope.currentFolder = sf;
-        $scope.addingLocation = false;
+    if (!$scope.newLocationUrl || !$scope.newLocationUrl.length)
+      return;
+
+    var url = RDFE.Utils.splitUrl($scope.newLocationUrl);
+    if ((url.protocol !== 'http:') && (url.protocol !== 'https:')) {
+      Notification.notify('error', 'Only HTTP and HTTPS protocols are supported');
+      return;
+    }
+
+    if ($scope.newLocationIsSparql) {
+      var sf = new RDFE.IO.Folder($scope.newLocationUrl);
+      sf.ioType = "sparql";
+      sf.sparqlEndpoint = $scope.newLocationUrl;
+      $scope.addLocation(sf);
+      $scope.updateCurrentLocation(sf);
+      $scope.currentFolder = sf;
+      $scope.addingLocation = false;
+    }
+    else {
+      usSpinnerService.spin('location-spinner');
+      var authFunction;
+      if (DocumentTree.getAuthInfo) {
+        authFunction = function(url, success, fail) {
+          DocumentTree.getAuthInfo(url, true).then(success, fail);
+        };
       }
-      else {
-        usSpinnerService.spin('location-spinner');
-        var authFunction;
-        if (DocumentTree.getAuthInfo) {
-          authFunction = function(url, success, fail) {
-            DocumentTree.getAuthInfo(url, true).then(success, fail);
-          };
-        }
-        RDFE.IO.openUrl($scope.newLocationUrl, {
-          authFunction: authFunction,
-          checkForFiles: true
-        },
-        function(dir) {
-          // success, we found a container
-          $scope.$apply(function() {
-            $scope.addingLocation = false;
-            $scope.addLocation(dir);
-            $scope.updateCurrentLocation(dir);
-            $scope.currentFolder = dir;
-          });
-          usSpinnerService.stop('location-spinner');
-        },
-        function(errMsg, status) {
-          // show a notification and let the user try again
-          Notification.notify('error', errMsg);
-          usSpinnerService.stop('location-spinner');
+      RDFE.IO.openUrl($scope.newLocationUrl, {
+        authFunction: authFunction,
+        checkForFiles: true
+      },
+      function(dir) {
+        // success, we found a container
+        $scope.$apply(function() {
+          $scope.addingLocation = false;
+          $scope.addLocation(dir);
+          $scope.updateCurrentLocation(dir);
+          $scope.currentFolder = dir;
         });
-      }
+        usSpinnerService.stop('location-spinner');
+      },
+      function(errMsg, status) {
+        // show a notification and let the user try again
+        Notification.notify('error', errMsg);
+        usSpinnerService.stop('location-spinner');
+      });
     }
   };
 
