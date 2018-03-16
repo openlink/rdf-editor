@@ -899,6 +899,10 @@ angular.module('myApp.editor', ['ngRoute'])
     $scope.editor.localForm();
   };
 
+  $scope.remoteInto = function() {
+    $scope.editor.remoteForm();
+  };
+
   $scope.importInto = function() {
     $scope.editor.importForm();
   };

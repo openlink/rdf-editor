@@ -1,7 +1,7 @@
 /*
  *  This file is part of the OpenLink RDF Editor
  *
- *  Copyright (C) 2014-2017 OpenLink Software
+ *  Copyright (C) 2014-2018 OpenLink Software
  *
  *  This project is free software; you can redistribute it and/or modify it
  *  under the terms of the GNU General Public License as published by the
@@ -651,7 +651,7 @@ RDFE.IO.ajaxFailMessage = function(jqXHR, message, url) {
   if ((jqXHR.statusText === 'error') && (RDFE.Utils.extractDomain(url) !== window.location.hostname))
     return message.format(url) + ' - this could be related to missing CORS settings on the server.';
 
-  return message.format(url) + '. ' + jqXHR.responseText;
+  return message.format(url) + '. ' + jqXHR.status + ' - ' + ((jqXHR.responseText)?  jqXHR.responseText: jqXHR.statusText);
 };
 
 })(jQuery);
