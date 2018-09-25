@@ -382,6 +382,7 @@ RDFE.IO.WebDavFolder = (function() {
 
   c.prototype.listDir = function(success, fail) {
     var self = this,
+        headers = this.standardAjaxHeaders(),
         body = '<?xml version="1.0" encoding="utf-8" ?>' +
                '<propfind xmlns="DAV:">' +
                '  <prop>' +
@@ -407,13 +408,14 @@ RDFE.IO.WebDavFolder = (function() {
       }
     };
 
+    headers['Depth'] = 1;
     $.ajax({
       url: this.url,
       method: "PROPFIND",
       contentType: "text/xml",
       data: body,
       dataType: "xml",
-      headers: this.standardAjaxHeaders()
+      headers: headers
     }).done(ref).fail(function(xhr) {
       fail(RDFE.IO.ajaxFailMessage(xhr, 'Failed to list WebDAV folder for "{0}"', self.url), xhr.status);
     });
