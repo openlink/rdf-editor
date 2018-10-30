@@ -111,6 +111,7 @@ String.prototype.format = function() {
 
       // add auth info from self.options.username and .password via
       ajaxParams.headers = ajaxParams.headers || {};
+      ajaxParams.headers["WebID-TLS"] = "true";
       if (params.username) {
         ajaxParams.headers["Authorization"] = "Basic " + btoa(params.username + ":" + params.password);
         ajaxParams = $.extend({"withCredentials": true}, ajaxParams);
@@ -147,10 +148,10 @@ String.prototype.format = function() {
             "httpCode": xhr.status,
             "message": xhr.statusText
           };
-          if (this.crossDomain && (state.message === 'error') && (RDFE.Utils.extractDomain(this.url) !== window.location.hostname)) {
+          if (this.crossDomain && (state.message === 'error') && (xhr.status === 0)) {
             state.message = 'CORS Error: ' + ((self.type !== 'sparql')? ajaxParams.url: 'The document') + ' failed to load - this could be related to missing CORS settings on the server.';
           }
-          if ((xhr.status === 401 || xhr.status === 403) && params.authFunction) {
+          else if ((xhr.status === 401 || xhr.status === 403) && params.authFunction) {
             params.authFunction(ajaxParams.url, function(r) {
               params.username = r.username;
               params.password = r.password;
