@@ -922,9 +922,12 @@ RDFE.OntologyManager.prototype.typesToLabel = function(types, html) {
  * Ontology
  *
  */
-RDFE.Ontology = function(ontologyManager, URI, options) {
+RDFE.Ontology = function(ontologyManager, URI, prefix, options) {
   // console.log('ontology =>', URI);
   var self = this;
+
+  if (prefix && ontologyManager.prefixes[prefix] === URI)
+    return null;
 
   self.options = $.extend({}, options);
   self.URI = URI;
@@ -933,7 +936,7 @@ RDFE.Ontology = function(ontologyManager, URI, options) {
 
   self.manager = ontologyManager;
   self.manager.ontologies[URI] = self;
-  self.prefix = ontologyManager.prefixByOntology(URI);
+  self.prefix = prefix || ontologyManager.prefixByOntology(URI);
   if (!self.prefix) {
     var callback = function(prefix) {
       if (prefix) {

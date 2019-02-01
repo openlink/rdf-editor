@@ -161,17 +161,15 @@ String.prototype.format = function() {
               state = 'Error: ' + xhr.status + ' - ' + xhr.statusText + ((self.type !== 'sparql')? ' (' + ajaxParams.url + ')': '');
               params.error(state, data, status, xhr);
             });
+            return;
           }
           else if (status === 'timeout') {
             state = {
               "httpCode": status,
               "message": 'Timeout Error: Failed to load ' + ((self.type !== 'sparql')? ajaxParams.url: 'document')
             };
-            params.error(state, data, status, xhr);
           }
-          else {
-            params.error(state, data, status, xhr);
-          }
+          params.error(state, data, status, xhr);
         }
       });
     };
