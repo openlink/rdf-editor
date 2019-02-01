@@ -1,12 +1,12 @@
 {
   "name": "rdf-editor",
   "description": "OpenLink RDF Editor",
-  "version": "0.16.0",
+  "version": "0.17.0",
   "homepage": "http://www.openlinksw.com",
   "license": "GPL-2.0",
   "private": true,
   "dependencies": {
-    "bootstrap": "3.3.7",
+    "bootstrap": "3.4.0",
     "angular": "1.5.x",
     "angular-route": "1.5.x",
     "angular-loader": "1.5.x",
