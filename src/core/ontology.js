@@ -188,7 +188,7 @@ RDFE.ontologyByPrefix = function(prefix, callback) {
  *
  */
 RDFE.prefixByOntology = function(uri, callback) {
-  var host = location.protocol+'//lov.okfn.org/dataset/lov/api/v2/vocabulary/autocomplete?q='+encodeURIComponent(RDFE.Utils.trim(uri, '#'));
+  var host = location.protocol+'//lov.linkeddata.es/dataset/lov/api/v2/vocabulary/autocomplete?q='+encodeURIComponent(RDFE.Utils.trim(uri, '#'));
   $.ajax({
     "url": host,
     "type": 'GET',
