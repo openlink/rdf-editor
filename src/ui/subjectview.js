@@ -37,22 +37,10 @@
         var labelFormatter = function(value, row, index) {
           var ontologyManager = self.editor.ontologyManager;
           var _class = (ontologyManager.ontologyClassByURI(row.label))? '': 'class="rdfe-green-link"';
-          var _name = RDFE.Utils.uri2name(row.uri);
-          if (_name !== '')
-            return '<a href="{1}" target="_blank" {2}>{0}</a>'.format(RDFE.Utils.uri2name(row.uri), row.uri, _class);
+          if (RDFE.Utils.uri2name(row.uri) !== '')
+            return '<a href="{0}" target="_blank" {1}>{0}</a>'.format(row.uri, _class);
 
-          return '<em style="color: red;">Empty<em>';
-        };
-
-        var labelSorter = function(a, b) {
-          function format(v) {
-            return '<a href="{1}">{0}</a>'.format(RDFE.Utils.uri2name(v), v);
-          }
-          a = format(a);
-          b = format(b);
-          if (a > b) return 1;
-          if (a < b) return -1;
-          return 0;
+          return '<em style="color: red;">Empty</em>';
         };
 
         var subjectListActionsFormatter = function(value, row, index) {
@@ -113,7 +101,6 @@
             "title": RDFE.Utils.namingSchemaLabel('s', self.editor.namingSchema()),
             "titleTooltip": RDFE.Utils.namingSchemaLabel('s', self.editor.namingSchema()),
             "sortable": true,
-            "sorter": labelSorter,
             "formatter": labelFormatter
           }, {
             "field": 'items',

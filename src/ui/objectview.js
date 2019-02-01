@@ -34,6 +34,7 @@
       var self = this;
 
       self.editor.doc.listObjects(function(objects) {
+
         var labelFormatter = function(value, row, index) {
           if (row.type === 'IRI') {
             var ontologyManager = self.editor.ontologyManager;
@@ -41,15 +42,9 @@
             if (ontologyManager.ontologyClassByURI(row.label))
               _class = '';
 
-            return '<a href="{1}" target="_blank" {2}>{0}</a>'.format(RDFE.Utils.uri2name(row.label), row.label, _class);
+            return '<a href="{0}" target="_blank" {1}>{0}</a>'.format(row.label, _class);
           }
           return row.label;
-        };
-
-        var labelSorter = function(a, b) {
-          if (a > b) return 1;
-          if (a < b) return -1;
-          return 0;
         };
 
         var typeFormatter = function(value, row, index) {
@@ -114,7 +109,6 @@
             "title": RDFE.Utils.namingSchemaLabel('o', self.editor.namingSchema()),
             "titleTooltip": RDFE.Utils.namingSchemaLabel('o', self.editor.namingSchema()),
             "sortable": true,
-            "sorter": labelSorter,
             "formatter": labelFormatter
           }, {
             "field": 'type',
