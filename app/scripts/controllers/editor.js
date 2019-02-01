@@ -696,7 +696,11 @@ angular.module('myApp.editor', ['ngRoute'])
 
             // see if we have auth information cached
             if (DocumentTree.getAuthInfo) {
-              DocumentTree.getAuthInfo(uri, false).then(function(authInfo) {
+              var authUri = uri;
+              if (io.type === 'sparql' && io.options && io.options.sparqlEndpoint)
+                authUri = io.options.sparqlEndpoint;
+
+              DocumentTree.getAuthInfo(authUri, false).then(function(authInfo) {
                 if (authInfo) {
                   io.options.username = authInfo.username;
                   io.options.password = authInfo.password;
