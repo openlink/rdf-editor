@@ -412,7 +412,7 @@ angular.module('myApp', [
         });
       }
       else {
-        function recvMessage(event) {
+        var recvMessage = function (event) {
           var ev_data;
 
           if (String(event.data).lastIndexOf("youid_rc:", 0) !== 0){
@@ -428,7 +428,7 @@ angular.module('myApp', [
             webid = ev_data.webid;
             resolve(webid);
           }
-        }
+        };
         window.addEventListener("message", recvMessage, false);
         window.postMessage('youid:{"getWebId": true}', "*");
       }
