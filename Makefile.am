@@ -83,7 +83,7 @@ rdf_editor_dav.vad: $(RDF_EDITOR_FILES) rdf-editor-sticker.xml Makefile vad_vers
 
 $(PKG_NAME).tar.gz: rdf_editor_dav.vad
 	-@ln -s dist @PACKAGE@
-	-tar cfHz $(PKG_NAME).tar.gz @PACKAGE@
+	-tar cfhz $(PKG_NAME).tar.gz @PACKAGE@
 	-@rm -f @PACKAGE@
 
 $(PKG_NAME).zip: rdf_editor_dav.vad
