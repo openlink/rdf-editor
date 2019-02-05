@@ -11,7 +11,7 @@
     "angular-route": "1.5.x",
     "angular-loader": "1.5.x",
     "angular-mocks": "1.5.x",
-    "angular-bootstrap": "1.x",
+    "angular-bootstrap": "2.x",
     "html5-boilerplate": "~5.3.0",
     "spin.js": "~2.0.0",
     "angular-spinner": "~0.8.x"
