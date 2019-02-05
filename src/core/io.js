@@ -161,17 +161,15 @@ String.prototype.format = function() {
               state = 'Error: ' + xhr.status + ' - ' + xhr.statusText + ((self.type !== 'sparql')? ' (' + ajaxParams.url + ')': '');
               params.error(state, data, status, xhr);
             });
+            return;
           }
           else if (status === 'timeout') {
             state = {
               "httpCode": status,
               "message": 'Timeout Error: Failed to load ' + ((self.type !== 'sparql')? ajaxParams.url: 'document')
             };
-            params.error(state, data, status, xhr);
           }
-          else {
-            params.error(state, data, status, xhr);
-          }
+          params.error(state, data, status, xhr);
         }
       });
     };
@@ -184,6 +182,19 @@ String.prototype.format = function() {
       }
 
       return self.options.accept;
+    };
+
+    c.prototype.rerieveLoadCallback = function(error, params, data, status, xhr) {
+      if (!error) {
+        if (params["__success"]) {
+          params["__success"](data, status, xhr);
+        }
+      }
+      else {
+        if (params["error"]) {
+          params["error"](error);
+        }
+      }
     };
 
     return c;
@@ -211,7 +222,7 @@ String.prototype.format = function() {
       }
     });
 
-    var SPARQL_RETRIEVE = 'define get:soft "add" CONSTRUCT {?s ?p ?o} WHERE {GRAPH <{0}> {?s ?p ?o}}';
+    var SPARQL_RETRIEVE = 'CONSTRUCT {?s ?p ?o} WHERE {GRAPH <{0}> {?s ?p ?o}}';
     var SPARQL_INSERT = 'INSERT DATA {GRAPH <{0}> { {1}}}';
     var SPARQL_INSERT_SINGLE = '<{0}> <{1}> {2}';
     var SPARQL_DELETE = 'DELETE DATA {GRAPH <{0}> { <{1}> <{2}> {3} . }}';
@@ -232,17 +243,8 @@ String.prototype.format = function() {
       params = extendParams(params, self.options);
       var __success = function(data, status, xhr) {
         clearGraph(store, storeGraph, function () {
-          store.load('text/turtle', data, graph, function(error) {
-            if (!error) {
-              if (params["__success"]) {
-                params["__success"](data, status, xhr);
-              }
-            }
-            else {
-              if (params["error"]) {
-                params["error"](error);
-              }
-            }
+          store.load('text/turtle', data, storeGraph, function(error) {
+            self.rerieveLoadCallback(error, params, data, status, xhr);
           });
         });
       };
@@ -375,16 +377,7 @@ String.prototype.format = function() {
       var __success = function(data, status, xhr) {
         clearGraph(store, storeGraph, function() {
           store.loadTurtle(data, storeGraph, graph, null, function(error) {
-            if (!error) {
-              if (params["__success"]) {
-                params["__success"](data, status, xhr);
-              }
-            }
-            else {
-              if (params["error"]) {
-                params["error"](error);
-              }
-            }
+            self.rerieveLoadCallback(error, params, data, status, xhr);
           });
         });
       };
@@ -477,56 +470,45 @@ String.prototype.format = function() {
     var LDP_INSERT = 'INSERT DATA {GRAPH <{0}> { <{1}> <{2}> {3} . }}';
 
     c.prototype.retrieve = function(path, params, silent) {
-      params = extendParams(params, this.options);
+      var self = this;
+      params = extendParams(params, self.options);
       if (silent) {
         params["ajaxError"] = null;
         params["ajaxSuccess"] = null;
       }
       var headers = {};
-      if (this.type != 'webdav') {
+      if (self.type != 'webdav') {
         headers = {
           "Accept": 'text/turtle, */*;q=0.1'
         };
       }
-      this.exec('GET', path, headers, null, params);
+      self.exec('GET', path, headers, null, params);
     };
 
     c.prototype.retrieveToStore = function(path, store, graph, params) {
-      params = extendParams(params, this.options);
+      var self = this;
+      params = extendParams(params, self.options);
       var __success = function(data, status, xhr) {
         clearGraph(store, graph, function() {
           store.load('text/turtle', data, graph, function(error) {
-            if (!error) {
-              if (params["__success"]) {
-                params["__success"](data, status, xhr);
-              }
-            }
-            else {
-              if (params["error"]) {
-                params["error"](error);
-              }
-            }
+            self.rerieveLoadCallback(error, params, data, status, xhr);
           });
         });
       };
       params["__success"] = params["success"];
       params["success"] = __success;
-      this.retrieve(path, params, true);
+      self.retrieve(path, params, true);
     };
 
     c.prototype.insert = function(path, content, params) {
-      params = extendParams(params, this.options);
+      var self = this;
+      var method = 'PUT';
       var headers;
-      var method;
-      if (this.type !== 'webdav') {
-        method = 'PUT';
-        headers = {
-          "Content-Type": 'text/turtle'
-        };
-      } else {
-        method = 'PUT';
+      params = extendParams(params, self.options);
+      if (self.type !== 'webdav') {
+        headers = {"Content-Type": 'text/turtle'};
       }
-      this.exec(method, path, headers, content, params);
+      self.exec(method, path, headers, content, params);
     };
 
     c.prototype.insertFromStore = function(path, store, graph, params) {
@@ -592,7 +574,7 @@ String.prototype.format = function() {
       var self = this;
 
       // call super-constructor
-      self.constructor.super.call(this);
+      self.constructor.super.call(self);
 
       var defaults = {
         "dataType": 'text',
@@ -634,18 +616,9 @@ String.prototype.format = function() {
       params.success = (function(URI, params) {
         return function(data, status, xhr) {
           var contentType = (xhr.getResponseHeader('content-type') || '').split(';')[0];
-          var callback = function(error) {
-            if (error) {
-              console.error('URI load error =>', graph, error);
-              if (params && params.error) {
-                params.error(error);
-              }
-            }
-            else if (params && params.__success) {
-              params.__success(data, status, xhr);
-            }
-          };
-          store.load(contentType, data, URI, callback);
+          store.load(contentType, data, graph, function(error) {
+            self.rerieveLoadCallback(error, params, data, status, xhr);
+          });
         };
       })(graph, params);
 

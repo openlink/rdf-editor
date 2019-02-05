@@ -218,6 +218,7 @@
           return;
 
         var uriEditor = self.formContainer.find('#uri');
+        var prefixEditor = self.formContainer.find('#prefix');
 
         var formClose = function () {
           self.formContainer.hide();
@@ -228,22 +229,20 @@
         var params = {
           "success":  function () {
             $(self.ontologyManager).trigger('loadingFinished', [self.ontologyManager]);
+            self.ontologyManager.prefixes[prefix] = uri;
             formClose();
           },
 
           "error": function (state) {
             $(self.ontologyManager).trigger('loadingFailed', [self.ontologyManager]);
             var message = (state && state.message)? state.message: 'Error loading ontology';
-            bootbox.confirm(message + '. Do you want an empty ontology to be added?', function(result) {
+            bootbox.confirm(message + '. <br /><br />Do you want an empty ontology to be added?', function(result) {
               if (result) {
                 var uri = uriEditor.val();
+                var prefix = prefixEditor.val();
                 var ontology = self.ontologyManager.ontologyByURI(uri);
                 if (!ontology) {
-                  ontology = new RDFE.Ontology(self.ontologyManager, uri);
-                  var prefix = self.formContainer.find('#prefix').val();
-                  if (prefix) {
-                    ontology.prefix = prefix;
-                  }
+                  ontology = new RDFE.Ontology(self.ontologyManager, uri, prefix);
                   self.addOntologies(self.ontologyManager.allOntologies());
                 }
               }
@@ -252,6 +251,7 @@
           }
         };
         var uri = uriEditor.val();
+        var prefix = prefixEditor.val();
         if (!RDFE.Validate.check(uriEditor, uri))
           return;
 
@@ -263,24 +263,28 @@
 
         var ontology = self.ontologyManager.ontologyByURI(uri);
         if (ontology) {
-          bootbox.alert('This ontology is loaded. Please, use \'Refresh\' action!');
+          var msg = '';
+          tmp = self.ontologyManager.prefixByOntology(uri);
+          if (tmp !== prefix)
+            msg = ' with prefix ' + prefix;
+          bootbox.alert('This ontology is loaded{0}. Please, use \'Refresh\' action!'.format(msg));
           return;
         }
 
         $loading.show();
-        if (!self.ontologyManager.prefixByOntology(uri)) {
-          var prefix = self.formContainer.find('#prefix').val();
-          self.ontologyManager.prefixes[prefix] = uri;
-        }
         self.ontologyManager.parseOntologyFile(uri, params);
       });
 
       $form.find('#prefix').blur(function (e) {
+        var uri = self.formContainer.find('#uri').val();
+        if (uri)
+          return;
+
         var prefix = self.formContainer.find('#prefix').val();
         if (!prefix)
           return;
 
-        var uri = RDFE.ontologyByPrefix(prefix);
+        uri = RDFE.ontologyByPrefix(prefix);
         if (uri)
           self.formContainer.find('#uri').val(uri);
       });
