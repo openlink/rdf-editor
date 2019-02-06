@@ -13,6 +13,10 @@ angular.module('myApp', [
   $routeProvider.otherwise({redirectTo: '/welcome'});
 }])
 
+.config(['$locationProvider', function($locationProvider) {
+  $locationProvider.hashPrefix('');
+}])
+
 .run(function($rootScope) {
   $rootScope.version = '##VERSION##';
 })

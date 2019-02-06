@@ -13,6 +13,10 @@ angular.module('myApp.editor', ['ngRoute'])
   });
 }])
 
+.config(['$locationProvider', function($locationProvider) {
+  $locationProvider.hashPrefix('');
+}])
+
 .run(function($rootScope) {
   $rootScope.eav2spo = {
     "statements": 'triples',

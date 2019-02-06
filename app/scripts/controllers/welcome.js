@@ -9,6 +9,10 @@ angular.module('myApp.welcome', ['ngRoute'])
   });
 }])
 
+.config(['$locationProvider', function($locationProvider) {
+  $locationProvider.hashPrefix('');
+}])
+
 .controller('WelcomeCtrl', [function() {
 
 }]);

@@ -9,6 +9,10 @@ angular.module('myApp.fileBrowser', ['ngRoute', 'ui.bootstrap'])
   });
 }])
 
+.config(['$locationProvider', function($locationProvider) {
+  $locationProvider.hashPrefix('');
+}])
+
 .filter('ioTypeLabel', function() {
   return function(input) {
     switch(input) {
