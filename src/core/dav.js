@@ -143,11 +143,6 @@ RDFE.IO.Folder = (function() {
     self.type = "folder";
     self.dirty = true;
 
-    // add trailing slash if necessary
-    if (self.url.length > 0 && self.url.substring(self.url.length-1) != "/") {
-      self.url += "/";
-    }
-
     // set the default root url which is the url browsing started at
     self.rootUrl = self.url;
 

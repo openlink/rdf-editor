@@ -157,7 +157,7 @@ angular.module('myApp.fileBrowser', ['ngRoute', 'ui.bootstrap'])
     $scope.resetUI();
     usSpinnerService.spin('refresh-spinner');
     if (folder.dirty) {
-      folder.httpStatus = null;
+      folder.httpStatus = undefined;
       folder.errorMessage = null;
       folder.update(function() {
         $scope.$apply(function() {
@@ -194,7 +194,7 @@ angular.module('myApp.fileBrowser', ['ngRoute', 'ui.bootstrap'])
     }
     else {
       usSpinnerService.spin('refresh-spinner');
-      $scope.currentFolder.httpStatus = null;
+      $scope.currentFolder.httpStatus = undefined;
       $scope.currentFolder.errorMessage = null;
       $scope.currentFolder.update(true, function() {
         $scope.$evalAsync(function() {

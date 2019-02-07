@@ -178,6 +178,9 @@ angular.module('myApp', [
           }
           else {
             folder = new RDFE.IO.Folder(item.url);
+            if (item.type)
+              folder.type = item.type;
+            folder.ioType = item.ioType;
           }
           folders.push(folder);
         }
@@ -290,6 +293,7 @@ angular.module('myApp', [
 
     if (notFound) {
       item = new RDFE.IO.Folder(location.url);
+      item.type = location.type;
       item.ioType = location.ioType;
       item.sparqlEndpoint = location.sparqlEndpoint;
       items.unshift(item);
