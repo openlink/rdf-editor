@@ -1,3 +1,53 @@
+v0.18:
+  * Added accept parameter with two values: turtle and jsonld
+  * Added dereference link for RDF types
+  * Added dereference link for subject and predicate views
+  * Added dereference link option to resources in the RDFNode control
+  * Added direct input of JSON-LD content
+  * Added 'Direct Output' action
+  * Added 'doap:' and 'dbpedia:' predefined prefixes
+  * Added get webid from YouID extension and then get profile data
+  * Added header 'WebID-TLS: true' by I/O operations
+  * Added import of the turtle content into editing document
+  * Added new option for import content - remote sources
+  * Added new prefix 'wdrs'
+  * Added new URL parameter 'data' for inline RDF content
+  * Added new URL parameter 'namingSchema' with 2 values: eavSchema and spoSchema
+  * Added new URL params related to paging
+  * Added ontologyToPrefix function using http://lov.linkeddata.es/dataset/lov/ service
+  * Added OSDE logo, favicons
+  * Added RDF parser for import RDF content
+  * Added sign/unsign for documents using external signature file and new VAL API function
+  * Added support for schema:rangeIncludes and schema:domainIncludes
+  * Added validation for input fields with new validation API
+  * Added WebID sign in option
+  * Updated schema.org ontology
+  * Upgrade AngularJS from 1.5.x to 1.7.x.
+  * Upgrade Bootstrap libraries
+  * Upgrade date picker library
+  * Upgrade Grunt build plugin
+  * Upgrade JS bootstrap table to version 1.12.1
+  * Upgrade rdfstore and N3 JS libraries
+  * Upgrade selectize library
+  * Fixed AJAX PROPFIND call to WebDAV folders
+  * Fixed issue accessing some LDP sources
+  * Fixed issue loading RDF/XML documents
+  * Fixed issue parsing escaped literals
+  * Fixed issue parsing some .TTL sources
+  * Fixed issue parsing turtle from dbpedia
+  * Fixed issue related to warnings from JSHint utility
+  * Fixed issue retrieving named graphs
+  * Fixed issue storing recent SPARQL endpoints
+  * Fixed issue with deletion of the binary literals
+  * Fixed issue with disable adding objects using resource select box
+  * Fixed issue with editing and showing the boolean values
+  * Fixed issue with encoding URL parameters
+  * Fixed issue with inline editing empty nodes
+  * Fixed spinning wheel when adding Linked Vocabularies
+  * Small UI fixes
+  * Small bug fixes
+
+
 v0.17:
   * Added detail info about deployments on different HTTP servers.
   * Added new URL parameters related to 'Annotate' option in OSDS.

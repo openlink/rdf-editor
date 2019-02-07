@@ -1,4 +1,608 @@
+2019-02-07  Patrick van Kleef  <pkleef@openlinksw.com>
+
+	Fixed relative URL
+
+2019-02-06  Dimitar Dimitrov  <ddimitrov@openlinksw.com>
+
+	Upgrade AngularJS from 1.5.x to 1.7.x. Update Grunt build pluging too.
+
+2019-02-05  Patrick van Kleef  <pkleef@openlinksw.com>
+
+	Fixed CORS issue when using http protocol
+
+	Fixed issue building .tar.gz and .zip installers
+
+	Fixed issue defining nested functions in strict mode
+
+	Merge branch 'feature/Bugs_18567_18568' into develop
+
+2019-02-05  Dimitar Dimitrov  <ddimitrov@openlinksw.com>
+
+	Fixed bug with favicon and warnings by build. Updated some JS libs
+
+2019-02-01  Dimitar Dimitrov  <ddimitrov@openlinksw.com>
+
+	Fixed an app version in Bower
+
+	Bug 18568 - RDF Editor loops/hangs (with spinning ajax wheel) when adding 'Linked Vocabularies'
+
+	Removed short names from some views - they are not clear.
+
+	Bug 18567 - Mixed content exception using lov.okfn.org
+
+	Fixed bug with retrieving named graphs.
+
+	Fixed bug with saving user/password in internal cache.
+
+	Updated used JS libraries.
+
+2019-01-01  Patrick van Kleef  <pkleef@openlinksw.com>
+
+	Updated Copyright to include 2019
+
+2018-10-30  Dimitar Dimitrov  <ddimitrov@openlinksw.com>
+
+	Added header 'WebID-TLS: true' by I/O operations.
+
+2018-09-27  Patrick van Kleef  <pkleef@openlinksw.com>
+
+	Merge branch 'feature/webdavFix' into develop
+
+2018-09-25  Dimitar Dimitrov  <ddimitrov@openlinksw.com>
+
+	Updates JS bootstrap table to version 1.12.1
+
+	Fixed AJAX PROPFIND call to WebDAV folders.
+
+2018-03-16  Patrick van Kleef  <pkleef@openlinksw.com>
+
+	Merge branch 'feature/remoteImport' into develop
+
+2018-03-16  Dimitar Dimitrov  <ddimitrov@openlinksw.com>
+
+	Added new option for import content - remote sources.
+
+	Fixed bug with disable adding objects using resource select box.
+
+	Added check for supported protocols: http and https.
+
+2018-03-14  Patrick van Kleef  <pkleef@openlinksw.com>
+
+	Merge branch 'feature/Bug18225' into develop
+
+2018-03-14  Dimitar Dimitrov  <ddimitrov@openlinksw.com>
+
+	Fixed bug related to aceess some LDP sources.
+
+	Fixed bug related to parsing some .TTL sources.
+
+2018-03-09  Dimitar Dimitrov  <ddimitrov@openlinksw.com>
+
+	Fixed bug with bad view when using 'data' URL parameter.
+
+2018-01-03  Dimitar Dimitrov  <ddimitrov@openlinksw.com>
+
+	Fixed bad URI parameter interpretation.
+
+2018-01-02  Patrick van Kleef  <pkleef@openlinksw.com>
+
+	Updated Copyright to include 2018
+
+2017-12-22  Dimitar Dimitrov  <ddimitrov@openlinksw.com>
+
+	Added default action click by 'Enter' key pressed.
+
+2017-11-22  Patrick van Kleef  <pkleef@openlinksw.com>
+
+	Fixed copyright
+
+	Merge branch 'feature/webidShow' into develop
+
+2017-11-21  Dimitar Dimitrov  <ddimitrov@openlinksw.com>
+
+	Fixed bug with deletion of the binary literals.
+
+	Added new prefix 'wdrs'.
+
+	Fixed bug with stored recent SPARQL enpoints.
+
+	Fixed bug with importing RDF documents.
+
+2017-11-07  Dimitar Dimitrov  <ddimitrov@openlinksw.com>
+
+	Added WebID sign in option. Updated app version.
+
+2017-10-30  Dimitar Dimitrov  <ddimitrov@openlinksw.com>
+
+	Show WebID of the logged user on the header.
+
+	Updated date picker library. Fixed bug with selection datetime values.
+
+2017-10-18  Patrick van Kleef  <pkleef@openlinksw.com>
+
+	Merge branch 'feature/storageFix' into develop
+
+2017-10-17  Dimitar Dimitrov  <ddimitrov@openlinksw.com>
+
+	Removed unused JS file. Small UI changes.
+
+	Added get webid from YouID extension and then get profile data.
+
+	Added remove the virtual path after uninstall.
+
+2017-10-10  Patrick van Kleef  <pkleef@openlinksw.com>
+
+	Merge branch 'feature/Bug17939' into develop
+
+2017-10-10  Dimitar Dimitrov  <ddimitrov@openlinksw.com>
+
+	Fixed bug with editing and showing the boolean values.
+
+	Update for used JS libraries.
+
+	Fixed bad presentation of the empty resources.
+
+2017-10-05  Dimitar Dimitrov  <ddimitrov@openlinksw.com>
+
+	Fixed bugs related to warnings from JSHint utility.
+
+	Actualization of the build dependency libs.
+
+2017-10-04  Dimitar Dimitrov  <ddimitrov@openlinksw.com>
+
+	Added missing 'title' properties for elements.
+
+	Fixed bug with enabled to change subject type to non resource type.
+
+	Fixed build dependecy related to new plugin versions.
+
+	Updated 'selectize' libriry to last version.
+
+2017-09-29  Dimitar Dimitrov  <ddimitrov@openlinksw.com>
+
+	Bug 17939: investigate feasibility of automatically converting full URIs to CURIes on SAVE
+
+	Updated schema.org ontology.
+
+2017-05-03  Patrick van Kleef  <pkleef@openlinksw.com>
+
+	Merge branch 'feature/addOntologyBug' into develop
+
+2017-05-02  Dimitar Dimitrov  <ddimitrov@openlinksw.com>
+
+	Fixed bug with add ontology action.
+
+	Added new version of the bootstrap-table. Made small UI updates.
+
+2017-04-03  Dimitar Dimitrov  <ddimitrov@openlinksw.com>
+
+	Removed VAL login/logout.
+
+2017-03-29  Patrick van Kleef  <pkleef@openlinksw.com>
+
+	Fixed include merges into count
+
+2017-01-10  Patrick van Kleef  <pkleef@openlinksw.com>
+
+	Updated copyright to include 2017
+
+2016-12-28  Patrick van Kleef  <pkleef@openlinksw.com>
+
+	Merge branch 'feature/derefTypes' into develop
+
+2016-12-28  Dimitar Dimitrov  <ddimitrov@openlinksw.com>
+
+	Updated editor header page.
+
+2016-12-23  Dimitar Dimitrov  <ddimitrov@openlinksw.com>
+
+	Fixed bug with loading RDF/XML documents.
+
+2016-12-22  Dimitar Dimitrov  <ddimitrov@openlinksw.com>
+
+	Added RDF parser for import RDF content.
+
+2016-12-20  Dimitar Dimitrov  <ddimitrov@openlinksw.com>
+
+	Clean up URL params after document save.
+
+	Updated OSDE header - moved OL image left.
+
+	Fixed 'New' action in the document editor.
+
+	Fixed condition for the right browser pane.
+
+2016-12-15  Dimitar Dimitrov  <ddimitrov@openlinksw.com>
+
+	Added dereference link for RDF types.
+
+2016-12-15  Patrick van Kleef  <pkleef@openlinksw.com>
+
+	Merge branch 'feature/fixedLoadBug' into develop
+
+2016-12-12  Dimitar Dimitrov  <ddimitrov@openlinksw.com>
+
+	Fixed bug with errors after bad VAL login.
+
+	Fixed bug with mixed HTTP and HTTPS souces.
+
+	Fixed bug with parsing escaped literals.
+
+	Fixed bug with favicons in the VAD version.
+
+2016-11-17  Dimitar Dimitrov  <ddimitrov@openlinksw.com>
+
+	Fixed behaviour after load document error.
+
+	Updated 'Form me on Github' link
+
+2016-11-08  Patrick van Kleef  <pkleef@openlinksw.com>
+
+	Merge branch 'feature/linksColorFix' into develop
+
+2016-11-08  Dimitar Dimitrov  <ddimitrov@openlinksw.com>
+
+	Fixed sorting on count columns.
+
+2016-10-28  Dimitar Dimitrov  <ddimitrov@openlinksw.com>
+
+	Changed color of the internal links.
+
+2016-09-23  Dimitar Dimitrov  <ddimitrov@openlinksw.com>
+
+	Added new URL parameter 'data' for inline RDF content.
+
+2016-09-22  Patrick van Kleef  <pkleef@openlinksw.com>
+
+	Merge branch 'feature/labelsChange' into develop
+
+2016-09-22  Dimitar Dimitrov  <ddimitrov@openlinksw.com>
+
+	Fixed a bug with bad parameter value.
+
+	Fixed window labels for input and output.
+
+2016-09-16  Patrick van Kleef  <pkleef@openlinksw.com>
+
+	Merge branch 'feature/paginationUpdate' into develop
+
+2016-09-13  Dimitar Dimitrov  <ddimitrov@openlinksw.com>
+
+	Updated rdfstore and N3 JS linraries.
+
+	Fixed bug with throbber and export action.
+
+2016-08-15  Dimitar Dimitrov  <ddimitrov@openlinksw.com>
+
+	Extended 'Settings' - added naming schema selection.
+
+2016-08-09  Dimitar Dimitrov  <ddimitrov@openlinksw.com>
+
+	Fixed parameter checking bug.
+
+	Moved pagination on top.
+
+2016-08-05  Patrick van Kleef  <pkleef@openlinksw.com>
+
+	Merge branch 'feature/libsUpdate' into develop
+
+2016-08-02  Dimitar Dimitrov  <ddimitrov@openlinksw.com>
+
+	Uldate to angular v1.5.x - which 20% faster.
+
+	Updated Bootstrap Table library.
+
+2016-07-29  Dimitar Dimitrov  <ddimitrov@openlinksw.com>
+
+	Updated RDF and N3 libraries.
+
+2016-07-06  Dimitar Dimitrov  <ddimitrov@openlinksw.com>
+
+	Fixed bug with encoding URL parameters.
+
+2016-07-01  Patrick van Kleef  <pkleef@openlinksw.com>
+
+	Merge branch 'feature/sparqlLoadFix' into develop
+
+2016-07-01  Dimitar Dimitrov  <ddimitrov@openlinksw.com>
+
+	Fixed bug with loading turtle from sparql sources.
+
+	Added new rdfstoreJS library - v0.9.13
+
+2016-06-22  Patrick van Kleef  <pkleef@openlinksw.com>
+
+	Merge branch 'feature/Bug17320' into develop
+
+2016-06-22  Dimitar Dimitrov  <ddimitrov@openlinksw.com>
+
+	Updated rdfstorejs library.
+
+2016-06-21  Dimitar Dimitrov  <ddimitrov@openlinksw.com>
+
+	Move OpenLink logo in the middle.
+
+	Replaced text labels with links in subject, predicate and object pages.
+
+2016-06-20  Dimitar Dimitrov  <ddimitrov@openlinksw.com>
+
+	Added new URL params related to paging - page No, page size, sort name and sort order. Updating URL after avery change of the view, page No, page size , sort name or sort order.
+
+	Added OSDE logo and update header UI.
+
+2016-06-07  Dimitar Dimitrov  <ddimitrov@openlinksw.com>
+
+	Added 'Direct Outpup' action.
+
+2016-06-06  Patrick van Kleef  <pkleef@openlinksw.com>
+
+	Merge branch 'feature/Bug17333' into develop
+
+2016-06-06  Dimitar Dimitrov  <ddimitrov@openlinksw.com>
+
+	Bug 17358 - Injection of WebID+TLS+Delegation On-Behalf-Of: request header with value from the configured and selected WebID into HTTP requests
+
+2016-05-27  Dimitar Dimitrov  <ddimitrov@openlinksw.com>
+
+	Bug 17333 - OSDE should produce errors for unrecognized URI parameters
+
+2016-05-19  Dimitar Dimitrov  <ddimitrov@openlinksw.com>
+
+	Added favicons to the editor.
+
+2016-05-12  Patrick van Kleef  <pkleef@openlinksw.com>
+
+	Merge branch 'feature/signedDocs' into develop
+
+2016-05-09  Dimitar Dimitrov  <ddimitrov@openlinksw.com>
+
+	Fixed 'Save As' bug.
+
+	Comment menu items re: 'Sign and Unsign'.
+
+	Added app version on the welcome page.
+
+	Fixed bug with inline editing empty nodes.
+
+	Disabled verified turtle files for empty nodes.
+
+2016-05-01  Dimitar Dimitrov  <ddimitrov@openlinksw.com>
+
+	Fixed correct field type selection for editable cells.
+
+	Fixed escape values for editable cells. Fixed export turtle bug.
+
+2016-04-30  Dimitar Dimitrov  <ddimitrov@openlinksw.com>
+
+	Fixed node type determination and set selection items.
+
+	Fixed saving document bug.
+
+2016-04-29  Dimitar Dimitrov  <ddimitrov@openlinksw.com>
+
+	Changed 'Ontology' to 'Vocabulary'
+
+2016-04-28  Dimitar Dimitrov  <ddimitrov@openlinksw.com>
+
+	Fixed turtle direct import.
+
+2016-04-26  Dimitar Dimitrov  <ddimitrov@openlinksw.com>
+
+	Fixed bug with locked control after 'paste' action.
+
+	Added ontologyToPrefix function using http://lov.okfn.org service.
+
+	Fixed bug with inline table editing. Unify editing procedure.
+
+	Fixed load turtle bug with new version of the rdfsore-js.
+
+	Fixed sparql bug with new version of the rdfsore-js.
+
+2016-04-25  Dimitar Dimitrov  <ddimitrov@openlinksw.com>
+
+	Updated about page. Added 'Home' button.
+
+	Inject build version into JS root scope.
+
+2016-04-22  Dimitar Dimitrov  <ddimitrov@openlinksw.com>
+
+	Fixed bug with parsing some turtles from dbpedia.
+
+	Changed name of the editong document variable.
+
+	Fixed bug with 'view=triples' parameter.
+
+2016-04-21  Dimitar Dimitrov  <ddimitrov@openlinksw.com>
+
+	Added accept parameter with two values: turtle and jsonld.
+
+	Fixed bug with error reporting by turtle load.
+
+2016-04-20  Dimitar Dimitrov  <ddimitrov@openlinksw.com>
+
+	Fixed bad object property name.
+
+	Simplify creating and using editors.
+
+	Fixed bug - the current view is not selected.
+
+	Extend parameters with spo:* and eav:*
+
+2016-04-19  Dimitar Dimitrov  <ddimitrov@openlinksw.com>
+
+	Separate two schemas (EAV and SPO) in the parameters.
+
+	Added dereference link for subject and predicate views.
+
+	Updates related to new RdfstoreJS which introduces new error system.
+
+	Updated RdfstoreJS to version 0.9.7.
+
+2016-04-14  Dimitar Dimitrov  <ddimitrov@openlinksw.com>
+
+	Fixed bug with default view when URL is without params.
+
+2016-04-13  Dimitar Dimitrov  <ddimitrov@openlinksw.com>
+
+	Changed label - 'Input Directly' => 'Direct Input'
+
+	Update related to better Safari performance.
+
+2016-04-11  Dimitar Dimitrov  <ddimitrov@openlinksw.com>
+
+	Fixed bug related to adding new properties from PropertyBox.
+
+	Removed dereference links from default table views.
+
+2016-04-08  Dimitar Dimitrov  <ddimitrov@openlinksw.com>
+
+	Updated AJAX error messages.
+
+	Fixed but with showing spinner in the Editor.
+
+2016-04-07  Dimitar Dimitrov  <ddimitrov@openlinksw.com>
+
+	Added dereference links to tables with triples, subjects, predicates and objects.
+
+	Fixed bug related to new naming schema.
+
+	Code reuse.
+
+	Updated related to new Notification lib.
+
+	Replacing default IO type to HTPP.
+
+	Update naming schema (EAV and SPO) dependences after reorganize config.json.
+
+	Updated bootstrap-table-editable lib. Added new option for dereference feature.
+
+	Added updated version of Notification lib. The error notification don't disappear automaticaly.
+
+2016-04-05  Dimitar Dimitrov  <ddimitrov@openlinksw.com>
+
+	Updated 'Accept' HTTP paramter for requests.
+
+2016-03-31  Dimitar Dimitrov  <ddimitrov@openlinksw.com>
+
+	Updated table lists - added tooltips.
+
+	Updated outdated libraries - bootstrap-table and bootstrap-editable.
+
+	Updated input direct content - now it is without content type selection.
+
+	Bug 17275: Helptext fixes for the RDF Editor Buttons. https://bugzilla.openlinksw.com/show_bug.cgi?id=17275
+
+	Clean repository - removed unused library.
+
+2016-03-29  Dimitar Dimitrov  <ddimitrov@openlinksw.com>
+
+	De-refecence is optional now. Extent de-reference with predicates.
+
+	Added new URL parameter 'namingSchema' with 2 values: eavSchema and spoSchema.
+
+2016-03-22  Dimitar Dimitrov  <ddimitrov@openlinksw.com>
+
+	Added direct input of JSON-LD content.
+
+	Update of the bootstrap-editable JS library.
+
+	Fixed behaviour of the 'newDocument' parameter.
+
+2016-03-18  Dimitar Dimitrov  <ddimitrov@openlinksw.com>
+
+	Added dereference link option to resources in the RDFNode control.
+
+2016-03-17  Dimitar Dimitrov  <ddimitrov@openlinksw.com>
+
+	Fixed bug with adding new item in the resource selection control. Removed unused JS file.
+
+	Added 'doap:' and 'dbpedia:' predefined prefixes.
+
+2016-03-16  Dimitar Dimitrov  <ddimitrov@openlinksw.com>
+
+	Update for 'Action' menu in the editor view.
+
+	Updated loadTurtle function - add new parameter known prefixes.
+
+	Update of N3 parser library.
+
+2016-03-14  Dimitar Dimitrov  <ddimitrov@openlinksw.com>
+
+	Fixed statement:predicate parameter bug.
+
+	Fixed bug with current selected item after refresh option items.
+
+	Fixed bug with callback function when loading turtles fail.
+
+2016-03-10  Dimitar Dimitrov  <ddimitrov@openlinksw.com>
+
+	Fixed parameter 'view=entities' bug.
+
+	Updated 'Action' toolbar menu - moved 'Open Document' here.
+
+	Changed API call for signature API.
+
+2016-03-08  Dimitar Dimitrov  <ddimitrov@openlinksw.com>
+
+	Added sign/unsign for documents using external signature file and new VAL API function. Added import of the turtle content into editing document.
+
+	Update for Bottstrap to version 3.3.6
+
+	Fixed class/object lookup bug.
+
+2016-02-15  Patrick van Kleef  <pkleef@openlinksw.com>
+
+	Merge branch 'feature/uiFixes' into develop
+
+2016-02-12  Dimitar Dimitrov  <ddimitrov@openlinksw.com>
+
+	Added validation for input fields with new validation API. Added focus() for the first filed in forms. Updated forms with changing 'OK' button with 'Submit' button.
+
+	Added validation functions.
+
+	Updated CSS definition - add prefixes for app specific styles.
+
+2016-02-10  Patrick van Kleef  <pkleef@openlinksw.com>
+
+	Merge branch 'feature/objectsLookup' into develop
+
+2016-02-10  Dimitar Dimitrov  <ddimitrov@openlinksw.com>
+
+	Added lookup with external sources.
+
+2016-02-08  Dimitar Dimitrov  <ddimitrov@openlinksw.com>
+
+	Added 'About' link. Removed unneeded TTL and JSON-LD metadata.
+
+2016-01-25  Dimitar Dimitrov  <ddimitrov@openlinksw.com>
+
+	Updated behaviour of the new '+' button in the subject form.
+
+2016-01-22  Patrick van Kleef  <pkleef@openlinksw.com>
+
+	Merge branch 'feature/schemaRangeUpdate' into develop
+
+2016-01-21  Dimitar Dimitrov  <ddimitrov@openlinksw.com>
+
+	UI/UX update - use last added subject for next triple.
+
+2016-01-20  Dimitar Dimitrov  <ddimitrov@openlinksw.com>
+
+	Added support for schema:rangeIncludes and schema:domainIncludes. Updated range property to support multple ranges.
+
+	Updated preloaded ontology 'http://schema.org'.
+
+2016-01-15  Dimitar Dimitrov  <ddimitrov@openlinksw.com>
+
+	Subject Editor update -added '+' button for adding multiple values.
+
 2016-01-12  Patrick van Kleef  <pkleef@openlinksw.com>
+
+	Fixed issue following symlink for rdf_editor_pkg.tar.gz
+
+	Merge branch 'release/0.17' into develop
+
+	Updated NEWS and ChangeLog
 
 	Updated version to 0.17 for final release
 
