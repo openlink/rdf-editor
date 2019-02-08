@@ -2,6 +2,7 @@ define([RDF_EDITOR_VERSION], [esyscmd([./gen_version.sh | sed -e 's/_git.*//' | 
 
 AC_INIT([rdf-editor], [RDF_EDITOR_VERSION], [opensource@openlinksw.com])
 AM_INIT_AUTOMAKE([foreign])
+AM_MAINTAINER_MODE
 
 # --------------------------------------------------------------
 #  Save configuration for later reuse

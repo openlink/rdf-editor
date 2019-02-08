@@ -29,7 +29,12 @@ PKG_NAME	= rdf_editor_pkg
 #
 #  Get current version
 #
-VERSION		= `./gen_version.sh`
+VERSION		= $(shell ./gen_version.sh)
+
+OSDE_GIT        := $(shell git describe --long --always | sed -e 's/^v//' -e 's/-0-/-/')
+OSDE_MAJOR      := $(shell echo $(OSDE_GIT) | tr -c '[0-9]' '.' | cut -d . -f 1)
+OSDE_MINOR      := $(shell echo $(OSDE_GIT) | tr -c '[0-9]' '.' | cut -d . -f 2)
+OSDE_VERSION    := $(OSDE_MAJOR).$(OSDE_MINOR)
 
 #
 #  What packages to build
@@ -90,6 +95,38 @@ $(PKG_NAME).zip: rdf_editor_dav.vad
 	-@ln -s dist @PACKAGE@
 	-zip -9qr $(PKG_NAME).zip @PACKAGE@
 	-@rm -f @PACKAGE@
+
+
+#
+#  Building and pushing docker images
+#
+.PHONY: docker
+docker:	rdf_editor_dav.vad
+	docker build \
+		--build-arg VERSION=$(VERSION) \
+		--tag devel/osde \
+		.
+
+.PHONY: docker-run
+docker-run: docker
+	docker run -i -t -p 8080:8080 devel/osde
+
+
+if MAINTAINER_MODE
+.PHONY: docker-tag
+docker-tag: docker
+	docker tag devel/osde openlink/osde:$(OSDE_GIT)
+	docker tag devel/osde openlink/osde:$(OSDE_MAJOR)
+	docker tag devel/osde openlink/osde:$(OSDE_VERSION)
+	docker tag devel/osde openlink/osde:latest
+
+.PHONY: docker-push
+docker-push: docker-tag
+	docker push openlink/osde:$(OSDE_GIT)
+	docker push openlink/osde:$(OSDE_VERSION)
+	docker push openlink/osde:$(OSDE_MAJOR)
+	docker push openlink/osde:latest
+endif
 
 
 #
