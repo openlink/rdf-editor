@@ -810,7 +810,8 @@ RDFE.OntologyManager.prototype.parseOntologyFile = function(URI, params) {
       parser.parse(data, function(error, triple) {
         if (error) {
           if (params.error) {
-            params.error();
+            var message = 'Parse error.'
+            params.error({"message": message});
           }
         }
         else if (!triple) {
