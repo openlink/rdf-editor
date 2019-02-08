@@ -1,4 +1,5 @@
 v0.18:
+  * Added option to build Docker image
   * Added accept parameter with two values: turtle and jsonld
   * Added dereference link for RDF types
   * Added dereference link for subject and predicate views

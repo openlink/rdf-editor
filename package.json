@@ -2,7 +2,7 @@
   "name": "rdf-editor",
   "private": true,
   "version": "0.17.0",
-  "description": "OpenLink RDF Editor",
+  "description": "OpenLink Structured Data Editor",
   "repository": "",
   "license": "GPL-2.0",
   "devDependencies": {

@@ -1,9 +1,21 @@
-# OpenLink RDF Editor
+# OpenLink Structured Data Editor
+
+<!-- START doctoc generated TOC please keep comment here to allow auto update -->
+<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
 
 
+- [Introduction](#introduction)
+- [License](#license)
+- [Dependencies](#dependencies)
+- [Quick Build Guide](#quick-build-guide)
+- [Deployment](#deployment)
+- [Contributions](#contributions)
+- [See Also](#see-also)
 
-## Intro
-The OpenLink RDF Editor enables editing of **RDF** documents (in **TURTLE** notation) stored in a
+<!-- END doctoc generated TOC please keep comment here to allow auto update -->
+
+## Introduction
+The OpenLink Structured Data Editor enables editing of **RDF** documents (in **TURTLE** notation) stored in a
 variety of *HTTP* accessible documents.  Actual document access requires the target document is
 served from a system that supports at least one of the following open standards:
 
@@ -11,8 +23,6 @@ served from a system that supports at least one of the following open standards:
   - *WebDAV*
   - *SPARQL 1.1 Update*
   - *SPARQL Graph Protocol*
-
-
 
 ## License
 Copyright 2014-2019 [OpenLink Software](mailto:opensource@openlinksw.com)
@@ -84,7 +94,7 @@ Build the package:
 $ make
 ```
 
-The project contains several README* files that show in more detail how to build the OpenLink RDF
+The project contains several README* files that show in more detail how to build the OpenLink Structured Data
 Editor in various operating system environments.
 
 
@@ -98,14 +108,14 @@ projects and a *rdf\_editor\_pkg.tar.gz* and *rdf\_editor\_pkg.zip* file that ca
 deploy the application on many http servers such as:
 
 - Apache
--
+
   * **Download and install Apache (v2.x)**.
 
-  * **Extract RDF Editor**:
+  * **Extract Structured Data Editor**:
 
 	unzip rdf\_editor\_pkg.zip -d [PATH]
 
-  * **Add new drectory (/rdf-edtor) with RDF Editor to the server configuration**:
+  * **Add new drectory (/rdf-edtor) with Structured Data Editor to the server configuration**:
 
   * **Start Apache Server**.
 
@@ -119,7 +129,7 @@ deploy the application on many http servers such as:
 
   * **Start IIS**.
 
-  * **Extract RDF Editor**:
+  * **Extract Structured Data Editor**:
 
 	unzip rdf\_editor\_pkg.zip -d [IIS Root Path]
 
@@ -135,7 +145,7 @@ deploy the application on many http servers such as:
 
 	[TOMCAT HOME]/bin/startup
 
-  * **Extract RDF Editor**:
+  * **Extract Structured Data Editor**:
 
 	unzip rdf\_editor\_pkg.zip -d [TOMCAT HOME]/webapps/Root
 
@@ -149,9 +159,9 @@ deploy the application on many http servers such as:
 
   * **Download and install NPM manager**.
 
-  * **Extract RDF Editor**:
+  * **Extract Structured Data Editor**:
 
-	unzip rdf\_editor\_pkg.zip -d [RDF Editor Path]
+	unzip rdf\_editor\_pkg.zip -d [Structured Data Editor Path]
 
 	The http-server is a simple, zero-configuration command-line http server.
 
@@ -163,14 +173,14 @@ deploy the application on many http servers such as:
 
   * **Start HTTP Server**:
 
-	http-server [RDF Editor Path]/rdf-editor [options]
+	http-server [Structured Data Editor Path]/rdf-editor [options]
 
   * **Usage**:
 
 	[Default Browser] localhost:[port]/index.html
 
 
-The project contains several README* files that show how to deploy the OpenLink RDF Editor in
+The project contains several README* files that show how to deploy the OpenLink Structured Data Editor in
 various operating system environments.
 
 
@@ -209,3 +219,10 @@ requests, track the project etc. on:
 ```
     http://help.github.com/
 ```
+
+## See Also
+
+  - [OSDE website](http://osde.openlinksw.com/)
+  - [Github project](https://github.com/openlink/rdf-editor/)
+  - [Dockerhub repository](https://cloud.docker.com/repository/docker/openlink/osde/)
+  - [OpenLink Website](https://www.openlinksw.com/)

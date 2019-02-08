@@ -1,4 +1,22 @@
+2019-02-08  Patrick van Kleef  <pkleef@openlinksw.com>
+
+	Added initial support for building Docker images
+
+	Merge branch 'feature/libsUpdate' into develop
+
+2019-02-08  Dimitar Dimitrov  <ddimitrov@openlinksw.com>
+
+	Bug 18576 - Issue saving locations add extra / at end of document
+
+	Fixed bug with shown an error after parser error.
+
+	Updated N3 TTL parser library to version 0.11.3
+
+	Upgrade AngularJS from 1.5.x to 1.7.x. Update Grunt build pluging too.
+
 2019-02-07  Patrick van Kleef  <pkleef@openlinksw.com>
+
+	Updated for upcoming release
 
 	Fixed relative URL
 
