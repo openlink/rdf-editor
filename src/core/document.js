@@ -60,6 +60,10 @@ RDFE.Document.prototype.load = function(url, io, success, fail) {
     self.io = io;
     self.setChanged(false);
 
+    // add current recent doc to the list
+    if (data.length)
+      self.documentTree.addRecentDoc(self.url, self.io.type);
+
     // store document identification properties after load
     self.srcParams = {
       "length": data.length,
