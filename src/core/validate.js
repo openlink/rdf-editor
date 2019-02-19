@@ -21,6 +21,8 @@
 /*
  * RDFE Validate functions
  */
+if(!window.RDFE)
+  window.RDFE = {};
 
 RDFE.Validate = {};
 
