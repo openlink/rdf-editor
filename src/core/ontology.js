@@ -193,7 +193,7 @@ RDFE.prefixByOntology = function(uri, callback) {
     "url": host,
     "type": 'GET',
     "dataType": "json",
-    "async": false
+    "async": (callback)? true: false
   }).done(function(data) {
     var results = data.results;
     for (var i = 0; i < results.length; i++) {
@@ -416,6 +416,66 @@ RDFE.OntologyManager.prototype.individualByURI = function(URI) {
   return this.individuals[URI];
 };
 
+RDFE.OntologyManager.prototype.suportedContentTypes = function(contentType) {
+  var self = this;
+
+  if (self.suportedTurtleTypes(contentType))
+    return true;
+
+  if (self.suportedRDFTypes(contentType))
+    return true;
+
+  if (self.suportedJSONTypes(contentType))
+    return true;
+
+  return false;
+};
+
+RDFE.OntologyManager.prototype.suportedTurtleTypes = function(contentType) {
+  if (contentType.indexOf('text/turtle') != -1)
+    return true;
+
+  if (contentType.indexOf('application/turtle') != -1)
+    return true;
+
+  if (contentType.indexOf('application/x-turtle') != -1)
+    return true;
+
+  if (contentType.indexOf('application/trig') != -1)
+    return true;
+
+  if (contentType.indexOf('application/n-triples') != -1)
+    return true;
+
+  if (contentType.indexOf('application/n-quads') != -1)
+    return true;
+
+  if (contentType.indexOf('text/n3') != -1)
+    return true;
+
+  return false;
+};
+
+RDFE.OntologyManager.prototype.suportedRDFTypes = function(contentType) {
+  if (contentType.indexOf('application/rdf+xml') != -1)
+    return true;
+
+  if (contentType.indexOf('text/rdf') != -1)
+    return true;
+
+  return false;
+};
+
+RDFE.OntologyManager.prototype.suportedJSONTypes = function(contentType) {
+  if (contentType.indexOf('application/ld+json') != -1)
+    return true;
+
+  if (contentType.indexOf('application/json') != -1)
+    return true;
+
+  return false;
+};
+
 RDFE.OntologyManager.prototype.load = function(URI, params) {
   var self = this;
 
@@ -431,7 +491,7 @@ RDFE.OntologyManager.prototype.load = function(URI, params) {
   params.success = function(data, status, xhr) {
     if (self.options.nonTTLProxy && (self.options.proxy !== self.options.nonTTLProxy)) {
       var contentType = (xhr.getResponseHeader('content-type') || '').split(';')[0];
-      if (contentType.length > 0 && contentType.indexOf('turtle') < 0) {
+      if (!self.suportedContentTypes(contentType)) {
         IO.retrieve(URI, $.extend({"proxy": self.options.nonTTLProxy}, params));
         return;
       }
@@ -444,7 +504,7 @@ RDFE.OntologyManager.prototype.load = function(URI, params) {
   params.error = function(state, data, status, xhr) {
     if (self.options.nonTTLProxy && (self.options.proxy !== self.options.nonTTLProxy)) {
       params.error = params.__error;
-      IO.retrieve(URI, $.extend({"proxy": self.options.nonTTLProxy}, params));
+      IO.retrieve(URI, $.extend({"proxy": self.options.nonTTLProxy, "noWebIDTLS": true}, params));
       return;
     }
     if (params.__error) {
@@ -452,7 +512,7 @@ RDFE.OntologyManager.prototype.load = function(URI, params) {
     }
   };
   var proxy = ((RDFE.Utils.getProtocol(URI) !== document.location.protocol) && (document.location.protocol === 'https:')) ? true: self.options.proxy;
-  IO.retrieve(URI, $.extend({"proxy": proxy}, params));
+  IO.retrieve(URI, $.extend({"proxy": proxy, "noWebIDTLS": true}, params));
 };
 
 RDFE.OntologyManager.prototype.parseOntologyFile = function(URI, params) {
@@ -796,17 +856,9 @@ RDFE.OntologyManager.prototype.parseOntologyFile = function(URI, params) {
 
   // parse the ttl gotten from the URI
   var parseTripels = function(data, status, xhr) {
-    var contentType = (xhr.getResponseHeader('content-type') || '').split(';')[0];
-    if (contentType.length > 0 && contentType.indexOf('turtle') < 0) {
-      var message = 'Only Turtle files can be parsed in the ontology manager.'
-      console.error(message);
-      if (params.error) {
-        params.error({"message": message});
-      }
-    }
-    else {
+    var turtleParser = function (data, parseParams, params) {
       // console.log(URI);
-      var parser = N3.Parser();
+      var parser = N3.Parser(parseParams);
       parser.parse(data, function(error, triple) {
         if (error) {
           if (params.error) {
@@ -824,7 +876,94 @@ RDFE.OntologyManager.prototype.parseOntologyFile = function(URI, params) {
           handleTriple(triple);
         }
       });
+    };
+
+    var rdfParser = function (data, params) {
+      // console.log(URI);
+      RDFXMLParser.parser.parse(data, {}, function(error, triples) {
+        if (error) {
+          if (params.error) {
+            var message = 'Parse error.'
+            params.error({"message": message});
+          }
+        }
+        else {
+          for (var i = 0; i < triples.length; i++) {
+            var triple = {
+              "subject": triples[i].subject.value,
+              "predicate": triples[i].predicate.value,
+              "object": triples[i].object.value || triples[i].object.literal
+            };
+            handleTriple(triple);
+          }
+          finishParse();
+          if (params.success) {
+            params.success();
+          }
+        }
+      });
+    };
+
+    var jsonParser = function (data, params) {
+      // console.log(URI);
+      jsonld.normalize(JSON.parse(data), {}, function(error, normalized) {
+        if (error) {
+          if (params.error) {
+            var message = 'Parse error.'
+            params.error({"message": message});
+          }
+        }
+        else {
+          var parseTerm = function (term) {
+            if (term.type === 'blank node') {
+              return term.value;
+            } else if (term.type === 'IRI') {
+              return term.value;
+            } else if (term.type === 'literal') {
+              return '"' + term.value + '"';
+            }
+          };
+
+          for (var p in normalized) {
+            var triples = normalized[p];
+            for (var i = 0; i < triples.length; i++) {
+              var triple = {
+                "subject": parseTerm(triples[i].subject),
+                "predicate": parseTerm(triples[i].predicate),
+                "object": parseTerm(triples[i].object)
+              };
+              handleTriple(triple);
+            }
+          }
+          finishParse();
+          if (params.success) {
+            params.success();
+          }
+        }
+      });
+    };
+
+    var contentType = (xhr.getResponseHeader('content-type') || '').split(';')[0];
+    if (self.suportedTurtleTypes(contentType)) {
+      var parseParams = null;
+      if (contentType.indexOf('text/n3') != -1)
+        parseParams = {"format": 'text/n3'};
+
+      return turtleParser (data, parseParams, params);
     }
+
+    if (self.suportedRDFTypes(contentType)) {
+      return rdfParser (data, params);
+    }
+
+    if (self.suportedJSONTypes(contentType)) {
+      return jsonParser (data, params);
+    }
+
+    var message = 'Only Turtle files can be parsed in the ontology manager.'
+    console.error(message);
+    if (params.error)
+      params.error({"message": message});
   };
 
   var loadParams = {

@@ -111,7 +111,9 @@ String.prototype.format = function() {
 
       // add auth info from self.options.username and .password via
       ajaxParams.headers = ajaxParams.headers || {};
-      ajaxParams.headers["WebID-TLS"] = "true";
+      if (!params.noWebIDTLS) {
+        ajaxParams.headers["WebID-TLS"] = "true";
+      }
       if (params.username) {
         ajaxParams.headers["Authorization"] = "Basic " + btoa(params.username + ":" + params.password);
         ajaxParams = $.extend({"withCredentials": true}, ajaxParams);
