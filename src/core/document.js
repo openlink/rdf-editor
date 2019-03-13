@@ -252,7 +252,7 @@ RDFE.Document.prototype.import = function(content, contentType, success, fail) {
         var ___fail = function (___error) {
           var error = new Error();
           error.name = 'SyntaxError';
-          error.message = '<b>TTL</b>: ' + _error.message + ' or ' + '<b>JSON-LP</b>: ' + __error.message + ' or ' + '<b>RDF</b>: ' + ___error.message;
+          error.message = 'Checked with following parsers:<br /> <b>TTL</b>: ' + RDFE.Utils.escapeXml(_error.message) + '<br /><b>JSON-LD</b>: ' + RDFE.Utils.escapeXml(__error.message) + '<br /><b>RDF</b>: ' + RDFE.Utils.escapeXml(___error.message);
           fail(error);
         };
         self.importRDF(content, success, ___fail);
