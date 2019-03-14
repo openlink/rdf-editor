@@ -55,6 +55,7 @@ RDFE.Document.prototype.setChanged = function(dirty) {
 
 RDFE.Document.prototype.load = function(url, io, success, fail) {
   var self = this;
+  self.url = null;
   var successFct = function(data, status, xhr) {
     self.url = url;
     self.io = io;

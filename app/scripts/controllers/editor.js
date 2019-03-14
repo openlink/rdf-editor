@@ -96,9 +96,7 @@ angular.module('myApp.editor', ['ngRoute'])
           }).on('rdf-editor-spinner-start', function(e, spinner) {
             if (spinner === 'editor-spinner') {
               editor.spinner++;
-              if (editor.spinner === 1) {
-                usSpinnerService.spin(spinner);
-              }
+              usSpinnerService.spin(spinner);
             }
             if (spinner === 'export-spinner') {
               usSpinnerService.spin(spinner);
@@ -661,6 +659,7 @@ angular.module('myApp.editor', ['ngRoute'])
         });
       }
       else {
+        $scope.doc.url = null;
         var loadUri = function() {
           if (!uri)
             return;
