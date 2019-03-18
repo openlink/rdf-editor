@@ -480,6 +480,7 @@ RDFE.OntologyManager.prototype.load = function(URI, params) {
   var self = this;
 
   var ioType = (params.ioType)? params.ioType: 'http';
+  var uriProtocol = RDFE.Utils.getProtocol(URI);
   var options = {};
   if (self.options.nonTTLProxyUrl) {
     options.httpProxyTemplate = self.options.nonTTLProxyUrl[document.location.protocol];
@@ -489,10 +490,11 @@ RDFE.OntologyManager.prototype.load = function(URI, params) {
 
   params.__success = params.success;
   params.success = function(data, status, xhr) {
-    if (self.options.nonTTLProxy && (self.options.proxy !== self.options.nonTTLProxy)) {
+    if (((uriProtocol === 'http:') || (uriProtocol === 'https:')) && self.options.nonTTLProxy && (self.options.proxy !== self.options.nonTTLProxy)) {
       var contentType = (xhr.getResponseHeader('content-type') || '').split(';')[0];
       if (!self.suportedContentTypes(contentType)) {
         IO.retrieve(URI, $.extend({"proxy": self.options.nonTTLProxy}, params));
+
         return;
       }
     }
@@ -502,21 +504,23 @@ RDFE.OntologyManager.prototype.load = function(URI, params) {
   };
   params.__error = params.error;
   params.error = function(state, data, status, xhr) {
-    if (self.options.nonTTLProxy && (self.options.proxy !== self.options.nonTTLProxy)) {
+    if (((uriProtocol === 'http:') || (uriProtocol === 'https:')) && self.options.nonTTLProxy && (self.options.proxy !== self.options.nonTTLProxy)) {
       params.error = params.__error;
-      IO.retrieve(URI, $.extend({"proxy": self.options.nonTTLProxy, "noWebIDTLS": true}, params));
+      IO.retrieve(URI, $.extend({"proxy": self.options.nonTTLProxy}, params));
+
       return;
     }
-    if (params.__error) {
+    if (params.__error)
       params.__error(state, data, status, xhr);
-    }
   };
-  var proxy = ((RDFE.Utils.getProtocol(URI) !== document.location.protocol) && (document.location.protocol === 'https:')) ? true: self.options.proxy;
-  IO.retrieve(URI, $.extend({"proxy": proxy, "noWebIDTLS": true}, params));
+  params = $.extend({"noWebIDTLS": true}, params);
+  var proxy = ((uriProtocol !== document.location.protocol) && (document.location.protocol === 'https:')) ? true: self.options.proxy;
+  IO.retrieve(URI, $.extend({"proxy": proxy}, params));
 };
 
 RDFE.OntologyManager.prototype.parseOntologyFile = function(URI, params) {
   var self = this,
+      uriProtocol = RDFE.Utils.getProtocol(URI),
       labels = {}, // maps uris to labels
       comments = {}, // maps uris to comments
       restrictions = {}, // maps blank nodes to restriction details
@@ -944,6 +948,9 @@ RDFE.OntologyManager.prototype.parseOntologyFile = function(URI, params) {
     };
 
     var contentType = (xhr.getResponseHeader('content-type') || '').split(';')[0];
+    if ((contentType === 'text/plain') && (uriProtocol !== 'http:') && (uriProtocol !== 'https:'))
+      contentType = 'text/turtle';
+
     if (self.suportedTurtleTypes(contentType)) {
       var parseParams = null;
       if (contentType.indexOf('text/n3') != -1)
