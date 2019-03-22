@@ -295,6 +295,13 @@
     c.prototype.addOntologies = function(ontologies) {
       var self = this;
 
+      // Update existited
+      for (var i = 0; i < ontologies.length; i++) {
+        if (_.find(self.ontologies, function(o){return o.URI === ontologies[i].URI;})) {
+          self.table.bootstrapTable('updateByUniqueId', ontologies[i].URI, ontologies[i]);
+        }
+      }
+      // Append new
       for (var i = 0; i < ontologies.length; i++) {
         if (!_.find(self.ontologies, function(o){return o.URI === ontologies[i].URI;})) {
           self.table.bootstrapTable('append', ontologies[i]);
