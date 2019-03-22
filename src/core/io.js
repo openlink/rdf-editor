@@ -153,7 +153,7 @@ String.prototype.format = function() {
           if (this.crossDomain && (state.message === 'error') && (xhr.status === 0)) {
             state.message = 'CORS Error: ' + ((self.type !== 'sparql')? ajaxParams.url: 'The document') + ' failed to load - this could be related to missing CORS settings on the server.';
           }
-          else if ((xhr.status === 401 || xhr.status === 403) && params.authFunction) {
+          else if (((xhr.status === 400 && self.type === 'sparql') || (xhr.status === 401) || (xhr.status === 403)) && params.authFunction) {
             params.authFunction(ajaxParams.url, function(r) {
               params.username = r.username;
               params.password = r.password;

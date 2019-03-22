@@ -188,7 +188,9 @@ RDFE.ontologyByPrefix = function(prefix, callback) {
  *
  */
 RDFE.prefixByOntology = function(uri, callback) {
-  var host = 'https://lov.linkeddata.es/dataset/lov/api/v2/vocabulary/autocomplete?q='+encodeURIComponent(RDFE.Utils.trim(uri, '#'));
+  uri = RDFE.Utils.trim(uri, '#');
+  var host = 'https://lov.linkeddata.es/dataset/lov/api/v2/vocabulary/autocomplete?q='+encodeURIComponent(uri);
+
   $.ajax({
     "url": host,
     "type": 'GET',
@@ -198,7 +200,7 @@ RDFE.prefixByOntology = function(uri, callback) {
     var results = data.results;
     for (var i = 0; i < results.length; i++) {
       for (var j = 0; j < results[i].uri.length; i++) {
-        if (RDFE.Utils.trim(results[i].uri[j], '#') === RDFE.Utils.trim(uri, '#')) {
+        if (RDFE.Utils.trim(results[i].uri[j], '#') === uri) {
           if (callback) {
             callback(results[i].prefix[j]);
           }
@@ -403,10 +405,13 @@ RDFE.OntologyManager.prototype.ontologyClassByURI = function(uri, create) {
 };
 
 RDFE.OntologyManager.prototype.ontologyPropertyByURI = function(uri, create) {
+  var self = this;
   var p = this.ontologyProperties[uri];
+
   if(!p && create === true) {
-    this.ontologyProperties[uri] = p = new RDFE.OntologyProperty(this, uri);
-    p.ontology = this.ontologyByURI(RDFE.uriOntology(uri), true);
+    p = new RDFE.OntologyProperty(self, uri);
+    self.ontologyProperties[uri] = p;
+    p.ontology = self.ontologyByURI(RDFE.uriOntology(uri), true);
     p.ontology.properties[uri] = p;
   }
   return p;
@@ -504,7 +509,7 @@ RDFE.OntologyManager.prototype.load = function(URI, params) {
   };
   params.__error = params.error;
   params.error = function(state, data, status, xhr) {
-    if (((uriProtocol === 'http:') || (uriProtocol === 'https:')) && self.options.nonTTLProxy && (self.options.proxy !== self.options.nonTTLProxy)) {
+    if ((xhr.status !== 404) && ((uriProtocol === 'http:') || (uriProtocol === 'https:')) && self.options.nonTTLProxy && (self.options.proxy !== self.options.nonTTLProxy)) {
       params.error = params.__error;
       IO.retrieve(URI, $.extend({"proxy": self.options.nonTTLProxy}, params));
 
