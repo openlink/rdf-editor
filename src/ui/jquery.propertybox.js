@@ -57,41 +57,39 @@
         else if (input.startsWith('#')) {
           create = true;
         }
-        var property = this.settings.createProperty(input, create);
-        if (property) {
-          cb(property);
-        }
-        else {
-          var url = self.options.ontologyManager.ontologyDetermine(input);
-          if (!url) {
-            url = self.options.ontologyManager.prefixes[input] || input;
-          }
-          self.options.ontologyManager.parseOntologyFile(url, {
-            "success": function() {
-              cb(that.settings.createProperty(input, true));
-            },
-            "error": function(state) {
-              var message = (state && state.message)? state.message: 'Error loading ontology';
+        var url = self.options.ontologyManager.ontologyDetermine(input);
+        if (!url)
+          create = true;
 
-              console.log(message);
-              bootbox.confirm(message + '. Do you want to create new property?', function(result) {
-                if (result) {
-                  var ontology = self.options.ontologyManager.ontologyByURI(url);
+        var property = this.settings.createProperty(input, create);
+        if (property)
+          return cb(property);
+
+        self.options.ontologyManager.parseOntologyFile(url, {
+          "success": function() {
+            cb(that.settings.createProperty(input, true));
+          },
+          "error": function(state) {
+            var message = (state && state.message)? state.message: 'Error loading ontology';
+
+            console.log(message);
+            bootbox.confirm(message + '. Do you want to create new property?', function(result) {
+              if (result) {
+                var ontology = self.options.ontologyManager.ontologyByURI(url);
+                if (!ontology) {
+                  ontology = self.options.ontologyManager.ontologyByURI(url);
                   if (!ontology) {
-                    ontology = self.options.ontologyManager.ontologyByURI(url);
-                    if (!ontology) {
-                      ontology = new RDFE.Ontology(self.options.ontologyManager, url);
-                    }
-                    cb(that.settings.createProperty(input, true));
+                    ontology = new RDFE.Ontology(self.options.ontologyManager, url);
                   }
+                  cb(that.settings.createProperty(input, true));
                 }
-                else {
-                  that.unlock();
-                }
-              });
-            }
-          });
-        }
+              }
+              else {
+                that.unlock();
+              }
+            });
+          }
+        });
       },
       "render": {
         "item": function(item, escape) {
