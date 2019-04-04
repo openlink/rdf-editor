@@ -21,6 +21,10 @@
 if (!window.RDFE)
   window.RDFE = {};
 
+var SPARQL_TRIPLE = '<{0}> <{1}> {2}';
+var SPARQL_INSERT = 'INSERT DATA { GRAPH <{0}> { {1} } }';
+var SPARQL_DELETE = 'DELETE DATA { GRAPH <{0}> { {1} } }';
+
 RDFE.Document = function(params, callback) {
   var self = this;
 
@@ -29,12 +33,16 @@ RDFE.Document = function(params, callback) {
   self.documentTree = params["documentTree"];
   self.graph = 'urn:graph:default';
   self.dirty = false;
+  self.clearLog();
 
   // create document RDF store
   rdfstore.create(function(error, store) {
     if (!error) {
       self.store = store;
       self.store.registerDefaultNamespace('skos', 'http://www.w3.org/2004/02/skos/core#');
+      self.store.subscribe(null, null, null, self.graph, function(event, triples) {
+        self.updateLog(event, triples);
+      });
 
       if (callback) {
         callback(self);
@@ -47,18 +55,155 @@ RDFE.Document.prototype.setChanged = function(dirty) {
   var self = this;
 
   self.dirty = dirty;
-  if (self.dirty) {
+  if (self.dirty)
     $(self).trigger('changed', self);
-  }
+
   $(self).trigger('docChanged', self);
+};
+
+RDFE.Document.prototype.clearLog = function(event, triples) {
+  var self = this;
+
+  self.editLog = [];
+  self.editLogIndex = 0;
+  self.editLogEnabled = true;
+  self.undoIsDisabled();
+  self.redoIsDisabled();
+};
+
+RDFE.Document.prototype.updateLog = function(event, triples) {
+  var self = this;
+  var editLogMax = 16;
+
+  // Update edit log
+  if (self.editLogEnabled && ((event === 'added') || (event === 'deleted'))) {
+    self.editLog.length = self.editLogIndex;
+    if (self.editLog.length >= editLogMax)
+      self.editLog = self.editLog.slice(-editLogMax+1);
+
+    self.editLog.push({"event": event, "triples": triples});
+    self.editLogIndex = self.editLog.length;
+  }
+  self.undoIsDisabled();
+  self.redoIsDisabled();
+};
+
+RDFE.Document.prototype.importLog = function(mimeType, content) {
+  var self = this;
+  var graph = 'urn:graph:log';
+
+  self.store.clear(graph, function(error, result) {
+    if (error && fail)
+      return;
+
+    self.store.load(mimeType, content, graph, function(error, result) {
+      if (error && fail)
+        return;
+
+      self.store.graph(graph, function(error, result) {
+        if (!error)
+          self.updateLog('added', result.triples);
+
+        self.store.clear(graph, function() {});
+      });
+    });
+  });
+};
+
+RDFE.Document.prototype.undoIsDisabled = function() {
+  var self = this;
+
+  self.undoDisabled = self.editLogIndex && (self.editLogIndex <= self.editLog.length);
+};
+
+RDFE.Document.prototype.undoLog = function(success, fail) {
+  var self = this;
+
+  if (self.undoIsDisabled())
+    return;
+
+  var undo = self.editLog[self.editLogIndex-1];
+  self.editLogIndex--;
+
+  if (!undo.triples.length)
+    return;
+
+  var sparql = '';
+  var delimiter = ' \n';
+  for (var i = 0; i < undo.triples.length; i++) {
+    sparql += delimiter + SPARQL_TRIPLE.format(undo.triples[i].subject, undo.triples[i].predicate, undo.triples[i].object.toNT());
+    delimiter = ' .\n';
+  }
+  if (undo.event === 'added') {
+    sparql = SPARQL_DELETE.format(self.graph, sparql);
+  } else {
+    sparql = SPARQL_INSERT.format(self.graph, sparql);
+  }
+
+  self.editLogEnabled = false;
+  self.store.execute(sparql, function(error, result) {
+    self.editLogEnabled = true;
+    self.setChanged(false);
+    if (!error && success) {
+      success(result);
+    }
+    else if (error && fail) {
+      fail(error);
+    }
+  });
+};
+
+RDFE.Document.prototype.redoIsDisabled = function() {
+  var self = this;
+
+  self.redoDisabled = self.editLog.length && (self.editLogIndex < self.editLog.length);
+};
+
+RDFE.Document.prototype.redoLog = function(success, fail) {
+  var self = this;
+
+  if (self.redoIsDisabled())
+    return;
+
+  var redo = self.editLog[self.editLogIndex];
+  self.editLogIndex++;
+
+  if (!redo.triples.length)
+    return;
+
+  var sparql = '';
+  var delimiter = ' \n';
+  for (var i = 0; i < redo.triples.length; i++) {
+    sparql += delimiter + SPARQL_TRIPLE.format(redo.triples[i].subject, redo.triples[i].predicate, redo.triples[i].object.toNT());
+    delimiter = ' .\n';
+  }
+  if (redo.event === 'added') {
+    sparql = SPARQL_INSERT.format(self.graph, sparql);
+  } else {
+    sparql = SPARQL_DELETE.format(self.graph, sparql);
+  }
+
+  self.editLogEnabled = false;
+  self.store.execute(sparql, function(error, result) {
+    self.editLogEnabled = true;
+    self.setChanged(false);
+    if (!error && success) {
+      success(result);
+    }
+    else if (error && fail) {
+      fail(error);
+    }
+  });
 };
 
 RDFE.Document.prototype.load = function(url, io, success, fail) {
   var self = this;
+
   self.url = null;
   var successFct = function(data, status, xhr) {
     self.url = url;
     self.io = io;
+    self.clearLog();
     self.setChanged(false);
 
     // add current recent doc to the list
@@ -70,9 +215,6 @@ RDFE.Document.prototype.load = function(url, io, success, fail) {
       "length": data.length,
       "md5": $.md5(data)
     };
-
-    // check for signed document
-    // self.checkForSignature();
 
     if (success) {
       success();
@@ -138,74 +280,60 @@ RDFE.Document.prototype.verifyData = function(callback) {
   }
 };
 
-RDFE.Document.prototype.save = function(url, io, success, fail) {
-    var self = this;
-    var myUrl = url,
-        myIo = io,
-        mySuccess = success,
-        myFail = fail;
+RDFE.Document.prototype.save = function(myUrl, myIo, mySuccess, myFail) {
+  var self = this;
 
-    // url is optional
-    if (typeof(url) != 'string') {
-      myUrl = self.url;
-      myIo = url;
-      mySuccess = io;
-      myFail = success;
+  if (!myUrl) {
+    if (myFail) {
+      myFail("No document loaded");
+    }
+    return;
+  }
+
+  if (!myIo.insertFromStore) {
+    myIo = RDFE.IO.createIO('webdav', myIo.options);
+    myIo.type = 'webdav';
+  }
+
+  self.verifyData(function(error) {
+    if (error) {
+      if (myFail)
+        myFail(error);
+
+      return;
     }
 
-    // io is optional
-    if (typeof(myIo) == 'function' || !myIo) {
-      myFail = mySuccess;
-      mySuccess = myIo;
-      myIo = self.io;
-    }
+    var __success = function() {
+      self.url = myUrl;
+      self.io = myIo;
+      self.clearLog();
+      self.setChanged(false);
 
-    if (!myUrl) {
-      if (myFail) {
-        myFail("No document loaded");
-      }
-    }
-    else {
-      if (!myIo.insertFromStore) {
-        myIo = RDFE.IO.createIO('webdav', myIo.options);
-        myIo.type = 'webdav';
-      }
-      self.verifyData(function(error) {
-        if (!error) {
-          var __success = function() {
-            self.url = myUrl;
-            self.io = myIo;
-            self.setChanged(false);
+      // add current recent doc to the list
+      self.documentTree.addRecentDoc(self.url, self.io.type);
 
-            // add current recent doc to the list
-            self.documentTree.addRecentDoc(self.url, self.io.type);
-
-            // refresh document identification properties after save
-            myIo.retrieve(myUrl, {
-              "success": function (data, status, xhr) {
-                self.srcParams = {
-                  "length": data.length,
-                  "md5": $.md5(data)
-                };
-              },
-              "error":  function () {
-                self.srcParams = null;
-              }
-            });
-
-            if(mySuccess)
-              mySuccess();
+      // refresh document identification properties after save
+      myIo.retrieve(self.url, {
+        "success": function (data, status, xhr) {
+          self.srcParams = {
+            "length": data.length,
+            "md5": $.md5(data)
           };
-          myIo.insertFromStore(myUrl, self.store, self.graph, {
-            "success": __success,
-            "error": myFail
-          });
-        }
-        else if (myFail) {
-          myFail(error);
+        },
+        "error":  function () {
+          self.srcParams = null;
         }
       });
-    }
+
+      if (mySuccess)
+        mySuccess();
+    };
+
+    myIo.insertFromStore(myUrl, self.store, self.graph, {
+      "success": __success,
+      "error": myFail
+    });
+  });
 };
 
 RDFE.Document.prototype.new = function(success, fail) {
@@ -215,6 +343,7 @@ RDFE.Document.prototype.new = function(success, fail) {
   self.io = null;
   self.srcParams = null;
   self.signature = null;
+  self.clearLog();
   self.store.clear(self.graph, function(error) {
     if (!error) {
       self.setChanged(false);
@@ -270,6 +399,7 @@ RDFE.Document.prototype.importTurtle = function(content, success, fail) {
   self.store.load('text/turtle', content, self.graph, function(error, result) {
     if (!error) {
       if (success) {
+        self.importLog('text/turtle', content);
         success(result);
       }
     }
@@ -297,6 +427,7 @@ RDFE.Document.prototype.importJSON = function(content, success, fail) {
 
   self.store.load('application/ld+json', content, self.graph, function(error, result) {
     if (!error && success) {
+      self.importLog('application/ld+json', content);
       success(result);
     }
     else if (error && fail) {
@@ -312,6 +443,7 @@ RDFE.Document.prototype.importRDF = function(content, success, fail) {
     $.parseXML(content);
     self.store.load('application/rdf+xml', content, self.graph, function(error, result) {
       if (!error && success) {
+        self.importLog('application/rdf+xml', content);
         success(result);
       }
       else if (error && fail) {
