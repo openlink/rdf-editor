@@ -142,7 +142,7 @@
                   });
                   $(self.editor).trigger('rdf-editor-success', {
                     "type": 'predicate-delete-success',
-                    "message": "Successfully deleted predicate " + row.uri + "."
+                    "message": "Successfully deleted triples with predicate " + row.uri + "."
                   });
                 }, function(error) {
                   $(self.editor).trigger('rdf-editor-error', {
