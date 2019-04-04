@@ -636,7 +636,7 @@ angular.module('myApp.editor', ['ngRoute'])
     else if (uri || data) {
       var content = $.jStorage.get('rdfe:savedDocument', null);
       if (content) {
-        $scope.doc.store.clear(function() {
+        $scope.doc.store.clear($scope.doc.graph, function() {
           $scope.doc.store.loadTurtle(content, $scope.doc.graph, $scope.doc.graph, null, function(error) {
             if (!error) {
               toggleView();
@@ -732,10 +732,14 @@ angular.module('myApp.editor', ['ngRoute'])
             Notification.notify('error', 'Failed to import RDF data. <br /> ' + error.message);
             loadUri();
           };
-          $scope.doc.import(data, success, fail);
+          $scope.doc.store.clear($scope.doc.graph, function() {
+            $scope.doc.import(data, success, fail);
+          });
         }
         else {
-          loadUri();
+          $scope.doc.store.clear($scope.doc.graph, function() {
+            loadUri();
+          });
         }
       }
     }
