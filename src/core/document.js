@@ -64,6 +64,7 @@ RDFE.Document.prototype.setChanged = function(dirty) {
 RDFE.Document.prototype.clearLog = function(event, triples) {
   var self = this;
 
+  self.saveLog = [];
   self.editLog = [];
   self.editLogIndex = 0;
   self.editLogEnabled = true;
@@ -86,6 +87,11 @@ RDFE.Document.prototype.updateLog = function(event, triples) {
   }
   self.undoIsDisabled();
   self.redoIsDisabled();
+
+  // Update save log
+  if ((self.io.type === 'sparql') || (self.io.type === 'ldp')) {
+    self.saveLog.push({"event": event, "triples": triples});
+  }
 };
 
 RDFE.Document.prototype.importLog = function(mimeType, content) {
@@ -307,6 +313,7 @@ RDFE.Document.prototype.save = function(myUrl, myIo, mySuccess, myFail) {
       self.url = myUrl;
       self.io = myIo;
       self.clearLog();
+      self.saveLog = [];
       self.setChanged(false);
 
       // add current recent doc to the list
@@ -329,10 +336,20 @@ RDFE.Document.prototype.save = function(myUrl, myIo, mySuccess, myFail) {
         mySuccess();
     };
 
-    myIo.insertFromStore(myUrl, self.store, self.graph, {
-      "success": __success,
-      "error": myFail
-    });
+    if (self.url && (self.url === myUrl) && myIo.insertFromPatch && ((self.io.type === 'sparql') || (self.io.type === 'ldp')) && (self.io.type == myIo.type)) {
+      if (!self.saveLog.length)
+        mySuccess();
+
+      myIo.insertFromPatch(myUrl, self.saveLog, {
+        "success": __success,
+        "error": myFail
+      });
+    } else {
+      myIo.insertFromStore(myUrl, self.store, self.graph, {
+        "success": __success,
+        "error": myFail
+      });
+    }
   });
 };
 
