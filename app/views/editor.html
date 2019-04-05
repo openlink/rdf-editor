@@ -6,7 +6,7 @@
     </button>
     <ul class="dropdown-menu" aria-labelledby="dropdownMenu1">
       <li><a ng-click="newDocument(); $event.preventDefault();" href="#" title="New Document"><span class="glyphicon glyphicon-open" aria-hidden="true"></span> New</a></li>
-      <li><a ng-click="openDocument(); $event.preventDefault();" href="#" title="Open a Document"><span class="glyphicon glyphicon-open" aria-hidden="true"></span> Open</a></li>
+      <li><a ng-click="openDocument(); $event.preventDefault();" href="#" title="Open Document"><span class="glyphicon glyphicon-open" aria-hidden="true"></span> Open</a></li>
       <li role="separator" class="divider"></li>
       <li><a ng-click="saveDocument(); $event.preventDefault();" href="#" title="Save the current document"><span class="glyphicon glyphicon-save" aria-hidden="true"></span> Save</a></li>
       <li><a ng-click="saveDocumentAs(); $event.preventDefault();" href="#" title="Save the current document to a new location"><span class="glyphicon glyphicon-save" aria-hidden="true"></span> Save As...</a></li>
@@ -17,15 +17,24 @@
       <li><a ng-click="remoteInto(); $event.preventDefault();" href="#" title="Input remote document directly into current document"><span class="glyphicon glyphicon-import" aria-hidden="true"></span> Remote Document Import</a></li>
       <li><a ng-click="importInto(); $event.preventDefault();" href="#" title="Input content directly into current document"><span class="glyphicon glyphicon-import" aria-hidden="true"></span> Direct Import</a></li>
       <li><a ng-click="exportInto(); $event.preventDefault();" href="#" title="Output content directly"><span class="glyphicon glyphicon-export" aria-hidden="true"></span> Direct Export</a></li>
+      <li role="separator" class="divider"></li>
+      <li>
+        <a ng-click="undo(); $event.preventDefault();" ng-if="editor.doc.undoDisabled" href="#" title="Undo last changes"><span class="glyphicon glyphicon-chevron-left" aria-hidden="true"></span> Undo</a>
+        <span ng-if="!editor.doc.undoDisabled" style="padding: 3px 20px !important; color: #808080"><span class="glyphicon glyphicon-chevron-left" aria-hidden="true"></span> Undo</span>
+      </li>
+      <li>
+        <a ng-click="redo(); $event.preventDefault();" ng-if="editor.doc.redoDisabled" href="#" title="Redo changes"><span class="glyphicon glyphicon-chevron-right" aria-hidden="true"></span> Redo</a>
+        <span ng-if="!editor.doc.redoDisabled" style="padding: 3px 20px !important; color: #808080;"><span class="glyphicon glyphicon-chevron-right" aria-hidden="true"></span> Redo</span>
+      </li>
       <!--
       <li role="separator" class="divider"></li>
       <li ng-show="valInstalled"><a ng-click="signDocument(); $event.preventDefault();" href="#" title="Sign/Resign the current document">Sign</a></li>
       <li><a ng-click="unsignDocument(); $event.preventDefault();" ng-disabled="!$rootScope.userProfile.config.valInstalled" href="#" title="Unsign the current document">Unsign</a></li>
       -->
       <li role="separator" class="divider"></li>
-      <li><a ng-click="closeDocument(); $event.preventDefault();" href="#" title="Close the document and return to the start page"><span class="glyphicon glyphicon-log-out"></span> Close</a></li>
+      <li><a ng-click="closeDocument(); $event.preventDefault();" href="#" title="Close the document and return to the start page"><span class="glyphicon glyphicon-log-out" aria-hidden="true"></span> Close</a></li>
       <li role="separator" class="divider"></li>
-      <li><a ng-click="settings(); $event.preventDefault();" href="#" title="Editor settings (local)"> Settings</a></li>
+      <li><a ng-click="settings(); $event.preventDefault();" href="#" title="Editor settings (local)"><i class="glyphicon glyphicon-cog" aria-hidden="true"></i> Settings</a></li>
     </ul>
   </div>
   <div class="form-horizontal" style="display: inline;">
@@ -69,8 +78,7 @@
 
 <hr class="editor" />
 
-<div id="contents">
-</div>
+<div id="contents"></div>
 
 <!-- Modal -->
 <div class="modal fade" id="settingsModal" tabindex="-1" role="dialog" aria-labelledby="settingsModalLabel" data-backdrop="static" data-keyboard="false">

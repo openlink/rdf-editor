@@ -146,7 +146,7 @@
                   });
                   $(self.editor).trigger('rdf-editor-success', {
                     "type": 'object-delete-success',
-                    "message": "Successfully deleted object."
+                    "message": "Successfully deleted triples with object " + row.object + "."
                   });
                 }, function(error) {
       -           $(self.editor).trigger('rdf-editor-error', {

@@ -91,8 +91,10 @@ angular.module('myApp.editor', ['ngRoute'])
           // subscribe to editor events FIXME: a service does not seem like the best place to do this
           $(editor).on('rdf-editor-success', function(e, d) {
             Notification.notify('success', d.message);
+            setTimeout(function(){ $rootScope.$apply(function(){}); });
           }).on('rdf-editor-error', function(e, d) {
             Notification.notify('error', d.message);
+            setTimeout(function(){ $rootScope.$apply(function(){}); });
           }).on('rdf-editor-spinner-start', function(e, spinner) {
             if (spinner === 'editor-spinner') {
               editor.spinner++;
@@ -579,6 +581,14 @@ angular.module('myApp.editor', ['ngRoute'])
 
   }
 
+  function renewUrl() {
+    var newUrl = RDFEditor.prepareUrl($scope.uiMode);
+
+    $timeout(function() {
+      $location.url(newUrl);
+    });
+  }
+
   function processParams() {
     var uri = $routeParams.uri;
     var data = $routeParams.data;
@@ -599,18 +609,13 @@ angular.module('myApp.editor', ['ngRoute'])
 
     // the browser requested that we save the current document
     if ($routeParams.saveDocument === "true") {
-      $scope.doc.url = uri;
-      $scope.doc.io = getIO(accept, ioType, sparqlEndpoint, ioTimeout);
-      $scope.saveDocument();
+      var io = getIO(accept, ioType, sparqlEndpoint, ioTimeout);
+      $scope.saveDocumentInternal(uri, io);
       $scope.editor.updateView();
 
       // clean IO related params
       $location.search('saveDocument', null);
-
-      var newUrl = RDFEditor.prepareUrl($scope.uiMode);
-      $timeout(function() {
-        $location.url(newUrl);
-      });
+      renewUrl();
     }
 
     // and if we are told, then we create a new document by clearing the old one
@@ -636,7 +641,7 @@ angular.module('myApp.editor', ['ngRoute'])
     else if (uri || data) {
       var content = $.jStorage.get('rdfe:savedDocument', null);
       if (content) {
-        $scope.doc.store.clear(function() {
+        $scope.doc.store.clear($scope.doc.graph, function() {
           $scope.doc.store.loadTurtle(content, $scope.doc.graph, $scope.doc.graph, null, function(error) {
             if (!error) {
               toggleView();
@@ -732,10 +737,14 @@ angular.module('myApp.editor', ['ngRoute'])
             Notification.notify('error', 'Failed to import RDF data. <br /> ' + error.message);
             loadUri();
           };
-          $scope.doc.import(data, success, fail);
+          $scope.doc.store.clear($scope.doc.graph, function() {
+            $scope.doc.import(data, success, fail);
+          });
         }
         else {
-          loadUri();
+          $scope.doc.store.clear($scope.doc.graph, function() {
+            loadUri();
+          });
         }
       }
     }
@@ -789,48 +798,11 @@ angular.module('myApp.editor', ['ngRoute'])
       $location.search('ioTimeout', null);
       $location.search('sparqlEndpoint', null);
 
-      var newUrl = RDFEditor.prepareUrl($scope.uiMode);
-      $timeout(function() {
-        $location.url(newUrl);
-      });
+      renewUrl();
     }, function() {
       Notification.notity('error', "Failed to clear Document for unknown reasons.");
     });
   };
-
-  function saveCheck(cbSave, myUrl, myIo) {
-    if (!myUrl) {
-      myUrl = $scope.doc.url;
-    }
-    if (!myIo) {
-      myIo = $scope.doc.io;
-    }
-    var mySave = function (data, status, xhr) {
-      if (status === 'success') {
-        if ((!$scope.doc.url || ($scope.doc.io && ($scope.doc.io !== myIo))) && data.length)  {
-          bootbox.confirm("Target document exists. Do you really want to overwrite it?", function(result) {
-            if (result)
-              cbSave(myUrl, myIo);
-          });
-
-          return;
-        }
-        if ($scope.doc.srcParams && (($scope.doc.srcParams.length !== data.length) || ($scope.doc.srcParams.md5 !== $.md5(data)))) {
-          bootbox.confirm("Target document was updated after last open/save. Do you really want to overwrite it?", function(result) {
-            if (result)
-              cbSave(myUrl, myIo);
-          });
-
-          return;
-        }
-      }
-      cbSave(myUrl, myIo);
-    };
-    myIo.retrieve(myUrl, {
-      "success": mySave,
-      "error": mySave
-    });
-  }
 
   $scope.openDocument = function() {
     function doOpen() {
@@ -848,23 +820,52 @@ angular.module('myApp.editor', ['ngRoute'])
     }
   };
 
-  $scope.saveDocument = function() {
-    if ($scope.doc.url) {
-      var cbSave = function () {
+  $scope.saveDocumentInternal = function(myUrl, myIo) {
+    if (!myUrl)
+      return $scope.saveDocumentAs();
+
+    var mySave = function (data, status, xhr) {
+      var myCallbackSave = function (myUrl, myIo) {
         $scope.editor.toggleSpinner(true);
-        $scope.doc.save(function() {
+        $scope.doc.save(myUrl, myIo, function() {
+          renewUrl();
           $scope.editor.toggleSpinner(false);
-          Notification.notify('success', "Successfully saved document to <code>" + $scope.doc.url + "</code>");
+          Notification.notify('success', "Successfully saved document to <code>" + myUrl + "</code>");
         }, function(err) {
+          renewUrl();
           $scope.editor.toggleSpinner(false);
           Notification.notify('error', (err ? err.message || err : "An unknown error occured"));
         });
       };
-      saveCheck(cbSave);
-    }
-    else {
-      $scope.saveDocumentAs();
-    }
+
+      if (status === 'success') {
+        if ((!$scope.doc.url || ($scope.doc.io && ($scope.doc.io !== myIo))) && data.length)  {
+          bootbox.confirm("Target document exists. Do you really want to overwrite it?", function(result) {
+            if (result)
+              myCallbackSave(myUrl, myIo);
+          });
+
+          return;
+        }
+        if ($scope.doc.srcParams && (($scope.doc.srcParams.length !== data.length) || ($scope.doc.srcParams.md5 !== $.md5(data)))) {
+          bootbox.confirm("Target document was updated after last open/save. Do you really want to overwrite it?", function(result) {
+            if (result)
+              myCallbackSave(myUrl, myIo);
+          });
+
+          return;
+        }
+      }
+      myCallbackSave(myUrl, myIo);
+    };
+    myIo.retrieve(myUrl, {
+      "success": mySave,
+      "error": mySave
+    });
+  };
+
+  $scope.saveDocument = function() {
+    $scope.saveDocumentInternal($scope.doc.url, $scope.doc.io);
   };
 
   $scope.saveDocumentAs = function() {
@@ -916,6 +917,14 @@ angular.module('myApp.editor', ['ngRoute'])
 
   $scope.exportInto = function() {
     $scope.editor.exportForm();
+  };
+
+  $scope.undo = function() {
+    $scope.editor.undo();
+  };
+
+  $scope.redo = function() {
+    $scope.editor.redo();
   };
 
   $scope.unsignDocument = function() {

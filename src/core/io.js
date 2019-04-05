@@ -224,10 +224,10 @@ String.prototype.format = function() {
       }
     });
 
-    var SPARQL_RETRIEVE = 'CONSTRUCT {?s ?p ?o} WHERE {GRAPH <{0}> {?s ?p ?o}}';
-    var SPARQL_INSERT = 'INSERT DATA {GRAPH <{0}> { {1}}}';
-    var SPARQL_INSERT_SINGLE = '<{0}> <{1}> {2}';
-    var SPARQL_DELETE = 'DELETE DATA {GRAPH <{0}> { <{1}> <{2}> {3} . }}';
+    var SPARQL_TRIPLE = '<{0}> <{1}> {2}';
+    var SPARQL_RETRIEVE = 'CONSTRUCT { ?s ?p ?o } WHERE { GRAPH <{0}> {?s ?p ?o } }';
+    var SPARQL_INSERT = 'INSERT DATA { GRAPH <{0}> { {1} } }';
+    var SPARQL_DELETE = 'DELETE DATA { GRAPH <{0}> { {1} } }';
     var SPARQL_CLEAR = 'CLEAR GRAPH <{0}>';
 
     c.prototype.retrieve = function(graph, params, silent) {
@@ -258,7 +258,7 @@ String.prototype.format = function() {
     c.prototype.insert = function(graph, s, p, o, params) {
       var self = this;
       params = extendParams(params, self.options);
-      self.exec(SPARQL_INSERT.format(graph, SPARQL_INSERT_SINGLE.format(s, p, o)), params);
+      self.exec(SPARQL_INSERT.format(graph, SPARQL_TRIPLE.format(s, p, o)), params);
     };
 
     c.prototype.insertFromStore = function(graph, store, storeGraph, params) {
@@ -272,26 +272,31 @@ String.prototype.format = function() {
           return;
         }
 
+        result = result.toArray();
         var __success = function(data, textStatus) {
           var chunkSize = params.chunkSize || 400;
           var chunk = function(start) {
-            if (start >= result.length) {
-              params["success"] = params['__success'];
-              params['__success'] = null;
-              params['success']();
-            } else {
-              var triples = '';
-              var delimiter = '\n';
-              for (var j = start; j < start + chunkSize && j < result.length; j += 1) {
-                triples += delimiter + SPARQL_INSERT_SINGLE.format(result.toArray()[j].subject, result.toArray()[j].predicate, result.toArray()[j].object.toNT());
+            if (start < result.length) {
+              var sparql = '';
+              var delimiter = ' \n';
+              for (var j = start; j < start + chunkSize && j < result.length; j++) {
+                var triple = [j];
+                sparql += delimiter + SPARQL_TRIPLE.format(triple.subject, triple.predicate, triple.object.toNT());
                 delimiter = ' .\n';
               }
+              if (!sparql)
+                chunk(start + chunkSize);
+
+              sparql = SPARQL_INSERT.format(graph, sparql);
               params["success"] = function() {
                 chunk(start + chunkSize);
               };
-              self.exec(SPARQL_INSERT.format(graph, triples), $.extend({
-                method: 'POST'
-              }, params));
+              self.exec(sparql, $.extend({method: 'POST'}, params));
+            } else {
+              params["success"] = params['__success'];
+              params['__success'] = null;
+              if (params['success'])
+                params['success']();
             }
           };
           chunk(0);
@@ -302,10 +307,55 @@ String.prototype.format = function() {
       });
     };
 
+    c.prototype.insertFromPatch = function(graph, patch, params) {
+      var self = this;
+
+      params = extendParams(params, self.options);
+      var chunkSize = params.chunkSize || 400;
+      var chunk = function(start) {
+        if (start < patch.length) {
+          var sparql = '';
+          var delimiter = ' \n';
+          for (var i = start; i < start + chunkSize && i < patch.length; i++) {
+            var sparqlPart = '';
+            var delimiterPart = '\n';
+            var triples = patch[i].triples;
+            if (triples.length) {
+              for (var j = 0; j < triples.length; j++) {
+                sparqlPart += delimiterPart + SPARQL_TRIPLE.format(triples[j].subject, triples[j].predicate, triples[j].object.toNT());
+                delimiterPart = ' .\n';
+              }
+              if (patch[i].event === 'added') {
+                sparqlPart = SPARQL_INSERT.format(graph, sparqlPart);
+              } else {
+                sparqlPart = SPARQL_DELETE.format(graph, sparqlPart);
+              }
+              sparql += delimiter + sparqlPart;
+            }
+          }
+          if (!sparql)
+            chunk(start + chunkSize);
+
+          params["success"] = function() {
+            chunk(start + chunkSize);
+          };
+          self.exec(sparql, $.extend({method: 'POST'}, params));
+        } else {
+          params["success"] = params['__success'];
+          params['__success'] = null;
+          if (params['success'])
+            params['success']();
+        }
+      };
+      params["__success"] = params["success"];
+      params["success"] = null;
+      chunk(0);
+    };
+
     c.prototype.delete = function(graph, s, p, o, params) {
       var self = this;
       params = extendParams(params, self.options);
-      self.exec(SPARQL_DELETE.format(graph, s, p, o), params);
+      self.exec(SPARQL_DELETE.format(graph, SPARQL_TRIPLE.format(s, p, o)), params);
     };
 
     c.prototype.clear = function(graph, params, silent) {
@@ -528,6 +578,56 @@ String.prototype.format = function() {
         var content1 = result.toNT();
         self.insert(path, content, params);
       });
+    };
+
+    c.prototype.insertFromPatch = function(path, patch, params) {
+      var self = this;
+      var SPARQL_TRIPLE = '<{0}> <{1}> {2}';
+      var SPARQL_INSERT = 'INSERT DATA { {0} }';
+      var SPARQL_DELETE = 'DELETE DATA { {0} }';
+
+      params = extendParams(params, self.options);
+      var chunkSize = params.chunkSize || 400;
+      var chunk = function(start) {
+        if (start < patch.length) {
+          var sparql = '';
+          var delimiter = ' \n';
+          var headers = {"Content-Type": 'application/sparql-update'};
+
+          for (var i = start; i < start + chunkSize && i < patch.length; i++) {
+            var sparqlPart = '';
+            var delimiterPart = '\n';
+            var triples = patch[i].triples;
+            if (triples.length) {
+              for (var j = 0; j < triples.length; j++) {
+                sparqlPart += delimiterPart + SPARQL_TRIPLE.format(triples[j].subject, triples[j].predicate, triples[j].object.toNT());
+                delimiterPart = ' .\n';
+              }
+              if (patch[i].event === 'added') {
+                sparqlPart = SPARQL_INSERT.format(sparqlPart);
+              } else {
+                sparqlPart = SPARQL_DELETE.format(sparqlPart);
+              }
+              sparql += delimiter + sparqlPart;
+            }
+          }
+          if (!sparql)
+            chunk(start + chunkSize);
+
+          params["success"] = function() {
+            chunk(start + chunkSize);
+          };
+          self.exec('PATCH', path, headers, sparql, params);
+        } else {
+          params["success"] = params['__success'];
+          params['__success'] = null;
+          if (params['success'])
+            params['success']();
+        }
+      };
+      params["__success"] = params["success"];
+      params["success"] = null;
+      chunk(0);
     };
 
     c.prototype.update = function(path, g, s, p, o, params) {

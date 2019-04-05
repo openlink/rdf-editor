@@ -297,6 +297,7 @@ RDFE.Editor.prototype.settingsForm = function() {
 RDFE.Editor.prototype.localForm = function() {
   var self = this;
   var $form = $("#localModal");
+
   $form.find('#content').val('');
   $form.find('#contentType').val('text/turtle');
 
@@ -410,6 +411,7 @@ RDFE.Editor.prototype.remoteForm = function() {
 RDFE.Editor.prototype.importForm = function() {
   var self = this;
   var $form = $("#importModal");
+
   $form.find('#content').val('');
   $form.find('#contentType').val('text/turtle');
 
@@ -460,6 +462,50 @@ RDFE.Editor.prototype.exportForm = function() {
     $form.find('#content').val(serialized);
     $(self).trigger('rdf-editor-spinner-done', 'export-spinner');
   });
+};
+
+/**
+ * Undo content into document.
+ */
+RDFE.Editor.prototype.undo = function() {
+  var self = this;
+  var success = function (result) {
+    self.updateView();
+    self.docChanged();
+    $(self).trigger('rdf-editor-success', {
+      "type": "rdf-editor-success",
+      "message": "Successfully undo RDF data."
+    });
+  };
+  var fail = function (error) {
+    $(self).trigger('rdf-editor-error', {
+      "type": "rdf-editor-error",
+      "message": "Failed to undo RDF data. <br /> " + error.message
+    });
+  };
+  self.doc.undoLog(success, fail);
+};
+
+/**
+ * Redo content into document.
+ */
+RDFE.Editor.prototype.redo = function() {
+  var self = this;
+  var success = function (result) {
+    self.updateView();
+    self.docChanged();
+    $(self).trigger('rdf-editor-success', {
+      "type": "rdf-editor-success",
+      "message": "Successfully redo RDF data."
+    });
+  };
+  var fail = function (error) {
+    $(self).trigger('rdf-editor-error', {
+      "type": "rdf-editor-error",
+      "message": "Failed to redo RDF data. <br /> " + error.message
+    });
+  };
+  self.doc.redoLog(success, fail);
 };
 
 /**
