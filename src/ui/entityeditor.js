@@ -1,7 +1,7 @@
 /*
  *  This file is part of the OpenLink RDF Editor
  *
- *  Copyright (C) 2014-2016 OpenLink Software
+ *  Copyright (C) 2014-2019 OpenLink Software
  *
  *  This project is free software; you can redistribute it and/or modify it
  *  under the terms of the GNU General Public License as published by the
@@ -25,10 +25,10 @@
 
   RDFE.EntityEditor = (function() {
     // constructor
-    var c = function(doc, ontoMan) {
+    var c = function(doc, ontologyManager) {
       this.doc = doc;
       this.namingSchema = doc.config.options[doc.config.options["namingSchema"]];
-      this.ontologyManager = ontoMan;
+      this.ontologyManager = ontologyManager;
     };
 
     // custom form which allows adding new properties
@@ -70,7 +70,7 @@
             .append(cnclBtn);
 
           ps = ps.propertyBox({
-            "ontoManager": self.model.doc.ontologyManager
+            "ontologyManager": self.model.doc.ontologyManager
           });
 
           cnclBtn.click(function(e) {
@@ -117,7 +117,7 @@
 
     c.prototype.template = _.template('<div class="panel panel-default">\
         <div class="panel-heading clearfix">\
-          <h3 class="panel-title pull-left">Editing <a href="<%= entityUri %>"><span class="entity-label"><%= entityLabel %><span></a> <span class="entity-types"></span></h3>\
+          <h3 class="panel-title pull-left">Editing <a href="<%= entityUri %>"><span class="rdfe-entity-label"><%= entityLabel %><span></a> <span class="rdfe-entity-types"></span></h3>\
           <div class="btn-group pull-right" role="group">\
             <button type="button" class="btn btn-primary btn-sm" id="okBtn">Apply</button>\
             <button type="button" class="btn btn-default btn-sm" id="cnclBtn">Cancel</button>\
@@ -146,8 +146,8 @@
           entityLabel: RDFE.Utils.uri2name(url)
         }));
         self.doc.getEntity(url, function(entity) {
-          container.find('.entity-types').html(self.ontologyManager.typesToLabel(entity.types, true));
-          container.find('.entity-label').html(entity.label);
+          container.find('.rdfe-entity-types').html(self.ontologyManager.typesToLabel(entity.types, true));
+          container.find('.rdfe-entity-label').html(entity.label);
         });
 
         // add the newly created form to the container

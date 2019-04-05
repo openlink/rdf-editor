@@ -1,7 +1,7 @@
 /*
  *  This file is part of the OpenLink RDF Editor
  *
- *  Copyright (C) 2014-2016 OpenLink Software
+ *  Copyright (C) 2014-2019 OpenLink Software
  *
  *  This project is free software; you can redistribute it and/or modify it
  *  under the terms of the GNU General Public License as published by the
@@ -25,36 +25,41 @@
 
   RDFE.ObjectView = (function() {
     // constructor
-    var c = function(doc, ontologyManager, editor, params) {
-      this.doc = doc;
-      this.namingSchema = doc.config.options[doc.config.options["namingSchema"]];
-      this.ontologyManager = ontologyManager;
+    var c = function(editor, params) {
       this.editor = editor;
       this.editFct = params.editFct;
-    };
-
-    var labelFormatter = function(value, row, index) {
-      return row.label;
-    };
-
-    var typeFormatter = function(value, row, index) {
-      return row.type;
-    };
-
-    var countFormatter = function(value, row, index) {
-      return row.items.length;
     };
 
     c.prototype.render = function(container, callback) {
       var self = this;
 
-      self.doc.listObjects(function(objects) {
+      self.editor.doc.listObjects(function(objects) {
+
+        var labelFormatter = function(value, row, index) {
+          if (row.type === 'IRI') {
+            var ontologyManager = self.editor.ontologyManager;
+            var _class = 'class="rdfe-green-link"';
+            if (ontologyManager.ontologyClassByURI(row.label))
+              _class = '';
+
+            return '<a href="{0}" target="_blank" {1}>{0}</a>'.format(row.label, _class);
+          }
+          return row.label;
+        };
+
+        var typeFormatter = function(value, row, index) {
+          if (row.type === 'IRI')
+            return row.type;
+
+          return '<a href="{1}" target="_blank">{0}</a>'.format(self.editor.ontologyManager.uriNormalize(row.type), row.type);
+        };
+
         var objectListActionsFormatter = function(value, row, index) {
           return [
-            '<a class="edit ml10" href="javascript:void(0)" title="Edit or add a new '+RDFE.Utils.namingSchemaLabel('s', self.namingSchema, false, true)+' and '+RDFE.Utils.namingSchemaLabel('p', self.namingSchema, false, true)+' pairs associated with this '+RDFE.Utils.namingSchemaLabel('o', self.namingSchema, false, true)+'">',
+            '<a class="edit ml10" href="javascript:void(0)" title="Edit or add a new '+RDFE.Utils.namingSchemaLabel('s', self.editor.namingSchema(), false, true)+' and '+RDFE.Utils.namingSchemaLabel('p', self.editor.namingSchema(), false, true)+' pairs associated with this '+RDFE.Utils.namingSchemaLabel('o', self.editor.namingSchema(), false, true)+'">',
             '  <i class="glyphicon glyphicon-edit"></i>',
             '</a>',
-            '<a class="remove ml10" href="javascript:void(0)" title="Remove all '+RDFE.Utils.namingSchemaLabel('spo', self.namingSchema, true, true)+' associated with this '+RDFE.Utils.namingSchemaLabel('o', self.namingSchema, false, true)+'">',
+            '<a class="remove ml10" href="javascript:void(0)" title="Remove all '+RDFE.Utils.namingSchemaLabel('spo', self.editor.namingSchema(), true, true)+' associated with this '+RDFE.Utils.namingSchemaLabel('o', self.editor.namingSchema(), false, true)+'">',
             '  <i class="glyphicon glyphicon-remove"></i>',
             '</a>'
           ].join('');
@@ -67,70 +72,101 @@
         var $list = $(document.createElement('table')).addClass('table');
         container.append($list);
 
-        // create entries
-        var deleteFct = function(row) {
-          self.doc.deleteObject(row.object, function() {
-            $list.bootstrapTable('remove', {
-              field: 'id',
-              values: [row.id]
-            });
-            $(self).trigger('rdf-editor-success', {
-              "type": 'object-delete-done',
-              "uri": row.id,
-              "message": "Successfully deleted attribute " + row.id + "."
-            });
-          }, function(msg) {
-            $(self).trigger('rdf-editor-error', {
-              "type": 'object-delete-failed',
-              "message": msg
-            });
-          });
-        };
+        var pageNumber = 1;
+        var pageSize = 10;
+        var sortName = 'label';
+        var sortOrder = 'asc';
+        var pageSettings = self.editor.config.options["pageSettings"];
+        if (pageSettings["pageNo"]) {
+          pageNumber = pageSettings["pageNo"];
+        }
+        if (pageSettings["pageSize"]) {
+          pageSize = pageSettings["pageSize"];
+        }
+        if (pageSettings["sortName"]) {
+          sortName = pageSettings["sortName"];
+        }
+        if (pageSettings["sortOrder"]) {
+          sortOrder = pageSettings["sortOrder"];
+        }
 
         $list.bootstrapTable({
-          striped: true,
-          sortName: 'label',
-          pagination: true,
-          search: true,
-          searchAlign: 'left',
-          trimOnSearch: false,
-          showHeader: true,
-          data: objects,
-          idField: 'id',
-          columns: [{
-            field: 'label',
-            title: RDFE.Utils.namingSchemaLabel('o', self.namingSchema),
-            sortable: true,
-            formatter: labelFormatter
+          "striped": true,
+          "pagination": true,
+          "paginationVAlign": 'top',
+          "pageNumber": pageNumber,
+          "pageSize": pageSize,
+          "search": true,
+          "sortName": sortName,
+          "sortOrder": sortOrder,
+          "searchAlign": 'left',
+          "trimOnSearch": false,
+          "showHeader": true,
+          "data": objects,
+          "idField": 'id',
+          "columns": [{
+            "field": 'label',
+            "title": RDFE.Utils.namingSchemaLabel('o', self.editor.namingSchema()),
+            "titleTooltip": RDFE.Utils.namingSchemaLabel('o', self.editor.namingSchema()),
+            "sortable": true,
+            "formatter": labelFormatter
           }, {
-            field: 'type',
-            title: 'Type',
-            sortable: true,
-            formatter: typeFormatter
+            "field": 'type',
+            "title": 'Type',
+            "titleTooltip": 'Type',
+            "sortable": true,
+            "class": 'rdfe-small-column',
+            "formatter": typeFormatter
           }, {
-            field: 'count',
-            title: 'Count',
-            align: 'right',
-            class: 'small-column',
-            formatter: countFormatter
+            "field": 'items',
+            "title": 'Count',
+            "titleTooltip": 'Count',
+            "sortable": true,
+            "sorter": self.editor.countSorter,
+            "align": 'right',
+            "class": 'rdfe-small-column',
+            "formatter": self.editor.countFormatter
           }, {
-            field: 'actions',
-            title: '<button class="add btn btn-default" title="Click to create a new '+RDFE.Utils.namingSchemaLabel('o', self.namingSchema, false, true)+'"><span class="glyphicon glyphicon-plus" aria-hidden="true"></span> New</button>',
-            align: 'center',
-            valign: 'middle',
-            class: 'small-column',
-            clickToSelect: false,
-            formatter: objectListActionsFormatter,
-            events: {
+            "field": 'actions',
+            "title": '<button class="add btn btn-default btn-sm" title="Click to create a new '+RDFE.Utils.namingSchemaLabel('o', self.editor.namingSchema(), false, true)+'"><span class="glyphicon glyphicon-plus" aria-hidden="true"></span> New</button>',
+            "align": 'center',
+            "valign": 'middle',
+            "class": 'rdfe-small-column',
+            "clickToSelect": false,
+            "formatter": objectListActionsFormatter,
+            "events": {
               'click .edit': function(e, value, row, index) {
                 self.editFct(row);
               },
               'click .remove': function(e, value, row, index) {
-                deleteFct(row);
+                self.editor.doc.deleteObject(row.object, function() {
+                  $list.bootstrapTable('remove', {
+                    field: 'id',
+                    values: [row.id]
+                  });
+                  $(self.editor).trigger('rdf-editor-success', {
+                    "type": 'object-delete-success',
+                    "message": "Successfully deleted triples with object " + row.object + "."
+                  });
+                }, function(error) {
+      -           $(self.editor).trigger('rdf-editor-error', {
+                    "type": 'object-delete-error',
+                    "message": error
+                  });
+                });
               }
             }
           }]
         });
+
+        $list.on('page-change.bs.table', function(e, page, size) {
+          $(self.editor).trigger('rdf-editor-page', {"pageNo": page, "pageSize": size});
+        });
+
+        $list.on('sort.bs.table', function(e, name, order) {
+          $(self.editor).trigger('rdf-editor-page', {"sortName": name, "sortOrder": order});
+        });
+
         $($list).find('.add').on('click', function(e) {
           self.editor.editObject();
         });
@@ -139,10 +175,10 @@
         if (callback) {
           callback();
         }
-      }, function(r) {
-        $(self).trigger('rdf-editor-error', {
-          "type": 'object-list-failed',
-          "message": r
+      }, function(error) {
+        $(self.editor).trigger('rdf-editor-error', {
+          "type": 'object-list-error',
+          "message": error
         });
       });
     };
@@ -165,10 +201,13 @@
     c.prototype.updateObject = function(object) {
       var self = this;
 
-      self.doc.getObject(object, function(object) {
-        self.objectsTable.bootstrapTable('update', {
-          field: 'id',
-          data: object
+      self.editor.doc.getObject(object, function(object) {
+        var ndx = self.objects.findIndex(function(item, index, items) {
+          return (item.id === object.id);
+        });
+        self.objectsTable.bootstrapTable('updateRow', {
+          "index": ndx,
+          "row": object
         });
       });
     };

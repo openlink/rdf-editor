@@ -1,7 +1,7 @@
 /*
  *  This file is part of the OpenLink RDF Editor
  *
- *  Copyright (C) 2014-2016 OpenLink Software
+ *  Copyright (C) 2014-2019 OpenLink Software
  *
  *  This project is free software; you can redistribute it and/or modify it
  *  under the terms of the GNU General Public License as published by the
@@ -18,8 +18,7 @@
  *
  */
 
-(function ($) {
-  "use strict";
+(function ($, RDFE) {
 
   var RdfNode = function (options) {
     this.init('rdfnode', options, RdfNode.defaults);
@@ -30,13 +29,13 @@
     render: function() {
       this.$input = this.$tpl.filter('input');
       this.setClass();
-      this.$input.rdfNodeEditor(this.options.rdfnode.config);
+      this.$input.rdfNodeEditor(this.options.rdfnode);
     },
     activate: function() {
       this.$input.rdfNodeEditor().setEditFocus();
     },
     value2html: function(value, element) {
-      if (!value) {
+      if (!value && value !== false) {
         $(element).empty();
         return;
       }
@@ -49,19 +48,63 @@
       return this.$input.rdfNodeEditor().getValue();
     },
     value2input: function(value) {
+      var node;
       var nodeItems;
-      if (this.options && this.options.rdfnode) {
-        var rdfnode = this.options.rdfnode;
-        var ontologyManager = rdfnode.ontologyManager;
-        if (ontologyManager) {
-          var predicate = ontologyManager.ontologyPropertyByURI(rdfnode.predicate);
-          var range = predicate.getRange();
-          if (ontologyManager.ontologyClassByURI(range)) {
-            nodeItems = rdfnode.document.itemsByRange(range);
+      var editor = this.$input.rdfNodeEditor();
+      var getValue = function() {
+        if (value instanceof RDFE.RdfNode) {
+          return value.value;
+        }
+        return value;
+      };
+
+      if (value instanceof RDFE.RdfNode) {
+        node = value;
+      }
+      if (!node || (node && node.type === 'uri')) {
+        if (this.options && this.options.rdfnode) {
+          var rdfnode = this.options.rdfnode;
+          var ontologyManager = rdfnode.ontologyManager;
+          if (ontologyManager) {
+            var predicate = ontologyManager.ontologyPropertyByURI(rdfnode.predicate);
+            if (predicate) {
+              var ranges = predicate.getRange();
+              if (ranges && ranges.length) {
+                for (var i = 0; i < ranges.length; i++) {
+                  if (editor.isLiteralType(ranges[i])) {
+                    node = new RDFE.RdfNode('literal', getValue(), ranges[i]);
+                    break;
+                  }
+                }
+
+                if (!node || (node && node.type === 'uri')) {
+                  nodeItems = rdfnode.document.itemsByRange(ranges);
+                  if (nodeItems) {
+                    node = new RDFE.RdfNode('uri', getValue());
+                  }
+                  else {
+                    for (i = 0; i < ranges.length; i++) {
+                      if (editor.isLiteralType(ranges[i])) {
+                        node = new RDFE.RdfNode('literal', getValue(), ranges[i]);
+                        break;
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+        if (!node) {
+          if (this.options && this.options.rdfnode && this.options.rdfnode.type === 'http://www.w3.org/1999/02/22-rdf-syntax-ns#Resource') {
+            node = new RDFE.RdfNode('uri', getValue(), 'http://www.w3.org/1999/02/22-rdf-syntax-ns#Resource');
+          }
+          else {
+            node = new RDFE.RdfNode('literal', getValue(), this.options.rdfnode.type);
           }
         }
       }
-      this.$input.rdfNodeEditor().setValue(value, nodeItems);
+      editor.setValue(node, nodeItems);
     }
   });
   RdfNode.defaults = $.extend({}, $.fn.editabletypes.abstractinput.defaults, {
@@ -69,4 +112,4 @@
     tpl: '<input type="text">'
   });
   $.fn.editabletypes.rdfnode = RdfNode;
-}(window.jQuery));
+}(window.jQuery, RDFE));

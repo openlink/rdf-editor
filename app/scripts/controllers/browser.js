@@ -9,6 +9,10 @@ angular.module('myApp.fileBrowser', ['ngRoute', 'ui.bootstrap'])
   });
 }])
 
+.config(['$locationProvider', function($locationProvider) {
+  $locationProvider.hashPrefix('');
+}])
+
 .filter('ioTypeLabel', function() {
   return function(input) {
     switch(input) {
@@ -52,31 +56,48 @@ angular.module('myApp.fileBrowser', ['ngRoute', 'ui.bootstrap'])
     $scope.title = 'Open a Document';
   }
 
-  // array of default locations
-  $scope.locations = [];
-  DocumentTree.getLocations().then(function(locations) {
-    $scope.locations = locations;
+  $scope.getLocations = function() {
+    DocumentTree.getLocations().then(function(locations) {
+      $scope.locations = locations;
 
-    // browser state
-    // replace the old location with the new one
-    var ndx = 0;
-    if ($rootScope.currentLocation) {
-      for (var i = 0; i < $scope.locations.length; i++) {
-        if ($scope.locations[i].url === $rootScope.currentLocation.url) {
-          ndx = i;
-          break;
+      // browser state
+      // replace the old location with the new one
+      var ndx = 0;
+      if ($rootScope.currentLocation) {
+        for (var i = 0; i < $scope.locations.length; i++) {
+          if ($scope.locations[i].url === $rootScope.currentLocation.url) {
+            ndx = i;
+            break;
+          }
         }
       }
-    }
-    $scope.updateCurrentLocation($scope.locations[ndx]);
-    $scope.updateCurrentFolder($scope.currentLocation);
+      $scope.updateCurrentLocation($scope.locations[ndx]);
+      $scope.updateCurrentFolder($scope.currentLocation);
 
-    usSpinnerService.stop('location-spinner');
-  });
+      usSpinnerService.stop('location-spinner');
+    });
+  }
+
+  $scope.getStorages = function() {
+    DocumentTree.getStorages().then(function(storages) {
+      var i, j;
+      var s = [];
+      for (i = 0; i < storages.length; i++) {
+        for (j = 0; j < $scope.locations.length; j++) {
+          if ($scope.locations[j].url === storages[i].url) {
+            break;
+          }
+        }
+        if (j === $scope.locations.length)
+          s.push(storages[i]);
+      }
+      $scope.locations = $scope.locations.concat(s);
+    });
+  };
 
   $scope.setCurrentLocation = function(location) {
     $scope.resetUI();
-    if (location != $scope.currentLocation) {
+    if (location !== $scope.currentLocation) {
       if (location.httpStatus) {
         var authFunction;
         if (DocumentTree.getAuthInfo) {
@@ -110,6 +131,7 @@ angular.module('myApp.fileBrowser', ['ngRoute', 'ui.bootstrap'])
         $scope.updateCurrentLocation(location);
         $scope.updateCurrentFolder(location);
       }
+      DocumentTree.selectRecentLocation(location.url, location.ioType);
     }
   };
 
@@ -131,11 +153,11 @@ angular.module('myApp.fileBrowser', ['ngRoute', 'ui.bootstrap'])
     var applyFolder = function () {
       usSpinnerService.stop('refresh-spinner');
       $scope.currentFolder = folder;
-    }
+    };
     $scope.resetUI();
     usSpinnerService.spin('refresh-spinner');
     if (folder.dirty) {
-      folder.httpStatus = null;
+      folder.httpStatus = undefined;
       folder.errorMessage = null;
       folder.update(function() {
         $scope.$apply(function() {
@@ -172,7 +194,7 @@ angular.module('myApp.fileBrowser', ['ngRoute', 'ui.bootstrap'])
     }
     else {
       usSpinnerService.spin('refresh-spinner');
-      $scope.currentFolder.httpStatus = null;
+      $scope.currentFolder.httpStatus = undefined;
       $scope.currentFolder.errorMessage = null;
       $scope.currentFolder.update(true, function() {
         $scope.$evalAsync(function() {
@@ -226,6 +248,7 @@ angular.module('myApp.fileBrowser', ['ngRoute', 'ui.bootstrap'])
       }
     }
     $scope.locations.push(location);
+    DocumentTree.addRecentLocation(location);
   };
 
   $scope.removeLocation = function(location) {
@@ -235,6 +258,7 @@ angular.module('myApp.fileBrowser', ['ngRoute', 'ui.bootstrap'])
         if (location === $scope.currentLocation) {
           $scope.setCurrentLocation($scope.locations[0]);
         }
+        DocumentTree.deleteRecentLocation(location.url, location.ioType);
         return;
       }
     }
@@ -249,46 +273,61 @@ angular.module('myApp.fileBrowser', ['ngRoute', 'ui.bootstrap'])
   };
 
   $scope.addNewLocation = function() {
-    if ($scope.newLocationUrl && $scope.newLocationUrl.length) {
-      if ($scope.newLocationIsSparql) {
-        var sf = new RDFE.IO.Folder($scope.newLocationUrl);
-        sf.ioType = "sparql";
-        sf.sparqlEndpoint = $scope.newLocationUrl;
-        $scope.addLocation(sf);
-        $scope.updateCurrentLocation(sf);
-        $scope.currentFolder = sf;
-        $scope.addingLocation = false;
+    if (!$scope.newLocationUrl || !$scope.newLocationUrl.length)
+      return;
+
+    var url = RDFE.Utils.splitUrl($scope.newLocationUrl);
+    if ((url.protocol !== 'http:') && (url.protocol !== 'https:')) {
+      Notification.notify('error', 'Only HTTP and HTTPS protocols are supported');
+      return;
+    }
+
+    if ($scope.newLocationIsSparql) {
+      var sf = new RDFE.IO.Folder($scope.newLocationUrl);
+      sf.ioType = "sparql";
+      sf.sparqlEndpoint = $scope.newLocationUrl;
+      $scope.addLocation(sf);
+      $scope.updateCurrentLocation(sf);
+      $scope.currentFolder = sf;
+      $scope.addingLocation = false;
+    }
+    else {
+      usSpinnerService.spin('location-spinner');
+      var authFunction;
+      if (DocumentTree.getAuthInfo) {
+        authFunction = function(url, success, fail) {
+          DocumentTree.getAuthInfo(url, true).then(success, fail);
+        };
       }
-      else {
-        usSpinnerService.spin('location-spinner');
-        var authFunction;
-        if (DocumentTree.getAuthInfo) {
-          authFunction = function(url, success, fail) {
-            DocumentTree.getAuthInfo(url, true).then(success, fail);
-          };
-        }
-        RDFE.IO.openUrl($scope.newLocationUrl, {
-          authFunction: authFunction,
-          checkForFiles: true
-        },
-        function(dir) {
-          // success, we found a container
-          $scope.$apply(function() {
-            $scope.addingLocation = false;
-            $scope.addLocation(dir);
-            $scope.updateCurrentLocation(dir);
-            $scope.currentFolder = dir;
-          });
-          usSpinnerService.stop('location-spinner');
-        },
-        function(errMsg, status) {
-          // show a notification and let the user try again
-          Notification.notify('error', errMsg);
-          usSpinnerService.stop('location-spinner');
+      RDFE.IO.openUrl($scope.newLocationUrl, {
+        authFunction: authFunction,
+        checkForFiles: true
+      },
+      function(dir) {
+        // success, we found a container
+        $scope.$apply(function() {
+          $scope.addingLocation = false;
+          $scope.addLocation(dir);
+          $scope.updateCurrentLocation(dir);
+          $scope.currentFolder = dir;
         });
-      }
+        usSpinnerService.stop('location-spinner');
+      },
+      function(errMsg, status) {
+        // show a notification and let the user try again
+        Notification.notify('error', errMsg);
+        usSpinnerService.stop('location-spinner');
+      });
     }
   };
+
+  // array of default locations
+  $scope.locations = [];
+  $scope.getLocations();
+  $scope.getStorages();
+  $scope.$on('signIn', function($event, message) {
+    $scope.getStorages();
+  });
 
   // controls for the UI element to add new named graphs
   $scope.addingGraph = false;
@@ -306,7 +345,7 @@ angular.module('myApp.fileBrowser', ['ngRoute', 'ui.bootstrap'])
       $scope.currentFolder.children.push(graph);
 
       // open the file in the editor
-      $scope.openFile(gr);
+      $scope.openFile(graph);
     }
   };
 

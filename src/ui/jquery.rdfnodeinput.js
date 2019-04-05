@@ -1,7 +1,7 @@
 /*
  *  This file is part of the OpenLink RDF Editor
  *
- *  Copyright (C) 2014-2016 OpenLink Software
+ *  Copyright (C) 2014-2019 OpenLink Software
  *
  *  This project is free software; you can redistribute it and/or modify it
  *  under the terms of the GNU General Public License as published by the
@@ -18,7 +18,7 @@
  *
  */
 
-(function ($) {
+(function ($, RDFE) {
   var defaults = {
     type: null,
     showLangSelect: true,
@@ -153,25 +153,28 @@
     "http://www.w3.org/2001/XMLSchema#boolean": {
       label: 'Boolean',
       setup: function(elem, remove) {
-        if(remove) {
-          if(elem.bootstrapToggle)
+        if (remove) {
+          if (elem.bootstrapToggle)
             elem.bootstrapToggle('destroy');
+
           elem.attr('type', 'text');
         }
         else {
-          if(elem.bootstrapToggle)
-            elem.bootstrapToggle({
-              on: 'True',
-              off: 'False'
-            });
           elem.attr('type', 'checkbox');
+          elem.bootstrapToggle({
+            on: 'True',
+            off: 'False'
+          });
         }
       },
       getValue: function(elem) {
         return (elem.is(":checked") ? "true" : "false");
       },
       setValue: function(elem, val) {
-        if(parseInt(val) === 1 || (typeof val === "string" && val.toLowerCase() === 'true'))
+        this.setup(elem);
+        if (val)
+          val = val.toString().toLowerCase();
+        if (val === "1" || val === 'true')
           elem.bootstrapToggle('on');
         else
           elem.bootstrapToggle('off');
@@ -191,7 +194,8 @@
         else
           input.datetimepicker({
             format: "yyyy-mm-ddThh:ii:ssZ",
-            weekStart: 1
+            weekStart: 1,
+            timezone: 'Z'
           });
       }
     },
@@ -247,7 +251,7 @@
     self.typeContainer = $(document.createElement('div')).addClass('rdfNodeTypeContainer');
     self.typeContainer.css('vertical-align', 'top');
     self.typeElement = $(document.createElement('select')).addClass('form-control');
-    for (t in nodeTypes) {
+    for (var t in nodeTypes) {
       self.typeElement.append($(document.createElement('option')).attr('value', t).text(nodeTypes[t].label));
     }
     self.typeContainer.append(self.typeElement);
@@ -288,6 +292,28 @@
       self.verifyInput();
       self.change();
     });
+
+    // de-reference link
+    if (self.options["dereferenceLink"]) {
+      self.dereferenceLink = $(document.createElement('button'));
+      self.dereferenceLink.attr('type', 'button').addClass('btn btn-default btn-sm');
+      self.dereferenceLink.html('<i class="glyphicon glyphicon-link"></i>');
+      var div = $(document.createElement('div')).addClass('rdfe-reference-link');
+      div.append(self.dereferenceLink);
+      if (self.mainElement.closest('.editable-input').length) {
+        self.container.parent().after(div);
+      }
+      else {
+        self.container.after(div);
+      }
+      self.dereferenceLink.on('click', function() {
+        var uri = self.getValue();
+        if (uri) {
+          self.options["dereferenceLink"](uri.value);
+        }
+      });
+    }
+
     self.updateEditor(true);
   };
 
@@ -295,49 +321,82 @@
     $(this).trigger('changed', this);
   };
 
-  RdfNodeEditor.prototype.selectizeSetup = function(items) {
+  RdfNodeEditor.prototype.selectizeSetup = function(nodes) {
     var self = this;
-    var nodes = items;
 
     if (!self.resourceContainer) {
+      // resource selection
       self.resourceSelect = $(document.createElement('select'));
+      self.resourceSelect.attr('placeholder', 'Select/Enter resource');
       self.resourceContainer = $(document.createElement('div')).addClass('rdfResourceContainer');
       self.resourceContainer.append(self.resourceSelect);
-
+      self.resourceContainer.css('min-width', '200px');
       self.inputContainer.append(self.resourceContainer);
     }
     if (!self.resourceSelectize) {
       self.resourceSelect.selectize({
-        valueField: "value",
-        searchField: "label",
-        sortField: "label",
-        create: (self.options.create ? function(input, cb) {
-          var n = new RDFE.RdfNode('uri', input);
-          n.label = input;
-          this.options[input] = n;
-          cb(n);
-        } : false),
-        createOnBlur: true,
-        onChange: function(value) {
+        "delimiter": null,
+        "valueField": "value",
+        "searchField": ["label"],
+        "sortField": ["label"],
+        "lockOptgroupOrder": true,
+        "create": function(input, cb) {
+          var node = new RDFE.RdfNode('uri', input);
+
+          node.label = input;
+          node.optgroup = 'local';
+          this.options[input] = node;
+          cb(node);
+        },
+        "createOnBlur": true,
+        "onChange": function(value) {
           self.mainElement.val(value);
           self.change();
         },
-        render: {
-          item: function(item, escape) {
+        "render": {
+          "item": function(item, escape) {
             return '<div>' + escape(item.label || item.value) + '</div>';
           },
-          option: function(item, escape) {
+          "option": function(item, escape) {
             if (item.label)
               return '<div>' + escape(item.label) + ' <small>(' + escape(item.value) + ')</small></div>';
 
             return '<div>' + escape(item.value) + '</div>';
+          },
+          "option_create": function(data, escape) {
+            var url = data.input;
+
+            url = RDFE.Utils.trim(RDFE.Utils.trim(url, '<'), '>');
+            if (url != data.input)
+              return '<div class="create">Add <strong>' + escape(data.input) + '</strong> <small>(' + escape(url) + ')</small>&hellip;</div>';
+
+            return '<div class="create">Add <strong>' + escape(url) + '</strong>&hellip;</div>';
           }
         }
       });
       self.resourceSelectize = $(self.resourceSelect)[0].selectize;
     }
     self.resourceSelectize.clearOptions();
+    self.resourceSelectize.clearOptionGroups();
+    self.resourceSelectize.addOptionGroup('local', {"label": 'Local Store'});
+    for (var i = 0; i < nodes.length; i++) {
+      nodes[i].optgroup = 'local';
+    }
     self.resourceSelectize.addOption(nodes);
+  };
+
+  RdfNodeEditor.prototype.updateSelection = function(optionGroup, nodes) {
+    var self = this;
+    var selectize = self.resourceSelectize;
+
+    if (selectize) {
+      selectize.addOptionGroup(optionGroup, {"label": optionGroup});
+      for (var i = 0; i < nodes.length; i++) {
+        nodes[i].optgroup = optionGroup;
+      }
+      selectize.addOption(nodes);
+      selectize.refreshOptions(true);
+    }
   };
 
   /**
@@ -387,6 +446,15 @@
     }
   };
 
+  RdfNodeEditor.prototype.getField = function() {
+    var self = this;
+
+    if (self.currentType === 'http://www.w3.org/1999/02/22-rdf-syntax-ns#Resource')
+      return self.resourceSelectize;
+
+    return self.mainElement;
+  };
+
   RdfNodeEditor.prototype.getValue = function() {
     if (this.currentType === 'http://www.w3.org/1999/02/22-rdf-syntax-ns#Resource')
       return new RDFE.RdfNode(
@@ -397,19 +465,18 @@
       return new RDFE.RdfNode(
         'literal',
         (nodeTypes[this.currentType].getValue ? nodeTypes[this.currentType].getValue(this.mainElement) : this.mainElement.val()),
-        (this.currentType !== 'http://www.w3.org/2000/01/rdf-schema#Literal' ? this.currentType : undefined),
+        this.currentType,
         (this.lang ? this.lang : undefined)
       );
   };
 
   RdfNodeEditor.prototype.setValue = function(node, nodeItems) {
     //console.log('RdfNodeEditor.prototype.setValue ', node);
-    var self = this;
-
     if (!node)
       return;
 
-    var node = RDFE.RdfNode.fromStoreNode(node);
+    var self = this;
+    node = RDFE.RdfNode.fromStoreNode(node);
 
     self.lastType = self.currentType;
     if ((node.type === 'uri') || self.startsWithHashSign()) {
@@ -427,19 +494,26 @@
       self.currentType = node.datatype || 'http://www.w3.org/2000/01/rdf-schema#Literal';
 
       // special case for boolean where we support 0 and 1 and true and false
-      if (self.options.type === "http://www.w3.org/2001/XMLSchema#boolean" &&
-         (node.value === "0" || node.value === "1" || node.value.toLowerCase() === "true" || node.value.toLowerCase() === "false")) {
-        self.currentType = "http://www.w3.org/2001/XMLSchema#boolean";
+      if (self.options.type === "http://www.w3.org/2001/XMLSchema#boolean") {
+        var v = node.value.toString();
+        if ((v === "0" || v === "1" || v.toLowerCase() === "true" || v.toLowerCase() === "false")) {
+          self.currentType = "http://www.w3.org/2001/XMLSchema#boolean";
+        }
       }
     }
     self.lang = node.language;
-    if (node.value.indexOf('\n') !== -1) {
+    if (node.value && node.value.indexOf && node.value.indexOf('\n') !== -1) {
       self.transformToTextarea();
     }
     self.mainElement.val(node.value);
-    if (self.resourceSelect) {
-      self.resourceSelect[0].selectize.addOption(node);
-      self.resourceSelect[0].selectize.setValue(node.value);
+    if (self.resourceSelectize) {
+      if (RDFE.Utils.trim(node.value, '')) {
+        if (!node.optgroup)
+          node.optgroup = 'local';
+
+        self.resourceSelectize.addOption(node);
+        self.resourceSelectize.setValue(node.value);
+      }
     }
     if (nodeTypes[self.currentType] && nodeTypes[self.currentType].setValue) {
       nodeTypes[self.currentType].setValue(self.mainElement, self.mainElement.val());
@@ -456,8 +530,16 @@
   RdfNodeEditor.prototype.updateView = function(mode) {
     var self = this;
 
+    if (self.dereferenceLink) {
+      if (self.currentType === 'http://www.w3.org/1999/02/22-rdf-syntax-ns#Resource') {
+        self.dereferenceLink.show();
+      }
+      else {
+        self.dereferenceLink.hide();
+      }
+    }
+    self.inputContainer.css('width', 'auto');
     if (mode) {
-      self.inputContainer.css('width', null);
       self.mainElement.show();
       if (self.resourceContainer) {
         self.resourceContainer.hide();
@@ -470,7 +552,6 @@
         self.mainElement.hide();
       }
       else {
-        self.inputContainer.css('width', null);
         self.mainElement.show();
       }
     }
@@ -530,11 +611,12 @@
   };
 
   RdfNodeEditor.prototype.setEditFocus = function() {
-    this.mainElement.focus();
+    if (this.getField())
+      this.getField().focus();
   };
 
   RdfNodeEditor.prototype.blur = function() {
-    this.mainElement.blur();
+    this.getField().blur();
   };
 
   RdfNodeEditor.prototype.getElement = function() {
@@ -567,4 +649,4 @@
     }
     return le;
   };
-})(jQuery);
+})(window.jQuery, RDFE);

@@ -1,19 +1,39 @@
-.entity-label {
+textarea {
+  min-height: 5em;
+  resize: vertical;
+}
+
+.rdfe-entity-label {
   font-weight: bold;
 }
 
-.entity-types {
+.rdfe-entity-types {
   font-size: 0.7em;
   font-style: italic;
 }
 
-.small-column {
+.rdfe-small-column {
   white-space: nowrap;
   padding-right: 1em;
   width: 1%;
 }
 
-textarea {
-  min-height: 5em;
-  resize: vertical;
+.rdfe-font-bold {
+  font-weight: bold;
+}
+
+.rdfe-reference-link {
+  display: inline-block;
+  vertical-align: top;
+  margin-left: 7px;
+  zoom: 1;
+}
+
+.rdfe-green-link {
+  color: green;
+}
+
+.fixed-table-toolbar .search {
+  margin-top: 0px !important;
+  margin-bottom: 0px !important;
 }

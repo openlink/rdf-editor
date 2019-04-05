@@ -1,7 +1,7 @@
 /*
  *  This file is part of the OpenLink RDF Editor
  *
- *  Copyright (C) 2014-2016 OpenLink Software
+ *  Copyright (C) 2014-2019 OpenLink Software
  *
  *  This project is free software; you can redistribute it and/or modify it
  *  under the terms of the GNU General Public License as published by the
@@ -117,14 +117,16 @@
           columns: [{
             field: 'label',
             title: RDFE.Utils.namingSchemaLabel('s', self.namingSchema) + ' Name',
+            titleTooltip: RDFE.Utils.namingSchemaLabel('s', self.namingSchema) + ' Name',
             aligh: 'left',
             sortable: true,
             formatter: labelFormatter
           }, {
             field: 'types',
             title: 'Entity Types',
+            titleTooltip: 'Entity Types',
             aligh: 'left',
-            class: 'small-column',
+            class: 'rdfe-small-column',
             sortable: true,
             formatter: typeFormatter
           }, {
@@ -132,7 +134,7 @@
             title: '<button class="add btn btn-default" title="Click to create a new '+RDFE.Utils.namingSchemaLabel('spo', self.namingSchema, false, true)+' to the document"><span class="glyphicon glyphicon-plus" aria-hidden="true"></span> New</button>',
             align: 'center',
             valign: 'middle',
-            class: 'small-column',
+            class: 'rdfe-small-column',
             clickToSelect: false,
             formatter: entityListActionsFormatter,
             events: {

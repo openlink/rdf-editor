@@ -1,7 +1,7 @@
 /*
  *  This file is part of the OpenLink RDF Editor
  *
- *  Copyright (C) 2014-2016 OpenLink Software
+ *  Copyright (C) 2014-2019 OpenLink Software
  *
  *  This project is free software; you can redistribute it and/or modify it
  *  under the terms of the GNU General Public License as published by the
@@ -19,7 +19,6 @@
  */
 
 (function ($) {
-    "use strict";
 
     var PropertyBoxEdit = function (options) {
         this.init('rdfnode', options, PropertyBoxEdit.defaults);
@@ -54,9 +53,11 @@
           this.$input.propertyBox().setPropertyURI(value);
         }
     });
+
     PropertyBoxEdit.defaults = $.extend({}, $.fn.editabletypes.abstractinput.defaults, {
         propertyBox: {},
         tpl: '<select></select>'
     });
+
     $.fn.editabletypes.propertyBox = PropertyBoxEdit;
 }(window.jQuery));

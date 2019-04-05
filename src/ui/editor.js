@@ -1,7 +1,7 @@
 /*
  *  This file is part of the OpenLink RDF Editor
  *
- *  Copyright (C) 2014-2016 OpenLink Software
+ *  Copyright (C) 2014-2019 OpenLink Software
  *
  *  This project is free software; you can redistribute it and/or modify it
  *  under the terms of the GNU General Public License as published by the
@@ -28,25 +28,119 @@ if (typeof String.prototype.startsWith != 'function') {
 if (!window.RDFE)
   window.RDFE = {};
 
-RDFE.Editor = function(config, documentTree, options) {
+RDFE.Editor = function(params, callback) {
   var self = this;
-  var options = $.extend({"initOntologyManager": true}, options);
+  var options = $.extend({"initOntologyManager": true}, params["options"]);
+
+  self.config = params["config"];
+  self.maxLength = self.config.options["maxLabelLength"];
+  self.spinner = 0;
 
   // initialize our ontology manager
-  self.ontologyManager = new RDFE.OntologyManager(config.options);
+  self.ontologyManager = new RDFE.OntologyManager(params["config"].options);
+  var success = function () {
+    // create our main document
+    var docParams = {
+      "config": params["config"],
+      "documentTree": params["documentTree"],
+      "ontologyManager": self.ontologyManager
+    };
+    new RDFE.Document(docParams, function(doc) {
+      self.doc = doc;
+
+      // store the config for future access
+      $(self.doc).on('docChanged', function(e, doc) {
+        self.docChanged();
+      });
+
+      if (callback) {
+        callback(self);
+      }
+    });
+  };
   if (options.initOntologyManager === true) {
-    self.ontologyManager.init();
+    self.ontologyManager.init({"success": success});
   }
+  else {
+    success();
+  }
+};
 
-  // create our main document
-  self.doc = new RDFE.Document(self.ontologyManager, config, documentTree);
+RDFE.Editor.prototype.namingSchema = function() {
+  return this.config.options[this.config.options["namingSchema"]];
+};
 
-  // store the config for future access
-  self.config = config;
-  self.namingSchema = config.options[config.options["namingSchema"]];
-  $(self.doc).on('docChanged', function(e, doc) {
-    self.docChanged();
-  });
+RDFE.Editor.prototype.nodeFormatter = function(value) {
+  var self = this;
+
+  if (value.interfaceName == "Literal") {
+    if (value.datatype == 'http://www.w3.org/2001/XMLSchema#dateTime') {
+      return (new Date(value.nominalValue)).toString();
+    }
+    return RDFE.Utils.escapeXml(RDFE.Utils.strAbbreviate(value.nominalValue, self.maxLength));
+  }
+  return RDFE.Utils.uriAbbreviate(value.toString(), self.maxLength);
+};
+
+RDFE.Editor.prototype.countFormatter = function(value, row, index) {
+  return row.items.length;
+};
+
+RDFE.Editor.prototype.countSorter = function(a, b) {
+  a = a.length;
+  b = b.length;
+  if (a > b) return 1;
+  if (a < b) return -1;
+  return 0;
+};
+
+RDFE.Editor.prototype.editableSubject = function(editor) {
+  return function(triple) {
+    return {
+      "mode": "inline",
+      "type": "rdfnode",
+      "rdfnode": {
+        "mode": 'subject',
+        "config": $.extend({}, editor.config.options, {"dereferenceLink": editor.dereference()}),
+        "type": 'http://www.w3.org/1999/02/22-rdf-syntax-ns#Resource',
+        "dereferenceLink": editor.dereference()
+      },
+      "value": triple["subject"]
+    };
+  };
+};
+
+RDFE.Editor.prototype.editablePredicate = function(editor) {
+  return function(triple) {
+    return {
+      "mode": "inline",
+      "type": "propertyBox",
+      "propertyBox": {
+        "ontologyManager": editor.ontologyManager,
+        "dereferenceLink": editor.dereference()
+      },
+      "value": triple["predicate"].nominalValue
+    };
+  };
+};
+
+RDFE.Editor.prototype.editableObject = function(editor, predicate) {
+  return function(triple) {
+    return {
+      "mode": "inline",
+      "type": "rdfnode",
+      "rdfnode": {
+        "mode": 'object',
+        "type": triple["object"].datatype,
+        "config": $.extend({}, editor.config.options, {"dereferenceLink": editor.dereference()}),
+        "predicate": (predicate)? predicate(triple): null,
+        "document": editor.doc,
+        "ontologyManager": editor.ontologyManager,
+        "dereferenceLink": editor.dereference()
+      },
+      "value": triple["object"]
+    };
+  };
 };
 
 RDFE.Editor.prototype.render = function(container) {
@@ -57,7 +151,7 @@ RDFE.Editor.prototype.render = function(container) {
   this.listContainer = $(document.createElement('div')).appendTo(this.container);
   this.formContainer = $(document.createElement('div')).appendTo(this.container);
 
-  this.toggleView(this.config.options.defaultView);
+  // this.toggleView(this.config.options.defaultView);
 };
 
 RDFE.Editor.prototype.docChanged = function() {
@@ -70,14 +164,17 @@ RDFE.Editor.prototype.docChanged = function() {
 };
 
 /**
- * Get the name of the current view mode.
- *
- * @return The current view mode which is either @p entites,
- * @p triples or @p undefined in case render() has not been
- * called yet.
+ * Toggle editor spinner.
  */
-RDFE.Editor.prototype.currentView = function() {
-  return this._currentView;
+RDFE.Editor.prototype.toggleSpinner = function(on) {
+  var self = this;
+
+  if (on) {
+    $(self).trigger('rdf-editor-spinner-start', 'editor-spinner');
+  }
+  else {
+    $(self).trigger('rdf-editor-spinner-done', 'editor-spinner');
+  }
 };
 
 /**
@@ -85,30 +182,40 @@ RDFE.Editor.prototype.currentView = function() {
  * Nothing is done if the given @p view is already
  * the current one.
  */
-RDFE.Editor.prototype.toggleView = function(view) {
-  if (view !== this._currentView) {
-    if (view === 'entities') {
-      if (this.config.options['useEntityEditor'] === true) {
-        this.createEntityList();
-      }
-      else {
-        this.createSubjectList();
-      }
-      this._currentView = "entities";
-    }
-    else if (view === 'predicates') {
-      this.createPredicateList();
-      this._currentView = "predicates";
-    }
-    else if (view === 'values') {
-      this.createObjectList();
-      this._currentView = "values";
+RDFE.Editor.prototype.toggleView = function(view, viewMode) {
+  var self = this;
+
+  if (view === self.view) {
+    return;
+  }
+
+  if ((view === 'subjects') || (view === 'entities')) {
+    if (self.config.options['useEntityEditor'] === true) {
+      self.createEntityList();
     }
     else {
-      this.createTripleList();
-      this._currentView = "triples";
+      self.createSubjectList();
+    }
+    self.view = view;
+  }
+  else if ((view === 'predicates') || ((view === 'attributes'))) {
+    self.createPredicateList();
+    self.view = view;
+  }
+  else if ((view === 'objects') || (view === 'values')) {
+    self.createObjectList();
+    self.view = view;
+  }
+  else {
+    self.createTripleList();
+    if ((view === 'triples') || (view === 'statements')) {
+      self.view = view;
+    }
+    else {
+      self.view = (viewMode === 'EAV')? 'statements': "triples";
     }
   }
+  $(self).trigger('rdf-editor-page', {"view": self.view});
 };
 
 /**
@@ -117,7 +224,7 @@ RDFE.Editor.prototype.toggleView = function(view) {
 RDFE.Editor.prototype.updateView = function() {
   var self = this;
 
-  if (self._currentView === 'entities') {
+  if ((self.view === 'subjects') || (self.view === 'entities')) {
     if (self.config.options['useEntityEditor'] === true) {
       self.createEntityList();
     }
@@ -125,10 +232,10 @@ RDFE.Editor.prototype.updateView = function() {
       self.createSubjectList();
     }
   }
-  else if (self._currentView === 'predicates') {
+  else if ((self.view === 'predicates') || (self.view === 'attributes')) {
     self.createPredicateList();
   }
-  else if (self._currentView === 'values') {
+  else if ((self.view === 'objects') || (self.view === 'values')) {
     self.createObjectList();
   }
   else {
@@ -136,27 +243,502 @@ RDFE.Editor.prototype.updateView = function() {
   }
 };
 
+/**
+ * Editor settings.
+ */
+RDFE.Editor.prototype.settingsForm = function() {
+  var self = this;
+  var $form = $("#settingsModal");
+  var $settings = $.jStorage.get('rdfe:settings', {});
+  $form.find('#userID').val($settings["userID"]);
+  $form.find('input[name="namingSchema"][value="'+$settings["namingSchema"]+'"]').attr('checked', 'checked');
+
+  $form.modal({"keyboard": true});
+  $form.keypress(function(e) {
+    if (e.which == 13) {
+      $form.find('button[type="submit"]').click();
+    }
+  });
+  $form.find('.ok').off();
+  $form.find('.ok').on("click", function (e) {
+    e.preventDefault();
+    var $settings = $.jStorage.get('rdfe:settings', {});
+    var userID = $form.find('#userID').val();
+    var namingSchemaOld = $settings["namingSchema"];
+    var namingSchema = "";
+    var namingSchemaSelected = $form.find('input[name="namingSchema"]:checked');
+    if (namingSchemaSelected.length > 0) {
+      namingSchema = namingSchemaSelected.val();
+    }
+    $settings = {
+      "userID":  userID,
+      "namingSchema": namingSchema
+    };
+    $.jStorage.set('rdfe:settings', $settings);
+
+    $form.modal('hide');
+
+    var uiMode = (['entities', 'attributes', 'values', 'statements'].indexOf(self.view) !== -1)? 'EAV': 'SPO';
+    if ((namingSchemaOld !== namingSchema) || (uiMode !== namingSchema)) {
+      self.tripleView = null;
+      self.subjectView = null;
+      self.predicateView = null;
+      self.objectView = null;
+
+      self.config.options.namingSchema = namingSchema;
+      $(self).trigger('rdf-editor-namingSchema', {"uiMode": namingSchema, "viewMode": self.view});
+    }
+  });
+};
+
+/**
+ * Import RDF Turtle local file content into document.
+ */
+RDFE.Editor.prototype.localForm = function() {
+  var self = this;
+  var $form = $("#localModal");
+
+  $form.find('#content').val('');
+  $form.find('#contentType').val('text/turtle');
+
+  $form.modal({"keyboard": true});
+  $form.find('.ok').off();
+  $form.find('.ok').on("click", function (e) {
+    e.preventDefault();
+
+    if (!(window.File && window.FileReader && window.FileList && window.Blob)) {
+      $(self).trigger('rdf-editor-error', {
+        "type": "rdf-editor-error",
+        "message": "The File APIs are not fully supported by your browser."
+      });
+    }
+    else {
+      var localFile = $form.find('#localFile');
+      var files = localFile.prop('files');
+      if (!files) {
+        $(self).trigger('rdf-editor-error', {
+          "type": "rdf-editor-error",
+          "message": 'This browser doesn\'t seem to support the "files" property of file inputs.'
+        });
+      }
+      else if (!files.length || !files[0]) {
+        $(self).trigger('rdf-editor-error', {
+          "type": "rdf-editor-error",
+          "message": 'Please select a file!'
+        });
+      } else {
+        var file;
+        var fr;
+        var fileReadText = function() {
+          var content = fr.result;
+          var success = function (result) {
+            $form.modal('hide');
+            self.updateView();
+            self.docChanged();
+            $(self).trigger('rdf-editor-success', {
+              "type": "rdf-editor-success",
+              "message": "Successfully imported RDF data."
+            });
+          };
+          var fail = function (error) {
+            $(self).trigger('rdf-editor-error', {
+              "type": "rdf-editor-error",
+              "message": "Failed to import RDF data. <br /> " + error.message
+            });
+          };
+          self.doc.import(content, success, fail);
+        }
+
+        file = files[0];
+        fr = new FileReader();
+        fr.onload = fileReadText;
+        fr.readAsText(file);
+      }
+    }
+  });
+};
+
+/**
+ * Import RDF Turtle local file content into document.
+ */
+RDFE.Editor.prototype.remoteForm = function() {
+  var self = this;
+  var $form = $("#remoteModal");
+  $form.find('#remoteURL').val('');
+
+  $form.modal({"keyboard": true});
+  $form.find('.ok').off();
+  $form.find('.ok').on("click", function (e) {
+    e.preventDefault();
+
+    var remoteURL = $form.find('#remoteURL').val();
+    var success = function(data) {
+      var _success = function (result) {
+        $form.modal('hide');
+        self.updateView();
+        self.docChanged();
+        $(self).trigger('rdf-editor-success', {
+          "type": "rdf-editor-success",
+          "message": "Successfully imported RDF data."
+        });
+      };
+      var _fail = function (error) {
+        $form.modal('hide');
+        $(self).trigger('rdf-editor-error', {
+          "type": "rdf-editor-error",
+          "message": "Failed to import RDF data. <br /> " + error.message
+        });
+      };
+      self.doc.import(data, _success, _fail);
+    };
+    var fail = function(xhr) {
+      $form.modal('hide');
+      var message = RDFE.IO.ajaxFailMessage(xhr, 'Failed to load remote document "{0}"', remoteURL);
+      $(self).trigger('rdf-editor-error', {
+        "type": "rdf-editor-error",
+        "message": message
+      });
+    };
+
+    $.ajax(remoteURL).done(success).fail(fail);
+
+});
+};
+
+/**
+ * Import RDF Turtle content into document.
+ */
+RDFE.Editor.prototype.importForm = function() {
+  var self = this;
+  var $form = $("#importModal");
+
+  $form.find('#content').val('');
+  $form.find('#contentType').val('text/turtle');
+
+  $form.modal({"keyboard": true});
+  $form.find('.ok').off();
+  $form.find('.ok').on("click", function (e) {
+    e.preventDefault();
+
+    var content = $form.find('#content').val();
+    var contentType = $form.find('#contentType').val();
+    var success = function (result) {
+      $form.modal('hide');
+      self.updateView();
+      self.docChanged();
+      $(self).trigger('rdf-editor-success', {
+        "type": "rdf-editor-success",
+        "message": "Successfully imported RDF data."
+      });
+    };
+    var fail = function (error) {
+      $(self).trigger('rdf-editor-error', {
+        "type": "rdf-editor-error",
+        "message": "Failed to import RDF data. <br /> " + error.message
+      });
+    };
+    self.doc.import(content, success, fail);
+  });
+};
+
+/**
+ * Export document as Turtle or JSON-LD
+ */
+RDFE.Editor.prototype.exportForm = function() {
+  var self = this;
+  var $form = $("#exportModal");
+
+  $form.find('#content').val('');
+  $form.keypress(function(e) {
+    if (e.which == 13) {
+      $form.find('button[type="submit"]').click();
+    }
+  });
+  $form.modal({"keyboard": true});
+  $(self).trigger('rdf-editor-spinner-start', 'export-spinner');
+
+  self.doc.store.graph(self.doc.graph, function(success, graph){
+    var serialized = graph.toNT();
+    $form.find('#content').val(serialized);
+    $(self).trigger('rdf-editor-spinner-done', 'export-spinner');
+  });
+};
+
+/**
+ * Undo content into document.
+ */
+RDFE.Editor.prototype.undo = function() {
+  var self = this;
+  var success = function (result) {
+    self.updateView();
+    self.docChanged();
+    $(self).trigger('rdf-editor-success', {
+      "type": "rdf-editor-success",
+      "message": "Successfully undo RDF data."
+    });
+  };
+  var fail = function (error) {
+    $(self).trigger('rdf-editor-error', {
+      "type": "rdf-editor-error",
+      "message": "Failed to undo RDF data. <br /> " + error.message
+    });
+  };
+  self.doc.undoLog(success, fail);
+};
+
+/**
+ * Redo content into document.
+ */
+RDFE.Editor.prototype.redo = function() {
+  var self = this;
+  var success = function (result) {
+    self.updateView();
+    self.docChanged();
+    $(self).trigger('rdf-editor-success', {
+      "type": "rdf-editor-success",
+      "message": "Successfully redo RDF data."
+    });
+  };
+  var fail = function (error) {
+    $(self).trigger('rdf-editor-error', {
+      "type": "rdf-editor-error",
+      "message": "Failed to redo RDF data. <br /> " + error.message
+    });
+  };
+  self.doc.redoLog(success, fail);
+};
+
+/**
+ * Sign document.
+ */
+RDFE.Editor.prototype.signDocumentForm = function() {
+  var self = this;
+  var $form = $("#signModal");
+  var $formBody = $form.find('.modal-body');
+
+  $formBody.empty();
+
+  // Document is signed?
+  self.doc.checkForSignature();
+
+  var val = angular.element('[ng-controller=AuthHeaderCtrl]').scope();
+  if (!val.profile) {
+    // Sign is not possible - VAL is not installed or user is not logged
+    $formBody.html('\
+      <div class="form-group"> \
+        <label class="col-sm-2 control-label">Signature</label> \
+        <div class="col-sm-10"> \
+          <p class="form-control-static">The user is not logged. Please, login and try again.</p> \
+        </div> \
+      </div>\
+    ');
+    $form.find('.ok').hide();
+  }
+  else {
+    // Sign is possible
+    $formBody.html('\
+      <div class="form-group"> \
+        <label class="col-sm-2 control-label">Signature</label> \
+        <div class="col-sm-10"> \
+          <input type="text" class="form-control" name="signatureDocURI" id="signatureDocURI" value="{0}">\
+        </div> \
+      </div>\
+    '.format((self.doc.signature)? self.doc.signature: self.doc.url+',signature'));
+    $form.find('.ok').show();
+    $form.find('.ok').off();
+    $form.find('.ok').on("click", (function ($form) {
+      return function (e) {
+        e.preventDefault();
+
+        var rdf = self.doc.store.rdf;
+        var signatureDocURI = $form.find('#signatureDocURI').val();
+        var triple = rdf.createTriple(rdf.createNamedNode(self.doc.url), rdf.createNamedNode('http://www.openlinksw.com/schemas/cert#hasSignature'), rdf.createNamedNode(signatureDocURI));
+        var tripleExists;
+        self.doc.checkTriple(triple, function(result){tripleExists = result;}, function(result){tripleExists = result;});
+        var successTriple = function (s, results) {
+          // sign the new content
+          self.doc.store.graph(self.doc.graph, function(success, graph) {
+            var content = graph.toNT();
+            var callback = function(data, status, xhr) {
+              if (status === 'error') {
+                failTriple();
+              }
+              else {
+                // save signature file
+                var params = {
+                  "contentType": 'text/plain',
+                  "success": function() {
+                    $form.modal('hide');
+
+                    // update current list
+                    self.updateView();
+                    $(self).trigger('rdf-editor-success', {
+                      "type": "rdf-editor-success",
+                      "message": "Successfully signed document."
+                    });
+                  },
+                  "error": failTriple
+                };
+                var io = RDFE.IO.createIO('webdav');
+                io.type = 'webdav';
+                io.insert(signatureDocURI, data, params);
+              }
+            };
+            $.get('/ods/api/signature?content=' + content).done(function(data, status, xhr) {
+              callback(data, status, xhr);
+            }).fail(function(data, status, xhr) {
+              callback(data, status, xhr);
+            });
+          });
+        };
+        var failTriple = function (s, results) {
+          if (!tripleExists) {
+            self.doc.deleteTriples(triple);
+          }
+          $(self).trigger('rdf-editor-error', {
+            "type": "rdf-editor-error",
+            "message": "Failed to sign document."
+          });
+        };
+        if (tripleExists) {
+          successTriple();
+        }
+        else {
+          self.doc.addTriples(triple, successTriple, failTriple);
+        }
+      };
+    })($form)
+    );
+  }
+  $form.modal();
+};
+
+/**
+ * Unsign document.
+ */
+RDFE.Editor.prototype.unsignDocumentForm = function() {
+  var self = this;
+  var $form = $("#unsignModal");
+  var $formBody = $form.find('.modal-body');
+
+  $formBody.empty();
+
+  // Document is signed?
+  self.doc.checkForSignature();
+
+  if (self.doc.signature) {
+    // Signed documents
+    $formBody.html('\
+      <div class="form-group"> \
+        <label class="col-sm-2 control-label">Signature</label> \
+        <div class="col-sm-10"> \
+          <p class="form-control-static">{0}</p> \
+        </div> \
+      </div>\
+      <div class="form-group"> \
+        <label class="col-sm-2"></label> \
+        <div class="col-sm-10 checkbox"> \
+          <label><input type="checkbox" name="deleteSignature" id="deleteSignature" value="on"><strong>Delete Signature File</strong></label>\
+        </div> \
+      </div>\
+    '.format(self.doc.signature));
+    $form.find('.ok').show();
+    $form.find('.ok').off();
+    $form.find('.ok').on("click", (function ($form) {
+      return function (e) {
+        e.preventDefault();
+
+        var successTriple = function () {
+          $form.modal('hide');
+          self.updateView();
+          $(self).trigger('rdf-editor-success', {
+            "type": "rdf-editor-success",
+            "message": "Successfully unsigned document."
+          });
+        };
+        var failTriple = function () {
+          $(self).trigger('rdf-editor-error', {
+            "type": "rdf-editor-error",
+            "message": "Failed to unsign document."
+          });
+        };
+        var deleteSignatureTriple = function () {
+          var rdf = self.doc.store.rdf;
+          var triple = rdf.createTriple(rdf.createNamedNode(self.doc.url), rdf.createNamedNode('http://www.openlinksw.com/schemas/cert#hasSignature'), rdf.createNamedNode(self.doc.signature));
+          self.doc.deleteTriples(triple, successTriple, failTriple);
+        };
+        if ($form.find('#deleteSignature').checked) {
+          var params = {
+            "success": deleteSignatureTriple,
+            "error": failTriple
+          };
+          var io = RDFE.IO.createIO('webdav');
+          io.type = 'webdav';
+          io.delete(self.doc.signature);
+        }
+        else {
+          deleteSignatureTriple();
+        }
+      };
+    })($form)
+    );
+  }
+  else {
+    // Unsigned documents
+    $formBody.html('\
+      <div class="form-group"> \
+        <label class="col-sm-2 control-label">Signature</label> \
+        <div class="col-sm-10"> \
+          <p class="form-control-static">Document has not signature</p> \
+        </div> \
+      </div>\
+    ');
+    $form.find('.ok').hide();
+  }
+  $form.modal();
+};
+
+RDFE.Editor.prototype.dereference = function() {
+  var self = this;
+
+  return function(editor) {
+    return function(url) {
+      if (!url)
+        return;
+
+      if (url.startsWith('#')) {
+        if (!editor.doc.url) {
+          return;
+        }
+
+        url = editor.doc.url + url;
+      }
+
+      if (url.startsWith('http')) {
+        var win = window.open(url, '_blank');
+        win.focus();
+      }
+    };
+  }(self);
+};
+
 RDFE.Editor.prototype.createTripleList = function() {
   var self = this;
 
-  $(self).trigger('rdf-editor-start', {
-    "id": "render-triple-list",
-    "message": "Loading Triples..."
-  });
+  self.toggleSpinner(true);
 
   if (!self.tripleView) {
-    self.tripleView = new RDFE.TripleView(self.doc, self.ontologyManager, self);
-    $(self.tripleView).on('rdf-editor-error', function(e, d) {
-      $(self).trigger('rdf-editor-error', d);
-    }).on('rdf-editor-success', function(e, d) {
-      $(self).trigger('rdf-editor-success', d);
-    });
+    self.tripleView = new RDFE.TripleView(self);
   }
+
   self.formContainer.hide();
   self.listContainer.empty().show();
-  self.tripleView.render(self.listContainer, function() {
-    $(self).trigger('rdf-editor-done', { "id": "render-triple-list" });
-  });
+
+  setTimeout(function() {
+    self.tripleView.render(self.listContainer, function() {
+      self.toggleSpinner(false);
+    });
+  }, 0);
 };
 
 RDFE.Editor.prototype.editTriple = function(s, p, o) {
@@ -169,22 +751,22 @@ RDFE.Editor.prototype.editTriple = function(s, p, o) {
   self.listContainer.hide();
   self.formContainer.html(
     '<div class="panel panel-default">' +
-    '  <div class="panel-heading"><h3 class="panel-title">Add new ' + RDFE.Utils.namingSchemaLabel('spo', self.namingSchema) + '</h3></div>' +
+    '  <div class="panel-heading"><h3 class="panel-title">Add new ' + RDFE.Utils.namingSchemaLabel('spo', self.namingSchema()) + '</h3></div>' +
     '  <div class="panel-body">' +
     '    <form class="form-horizontal">' +
-    '      <div class="form-group"><label for="subject" class="col-sm-2 control-label">' + RDFE.Utils.namingSchemaLabel('s', self.namingSchema) + '</label>' +
+    '      <div class="form-group"><label for="subject" class="col-sm-2 control-label">' + RDFE.Utils.namingSchemaLabel('s', self.namingSchema()) + '</label>' +
     '        <div class="col-sm-10"><input name="subject" class="form-control" /></div>' +
     '      </div>' +
-    '      <div class="form-group"><label for="predicate" class="col-sm-2 control-label">' + RDFE.Utils.namingSchemaLabel('p', self.namingSchema) + '</label>' +
+    '      <div class="form-group"><label for="predicate" class="col-sm-2 control-label">' + RDFE.Utils.namingSchemaLabel('p', self.namingSchema()) + '</label>' +
     '        <div class="col-sm-10"><select name="predicate" class="form-control"></select></div>' +
     '      </div>' +
-    '      <div class="form-group"><label for="object" class="col-sm-2 control-label">' + RDFE.Utils.namingSchemaLabel('o', self.namingSchema) + '</label>' +
+    '      <div class="form-group"><label for="object" class="col-sm-2 control-label">' + RDFE.Utils.namingSchemaLabel('o', self.namingSchema()) + '</label>' +
     '        <div class="col-sm-10"><input name="object" class="form-control" /></div>' +
     '      </div>' +
     '      <div class="form-group">' +
     '        <div class="col-sm-10 col-sm-offset-2">' +
-    '          <a href="#" class="btn btn-default triple-action triple-action-new-cancel">Cancel</a>' +
-    '          <a href="#" class="btn btn-primary triple-action triple-action-new-save">OK</a>' +
+    '          <button type="button" class="btn btn-default triple-action triple-action-new-cancel">Cancel</button> ' +
+    '          <button type="submit" class="btn btn-primary triple-action triple-action-new-save">OK</button> ' +
     '        </div>' +
     '      </div>' +
     '    </form>' +
@@ -192,57 +774,56 @@ RDFE.Editor.prototype.editTriple = function(s, p, o) {
     '</div>'
   ).show();
 
-  // Set subject value
-  if (s) {
-    self.formContainer.find('input[name="subject"]').val(s);
+  var subjectEditor = self.formContainer.find('input[name="subject"]');
+  // Set focus
+  subjectEditor.focus();
+
+  if (s || self.saveSubject) {
+    self.formContainer.find('input[name="subject"]').val(s || self.saveSubject);
   }
 
-  var objectEditor = self.formContainer.find('input[name="object"]').rdfNodeEditor(self.config.options);
+ var objectEditor = self.formContainer.find('input[name="object"]').rdfNodeEditor(self.config.options);
   // Set object value
   if (o) {
     objectEditor.setValue(new RDFE.RdfNode('literal', o, null, ''));
   }
 
   var predicateEditor = self.formContainer.find('select[name="predicate"]').propertyBox({
-    ontoManager: self.ontologyManager
+    "ontologyManager": self.ontologyManager
   }).on('changed', function(e, p) {
-    // console.log('changed', p)
-    var node;
-    var nodeItems;
-    var cn = objectEditor.getValue();
-    var range = (p)? p.getRange(): null;
-    if (objectEditor.isLiteralType(range)) {
-      node = new RDFE.RdfNode('literal', cn.value, range, cn.language);
-    }
-    else if (self.ontologyManager.ontologyClassByURI(range)) {
-      node = new RDFE.RdfNode('uri', RDFE.Utils.trim(RDFE.Utils.trim(cn.value, '<'), '>'));
-      nodeItems = self.doc.itemsByRange(range);
-    }
-    else {
-      node = new RDFE.RdfNode('literal', cn.value, null, '');
-    }
-    objectEditor.setValue(node, nodeItems);
+    self.changeObjectType(p, objectEditor);
   });
+
   // Set predicate value
   if (p) {
     predicateEditor.setPropertyURI(p);
   }
 
-  self.formContainer.find('a.triple-action-new-cancel').click(function(e) {
+  self.formContainer.find('button.triple-action-new-cancel').click(function(e) {
     e.preventDefault();
     self.createTripleList();
   });
 
-  self.formContainer.find('a.triple-action-new-save').click(function(e) {
+  self.formContainer.find('button.triple-action-new-save').click(function(e) {
     e.preventDefault();
-    var s = self.formContainer.find('input[name="subject"]').val();
-    s = RDFE.Utils.trim(RDFE.Utils.trim(s, '<'), '>')
+
+    var s = subjectEditor.val();
+    s = RDFE.Utils.trim(RDFE.Utils.trim(s, '<'), '>');
+    if (!RDFE.Validate.check(subjectEditor, s))
+      return;
+
     var p = predicateEditor.selectedURI();
-    p = RDFE.Utils.trim(RDFE.Utils.trim(p, '<'), '>')
+    p = RDFE.Utils.trim(RDFE.Utils.trim(p, '<'), '>');
+    if (!RDFE.Validate.check(predicateEditor.sel, p))
+      return;
+
     var o = objectEditor.getValue();
     if (o.type == 'uri') {
       o.value = self.ontologyManager.uriDenormalize(o.value);
     }
+    if (!RDFE.Validate.check(objectEditor.getField(), o.value))
+      return;
+
     var t = self.doc.store.rdf.createTriple(self.doc.store.rdf.createNamedNode(s), self.doc.store.rdf.createNamedNode(p), o.toStoreNode(self.doc.store));
     self.doc.addTriples([t], function() {
       if (self.tripleView) {
@@ -252,7 +833,7 @@ RDFE.Editor.prototype.editTriple = function(s, p, o) {
         "type": "triple-insert-success",
         "message": "Successfully added new triple."
       });
-
+      self.saveSubject = s;
       self.createTripleList();
     }, function() {
       $(self).trigger('rdf-editor-error', {
@@ -286,10 +867,10 @@ RDFE.Editor.prototype.createNewEntityEditor = function(forcedType) {
   if (!forcedType) {
     self.formContainer.html(
       '<div class="panel panel-default">' +
-      '<div class="panel-heading"><h3 class="panel-title">Add new ' + RDFE.Utils.namingSchemaLabel('s', self.namingSchema) + '</h3></div>' +
+      '<div class="panel-heading"><h3 class="panel-title">Add new ' + RDFE.Utils.namingSchemaLabel('s', self.namingSchema()) + '</h3></div>' +
       '<div class="panel-body"><div class="form-horizontal"> ' +
       '  <div class="form-group"> ' +
-      '    <label for="ontology" class="col-sm-2 control-label">Ontology</label> ' +
+      '    <label for="ontology" class="col-sm-2 control-label">Vocabulary</label> ' +
       '    <div class="col-sm-10"> ' +
       '      <select name="ontology" id="ontology" class="form-control" /> ' +
       '    </div> ' +
@@ -301,26 +882,25 @@ RDFE.Editor.prototype.createNewEntityEditor = function(forcedType) {
       '    </div> ' +
       '  </div> ' +
       '  <div class="form-group"> ' +
-      '     <label for="subject" class="col-sm-2 control-label">' + RDFE.Utils.namingSchemaLabel('s', self.namingSchema) + ' URI</label> ' +
+      '     <label for="subject" class="col-sm-2 control-label">' + RDFE.Utils.namingSchemaLabel('s', self.namingSchema()) + ' URI</label> ' +
       '     <div class="col-sm-10"> ' +
       '       <input name="subject" id="subject" class="form-control" /> ' +
       '     </div> ' +
       '  </div> ' +
       '  <div class="form-group"> ' +
       '    <div class="col-sm-10 col-sm-offset-2"> ' +
-      '      <a href="#" class="btn btn-default triple-action triple-action-new-cancel">Cancel</a> ' +
-      '      <a href="#" class="btn btn-primary triple-action triple-action-new-save">OK</a> ' +
+      '      <button type="button" class="btn btn-default triple-action triple-action-new-cancel">Cancel</button> ' +
+      '      <button type="submit" class="btn btn-primary triple-action triple-action-new-save">OK</button> ' +
       '    </div> ' +
       '  </div> ' +
       '</div></div></div>\n');
 
-    ontologiesSelect = $('#ontology').ontoBox({ "ontoManager": self.ontologyManager });
+    ontologiesSelect = $('#ontology').ontoBox({ "ontologyManager": self.ontologyManager });
     ontologiesSelect.on('changed', classesList);
     ontologiesSelect.sel.focus();
 
     // FIXME: this is all pretty much the same as in the PropertyBox, in any case it should be moved into a separate class/file
     $classesSelect = $('#class').selectize({
-      create: true,
       valueField: 'URI',
       labelField: 'URI',
       searchField: [ "title", "label", "prefix", "URI" ],
@@ -360,7 +940,7 @@ RDFE.Editor.prototype.createNewEntityEditor = function(forcedType) {
     var forcedTypeLabel = forcedTypeRes ? forcedTypeRes.label : RDFE.Utils.uri2name(forcedType);
     self.formContainer.html(
       '<div class="panel panel-default">' +
-      '<div class="panel-heading"><h3 class="panel-title">Add new ' + RDFE.Utils.namingSchemaLabel('s', self.namingSchema) + '</h3></div>' +
+      '<div class="panel-heading"><h3 class="panel-title">Add new ' + RDFE.Utils.namingSchemaLabel('s', self.namingSchema()) + '</h3></div>' +
       '<div class="panel-body"><div class="form-horizontal"> ' +
       '  <div class="form-group"> ' +
       '    <label for="class" class="col-sm-2 control-label">Type</label> ' +
@@ -369,15 +949,15 @@ RDFE.Editor.prototype.createNewEntityEditor = function(forcedType) {
       '    </div> ' +
       '  </div> ' +
       '  <div class="form-group"> ' +
-      '     <label for="subject" class="col-sm-2 control-label">' + RDFE.Utils.namingSchemaLabel('s', self.namingSchema) + ' URI</label> ' +
+      '     <label for="subject" class="col-sm-2 control-label">' + RDFE.Utils.namingSchemaLabel('s', self.namingSchema()) + ' URI</label> ' +
       '     <div class="col-sm-10"> ' +
       '       <input name="subject" id="subject" class="form-control" /> ' +
       '     </div> ' +
       '  </div> ' +
       '  <div class="form-group"> ' +
       '    <div class="col-sm-10 col-sm-offset-2"> ' +
-      '      <a href="#" class="btn btn-default triple-action triple-action-new-cancel">Cancel</a> ' +
-      '      <a href="#" class="btn btn-primary triple-action triple-action-new-save">OK</a> ' +
+      '      <button type="button" class="btn btn-default triple-action triple-action-new-cancel">Cancel</button> ' +
+      '      <button type="submit" class="btn btn-primary triple-action triple-action-new-save">OK</button> ' +
       '    </div> ' +
       '  </div> ' +
       '</div></div></div>\n');
@@ -386,10 +966,10 @@ RDFE.Editor.prototype.createNewEntityEditor = function(forcedType) {
 
   // if we have an entity uri template we ask the user to provide a nem instead of the uri
   if (self.config.options.entityUriTmpl) {
-    self.formContainer.find('label[for="subject"]').text(RDFE.Utils.namingSchemaLabel('s', self.namingSchema) + ' Name');
+    self.formContainer.find('label[for="subject"]').text(RDFE.Utils.namingSchemaLabel('s', self.namingSchema()) + ' Name');
   }
 
-  self.formContainer.find('a.triple-action-new-cancel').click(function(e) {
+  self.formContainer.find('button.triple-action-new-cancel').click(function(e) {
     e.preventDefault();
     self.listContainer.show();
     self.formContainer.hide();
@@ -400,7 +980,7 @@ RDFE.Editor.prototype.createNewEntityEditor = function(forcedType) {
         name = null,
         type = forcedType || self.formContainer.find('#class')[0].selectize.getValue();
 
-    uri = RDFE.Utils.trim(RDFE.Utils.trim(uri, '<'), '>')
+    uri = RDFE.Utils.trim(RDFE.Utils.trim(uri, '<'), '>');
     if(self.config.options.entityUriTmpl) {
       name = uri;
       uri = null;
@@ -426,25 +1006,23 @@ RDFE.Editor.prototype.createNewEntityEditor = function(forcedType) {
     });
   };
 
-  self.formContainer.find('a.triple-action-new-save').click(function(e) {
+  self.formContainer.find('button.triple-action-new-save').click(function(e) {
     e.preventDefault();
+
     saveFct();
   });
 
   self.formContainer.find('input#subject').keypress(function(e) {
-    if(e.which === 13) {
+    if (e.which === 13) {
       saveFct();
     }
-  })
+  });
 };
 
 RDFE.Editor.prototype.createEntityList = function() {
   var self = this;
 
-  $(self).trigger('rdf-editor-start', {
-    "id": "render-entity-list",
-    "message": "Loading Entities..."
-  });
+  self.toggleSpinner(true);
 
   if (!self.entityView) {
     self.entityView = new RDFE.EntityView(self.doc, self.ontologyManager, self, {
@@ -452,7 +1030,7 @@ RDFE.Editor.prototype.createEntityList = function() {
         self.editEntity.call(self, uri);
       }
     });
-    $(self.entityView).on('rdf-editor-error', function(e) {
+    $(self.entityView).on('rdf-editor-error', function(e, d) {
       $(self).trigger('rdf-editor-error', d);
     }).on('rdf-editor-success', function(e, d) {
       $(self).trigger('rdf-editor-success', d);
@@ -461,11 +1039,11 @@ RDFE.Editor.prototype.createEntityList = function() {
 
   self.formContainer.hide();
   self.listContainer.empty().show();
-  self.entityView.render(self.listContainer, function() {
-    $(self).trigger('rdf-editor-done', {
-      "id": "render-entity-list"
+  setTimeout(function() {
+    self.entityView.render(self.listContainer, function() {
+      self.toggleSpinner(false);
     });
-  });
+  }, 0);
 };
 
 RDFE.Editor.prototype.editEntity = function(uri) {
@@ -473,7 +1051,7 @@ RDFE.Editor.prototype.editEntity = function(uri) {
 
   if (!self.entityEditor) {
     self.entityEditor = new RDFE.EntityEditor(self.doc, self.ontologyManager);
-    $(self.entityEditor).on('rdf-editor-error', function(e) {
+    $(self.entityEditor).on('rdf-editor-error', function(e, d) {
       $(self).trigger('rdf-editor-error', d);
     }).on('rdf-editor-success', function(e, d) {
       $(self).trigger('rdf-editor-success', d);
@@ -494,43 +1072,30 @@ RDFE.Editor.prototype.editEntity = function(uri) {
 RDFE.Editor.prototype.createSubjectList = function() {
   var self = this;
 
-  $(self).trigger('rdf-editor-start', {
-    "id": "render-entity-list",
-    "message": "Loading Subjects..."
-  });
+  self.toggleSpinner(true);
 
   if (!self.subjectView) {
-    self.subjectView = new RDFE.SubjectView(self.doc, self.ontologyManager, self, {
-      editFct: function(subject) {
+    self.subjectView = new RDFE.SubjectView(self, {
+      "editFct": function(subject) {
         self.editSubject.call(self, subject);
       }
-    });
-    $(self.subjectView).on('rdf-editor-error', function(e) {
-      $(self).trigger('rdf-editor-error', d);
-    }).on('rdf-editor-success', function(e, d) {
-      $(self).trigger('rdf-editor-success', d);
     });
   }
 
   self.formContainer.hide();
   self.listContainer.empty().show();
-  self.subjectView.render(self.listContainer, function() {
-    $(self).trigger('rdf-editor-done', {
-      "id": "render-subject-list"
+  setTimeout(function() {
+    self.subjectView.render(self.listContainer, function() {
+      self.toggleSpinner(false);
     });
-  });
+  }, 0);
 };
 
 RDFE.Editor.prototype.editSubject = function(subject, newStatement) {
   var self = this;
 
   if (!self.subjectEditor) {
-    self.subjectEditor = new RDFE.SubjectEditor(self.doc, self.ontologyManager);
-    $(self.subjectEditor).on('rdf-editor-error', function(e) {
-      $(self).trigger('rdf-editor-error', d);
-    }).on('rdf-editor-success', function(e, d) {
-      $(self).trigger('rdf-editor-success', d);
-    });
+    self.subjectEditor = new RDFE.SubjectEditor(self);
   }
 
   // subject as URL parameter
@@ -555,43 +1120,30 @@ RDFE.Editor.prototype.editSubject = function(subject, newStatement) {
 RDFE.Editor.prototype.createPredicateList = function() {
   var self = this;
 
-  $(self).trigger('rdf-editor-start', {
-    "id": "render-entity-list",
-    "message": "Loading Predicates..."
-  });
+  self.toggleSpinner(true);
 
   if (!self.predicateView) {
-    self.predicateView = new RDFE.PredicateView(self.doc, self.ontologyManager, self, {
+    self.predicateView = new RDFE.PredicateView(self, {
       editFct: function(predicate) {
         self.editPredicate.call(self, predicate);
       }
-    });
-    $(self.predicateView).on('rdf-editor-error', function(e, d) {
-      $(self).trigger('rdf-editor-error', d);
-    }).on('rdf-editor-success', function(e, d) {
-      $(self).trigger('rdf-editor-success', d);
     });
   }
 
   self.formContainer.hide();
   self.listContainer.empty().show();
-  self.predicateView.render(self.listContainer, function() {
-    $(self).trigger('rdf-editor-done', {
-      "id": "render-predicate-list"
+  setTimeout(function() {
+    self.predicateView.render(self.listContainer, function() {
+      self.toggleSpinner(false);
     });
-  });
+  }, 0);
 };
 
 RDFE.Editor.prototype.editPredicate = function(predicate, newStatement) {
   var self = this;
 
   if (!self.predicateEditor) {
-    self.predicateEditor = new RDFE.PredicateEditor(self.doc, self.ontologyManager);
-    $(self.predicateEditor).on('rdf-editor-error', function(e, d) {
-      $(self).trigger('rdf-editor-error', d);
-    }).on('rdf-editor-success', function(e, d) {
-      $(self).trigger('rdf-editor-success', d);
-    });
+    self.predicateEditor = new RDFE.PredicateEditor(self);
   }
 
   // render the entity editor and re-create the entity list once the editor is done
@@ -621,43 +1173,30 @@ RDFE.Editor.prototype.editPredicate = function(predicate, newStatement) {
 RDFE.Editor.prototype.createObjectList = function() {
   var self = this;
 
-  $(self).trigger('rdf-editor-start', {
-    "id": "render-entity-list",
-    "message": "Loading Objects..."
-  });
+  self.toggleSpinner(true);
 
   if (!self.objectView) {
-    self.objectView = new RDFE.ObjectView(self.doc, self.ontologyManager, self, {
+    self.objectView = new RDFE.ObjectView(self, {
       editFct: function(object) {
         self.editObject.call(self, object);
       }
-    });
-    $(self.objectView).on('rdf-editor-error', function(e, d) {
-      $(self).trigger('rdf-editor-error', d);
-    }).on('rdf-editor-success', function(e, d) {
-      $(self).trigger('rdf-editor-success', d);
     });
   }
 
   self.formContainer.hide();
   self.listContainer.empty().show();
-  self.objectView.render(self.listContainer, function() {
-    $(self).trigger('rdf-editor-done', {
-      "id": "render-predicate-list"
+  setTimeout(function() {
+    self.objectView.render(self.listContainer, function() {
+      self.toggleSpinner(false);
     });
-  });
+  }, 0);
 };
 
 RDFE.Editor.prototype.editObject = function(object, newStatement) {
   var self = this;
 
   if (!self.objectEditor) {
-    self.objectEditor = new RDFE.ObjectEditor(self.doc, self.ontologyManager);
-    $(self.objectEditor).on('rdf-editor-error', function(e, d) {
-      $(self).trigger('rdf-editor-error', d);
-    }).on('rdf-editor-success', function(e, d) {
-      $(self).trigger('rdf-editor-success', d);
-    });
+    self.objectEditor = new RDFE.ObjectEditor(self);
   }
 
   // subject as URL parameter
@@ -675,5 +1214,129 @@ RDFE.Editor.prototype.editObject = function(object, newStatement) {
     if (object) {
       self.objectView.updateObject(object);
     }
+  });
+};
+
+RDFE.Editor.prototype.changeObjectType = function (predicate, objectEditor) {
+  var self = this;
+
+  var node;
+  var nodeItems;
+  var range;
+  var currentNode = objectEditor.getValue();
+  if (predicate) {
+    var ranges = predicate.getRange();
+    if (ranges && ranges.length) {
+      for (var i = 0; i < ranges.length; i++) {
+        if (objectEditor.isLiteralType(ranges[i])) {
+          node = new RDFE.RdfNode('literal', currentNode.value, ranges[i], currentNode.language);
+          break;
+        }
+      }
+
+      if (!node) {
+        nodeItems = self.doc.itemsByRange(ranges);
+        if (nodeItems) {
+          node = new RDFE.RdfNode('uri', currentNode.value);
+          if (predicate.URI !== 'http://www.w3.org/1999/02/22-rdf-syntax-ns#type') {
+            self.objectsLookup(objectEditor, ranges);
+          }
+        }
+        else {
+          for (var i = 0; i < ranges.length; i++) {
+            if (objectEditor.isLiteralType(ranges[i])) {
+              node = new RDFE.RdfNode('literal', currentNode.value, ranges[i], currentNode.language);
+            }
+          }
+        }
+      }
+    }
+  }
+  if (!node) {
+    node = new RDFE.RdfNode('literal', currentNode.value, null, '');
+  }
+  objectEditor.setValue(node, nodeItems);
+};
+
+RDFE.Editor.prototype.objectsLookup = function (objectEditor, ranges) {
+  var self = this;
+
+  var objectLookups = self.config.options["objectLookups"];
+  if (!objectLookups || !objectLookups.enabled) {
+    return;
+  }
+
+  var sources = objectLookups.sources;
+  if (!sources) {
+    return;
+  }
+  var io = RDFE.IO.createIO('http');
+  var store = self.doc.store;
+  for (var i = 0; i < sources.length; i++) {
+    for (var j = 0; j < ranges.length; j++) {
+      var range = ranges[j];
+      var graph = 'urn:__GRAPH__' + i + '_' + j;
+      var url = sources[i].url.format(encodeURIComponent(range));
+      var success = function(graph, range, label) {
+        return function (data, status, xhr) {
+          store.loadTurtle(data, graph, graph, null, function(error, result) {
+            if (!error) {
+              var sparql = 'select ?s from <{0}> where {?s a <{1}>}'.format(graph, range);
+              store.execute(sparql, function (success, result) {
+                var nodeItems = [];
+                for (var l = 0; l < result.length; l++) {
+                  nodeItems.push(new RDFE.RdfNode('uri', result[l].s.value));
+                }
+                objectEditor.updateSelection(label, nodeItems);
+              });
+            }
+          });
+          store.clear(graph, function(){});
+        };
+      }(graph, range, sources[i].label);
+      var params = {
+        "success": success
+      };
+      io.retrieveToStore(url, store, graph, params);
+    }
+  }
+};
+
+RDFE.Editor.prototype.dataSetter = function(field, oldTriple, newTriple) {
+  var self = this;
+  var node = newTriple[field];
+
+  if      (field === 'subject') {
+    node = self.doc.store.rdf.createNamedNode(node.value);
+  }
+  else if (field === 'predicate') {
+    node = self.doc.store.rdf.createNamedNode(node);
+  }
+  else if (field === 'object') {
+    if (node.type === 'uri') {
+      node = self.doc.store.rdf.createNamedNode(node.value);
+    }
+    else {
+      if (node.datatype === 'http://www.w3.org/2001/XMLSchema#dateTime') {
+        var dt = new Date(node.value);
+        node = self.doc.store.rdf.createLiteral(dt.toISOString(), node.language, node.datatype);
+      }
+      else {
+        node = self.doc.store.rdf.createLiteral(node.value, node.language, node.datatype);
+      }
+    }
+  }
+  newTriple[field] = node;
+  self.doc.updateTriple(oldTriple, newTriple, function(success) {
+    // do nothing
+    $(self).trigger('rdf-editor-success', {
+      "type": 'triple-update-success',
+      "message": "Successfully updated triple."
+    });
+  }, function(error) {
+    $(self).trigger('rdf-editor-error', {
+      "type": 'triple-update-error',
+      "message": 'Failed to update triple.'
+    });
   });
 };

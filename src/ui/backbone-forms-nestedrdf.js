@@ -1,7 +1,7 @@
 /*
  *  This file is part of the OpenLink RDF Editor
  *
- *  Copyright (C) 2014-2016 OpenLink Software
+ *  Copyright (C) 2014-2019 OpenLink Software
  *
  *  This project is free software; you can redistribute it and/or modify it
  *  under the terms of the GNU General Public License as published by the
@@ -26,6 +26,7 @@
  * Special options:
  *   schema.model:   Embedded model constructor
  */
+
 Backbone.Form.editors.NestedRdf = Backbone.Form.editors.Object.extend({
   initialize: function(options) {
     Backbone.Form.editors.Base.prototype.initialize.call(this, options);

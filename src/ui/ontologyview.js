@@ -1,7 +1,7 @@
 /*
  *  This file is part of the OpenLink RDF Editor
  *
- *  Copyright (C) 2014-2016 OpenLink Software
+ *  Copyright (C) 2014-2019 OpenLink Software
  *
  *  This project is free software; you can redistribute it and/or modify it
  *  under the terms of the GNU General Public License as published by the
@@ -25,10 +25,11 @@
 
   RDFE.OntologyView = (function() {
     // constructor
-    var c = function(ontologyManager, params) {
+    var c = function(editor, params) {
       params = $.extend({}, params);
 
-      this.ontologyManager = ontologyManager;
+      this.editor = editor;
+      this.ontologyManager = editor.ontologyManager;
       this.ontologies = this.ontologyManager.allOntologies();
     };
 
@@ -74,11 +75,12 @@
         "classes": 'table-hover table-condensed',
         "height": 157,
         "data": el,
-        "idField": 'uri',
+        "idField": 'URI',
         "dataSetter": editableSetter,
         "columns": [{
           "field": 'prefix',
           "title": 'Prefix',
+          "titleTooltip": 'Prefix',
           "editable": function(ontology) {
             return {
               "mode": "inline",
@@ -94,17 +96,18 @@
                   return 'This prefix is used';
                 }
               }
-            }
+            };
           },
           "formatter": function(value, ontology, index) {
             return (ontology.prefix)? ontology.prefix: '';
           }
         }, {
-          "field": 'uri',
+          "field": 'URI',
           "title": 'URI',
+          "titleTooltip": 'URI',
           "formatter": function(value, ontology, index) {
             return [
-              '<span title="Ontology {0} - {1} classes, {2} properties">'.format(ontology.URI, ontology.classesLength(), ontology.propertiesLength()),
+              '<span title="Vocabulary {0} - {1} classes, {2} properties">'.format(ontology.URI, ontology.classesLength(), ontology.propertiesLength()),
               '{0} - {1}/{2}'.format(ontology.URI, ontology.classesLength(), ontology.propertiesLength()),
               '</span>',
             ].join('');
@@ -117,10 +120,13 @@
           "clickToSelect": false,
           "formatter": function(value, row, index) {
             return [
-              '<a class="refresh ml10" href="javascript:void(0)" title="Refresh ontology">',
+              '<a class="refresh ml10" href="javascript:void(0)" title="Refresh vocabulary">',
               '  <i class="glyphicon glyphicon-refresh"></i>',
               '</a>',
-              '<a class="remove ml10" href="javascript:void(0)" title="Remove ontology">',
+              '<a class="dereference ml10" href="javascript:void(0)" title="Dereference this vocabulary">',
+              '  <i class="glyphicon glyphicon-link"></i>',
+              '</a>',
+              '<a class="remove ml10" href="javascript:void(0)" title="Remove vocabulary">',
               '  <i class="glyphicon glyphicon-remove"></i>',
               '</a>'
             ].join('');
@@ -140,13 +146,17 @@
 
                 "error": function (state) {
                   $(self.ontologyManager).trigger('loadingFailed', [self.ontologyManager]);
-                  $.growl({"message": state.message}, {"type": 'danger'});
+                  $.notify({"message": state.message}, {"type": 'danger'});
                   $loading.hide();
                 },
 
                 "ioType": 'http'
               };
               self.ontologyManager.parseOntologyFile(ontology.URI, params);
+            },
+            'click .dereference': function(e, value, ontology, index) {
+              var dereference = self.editor.dereference();
+              dereference(ontology.URI);
             },
             'click .remove': function(e, value, ontology, index) {
               self.ontologyManager.ontologyRemove(ontology.URI);
@@ -166,30 +176,33 @@
       $form.html(
         '<div class="panel panel-default" style="border: 0; padding: 0; margin-bottom: 0;"> ' +
         '  <div class="panel-body" style="padding-top: 10px; padding-bottom: 0;"><div class="form-horizontal"> ' +
-        '    <div class="form-group"> ' +
-        '      <label for="ontology" class="col-sm-2 control-label">Prefix</label> ' +
-        '      <div class="col-sm-10"> ' +
-        '        <input name="prefix" id="prefix" class="form-control" /> ' +
+        '    <form class="form-horizontal"> ' +
+        '      <div class="form-group"> ' +
+        '        <label for="ontology" class="col-sm-2 control-label">Prefix</label> ' +
+        '        <div class="col-sm-10"> ' +
+        '          <input name="prefix" id="prefix" class="form-control" /> ' +
+        '        </div> ' +
         '      </div> ' +
-        '    </div> ' +
-        '    <div class="form-group"> ' +
-        '      <label for="class" class="col-sm-2 control-label">URI</label> ' +
-        '      <div class="col-sm-10"> ' +
-        '        <input name="uri" id="uri" class="form-control" /> ' +
+        '      <div class="form-group"> ' +
+        '        <label for="class" class="col-sm-2 control-label">URI</label> ' +
+        '        <div class="col-sm-10"> ' +
+        '          <input name="uri" id="uri" class="form-control" /> ' +
+        '        </div> ' +
         '      </div> ' +
-        '    </div> ' +
-        '    <div class="form-group"> ' +
-        '      <div class="col-sm-10 col-sm-offset-2"> ' +
-        '        <a href="#" class="btn btn-default cancel">Cancel</a> ' +
-        '        <a href="#" class="btn btn-primary ok">OK</a> ' +
+        '      <div class="form-group"> ' +
+        '        <div class="col-sm-10 col-sm-offset-2"> ' +
+        '          <button type="button" class="btn btn-default cancel">Cancel</button> ' +
+        '          <button type="submit" class="btn btn-primary save">OK</button> ' +
+        '        </div> ' +
         '      </div> ' +
-        '    </div> ' +
+        '    </form> ' +
         '  </div> ' +
         '</div>\n'
       );
       $form.find('.cancel').click(function (e) {
         e.preventDefault();
-        var $loading = $('#ontology-loading')
+
+        var $loading = $('#ontology-loading');
         if ($loading.is(":visible"))
           return;
 
@@ -197,12 +210,15 @@
         self.tableContainer.show();
       });
 
-      $form.find('.ok').click(function (e) {
+      $form.find('.save').click(function (e) {
         e.preventDefault();
 
         var $loading = $('#ontology-loading');
         if ($loading.is(":visible"))
           return;
+
+        var uriEditor = self.formContainer.find('#uri');
+        var prefixEditor = self.formContainer.find('#prefix');
 
         var formClose = function () {
           self.formContainer.hide();
@@ -213,22 +229,20 @@
         var params = {
           "success":  function () {
             $(self.ontologyManager).trigger('loadingFinished', [self.ontologyManager]);
+            self.ontologyManager.prefixes[prefix] = uri;
             formClose();
           },
 
           "error": function (state) {
             $(self.ontologyManager).trigger('loadingFailed', [self.ontologyManager]);
             var message = (state && state.message)? state.message: 'Error loading ontology';
-            bootbox.confirm(message + '. Do you want an empty ontology to be added?', function(result) {
+            bootbox.confirm(message + '. <br /><br />Do you want an empty ontology to be added?', function(result) {
               if (result) {
-                var uri = self.formContainer.find('#uri').val();
+                var uri = uriEditor.val();
+                var prefix = prefixEditor.val();
                 var ontology = self.ontologyManager.ontologyByURI(uri);
                 if (!ontology) {
-                  ontology = new RDFE.Ontology(self.ontologyManager, uri);
-                  var prefix = self.formContainer.find('#prefix').val();
-                  if (prefix) {
-                    ontology.prefix = prefix
-                  }
+                  ontology = new RDFE.Ontology(self.ontologyManager, uri, prefix);
                   self.addOntologies(self.ontologyManager.allOntologies());
                 }
               }
@@ -236,42 +250,68 @@
             formClose();
           }
         };
-        var uri = self.formContainer.find('#uri').val();
+        var uri = uriEditor.val();
+        var prefix = prefixEditor.val();
+        if (!RDFE.Validate.check(uriEditor, uri))
+          return;
+
+        var tmp = RDFE.Utils.splitUrl(uri);
+        if ((tmp.protocol !== 'http:') && (tmp.protocol !== 'https:')) {
+          bootbox.alert('Only HTTP and HTTPS protocols are supported');
+          return;
+        }
+
         var ontology = self.ontologyManager.ontologyByURI(uri);
         if (ontology) {
-          bootbox.alert('This ontology is loaded. Please, use \'Refresh\' action!');
+          var msg = '';
+          tmp = self.ontologyManager.prefixByOntology(uri);
+          if (tmp !== prefix)
+            msg = ' with prefix ' + prefix;
+          bootbox.alert('This ontology is loaded{0}. Please, use \'Refresh\' action!'.format(msg));
           return;
         }
 
         $loading.show();
-        if (!self.ontologyManager.prefixByOntology(uri)) {
-          var prefix = self.formContainer.find('#prefix').val();
-          self.ontologyManager.prefixes[prefix] = uri;
-        }
-        self.ontologyManager.parseOntologyFile(self.formContainer.find('#uri').val(), params);
+        self.ontologyManager.parseOntologyFile(uri, params);
       });
 
       $form.find('#prefix').blur(function (e) {
-        var uri = RDFE.ontologyByPrefix(self.formContainer.find('#prefix').val());
-        if (uri) {
+        var uri = self.formContainer.find('#uri').val();
+        if (uri)
+          return;
+
+        var prefix = self.formContainer.find('#prefix').val();
+        if (!prefix)
+          return;
+
+        uri = RDFE.ontologyByPrefix(prefix);
+        if (uri)
           self.formContainer.find('#uri').val(uri);
-        }
       });
 
       $form.hide();
     };
 
     c.prototype.addOntologies = function(ontologies) {
+      var self = this;
+
+      // Update existited
       for (var i = 0; i < ontologies.length; i++) {
-        if (!_.find(self.ontologies, function(o){return o.URI === ontologies[i].URI})) {
-          this.table.bootstrapTable('append', ontologies[i]);
+        if (_.find(self.ontologies, function(o){return o.URI === ontologies[i].URI;})) {
+          self.table.bootstrapTable('updateByUniqueId', ontologies[i].URI, ontologies[i]);
+        }
+      }
+      // Append new
+      for (var i = 0; i < ontologies.length; i++) {
+        if (!_.find(self.ontologies, function(o){return o.URI === ontologies[i].URI;})) {
+          self.table.bootstrapTable('append', ontologies[i]);
         }
       }
       self.ontologies = ontologies;
     };
 
     // Entities
-    c.prototype.editor = function(forcedType) {
+    c.prototype.add = function(forcedType) {
       var self = this;
 
       self.formContainer.find('#prefix').val('');
@@ -279,6 +319,7 @@
 
       self.tableContainer.hide();
       self.formContainer.show();
+      self.formContainer.find('#prefix').focus();
     };
 
     return c;

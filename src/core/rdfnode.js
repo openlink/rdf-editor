@@ -1,7 +1,7 @@
 /*
  *  This file is part of the OpenLink RDF Editor
  *
- *  Copyright (C) 2014-2016 OpenLink Software
+ *  Copyright (C) 2014-2019 OpenLink Software
  *
  *  This project is free software; you can redistribute it and/or modify it
  *  under the terms of the GNU General Public License as published by the
@@ -55,6 +55,10 @@ RDFE.RdfNode.fromStoreNode = function(node) {
   // plain string
   if (typeof(node) === 'string') {
     return new RDFE.RdfNode('uri', node);
+  }
+
+  if (typeof(node) === 'number') {
+    return new RDFE.RdfNode('literal', node);
   }
 
   // already an RdfNode

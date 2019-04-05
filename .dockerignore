@@ -1,0 +1,17 @@
+.git/
+.tmp/
+app/bower_components/
+autom4te.cache/
+node_modules/
+*.vad
+*.tar.gz
+*.zip
+aclocal.m4
+config.log
+config.nice
+config.status
+configure
+install-sh
+Makefile
+Makefile.in
+missing
