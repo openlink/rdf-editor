@@ -1,7 +1,7 @@
 {
   "name": "rdf-editor",
   "description": "OpenLink Structured Data Editor",
-  "version": "0.17.0",
+  "version": "0.18.0",
   "homepage": "http://www.openlinksw.com",
   "license": "GPL-2.0",
   "private": true,

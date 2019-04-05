@@ -1,4 +1,64 @@
+2019-04-05  Patrick van Kleef  <pkleef@openlinksw.com>
+
+	Merge branch 'feature/Bug18617' into develop
+
+2019-04-05  Dimitar Dimitrov  <ddimitrov@openlinksw.com>
+
+	Optimize the store document changes for graphs and LDP sources.
+
+	Added undo/redo functions to the editor. Undo has max 16 levels.
+
+2019-04-04  Dimitar Dimitrov  <ddimitrov@openlinksw.com>
+
+	Fixed info messages after deleting triples.
+
+	Fixed but with not clean graph before load new content.
+
+2019-03-27  Dimitar Dimitrov  <ddimitrov@openlinksw.com>
+
+	Update rdfstore.js library with last posible version of N3.js parser.
+
+2019-03-22  Patrick van Kleef  <pkleef@openlinksw.com>
+
+	Merge branch 'feature/Bug18609' into develop
+
+2019-03-22  Dimitar Dimitrov  <ddimitrov@openlinksw.com>
+
+	Fixed bug by adding new property and false ontology request
+
+	Fixed bug by refreshing ontologies.
+
+	Bug 18609 - OSDE problem opening RDF graphs for editing with or saving RDF document to a SPARQL endpoint
+
+2019-03-18  Patrick van Kleef  <pkleef@openlinksw.com>
+
+	Merge branch 'feature/osdeLoadOntologies' into develop
+
+2019-03-14  Dimitar Dimitrov  <ddimitrov@openlinksw.com>
+
+	Fixed bug with not showing spinner by loading documents.
+
+	Fixed bug by loading ontologies on OSDE Chrome and FF extensions.
+
+2019-03-13  Dimitar Dimitrov  <ddimitrov@openlinksw.com>
+
+	Fixed bug with non escaped error messages by parsers.
+
+2019-02-19  Patrick van Kleef  <patrick@roady.xs4all.nl>
+
+	Merge branch 'feature/ontologyLoad' into develop
+
+2019-02-19  Dimitar Dimitrov  <ddimitrov@openlinksw.com>
+
+	Added an option for load ontologies in JSON-LD and RDF formats- not only TTL.
+
+	Added opened documents to the Recent folder
+
+	Updated JS library Unterscore to version 1.9.1.
+
 2019-02-08  Patrick van Kleef  <pkleef@openlinksw.com>
+
+	Small documentation changes
 
 	Added initial support for building Docker images
 

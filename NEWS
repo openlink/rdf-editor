@@ -1,5 +1,6 @@
 v0.18:
   * Added option to build Docker image
+  * Added undo/redo functions to the editor. Undo has max 16 levels.
   * Added accept parameter with two values: turtle and jsonld
   * Added dereference link for RDF types
   * Added dereference link for subject and predicate views
@@ -22,6 +23,9 @@ v0.18:
   * Added support for schema:rangeIncludes and schema:domainIncludes
   * Added validation for input fields with new validation API
   * Added WebID sign in option
+  * Added option to load ontologies in JSON-LD and RDF formats- not only TTL.
+  * Added opened documents to the Recent folder
+  * Optimize the store document changes for graphs and LDP sources.
   * Updated schema.org ontology
   * Upgrade AngularJS from 1.5.x to 1.7.x.
   * Upgrade Bootstrap libraries
@@ -30,12 +34,19 @@ v0.18:
   * Upgrade JS bootstrap table to version 1.12.1
   * Upgrade rdfstore and N3 JS libraries
   * Upgrade selectize library
+  * Upgrade underscore library
   * Fixed AJAX PROPFIND call to WebDAV folders
+  * Fixed info messages after deleting triples.
   * Fixed issue accessing some LDP sources
+  * Fixed issue adding new property and false ontology request
+  * Fixed issue loading ontologies on OSDE Chrome and FF extensions.
   * Fixed issue loading RDF/XML documents
+  * Fixed issue not clean graph before load new content.
+  * Fixed issue not showing spinner by loading documents.
   * Fixed issue parsing escaped literals
   * Fixed issue parsing some .TTL sources
   * Fixed issue parsing turtle from dbpedia
+  * Fixed issue refreshing ontologies.
   * Fixed issue related to warnings from JSHint utility
   * Fixed issue retrieving named graphs
   * Fixed issue storing recent SPARQL endpoints
@@ -44,6 +55,7 @@ v0.18:
   * Fixed issue with editing and showing the boolean values
   * Fixed issue with encoding URL parameters
   * Fixed issue with inline editing empty nodes
+  * Fixed issue with non escaped error messages by parsers.
   * Fixed spinning wheel when adding Linked Vocabularies
   * Small UI fixes
   * Small bug fixes
