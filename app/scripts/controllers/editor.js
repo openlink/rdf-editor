@@ -696,8 +696,8 @@ angular.module('myApp.editor', ['ngRoute'])
               $scope.doc.load(url, io, function() {
                 loadFinished(true);
               }, function(state, data, status, xhr) {
-                var msg = (state && state.message)? state.message: 'Failed to load document';
-                Notification.notify('error', msg);
+                var msg = (state && state.message)? state.httpCode + ' - ' + state.message: 'Failed to load document';
+                Notification.notify('error', msg + ': ' + url);
                 loadFinished(false);
               });
             };
