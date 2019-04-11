@@ -228,6 +228,10 @@
 
         var params = {
           "success":  function () {
+            var ontology = self.ontologyManager.ontologyByURI(uri);
+            if (ontology) {
+              ontology.prefix = prefix;
+            }
             $(self.ontologyManager).trigger('loadingFinished', [self.ontologyManager]);
             self.ontologyManager.prefixes[prefix] = uri;
             formClose();
@@ -251,13 +255,18 @@
           }
         };
         var uri = uriEditor.val();
-        var prefix = prefixEditor.val();
         if (!RDFE.Validate.check(uriEditor, uri))
           return;
 
         var tmp = RDFE.Utils.splitUrl(uri);
         if ((tmp.protocol !== 'http:') && (tmp.protocol !== 'https:')) {
           bootbox.alert('Only HTTP and HTTPS protocols are supported');
+          return;
+        }
+
+        var prefix = prefixEditor.val();
+        if (prefix && self.ontologyManager.prefixes[prefix] && self.ontologyManager.prefixes[prefix] !== uri) {
+          bootbox.alert('The prefix is already used for another URI');
           return;
         }
 
