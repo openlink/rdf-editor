@@ -199,10 +199,11 @@ RDFE.prefixByOntology = function(uri, callback) {
   }).done(function(data) {
     var results = data.results;
     for (var i = 0; i < results.length; i++) {
-      for (var j = 0; j < results[i].uri.length; i++) {
-        if (RDFE.Utils.trim(results[i].uri[j], '#') === uri) {
+      var result = results[i];
+      for (var j = 0; j < result.uri.length; j++) {
+        if (RDFE.Utils.trim(result.uri[j], '#') === uri) {
           if (callback) {
-            callback(results[i].prefix[j]);
+            callback(result.prefix[j]);
           }
           return;
         }
@@ -360,7 +361,8 @@ RDFE.OntologyManager.prototype.ontologiesAsArray = function() {
 RDFE.OntologyManager.prototype.ontologyByURI = function(uri, create) {
   var o = this.ontologies[uri];
   if (!o && create === true) {
-    this.ontologies[uri] = o = new RDFE.Ontology(this, uri);
+    o = new RDFE.Ontology(this, uri);
+    this.ontologies[uri] = o;
   }
   return o;
 };
@@ -871,8 +873,7 @@ RDFE.OntologyManager.prototype.parseOntologyFile = function(URI, params) {
       parser.parse(data, function(error, triple) {
         if (error) {
           if (params.error) {
-            var message = 'Parse error.'
-            params.error({"message": message});
+            params.error({"message": 'TTL parse error. ' + error.message});
           }
         }
         else if (!triple) {
@@ -892,8 +893,7 @@ RDFE.OntologyManager.prototype.parseOntologyFile = function(URI, params) {
       RDFXMLParser.parser.parse(data, {}, function(error, triples) {
         if (error) {
           if (params.error) {
-            var message = 'Parse error.'
-            params.error({"message": message});
+            params.error({"message": 'RDF parse error. ' + error.message});
           }
         }
         else {
@@ -915,41 +915,48 @@ RDFE.OntologyManager.prototype.parseOntologyFile = function(URI, params) {
 
     var jsonParser = function (data, params) {
       // console.log(URI);
-      jsonld.normalize(JSON.parse(data), {}, function(error, normalized) {
-        if (error) {
-          if (params.error) {
-            var message = 'Parse error.'
-            params.error({"message": message});
-          }
-        }
-        else {
-          var parseTerm = function (term) {
-            if (term.type === 'blank node') {
-              return term.value;
-            } else if (term.type === 'IRI') {
-              return term.value;
-            } else if (term.type === 'literal') {
-              return '"' + term.value + '"';
+      try {
+        var jsonData = JSON.parse(data);
+        jsonld.normalize(jsonData, {}, function(error, normalized) {
+          if (error) {
+            if (params.error) {
+              params.error({"message": 'JSON-LD parse error. ' + error.message});
             }
-          };
+          }
+          else {
+            var parseTerm = function (term) {
+              if (term.type === 'blank node') {
+                return term.value;
+              } else if (term.type === 'IRI') {
+                return term.value;
+              } else if (term.type === 'literal') {
+                return '"' + term.value + '"';
+              }
+            };
 
-          for (var p in normalized) {
-            var triples = normalized[p];
-            for (var i = 0; i < triples.length; i++) {
-              var triple = {
-                "subject": parseTerm(triples[i].subject),
-                "predicate": parseTerm(triples[i].predicate),
-                "object": parseTerm(triples[i].object)
-              };
-              handleTriple(triple);
+            for (var p in normalized) {
+              var triples = normalized[p];
+              for (var i = 0; i < triples.length; i++) {
+                var triple = {
+                  "subject": parseTerm(triples[i].subject),
+                  "predicate": parseTerm(triples[i].predicate),
+                  "object": parseTerm(triples[i].object)
+                };
+                handleTriple(triple);
+              }
+            }
+            finishParse();
+            if (params.success) {
+              params.success();
             }
           }
-          finishParse();
-          if (params.success) {
-            params.success();
-          }
+        });
+      } catch (e) {
+        if (params.error) {
+          params.error({"message": 'JSON parse error. ' + e.message});
         }
-      });
+      }
+
     };
 
     var contentType = (xhr.getResponseHeader('content-type') || '').split(';')[0];
@@ -1091,11 +1098,12 @@ RDFE.Ontology = function(ontologyManager, URI, prefix, options) {
   self.prefix = prefix || ontologyManager.prefixByOntology(URI);
   if (!self.prefix) {
     var callback = function(prefix) {
-      if (prefix) {
+      if (prefix && !self.manager.prefixes[prefix]) {
+        self.manager.prefixes[prefix] = URI;
         self.prefix = prefix;
         self.manager.prefixes[prefix] = URI;
-        $(self.manager).trigger('changed', [ self.manager ]);
       }
+      $(self.manager).trigger('changed', [ self.manager ]);
     };
     RDFE.prefixByOntology(URI, callback);
   }
