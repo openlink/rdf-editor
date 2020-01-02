@@ -2,7 +2,7 @@
 #
 #  This file is part of the OpenLink RDF Editor
 #
-#  Copyright (C) 2015-2019 OpenLink Software
+#  Copyright (C) 2015-2020 OpenLink Software
 #
 #  Calculate version number for vad package based on the number of
 #  commits since the last release
