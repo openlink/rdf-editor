@@ -1,7 +1,7 @@
 #
 #  Use alpine based node 11 as our base image
 #
-FROM node:11-alpine
+FROM node:18-alpine
 
 
 #
@@ -21,7 +21,7 @@ ARG 	VERSION
 #
 LABEL   com.openlinksw.vendor	= "OpenLink Software"
 LABEL   maintainer		= "OpenLink Support <support@openlinksw.com>"
-LABEL   copyright		= "Copyright (C) 2020 OpenLink Software"
+LABEL   copyright		= "Copyright (C) 2022 OpenLink Software"
 LABEL   version			= "$VERSION"
 LABEL   description		= "OpenLink Structured Data Editor v$VERSION (Docker Image)"
 
