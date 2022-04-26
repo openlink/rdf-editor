@@ -1,7 +1,7 @@
 REM
 REM  This file is part of the OpenLink RDF Editor
 REM
-REM  Copyright (C) 2015-2020 OpenLink Software
+REM  Copyright (C) 2015-2022 OpenLink Software
 REM
 REM  This project is free software; you can redistribute it and/or modify it
 REM  under the terms of the GNU General Public License as published by the
